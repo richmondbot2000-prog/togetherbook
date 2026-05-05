@@ -6,20 +6,21 @@
 <title>Database Schema — Central Services</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&family=Orbitron:wght@500;600;700;800&display=swap" rel="stylesheet">
 <style>
   :root {
-    --bg: #ffffff;
-    --bg-soft: #f8f9fb;
-    --bg-soft-2: #f1f3f7;
-    --ink: #1a1a2e;
-    --ink-soft: #4a4a68;
-    --muted: #6b7280;
-    --border: #e5e7eb;
-    --border-soft: #eef0f3;
-    --accent: #635bff;
-    --accent-soft: #efeefd;
-    --accent-ink: #4f46e5;
+    --bg: #060a1f;
+    --bg-soft: #0e1438;
+    --bg-soft-2: #161e4d;
+    --ink: #e6f1ff;
+    --ink-soft: #b8c4e8;
+    --muted: #7686b8;
+    --border: #28315c;
+    --border-soft: #1a2148;
+    --accent: #00d4ff;
+    --accent-soft: #0c2a3e;
+    --accent-ink: #67e8ff;
+    --font-display: 'Orbitron', system-ui, sans-serif;
   }
   * { box-sizing: border-box; }
   html { scroll-behavior: smooth; scroll-padding-top: 80px; }
@@ -62,28 +63,39 @@
     padding: 60px 32px 120px;
   }
   h1 {
-    font-size: 2.4rem;
+    font-family: var(--font-display);
+    font-size: clamp(1.8rem, 4vw, 2.6rem);
     font-weight: 800;
-    letter-spacing: -0.03em;
+    letter-spacing: 0.02em;
     margin: 0 0 12px;
-    line-height: 1.15;
+    line-height: 1.1;
+    text-transform: uppercase;
+    background: linear-gradient(135deg, #67e8ff, #00d4ff 50%, #ff39a8);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
   }
   h2 {
-    font-size: 1.6rem;
+    font-family: var(--font-display);
+    font-size: 1.5rem;
     font-weight: 700;
-    letter-spacing: -0.02em;
+    letter-spacing: 0.02em;
+    text-transform: uppercase;
     margin: 56px 0 12px;
     padding-top: 24px;
     border-top: 1px solid var(--border-soft);
     line-height: 1.25;
     scroll-margin-top: 80px;
+    color: var(--accent);
   }
   h3 {
-    font-size: 1.15rem;
+    font-size: 1.05rem;
     font-weight: 700;
-    letter-spacing: -0.01em;
+    letter-spacing: 0.05em;
     margin: 32px 0 10px;
     color: var(--ink);
+    text-transform: uppercase;
+    font-family: var(--font-display);
   }
   p { margin: 0 0 14px; color: var(--ink-soft); }
   p strong, li strong, td strong { color: var(--ink); font-weight: 600; }
@@ -195,12 +207,14 @@
     startOnLoad: false,
     theme: 'base',
     themeVariables: {
-      primaryColor: '#efeefd',
-      primaryTextColor: '#1a1a2e',
-      primaryBorderColor: '#635bff',
-      lineColor: '#6b7280',
-      secondaryColor: '#fef9c3',
-      tertiaryColor: '#dbeafe',
+      darkMode: true,
+      background: '#0e1438',
+      primaryColor: '#161e4d',
+      primaryTextColor: '#e6f1ff',
+      primaryBorderColor: '#00d4ff',
+      lineColor: '#67e8ff',
+      secondaryColor: '#1a2148',
+      tertiaryColor: '#28315c',
       fontFamily: 'Inter, system-ui, sans-serif',
       fontSize: '14px'
     },
