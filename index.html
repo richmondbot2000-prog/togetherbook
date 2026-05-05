@@ -1611,21 +1611,24 @@
     sideNavApis.appendChild(li);
   });
 
-  // Build hero character strip
+  // Build hero character strip (only if the strip element exists — older hero used it,
+  // current hero replaced it with the Part 1 / Part 2 cards but we keep this code resilient)
   const heroStrip = document.getElementById('heroStrip');
-  characters.forEach(c => {
-    const a = document.createElement('a');
-    a.href = `#${c.id}`;
-    a.className = 'character-chip';
-    a.style.setProperty('--chip-tint', c.tint);
-    a.innerHTML = `
-      <div class="avatar">
-        <img src="https://api.iconify.design/fluent-emoji/${c.icon}.svg" alt="${c.name}" />
-      </div>
-      <span class="label">${c.name.split(' ')[0]}</span>
-    `;
-    heroStrip.appendChild(a);
-  });
+  if (heroStrip) {
+    characters.forEach(c => {
+      const a = document.createElement('a');
+      a.href = `#${c.id}`;
+      a.className = 'character-chip';
+      a.style.setProperty('--chip-tint', c.tint);
+      a.innerHTML = `
+        <div class="avatar">
+          <img src="https://api.iconify.design/fluent-emoji/${c.icon}.svg" alt="${c.name}" />
+        </div>
+        <span class="label">${c.name.split(' ')[0]}</span>
+      `;
+      heroStrip.appendChild(a);
+    });
+  }
 
   // Build helper sections
   const helpersWrap = document.getElementById('helpers');
