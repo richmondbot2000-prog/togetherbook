@@ -977,8 +977,10 @@
 <div class="topbar">
   <div class="brand"><span class="dot"></span> The Helpers</div>
   <nav>
-    <a href="#askers">Askers</a>
     <a href="#apis">APIs</a>
+    <a href="#robots">Robots</a>
+    <a href="#screens">Screens</a>
+    <a href="#outside">Outside</a>
     <a href="#story">A loan story</a>
     <a href="#rules">How they talk</a>
     <a href="#commandments">The commandments</a>
@@ -988,15 +990,14 @@
 <div class="layout">
 
   <aside class="sidebar">
-    <h4>Askers</h4>
-    <h5>Outside</h5>
-    <ul class="sidebar-nav" id="sideNavOutside"></ul>
-    <h5>Screens</h5>
-    <ul class="sidebar-nav" id="sideNavScreens"></ul>
-    <h5>Robots</h5>
-    <ul class="sidebar-nav" id="sideNavRobots"></ul>
     <h4>APIs</h4>
     <ul class="sidebar-nav" id="sideNavApis"></ul>
+    <h4>Robots</h4>
+    <ul class="sidebar-nav" id="sideNavRobots"></ul>
+    <h4>Screens</h4>
+    <ul class="sidebar-nav" id="sideNavScreens"></ul>
+    <h4>Outside Askers</h4>
+    <ul class="sidebar-nav" id="sideNavOutside"></ul>
     <h4>Stories</h4>
     <ul class="sidebar-nav">
       <li><a href="#story"><span class="em">📖</span> A loan story</a></li>
@@ -1008,43 +1009,69 @@
   <main>
 
     <section class="hero" id="meet">
-      <div class="crumb">An introduction</div>
-      <h1>Meet the helpers behind every loan</h1>
-      <p class="lead">Our platform is a team of friendly helpers. Each one has a special job — keeping paperwork tidy, sending messages, taking payments, or making big decisions. Together, they help people borrow money safely. Tap any helper below to find out what they do!</p>
-      <div class="character-strip" id="heroStrip"></div>
-    </section>
+      <div class="crumb">A guide</div>
+      <h1>How our world fits together</h1>
+      <p class="lead">Our platform is made of two kinds of thing: <strong>APIs</strong> — eight quiet helpers who sit and wait — and <strong>Askers</strong>, the things that wake them up by asking for something. Together, they look after every loan.</p>
+      <p class="lead">This site is in two parts. Start with the askers, then meet the APIs.</p>
 
-    <section class="section-intro" id="askers">
-      <div class="section-marker">Part 1 of 2</div>
-      <h2>The Askers</h2>
-      <p class="lead">In our world, the helpers are quiet — they sit and wait. They never bother each other. They only do something when an "asker" comes to ask. There are three kinds of askers, and we know exactly who each one is.</p>
-    </section>
+      <div class="hero-overview">
+        <div class="hero-card">
+          <span class="hero-badge">Part 1</span>
+          <h3><a href="#apis">The APIs</a></h3>
+          <p>The eight quiet helpers themselves. Each one has a special job:</p>
+          <ul>
+            <li><a href="#gary">Gary</a> the Gatekeeper · <a href="#anna">Anna</a> for paperwork · <a href="#bessie">Bessie</a> for new leads · <a href="#whitney">Whitney</a> the wise</li>
+            <li><a href="#larry">Larry</a> the loan-keeper · <a href="#penny">Penny</a> for payments · <a href="#connie">Connie</a> the courier · <a href="#sherlock">Sherlock</a> the snoop</li>
+          </ul>
+        </div>
+        <div class="hero-card">
+          <span class="hero-badge">Part 2</span>
+          <h3>The Askers</h3>
+          <p>The things that wake the helpers up. <strong>24 of them</strong>, split across three sections:</p>
+          <ul>
+            <li><a href="#robots">Robots</a> — 12 background workers</li>
+            <li><a href="#screens">Screens</a> — 6 apps &amp; websites humans use</li>
+            <li><a href="#outside">Outside Askers</a> — 6 outside companies &amp; services</li>
+          </ul>
+        </div>
+      </div>
 
-    <section class="askers-group" id="askers-outside">
-      <h3>Outside askers</h3>
-      <p class="lead">People and computers that are not part of our world. They come from other companies, or they're outside services we work with.</p>
-      <div class="robot-grid" id="outsideGrid"></div>
-    </section>
-
-    <section class="askers-group" id="askers-screens">
-      <h3>Screens</h3>
-      <p class="lead">The pages and apps humans look at. Every button a human presses turns into a question for a helper.</p>
-      <div class="robot-grid" id="screensGrid"></div>
-    </section>
-
-    <section class="askers-group" id="askers-robots">
-      <h3>Robots</h3>
-      <p class="lead">The invisible workers who do jobs in the background. Some wake up at set times of day, some wake up the moment there's a job for them. They never sleep, they never get bored, and they're the ones doing most of the asking.</p>
-      <div class="robot-grid" id="robotGrid"></div>
+      <p class="hero-links">
+        Once you've met everyone, see how it all flows:
+        <a href="#story">walk through a loan</a> ·
+        <a href="#rules">how they talk</a> ·
+        <a href="#commandments">the 12 commandments</a>
+      </p>
     </section>
 
     <section class="section-intro" id="apis">
-      <div class="section-marker">Part 2 of 2</div>
+      <div class="section-marker">Section 1 — the quiet ones</div>
       <h2>The APIs</h2>
-      <p class="lead">Eight helpers. Each one has a special job. They sit and wait, and only answer when an asker comes. Click any helper below to learn what they do.</p>
+      <p class="lead">Eight quiet helpers. Each one has a special job. They sit and wait, and only answer when an asker comes. Click any helper below to learn what they do.</p>
     </section>
 
     <div id="helpers"></div>
+
+    <section class="section-intro" id="robots">
+      <div class="section-marker">Section 2 — the invisible workers</div>
+      <h2>The Robots</h2>
+      <p class="lead">The 12 invisible workers. Some wake up at set times of day, some wake up the moment there's a job for them to do. They never sleep, they never get bored, and they're the ones doing most of the asking.</p>
+      <div class="robot-grid" id="robotGrid"></div>
+    </section>
+
+    <section class="section-intro" id="screens">
+      <div class="section-marker">Section 3 — what humans see</div>
+      <h2>The Screens</h2>
+      <p class="lead">The 6 pages and apps humans look at. Every button a human presses turns into a question for a helper.</p>
+      <div class="robot-grid" id="screensGrid"></div>
+    </section>
+
+    <section class="section-intro" id="outside">
+      <div class="section-marker">Section 4 — from outside our world</div>
+      <h2>Outside Askers</h2>
+      <p class="lead">The 6 services and companies from outside our platform that hook into ours and ask the helpers for things.</p>
+      <div class="robot-grid" id="outsideGrid"></div>
+    </section>
 
     <section class="helper" id="story">
       <h2>A loan story</h2>
