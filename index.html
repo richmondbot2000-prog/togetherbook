@@ -1050,6 +1050,18 @@
 </head>
 <body>
 
+<script>
+  // Document-level fallback: close drawer when any link inside the sidebar is tapped.
+  // Runs before any other JS to guarantee the close behavior even if later scripts error out.
+  document.addEventListener('click', function (e) {
+    if (!document.body.classList.contains('menu-open')) return;
+    const link = e.target.closest('a');
+    if (link && e.target.closest('.sidebar')) {
+      document.body.classList.remove('menu-open');
+    }
+  }, true);
+</script>
+
 <div class="topbar">
   <button class="menu-toggle" aria-label="Open navigation menu" id="menuToggle"
           onclick="event.stopPropagation();document.body.classList.toggle('menu-open');">
