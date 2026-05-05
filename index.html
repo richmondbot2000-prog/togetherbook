@@ -773,13 +773,39 @@
     .commandment .icon-wrap { width: 60px; height: 60px; border-radius: 16px; }
   }
 
-  /* SECTION HEADERS (top-level: APIs / Robots) */
+  /* SECTION HEADERS (top-level: Askers / APIs) */
   .section-intro {
     padding: 56px 0 24px;
     border-bottom: 1px solid var(--border-soft);
     margin-bottom: 32px;
     scroll-margin-top: 80px;
   }
+  .askers-group {
+    padding: 24px 0 32px;
+    margin-bottom: 24px;
+    scroll-margin-top: 80px;
+  }
+  .askers-group h3 {
+    font-size: 1.55rem;
+    margin: 0 0 8px;
+    text-transform: none;
+    letter-spacing: -0.02em;
+    color: var(--ink);
+    font-weight: 700;
+  }
+  .askers-group .lead {
+    font-size: 1rem;
+    margin-bottom: 18px;
+  }
+  .sidebar h5 {
+    margin: 14px 0 4px 4px;
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    font-weight: 700;
+    color: var(--ink-soft);
+  }
+  .sidebar-nav + h5 { margin-top: 14px; }
   .section-intro h2 {
     font-size: 2.2rem;
     margin: 8px 0 14px;
@@ -951,8 +977,8 @@
 <div class="topbar">
   <div class="brand"><span class="dot"></span> The Helpers</div>
   <nav>
+    <a href="#askers">Askers</a>
     <a href="#apis">APIs</a>
-    <a href="#robots">Robots</a>
     <a href="#story">A loan story</a>
     <a href="#rules">How they talk</a>
     <a href="#commandments">The commandments</a>
@@ -962,10 +988,15 @@
 <div class="layout">
 
   <aside class="sidebar">
+    <h4>Askers</h4>
+    <h5>Outside</h5>
+    <ul class="sidebar-nav" id="sideNavOutside"></ul>
+    <h5>Screens</h5>
+    <ul class="sidebar-nav" id="sideNavScreens"></ul>
+    <h5>Robots</h5>
+    <ul class="sidebar-nav" id="sideNavRobots"></ul>
     <h4>APIs</h4>
     <ul class="sidebar-nav" id="sideNavApis"></ul>
-    <h4>Robots</h4>
-    <ul class="sidebar-nav" id="sideNavRobots"></ul>
     <h4>Stories</h4>
     <ul class="sidebar-nav">
       <li><a href="#story"><span class="em">📖</span> A loan story</a></li>
@@ -983,21 +1014,37 @@
       <div class="character-strip" id="heroStrip"></div>
     </section>
 
+    <section class="section-intro" id="askers">
+      <div class="section-marker">Part 1 of 2</div>
+      <h2>The Askers</h2>
+      <p class="lead">In our world, the helpers are quiet — they sit and wait. They never bother each other. They only do something when an "asker" comes to ask. There are three kinds of askers, and we know exactly who each one is.</p>
+    </section>
+
+    <section class="askers-group" id="askers-outside">
+      <h3>Outside askers</h3>
+      <p class="lead">People and computers that are not part of our world. They come from other companies, or they're outside services we work with.</p>
+      <div class="robot-grid" id="outsideGrid"></div>
+    </section>
+
+    <section class="askers-group" id="askers-screens">
+      <h3>Screens</h3>
+      <p class="lead">The pages and apps humans look at. Every button a human presses turns into a question for a helper.</p>
+      <div class="robot-grid" id="screensGrid"></div>
+    </section>
+
+    <section class="askers-group" id="askers-robots">
+      <h3>Robots</h3>
+      <p class="lead">The invisible workers who do jobs in the background. Some wake up at set times of day, some wake up the moment there's a job for them. They never sleep, they never get bored, and they're the ones doing most of the asking.</p>
+      <div class="robot-grid" id="robotGrid"></div>
+    </section>
+
     <section class="section-intro" id="apis">
-      <div class="section-marker">Section 1 of 2</div>
+      <div class="section-marker">Part 2 of 2</div>
       <h2>The APIs</h2>
-      <p class="lead">Eight helpers. Each one has a special job. They're the quiet ones — they sit, they wait, and they never bother each other. They only answer when somebody asks. Three kinds of askers do the asking:</p>
-      <div class="callers-lead-grid" id="callersLeadGrid"></div>
+      <p class="lead">Eight helpers. Each one has a special job. They sit and wait, and only answer when an asker comes. Click any helper below to learn what they do.</p>
     </section>
 
     <div id="helpers"></div>
-
-    <section class="section-intro" id="robots">
-      <div class="section-marker">Section 2 of 2</div>
-      <h2>The Robots</h2>
-      <p class="lead">Twelve workers. They never sleep, they never get bored. Some wake up at set times of day, some wake up the moment there's a job waiting for them. They're the ones doing most of the asking — they're how the helpers actually get woken up to look after customers.</p>
-      <div class="robot-grid" id="robotGrid"></div>
-    </section>
 
     <section class="helper" id="story">
       <h2>A loan story</h2>
@@ -1535,54 +1582,97 @@
     helpersWrap.appendChild(section);
   });
 
-  // Caller types
-  const callerTypes = [
+  // Outside askers (from outside our world)
+  const outsideAskers = [
     {
-      icon: "globe-showing-europe-africa",
-      name: "Outside askers",
-      pillClass: "external",
-      what: "People and computers from outside our world who come and ask the helpers for things.",
-      examples: [
-        "Customers using the Together Loans app on their phones",
-        "Other companies sending us new customers to lend to",
-        "Outside services telling us when an ID check is finished, or when a text message has been delivered",
-        "Customers filling in the apply-for-a-loan form on a website"
-      ]
+      id: "asker-brokers",
+      icon: "office-building",
+      name: "Brokers",
+      what: "Other companies whose websites send us new customers who'd like a loan.",
+      asks: "Bessie"
     },
     {
-      icon: "laptop",
-      name: "Screens",
-      pillClass: "frontend",
-      what: "The pages and apps that humans look at. Every button click turns into a question for a helper.",
-      examples: [
-        "The agents' big screen, where they look after customers all day",
-        "The setup screen lenders use to change their settings",
-        "The apply-for-a-loan websites",
-        "Customer self-service pages (paying online, getting a statement)",
-        "A page where brokers can check on the customers they sent us"
-      ]
+      id: "asker-veriff",
+      icon: "identification-card",
+      name: "Veriff",
+      what: "An outside service that checks people's IDs. Sends a message when each check is finished.",
+      asks: "Whitney"
     },
     {
-      icon: "robot",
-      name: "Robots",
-      pillClass: "robot",
-      what: "The invisible workers who do jobs in the background. Some wake up at set times, some wake up when there's a job waiting.",
-      examples: ["See the fleet below — there are lots of them"]
+      id: "asker-twilio",
+      icon: "telephone-receiver",
+      name: "Twilio",
+      what: "The company that delivers our texts and phone calls. Tells Connie when each message arrives.",
+      asks: "Connie"
+    },
+    {
+      id: "asker-sendgrid",
+      icon: "incoming-envelope",
+      name: "Sendgrid",
+      what: "The company that delivers our emails. Tells Connie when each email is delivered or has bounced back.",
+      asks: "Connie"
+    },
+    {
+      id: "asker-card-processors",
+      icon: "credit-card",
+      name: "Card processors",
+      what: "Companies like BridgePay and Checkout that actually move the money. They tell Penny when payments succeed or fail.",
+      asks: "Penny"
+    },
+    {
+      id: "asker-bank-returns",
+      icon: "bank",
+      name: "Bank returns",
+      what: "Banks like HSBC tell us when a bank payment has gone through, or has been returned because something went wrong.",
+      asks: "Penny, Larry"
     }
   ];
 
-  const callersLeadGrid = document.getElementById('callersLeadGrid');
-  callerTypes.forEach(ct => {
-    const div = document.createElement('div');
-    div.className = 'caller-card';
-    div.innerHTML = `
-      <div class="icon-wrap"><img src="https://api.iconify.design/fluent-emoji/${ct.icon}.svg" alt="" /></div>
-      <h3><span class="caller-pill ${ct.pillClass}" style="vertical-align: 3px; margin-right: 8px;">${ct.pillClass === 'external' ? 'Outside' : ct.pillClass === 'frontend' ? 'Screen' : 'Robot'}</span>${ct.name}</h3>
-      <p class="what">${ct.what}</p>
-      <ul>${ct.examples.map(e => `<li>${e}</li>`).join('')}</ul>
-    `;
-    callersLeadGrid.appendChild(div);
-  });
+  // Screens (front-ends humans use)
+  const screenAskers = [
+    {
+      id: "asker-crm",
+      icon: "desktop-computer",
+      name: "The Agent CRM",
+      what: "The big screen agents look at all day. Every customer's whole story is on it.",
+      asks: "Anna, Larry, Penny, Connie"
+    },
+    {
+      id: "asker-admin",
+      icon: "control-knobs",
+      name: "The Admin Site",
+      what: "Where lenders set their settings, agents, and the campaigns the robots send out.",
+      asks: "Anna, Larry, Bessie, Connie"
+    },
+    {
+      id: "asker-apply",
+      icon: "memo",
+      name: "The Apply Websites",
+      what: "Where new customers fill in the form to apply for a loan.",
+      asks: "Anna, Connie (for the 2FA code)"
+    },
+    {
+      id: "asker-app",
+      icon: "mobile-phone",
+      name: "The TL App",
+      what: "The Together Loans phone app. Customers use it to look at their loans on the go.",
+      asks: "Gary (who passes them on to the other helpers)"
+    },
+    {
+      id: "asker-self-service",
+      icon: "globe-with-meridians",
+      name: "The Self-Service Site",
+      what: "Customer pages where people can pay, get a statement, or change a payment date — without logging in.",
+      asks: "Larry, Penny, Connie"
+    },
+    {
+      id: "asker-sources-portal",
+      icon: "bar-chart",
+      name: "The Sources Portal",
+      what: "A page where brokers can sign in and see how the customers they sent us are doing.",
+      asks: "Bessie"
+    }
+  ];
 
   // Robots
   const robots = [
@@ -1684,30 +1774,38 @@
     }
   ];
 
-  const robotGrid = document.getElementById('robotGrid');
-  const sideNavRobots = document.getElementById('sideNavRobots');
-  robots.forEach(r => {
-    // Sidebar entry for this robot
-    const navLi = document.createElement('li');
-    navLi.innerHTML = `<a href="#${r.id}"><img class="emoji" src="https://api.iconify.design/fluent-emoji/${r.icon}.svg" /> ${r.name.replace(/^The /, '')}</a>`;
-    sideNavRobots.appendChild(navLi);
-
-    const div = document.createElement('div');
-    div.className = 'robot-card';
-    div.id = r.id;
-    div.innerHTML = `
-      <div class="icon-wrap"><img src="https://api.iconify.design/fluent-emoji/${r.icon}.svg" alt="" /></div>
-      <div>
-        <h3>${r.name}</h3>
-        <p class="what">${r.what}</p>
-        <div class="robot-meta">
-          <span class="robot-meta-pill"><span class="label">When</span> ${r.when}</span>
-          <span class="robot-meta-pill"><span class="label">Asks</span> ${r.calls}</span>
+  function renderAskerGroup(items, gridId, navId) {
+    const grid = document.getElementById(gridId);
+    const nav = document.getElementById(navId);
+    items.forEach(it => {
+      // Sidebar entry
+      if (nav) {
+        const navLi = document.createElement('li');
+        navLi.innerHTML = `<a href="#${it.id}"><img class="emoji" src="https://api.iconify.design/fluent-emoji/${it.icon}.svg" /> ${it.name.replace(/^The /, '')}</a>`;
+        nav.appendChild(navLi);
+      }
+      // Card
+      const div = document.createElement('div');
+      div.className = 'robot-card';
+      div.id = it.id;
+      const whenPill = it.when ? `<span class="robot-meta-pill"><span class="label">When</span> ${it.when}</span>` : '';
+      const asksValue = it.asks || it.calls || '';
+      const asksPill = asksValue ? `<span class="robot-meta-pill"><span class="label">Asks</span> ${asksValue}</span>` : '';
+      div.innerHTML = `
+        <div class="icon-wrap"><img src="https://api.iconify.design/fluent-emoji/${it.icon}.svg" alt="" /></div>
+        <div>
+          <h3>${it.name}</h3>
+          <p class="what">${it.what}</p>
+          <div class="robot-meta">${whenPill}${asksPill}</div>
         </div>
-      </div>
-    `;
-    robotGrid.appendChild(div);
-  });
+      `;
+      grid.appendChild(div);
+    });
+  }
+
+  renderAskerGroup(outsideAskers, 'outsideGrid', 'sideNavOutside');
+  renderAskerGroup(screenAskers, 'screensGrid', 'sideNavScreens');
+  renderAskerGroup(robots, 'robotGrid', 'sideNavRobots');
 
   // The commandments
   const commandments = [
