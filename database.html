@@ -1,0 +1,248 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Database Schema — Central Services</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #ffffff;
+    --bg-soft: #f8f9fb;
+    --bg-soft-2: #f1f3f7;
+    --ink: #1a1a2e;
+    --ink-soft: #4a4a68;
+    --muted: #6b7280;
+    --border: #e5e7eb;
+    --border-soft: #eef0f3;
+    --accent: #635bff;
+    --accent-soft: #efeefd;
+    --accent-ink: #4f46e5;
+  }
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; scroll-padding-top: 80px; }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--ink);
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+    font-size: 15.5px;
+    line-height: 1.65;
+    -webkit-font-smoothing: antialiased;
+  }
+  a { color: var(--accent); text-decoration: none; }
+  a:hover { text-decoration: underline; }
+  code { font-family: 'JetBrains Mono', ui-monospace, Menlo, monospace; font-size: 0.88em; background: var(--bg-soft); padding: 1px 5px; border-radius: 4px; border: 1px solid var(--border); }
+  pre { background: var(--bg-soft); border: 1px solid var(--border); border-radius: 8px; padding: 14px 18px; overflow-x: auto; }
+  pre code { background: none; border: none; padding: 0; font-size: 0.85em; }
+
+  /* TOP BAR */
+  .topbar {
+    position: sticky; top: 0; z-index: 50;
+    background: rgba(255,255,255,0.92);
+    backdrop-filter: saturate(180%) blur(10px);
+    -webkit-backdrop-filter: saturate(180%) blur(10px);
+    border-bottom: 1px solid var(--border);
+    height: 64px;
+    display: flex; align-items: center; padding: 0 24px;
+  }
+  .topbar .brand { font-weight: 800; font-size: 1.05rem; letter-spacing: -0.01em; display: flex; align-items: center; gap: 10px; }
+  .topbar .brand .dot { display: inline-block; width: 22px; height: 22px; background: linear-gradient(135deg, #635bff, #ff5b9b); border-radius: 6px; }
+  .topbar nav { margin-left: auto; display: flex; gap: 22px; }
+  .topbar nav a { color: var(--ink-soft); font-weight: 500; font-size: 0.92rem; }
+  .topbar nav a:hover { color: var(--accent); text-decoration: none; }
+  .topbar nav a.active { color: var(--accent-ink); font-weight: 600; }
+
+  /* CONTENT */
+  main {
+    max-width: 980px;
+    margin: 0 auto;
+    padding: 60px 32px 120px;
+  }
+  h1 {
+    font-size: 2.4rem;
+    font-weight: 800;
+    letter-spacing: -0.03em;
+    margin: 0 0 12px;
+    line-height: 1.15;
+  }
+  h2 {
+    font-size: 1.6rem;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    margin: 56px 0 12px;
+    padding-top: 24px;
+    border-top: 1px solid var(--border-soft);
+    line-height: 1.25;
+    scroll-margin-top: 80px;
+  }
+  h3 {
+    font-size: 1.15rem;
+    font-weight: 700;
+    letter-spacing: -0.01em;
+    margin: 32px 0 10px;
+    color: var(--ink);
+  }
+  p { margin: 0 0 14px; color: var(--ink-soft); }
+  p strong, li strong, td strong { color: var(--ink); font-weight: 600; }
+  em { color: var(--ink-soft); }
+  hr { border: none; border-top: 1px solid var(--border); margin: 40px 0; }
+  blockquote { margin: 14px 0; padding: 10px 16px; border-left: 3px solid var(--accent); background: var(--accent-soft); color: var(--ink); font-style: normal; }
+
+  /* TABLES */
+  table {
+    border-collapse: collapse;
+    width: 100%;
+    margin: 12px 0 20px;
+    font-size: 0.88rem;
+  }
+  th, td {
+    padding: 8px 10px;
+    border-bottom: 1px solid var(--border-soft);
+    text-align: left;
+    vertical-align: top;
+  }
+  th {
+    background: var(--bg-soft);
+    border-bottom: 2px solid var(--border);
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    font-weight: 700;
+    color: var(--muted);
+    white-space: nowrap;
+  }
+  td code { font-size: 0.82em; }
+  td:first-child code { font-weight: 600; color: var(--ink); }
+
+  /* MERMAID */
+  .mermaid {
+    background: var(--bg-soft);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 24px;
+    margin: 16px 0 24px;
+    text-align: center;
+    overflow-x: auto;
+  }
+
+  /* MARKDOWN LIST */
+  ul, ol { margin: 0 0 14px; padding-left: 24px; color: var(--ink-soft); }
+  li { margin: 4px 0; }
+  li > p { margin: 0; }
+
+  /* TOC */
+  .toc {
+    background: var(--bg-soft);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 18px 22px;
+    margin: 24px 0 40px;
+  }
+  .toc h3 {
+    margin: 0 0 8px;
+    font-size: 0.78rem;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--muted);
+    font-weight: 700;
+  }
+  .toc ul { padding-left: 18px; margin: 0; }
+  .toc li { font-size: 0.92rem; margin: 3px 0; }
+
+  /* LOADING */
+  .loading {
+    text-align: center;
+    color: var(--muted);
+    padding: 80px 0;
+    font-size: 0.95rem;
+  }
+
+  @media (max-width: 700px) {
+    main { padding: 32px 18px 80px; }
+    h1 { font-size: 1.7rem; }
+    h2 { font-size: 1.3rem; }
+    table { font-size: 0.8rem; }
+    th, td { padding: 6px 8px; }
+    .topbar nav { display: none; }
+  }
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="brand"><span class="dot"></span> The Helpers</div>
+  <nav>
+    <a href="index.html">← The Helpers</a>
+    <a href="database.html" class="active">Database schema</a>
+  </nav>
+</div>
+
+<main id="content">
+  <p class="loading">Loading schema and rendering diagrams…</p>
+</main>
+
+<script src="https://cdn.jsdelivr.net/npm/marked@11/marked.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+<script>
+  // Configure mermaid
+  mermaid.initialize({
+    startOnLoad: false,
+    theme: 'base',
+    themeVariables: {
+      primaryColor: '#efeefd',
+      primaryTextColor: '#1a1a2e',
+      primaryBorderColor: '#635bff',
+      lineColor: '#6b7280',
+      secondaryColor: '#fef9c3',
+      tertiaryColor: '#dbeafe',
+      fontFamily: 'Inter, system-ui, sans-serif',
+      fontSize: '14px'
+    },
+    flowchart: { curve: 'basis', useMaxWidth: true },
+    er: { useMaxWidth: true }
+  });
+
+  // Custom marked renderer: turn ```mermaid blocks into <div class="mermaid">
+  const renderer = new marked.Renderer();
+  const origCode = renderer.code.bind(renderer);
+  renderer.code = function (code, lang) {
+    if (lang === 'mermaid') {
+      return `<div class="mermaid">${code}</div>`;
+    }
+    return origCode(code, lang);
+  };
+  // Auto-add IDs to headings for anchor links
+  renderer.heading = function (text, level) {
+    const slug = text
+      .toLowerCase()
+      .replace(/<[^>]+>/g, '')
+      .replace(/[^a-z0-9\s-]/g, '')
+      .trim()
+      .replace(/\s+/g, '-');
+    return `<h${level} id="${slug}">${text}</h${level}>`;
+  };
+
+  marked.setOptions({ renderer, gfm: true, breaks: false });
+
+  fetch('database.md')
+    .then(r => {
+      if (!r.ok) throw new Error('Could not load schema (' + r.status + ')');
+      return r.text();
+    })
+    .then(md => {
+      document.getElementById('content').innerHTML = marked.parse(md);
+      // Render Mermaid blocks
+      mermaid.run({ nodes: document.querySelectorAll('.mermaid') });
+    })
+    .catch(err => {
+      document.getElementById('content').innerHTML =
+        `<h1>Database schema</h1><p style="color:#b91c1c">Error: ${err.message}</p>` +
+        `<p>Open <a href="database.md">database.md</a> directly.</p>`;
+    });
+</script>
+
+</body>
+</html>
