@@ -6,7 +6,7 @@
 <title>How big our world is — Central Services</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&family=Orbitron:wght@500;600;700;800&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;700;800&family=Orbitron:wght@500;600;700;800&family=Roboto+Mono:wght@700;800&display=swap" rel="stylesheet">
 <style>
   :root {
     --bg: #060a1f;
@@ -25,6 +25,10 @@
     --shadow-glow-cyan: 0 0 22px rgba(0, 212, 255, 0.32);
     --shadow-glow-pink: 0 0 22px rgba(255, 57, 168, 0.30);
     --font-display: 'Orbitron', system-ui, sans-serif;
+    --flip-card: #f4f0e6;
+    --flip-card-2: #ebe5d4;
+    --flip-ink: #1a1714;
+    --flip-split: rgba(0,0,0,0.35);
   }
   * { box-sizing: border-box; }
   html { scroll-behavior: smooth; scroll-padding-top: 80px; }
@@ -45,8 +49,7 @@
       radial-gradient(1px 1px at 70% 90%, #fff, transparent),
       radial-gradient(1px 1px at 35% 50%, #67e8ff, transparent),
       radial-gradient(1px 1px at 60% 25%, #fff, transparent);
-    background-size: 800px 800px;
-    opacity: 0.55;
+    background-size: 800px 800px; opacity: 0.55;
     animation: drift-stars 200s linear infinite;
   }
   body::after {
@@ -54,9 +57,7 @@
     background: radial-gradient(ellipse at 25% 15%, rgba(103,232,255,0.07), transparent 50%),
                 radial-gradient(ellipse at 75% 85%, rgba(255,57,168,0.06), transparent 50%);
   }
-  @keyframes drift-stars {
-    from { background-position: 0 0; } to { background-position: 800px 400px; }
-  }
+  @keyframes drift-stars { from { background-position: 0 0; } to { background-position: 800px 400px; } }
   a { color: var(--accent); text-decoration: none; }
   a:hover { text-decoration: underline; }
   code { font-family: 'JetBrains Mono', ui-monospace, Menlo, monospace; font-size: 0.86em;
@@ -95,36 +96,63 @@
     background: linear-gradient(135deg, #67e8ff, #00d4ff 50%, #ff39a8);
     -webkit-background-clip: text; background-clip: text; color: transparent;
     text-shadow: 0 0 40px rgba(0,212,255,0.18); }
-  .subtitle { color: var(--ink-soft); font-size: 1.1rem; margin: 0 0 8px; max-width: 780px; }
-  .stamp { color: var(--muted); font-family: 'JetBrains Mono', monospace; font-size: 0.78rem;
-    letter-spacing: 0.05em; text-transform: uppercase; margin: 0 0 40px; }
+  .subtitle { color: var(--ink-soft); font-size: 1.1rem; margin: 0 0 48px; max-width: 780px; }
 
   h2 { font-family: var(--font-display); font-size: 1.4rem; font-weight: 700; letter-spacing: 0.04em;
     text-transform: uppercase; margin: 64px 0 16px; padding-top: 28px;
     border-top: 1px solid var(--border-soft); line-height: 1.25; color: var(--accent); }
 
-  /* HERO STAT TILES */
-  .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 18px; margin: 32px 0 8px; }
-  .stat-tile {
-    background: linear-gradient(180deg, var(--bg-soft), var(--bg-soft-2));
-    border: 1px solid var(--border); border-radius: 14px; padding: 24px 22px;
-    position: relative; overflow: hidden; transition: border-color 0.2s, box-shadow 0.2s, transform 0.2s;
-  }
-  .stat-tile:hover { border-color: var(--accent); box-shadow: var(--shadow-glow-cyan); transform: translateY(-2px); }
-  .stat-tile.pink:hover { border-color: var(--accent-2); box-shadow: var(--shadow-glow-pink); }
-  .stat-tile .label { font-family: var(--font-display); font-size: 0.72rem; text-transform: uppercase;
-    letter-spacing: 0.1em; color: var(--muted); margin: 0 0 10px; }
-  .stat-tile .value { font-family: var(--font-display); font-size: 2.4rem; font-weight: 800;
-    line-height: 1; letter-spacing: 0.01em; color: var(--ink);
-    background: linear-gradient(135deg, var(--accent-ink), var(--accent));
-    -webkit-background-clip: text; background-clip: text; color: transparent; }
-  .stat-tile.pink .value { background: linear-gradient(135deg, var(--accent-2), #ff8fc7);
-    -webkit-background-clip: text; background-clip: text; color: transparent; }
-  .stat-tile.gold .value { background: linear-gradient(135deg, var(--accent-3), #ffb84d);
-    -webkit-background-clip: text; background-clip: text; color: transparent; }
-  .stat-tile .sub { color: var(--ink-soft); font-size: 0.85rem; margin: 8px 0 0; }
+  /* FLIP BOARD ROWS */
+  .flip-row { margin: 0 0 56px; }
+  .flip-meta-top { display: flex; align-items: baseline; gap: 14px; margin: 0 0 14px;
+    flex-wrap: wrap; }
+  .flip-label { font-family: var(--font-display); font-size: 0.85rem; font-weight: 700;
+    text-transform: uppercase; letter-spacing: 0.08em; color: var(--accent-ink); }
+  .flip-sub { color: var(--muted); font-size: 0.85rem; }
+  .flip-updated { color: var(--muted); font-family: 'JetBrains Mono', monospace;
+    font-size: 0.72rem; letter-spacing: 0.04em; margin: 12px 0 0; }
 
-  /* TABLES */
+  .flipboard { display: flex; gap: 4px; align-items: center; flex-wrap: wrap; }
+  .flip-cell {
+    display: inline-block; width: 56px; height: 84px;
+    background: linear-gradient(180deg, var(--flip-card) 0%, var(--flip-card) 49.5%,
+                                       #d8d2c0 50%, #d8d2c0 50.5%,
+                                       var(--flip-card-2) 51%, var(--flip-card-2) 100%);
+    border-radius: 6px;
+    overflow: hidden;
+    position: relative;
+    box-shadow:
+      0 2px 0 rgba(0,0,0,0.25),
+      0 4px 8px rgba(0,0,0,0.45),
+      inset 0 1px 0 rgba(255,255,255,0.5),
+      inset 0 -1px 0 rgba(0,0,0,0.18);
+  }
+  .flip-cell::before {
+    /* spindle peg left */
+    content: ""; position: absolute; left: -2px; top: 50%; transform: translateY(-50%);
+    width: 4px; height: 8px; background: #4a4133; border-radius: 1px; z-index: 3;
+  }
+  .flip-cell::after {
+    /* spindle peg right */
+    content: ""; position: absolute; right: -2px; top: 50%; transform: translateY(-50%);
+    width: 4px; height: 8px; background: #4a4133; border-radius: 1px; z-index: 3;
+  }
+  .flip-strip { display: block; will-change: transform; }
+  .flip-strip > span {
+    display: block; height: 84px; line-height: 84px; text-align: center;
+    font-family: 'Roboto Mono', 'JetBrains Mono', ui-monospace, Menlo, monospace;
+    font-weight: 800; font-size: 56px; color: var(--flip-ink);
+    text-shadow: 0 1px 0 rgba(255,255,255,0.4);
+  }
+  .flip-sep {
+    display: inline-flex; align-items: flex-end; justify-content: center;
+    width: 18px; height: 84px; padding-bottom: 12px;
+    font-family: 'Roboto Mono', monospace; font-weight: 800; font-size: 56px;
+    color: var(--accent-ink); text-shadow: 0 0 8px rgba(0,212,255,0.5);
+    line-height: 1;
+  }
+
+  /* TABLES (kept for the breakdown sections below) */
   .table-wrap { background: var(--bg-soft); border: 1px solid var(--border); border-radius: 12px; overflow: hidden; margin: 16px 0 8px; }
   table { border-collapse: collapse; width: 100%; font-size: 0.9rem; }
   th, td { padding: 10px 14px; border-bottom: 1px solid var(--border-soft); text-align: left; vertical-align: middle; }
@@ -133,31 +161,28 @@
     letter-spacing: 0.08em; font-weight: 600; color: var(--muted); white-space: nowrap; }
   td.num { font-family: 'JetBrains Mono', monospace; font-size: 0.85rem; text-align: right; color: var(--ink); }
   tbody tr:hover { background: rgba(0, 212, 255, 0.04); }
-
-  /* BARS */
   .bar-cell { width: 28%; min-width: 120px; }
   .bar { height: 8px; background: var(--bg-soft-2); border-radius: 4px; overflow: hidden; border: 1px solid var(--border-soft); }
-  .bar-fill { height: 100%; background: linear-gradient(90deg, var(--accent), var(--accent-ink)); border-radius: 3px;
-    box-shadow: 0 0 8px rgba(0,212,255,0.5); }
+  .bar-fill { height: 100%; background: linear-gradient(90deg, var(--accent), var(--accent-ink)); border-radius: 3px; box-shadow: 0 0 8px rgba(0,212,255,0.5); }
   .bar-fill-pink { background: linear-gradient(90deg, var(--accent-2), #ff8fc7); box-shadow: 0 0 8px rgba(255,57,168,0.5); }
-
-  /* PILLS */
   .pill { display: inline-block; padding: 2px 9px; border-radius: 999px; font-size: 0.74rem;
     background: var(--accent-soft); color: var(--accent-ink); border: 1px solid var(--border);
     font-family: 'JetBrains Mono', monospace; }
-
   .note { color: var(--muted); font-size: 0.85rem; margin: 12px 0 0; }
 
   @media (prefers-reduced-motion: reduce) {
     body::before { animation: none; }
     .topbar .brand .dot { animation: none; }
+    .flip-strip { transition: none !important; }
   }
 
   @media (max-width: 720px) {
     main { padding: 32px 18px 80px; }
     h1 { font-size: 1.8rem; }
     h2 { font-size: 1.15rem; }
-    .stat-tile .value { font-size: 1.9rem; }
+    .flip-cell { width: 38px; height: 58px; }
+    .flip-strip > span { height: 58px; line-height: 58px; font-size: 38px; }
+    .flip-sep { width: 12px; height: 58px; font-size: 38px; padding-bottom: 8px; }
     table { font-size: 0.8rem; }
     th, td { padding: 8px 10px; }
     .bar-cell { display: none; }
@@ -182,30 +207,28 @@
 <main>
   <h1>How big our world is</h1>
   <p class="subtitle">Every helper, screen, robot and outside-asker on this site is built from real code. Here's how much there is.</p>
-  <p class="stamp">Snapshot taken 6 May 2026 · counting 45 active code projects</p>
 
-  <div class="stats-grid">
-    <div class="stat-tile">
-      <p class="label">Lines of code</p>
-      <div class="value">1,652,130</div>
-      <p class="sub">Real instructions humans typed</p>
+    <div class="flip-row">
+      <div class="flip-meta-top"><span class="flip-label">Lines of code</span><span class="flip-sub">Real instructions humans typed</span></div>
+      <div class="flipboard"><span class="flip-cell"><span class="flip-strip" data-target="1"><span>0</span><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>0</span><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>0</span><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>0</span><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span></span></span><span class="flip-sep">,</span><span class="flip-cell"><span class="flip-strip" data-target="6"><span>0</span><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>0</span><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>0</span><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>0</span><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span></span></span><span class="flip-cell"><span class="flip-strip" data-target="5"><span>0</span><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>0</span><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>0</span><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>0</span><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span></span></span><span class="flip-cell"><span class="flip-strip" data-target="2"><span>0</span><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>0</span><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>0</span><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>0</span><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span></span></span><span class="flip-sep">,</span><span class="flip-cell"><span class="flip-strip" data-target="1"><span>0</span><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>0</span><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>0</span><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>0</span><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span></span></span><span class="flip-cell"><span class="flip-strip" data-target="3"><span>0</span><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>0</span><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>0</span><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>0</span><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span></span></span><span class="flip-cell"><span class="flip-strip" data-target="0"><span>0</span><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>0</span><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>0</span><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>0</span><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span></span></span></div>
+      <div class="flip-updated">Last updated 6 May 2026</div>
     </div>
-    <div class="stat-tile pink">
-      <p class="label">Files</p>
-      <div class="value">12,301</div>
-      <p class="sub">Spread across every project</p>
+    <div class="flip-row">
+      <div class="flip-meta-top"><span class="flip-label">Files</span><span class="flip-sub">Spread across every project</span></div>
+      <div class="flipboard"><span class="flip-cell"><span class="flip-strip" data-target="1"><span>0</span><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>0</span><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>0</span><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>0</span><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span></span></span><span class="flip-cell"><span class="flip-strip" data-target="2"><span>0</span><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>0</span><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>0</span><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>0</span><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span></span></span><span class="flip-sep">,</span><span class="flip-cell"><span class="flip-strip" data-target="3"><span>0</span><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>0</span><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>0</span><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>0</span><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span></span></span><span class="flip-cell"><span class="flip-strip" data-target="0"><span>0</span><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>0</span><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>0</span><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>0</span><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span></span></span><span class="flip-cell"><span class="flip-strip" data-target="1"><span>0</span><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>0</span><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>0</span><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>0</span><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span></span></span></div>
+      <div class="flip-updated">Last updated 6 May 2026</div>
     </div>
-    <div class="stat-tile gold">
-      <p class="label">Code projects</p>
-      <div class="value">45</div>
-      <p class="sub">Active repositories</p>
+    <div class="flip-row">
+      <div class="flip-meta-top"><span class="flip-label">Code projects</span><span class="flip-sub">Active repositories in rgcore</span></div>
+      <div class="flipboard"><span class="flip-cell"><span class="flip-strip" data-target="4"><span>0</span><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>0</span><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>0</span><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>0</span><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span></span></span><span class="flip-cell"><span class="flip-strip" data-target="5"><span>0</span><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>0</span><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>0</span><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>0</span><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span></span></span></div>
+      <div class="flip-updated">Last updated 6 May 2026</div>
     </div>
-    <div class="stat-tile">
-      <p class="label">Comments &amp; blank lines</p>
-      <div class="value">390,632</div>
-      <p class="sub">Notes from devs + breathing room</p>
+    <div class="flip-row">
+      <div class="flip-meta-top"><span class="flip-label">Comments &amp; blank lines</span><span class="flip-sub">Notes and breathing room</span></div>
+      <div class="flipboard"><span class="flip-cell"><span class="flip-strip" data-target="3"><span>0</span><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>0</span><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>0</span><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>0</span><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span></span></span><span class="flip-cell"><span class="flip-strip" data-target="9"><span>0</span><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>0</span><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>0</span><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>0</span><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span></span></span><span class="flip-cell"><span class="flip-strip" data-target="0"><span>0</span><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>0</span><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>0</span><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>0</span><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span></span></span><span class="flip-sep">,</span><span class="flip-cell"><span class="flip-strip" data-target="6"><span>0</span><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>0</span><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>0</span><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>0</span><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span></span></span><span class="flip-cell"><span class="flip-strip" data-target="3"><span>0</span><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>0</span><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>0</span><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>0</span><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span></span></span><span class="flip-cell"><span class="flip-strip" data-target="2"><span>0</span><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>0</span><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>0</span><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>0</span><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span></span></span></div>
+      <div class="flip-updated">Last updated 6 May 2026</div>
     </div>
-  </div>
+
 
   <h2>By language</h2>
   <p>Most of Central Services is written in C# (the .NET world), with the front-end split between TypeScript / JavaScript and Razor templates. SQL holds the database logic.</p>
@@ -695,8 +718,52 @@
     </table>
   </div>
 
-  <p class="note">Counted with <code>cloc</code> 2.09. Bars are scaled to the largest item in each table. <code>node_modules</code>, <code>bin</code>, <code>obj</code>, <code>packages</code>, <code>dist</code> and <code>build</code> directories are excluded — these are auto-generated, not code humans write.</p>
+  <p class="note">Counted with <code>cloc</code> 2.09. <code>node_modules</code>, <code>bin</code>, <code>obj</code>, <code>packages</code>, <code>dist</code> and <code>build</code> directories are excluded — those are auto-generated, not code humans write.</p>
 </main>
+
+<script>
+  // Animate the flip-board strips on load (and each time they enter view)
+  function spinStrip(strip, delay) {
+    const target = parseInt(strip.dataset.target, 10);
+    if (Number.isNaN(target)) return;
+    const cellHeight = strip.firstElementChild ? strip.firstElementChild.offsetHeight : 84;
+    // Strip has 4 copies of 0-9 (40 cells). Land on the digit in the third copy
+    // so we get ~2 full revolutions of spin before settling.
+    const finalIndex = 20 + target;
+    const finalY = -finalIndex * cellHeight;
+    // Start at the top (0)
+    strip.style.transition = 'none';
+    strip.style.transform = 'translateY(0px)';
+    // Force layout
+    void strip.offsetHeight;
+    setTimeout(() => {
+      strip.style.transition = 'transform 1.4s cubic-bezier(0.22, 1, 0.36, 1)';
+      strip.style.transform = `translateY(${finalY}px)`;
+    }, delay);
+  }
+  function spinAll() {
+    const strips = document.querySelectorAll('.flip-strip');
+    // Stagger from rightmost (smallest place) to leftmost — feels like a real board cascade
+    const grouped = {};
+    strips.forEach(s => {
+      const row = s.closest('.flip-row');
+      const id = row ? Array.from(document.querySelectorAll('.flip-row')).indexOf(row) : 0;
+      grouped[id] = grouped[id] || [];
+      grouped[id].push(s);
+    });
+    Object.values(grouped).forEach((group, gi) => {
+      // Right-to-left: smallest place flips first
+      group.slice().reverse().forEach((strip, i) => {
+        spinStrip(strip, gi * 200 + i * 110);
+      });
+    });
+  }
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', spinAll);
+  } else {
+    spinAll();
+  }
+</script>
 
 </body>
 </html>
