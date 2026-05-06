@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Meet the Helpers — How Our APIs Work</title>
+<title>BOOK — How Our APIs Work</title>
 <link rel="icon" type="image/png" href="site-icon.png">
 <link rel="apple-touch-icon" href="site-icon.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -161,6 +161,12 @@
     border: 1.5px solid rgba(0, 212, 255, 0.55);
     box-shadow: 0 0 12px rgba(0, 212, 255, 0.55), inset 0 0 6px rgba(255,255,255,0.25);
     animation: pulse-dot 3s ease-in-out infinite;
+  }
+  .topbar .brand .brand-logo {
+    display: block;
+    height: 38px;
+    width: auto;
+    filter: drop-shadow(0 0 6px rgba(122, 224, 122, 0.45));
   }
   @keyframes pulse-dot {
     0%, 100% { box-shadow: 0 0 12px rgba(0, 212, 255, 0.55), inset 0 0 6px rgba(255,255,255,0.25); }
@@ -1050,11 +1056,12 @@
     margin-right: 6px;
   }
   .commandment .body .why code {
-    background: white;
-    border: 1px solid var(--border);
+    background: rgba(0, 212, 255, 0.10);
+    border: 1px solid rgba(0, 212, 255, 0.22);
     padding: 1px 5px;
     border-radius: 4px;
-    color: var(--ink);
+    color: var(--accent);
+    font-family: 'JetBrains Mono', monospace;
     font-size: 0.78rem;
   }
   .commandment .breakages {
@@ -1472,7 +1479,7 @@
       <line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/>
     </svg>
   </button>
-  <a class="brand" href="index.html" aria-label="Home"><img class="brand-icon" src="site-icon.png" alt=""> The Helpers</a>
+  <a class="brand" href="index.html" aria-label="BOOK — home"><img class="brand-icon" src="site-icon.png" alt=""><img class="brand-logo" src="book-logo.png" alt="BOOK"></a>
   <nav>
     <a href="#apis">APIs</a>
     <a href="#robots">Robots</a>

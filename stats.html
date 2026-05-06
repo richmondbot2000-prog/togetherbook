@@ -84,6 +84,8 @@
     border: 1.5px solid rgba(0, 212, 255, 0.55);
     box-shadow: 0 0 12px rgba(0, 212, 255, 0.55), inset 0 0 6px rgba(255,255,255,0.25);
     animation: pulse-dot 3s ease-in-out infinite; }
+  .topbar .brand .brand-logo { display: block; height: 38px; width: auto;
+    filter: drop-shadow(0 0 6px rgba(122, 224, 122, 0.45)); }
   @keyframes pulse-dot {
     0%, 100% { box-shadow: 0 0 12px rgba(0, 212, 255, 0.55), inset 0 0 6px rgba(255,255,255,0.25); }
     50%      { box-shadow: 0 0 22px rgba(0, 212, 255, 0.95), inset 0 0 8px rgba(255,255,255,0.4); }
@@ -207,9 +209,9 @@
 <body>
 
 <div class="topbar">
-  <a class="brand" href="index.html" aria-label="Home"><img class="brand-icon" src="site-icon.png" alt=""> The Helpers</a>
+  <a class="brand" href="index.html" aria-label="BOOK — home"><img class="brand-icon" src="site-icon.png" alt=""><img class="brand-logo" src="book-logo.png" alt="BOOK"></a>
   <nav>
-    <a href="index.html">← The Helpers</a>
+    <a href="index.html">← BOOK</a>
     <a href="database.html">Schema</a>
     <a href="stats.html" class="active">Stats</a>
   </nav>
