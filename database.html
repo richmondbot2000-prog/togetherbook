@@ -199,73 +199,66 @@
     .topbar .brand { font-size: 0.95rem; }
   }
 
-  /* === Row-count flipboard list (compact, single-row cards) === */
+  /* === Row-count flipboard list (dense flight-board style) === */
   .rc-section {
     max-width: 1320px;
-    margin: 12px auto 18px;
-    padding: 10px 16px 16px;
+    margin: 8px auto 16px;
+    padding: 6px 16px 12px;
   }
   .rc-section h2 {
     font-family: var(--font-display);
-    font-size: 1.1rem;
+    font-size: 1rem;
     font-weight: 700;
     letter-spacing: 0.04em;
     text-transform: uppercase;
     color: var(--accent);
-    margin: 0 0 4px;
+    margin: 0 0 2px;
   }
   .rc-section .lead {
     color: var(--ink-soft);
-    font-size: 0.82rem;
-    margin: 0 0 2px;
+    font-size: 0.78rem;
+    margin: 0;
   }
   .rc-section .rc-meta {
     color: var(--muted);
     font-family: 'JetBrains Mono', monospace;
-    font-size: 0.72rem;
-    margin: 0 0 12px;
+    font-size: 0.7rem;
+    margin: 2px 0 8px;
   }
   .rc-list {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(440px, 1fr));
-    gap: 4px;
-  }
-  .rc-row {
-    padding: 4px 10px;
-    background: linear-gradient(180deg, var(--bg-soft), var(--bg-soft-2));
+    grid-template-columns: repeat(auto-fit, minmax(420px, 1fr));
+    column-gap: 18px;
+    row-gap: 0;
+    background: var(--bg-soft);
     border: 1px solid var(--border);
     border-radius: 6px;
+    padding: 4px 8px;
+  }
+  .rc-row {
     display: grid;
-    grid-template-columns: minmax(0, 1fr) auto auto;
-    gap: 10px;
+    grid-template-columns: minmax(0, 1fr) auto auto auto;
+    gap: 8px;
     align-items: center;
-    transition: border-color 0.15s, box-shadow 0.15s;
+    padding: 1px 0;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.04);
   }
-  .rc-row:hover {
-    border-color: var(--accent);
-    box-shadow: 0 0 12px rgba(0, 212, 255, 0.14);
-  }
-  .rc-label-stack { min-width: 0; line-height: 1.15; }
+  .rc-row:last-child { border-bottom: none; }
+  .rc-row:hover { background: rgba(0, 212, 255, 0.05); }
   .rc-label {
-    font-family: var(--font-display);
-    font-size: 0.7rem;
-    font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
-    color: var(--ink);
-    margin: 0;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-  }
-  .rc-sub {
-    color: var(--muted);
     font-family: 'JetBrains Mono', monospace;
-    font-size: 0.66rem;
+    font-size: 0.7rem;
+    font-weight: 500;
+    color: var(--ink-soft);
     margin: 0;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
+    line-height: 1.1;
+  }
+  .rc-label .rc-db {
+    color: var(--accent);
+    font-weight: 700;
   }
   .rc-flip {
     display: flex;
@@ -277,76 +270,78 @@
     --flip-card: #f4f0e6;
     --flip-card-2: #e8e1d0;
     display: inline-block;
-    width: 18px;
-    height: 28px;
+    width: 13px;
+    height: 20px;
     background: linear-gradient(180deg,
       var(--flip-card) 0%,
       var(--flip-card) 49.5%,
-      #d8d2c0 50%,
-      #d8d2c0 50.5%,
+      #cbc5b3 50%,
+      #cbc5b3 50.5%,
       var(--flip-card-2) 51%,
       var(--flip-card-2) 100%);
-    border-radius: 2px;
+    border-radius: 1.5px;
     box-shadow:
-      inset 0 1px 0 rgba(255, 255, 255, 0.55),
-      inset 0 -1px 0 rgba(0, 0, 0, 0.1),
-      0 1px 1px rgba(0, 0, 0, 0.35);
+      inset 0 0.5px 0 rgba(255, 255, 255, 0.5),
+      inset 0 -0.5px 0 rgba(0, 0, 0, 0.1),
+      0 0.5px 1px rgba(0, 0, 0, 0.3);
     position: relative;
     overflow: hidden;
   }
-  .rc-cell::before,
-  .rc-cell::after {
-    content: "";
-    position: absolute;
-    top: 50%;
-    width: 2px;
-    height: 3px;
-    background: #4a4438;
-    border-radius: 1px;
-    transform: translateY(-50%);
-    z-index: 2;
-  }
-  .rc-cell::before { left: 0; }
-  .rc-cell::after { right: 0; }
   .rc-cell-digit {
     display: block;
-    height: 28px;
-    line-height: 28px;
+    height: 20px;
+    line-height: 20px;
     text-align: center;
     font-family: 'Roboto Mono', ui-monospace, Menlo, monospace;
     font-weight: 800;
-    font-size: 0.95rem;
+    font-size: 0.78rem;
     color: #1a1a1a;
   }
   .rc-sep {
     color: #6b6253;
     font-family: 'Roboto Mono', ui-monospace, Menlo, monospace;
     font-weight: 800;
-    font-size: 1rem;
-    padding: 0 1px;
+    font-size: 0.78rem;
+    padding: 0 0.5px;
     align-self: center;
     line-height: 1;
+  }
+  .rc-cols {
+    color: var(--ink-soft);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.66rem;
+    font-weight: 600;
+    white-space: nowrap;
+    width: 4.5em;
+    text-align: right;
+  }
+  .rc-cols-unit {
+    color: var(--muted);
+    font-weight: 400;
   }
   .rc-updated {
     color: var(--muted);
     font-family: 'JetBrains Mono', monospace;
-    font-size: 0.62rem;
-    letter-spacing: 0.02em;
+    font-size: 0.6rem;
+    letter-spacing: 0;
     white-space: nowrap;
+    width: 4em;
+    text-align: right;
   }
   .rc-skipped {
-    margin-top: 12px;
+    margin-top: 8px;
     color: var(--muted);
     font-family: 'JetBrains Mono', monospace;
-    font-size: 0.72rem;
+    font-size: 0.7rem;
   }
-  @media (max-width: 540px) {
-    .rc-section { padding: 10px 12px; }
-    .rc-row { grid-template-columns: minmax(0, 1fr) auto; padding: 4px 8px; }
+  @media (max-width: 600px) {
+    .rc-section { padding: 6px 10px; }
+    .rc-row { grid-template-columns: minmax(0, 1fr) auto auto; }
     .rc-row .rc-updated { display: none; }
-    .rc-cell { width: 14px; height: 22px; }
-    .rc-cell-digit { height: 22px; line-height: 22px; font-size: 0.78rem; }
-    .rc-sep { font-size: 0.85rem; }
+    .rc-cell { width: 11px; height: 17px; }
+    .rc-cell-digit { height: 17px; line-height: 17px; font-size: 0.66rem; }
+    .rc-sep { font-size: 0.66rem; }
+    .rc-cols { width: auto; font-size: 0.62rem; }
   }
 </style>
 </head>
@@ -447,6 +442,7 @@
 
     meta.textContent = `${items.length} tables · ${totalRows.toLocaleString('en-US')} total rows · snapshot ${updatedLabel}`;
 
+    const updatedShort = updatedDate.toLocaleDateString('en-GB', { day: 'numeric', month: 'short' });
     const frag = document.createDocumentFragment();
     for (const item of items) {
       const digits = (item.rows || 0).toLocaleString('en-US');
@@ -455,15 +451,18 @@
           ? `<span class="rc-sep">,</span>`
           : `<span class="rc-cell"><span class="rc-cell-digit">${c}</span></span>`
       ).join('');
+      const colsLabel = item.columns != null
+        ? `<span class="rc-cols">${item.columns}<span class="rc-cols-unit"> cols</span></span>`
+        : '';
       const row = document.createElement('div');
       row.className = 'rc-row';
       row.innerHTML = `
-        <div class="rc-label-stack">
-          <div class="rc-label">${item.database}</div>
-          <div class="rc-sub">${item.schema}.${item.table}</div>
+        <div class="rc-label" title="${item.database} — ${item.schema}.${item.table}">
+          <span class="rc-db">${item.database}</span> · ${item.schema}.${item.table}
         </div>
         <div class="rc-flip" aria-label="${digits} rows">${cells}</div>
-        <div class="rc-updated">${updatedLabel}</div>
+        ${colsLabel}
+        <div class="rc-updated">${updatedShort}</div>
       `;
       frag.appendChild(row);
     }
