@@ -141,8 +141,12 @@
   table.yp-table tr:last-child td { border-bottom: none; }
   table.yp-table tr:hover td { background: rgba(0, 212, 255, 0.05); }
   table.yp-table td.first-name { color: var(--ink); }
-  table.yp-table td.zip {
-    font-family: 'JetBrains Mono', monospace; color: var(--ink-soft);
+  table.yp-table td.city {
+    color: var(--ink-soft);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 12em;
   }
   table.yp-table td.amount {
     font-family: 'JetBrains Mono', monospace; color: var(--ink-soft);
@@ -357,7 +361,7 @@
       if (it.lat == null || it.lng == null) continue;
       const popup =
         `<strong>${it.first_name || ''}</strong><br>` +
-        `${it.state || ''} · ${it.zip || ''}<br>` +
+        `${[it.city, it.state].filter(Boolean).join(', ')}<br>` +
         `${fmtUSD2.format(it.amount || 0)}`;
       // Default Leaflet droplet marker — literally looks like a pin pushed
       // into the map (with shadow), one per borrower.
@@ -417,7 +421,7 @@
         const rows = list.map(it =>
           `<tr>` +
             `<td class="first-name">${it.first_name || ''}</td>` +
-            `<td class="zip">${it.zip || ''}</td>` +
+            `<td class="city" title="${(it.county || '') + (it.county ? ' County' : '')}">${it.city || ''}</td>` +
             `<td class="amount">${fmtUSD2.format(it.amount || 0)}</td>` +
           `</tr>`
         ).join('');
@@ -427,7 +431,7 @@
             <span class="yp-state-meta">${list.length} · ${fmtUSD0.format(stateTotal)}</span>
           </h3>
           <table class="yp-table">
-            <thead><tr><th>First name</th><th>Zip</th><th style="text-align:right">Amount</th></tr></thead>
+            <thead><tr><th>First name</th><th>City</th><th style="text-align:right">Amount</th></tr></thead>
             <tbody>${rows}</tbody>
           </table>
         `;

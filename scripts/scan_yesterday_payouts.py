@@ -19,25 +19,35 @@ from pathlib import Path
 
 import pyodbc
 
-ZIP_COORDS_CSV = Path(__file__).resolve().parent.parent / "data" / "us-zip-coords.csv"
+ZIP_CITY_CSV = Path(__file__).resolve().parent.parent / "data" / "us-zip-city.csv"
 
 
-def load_zip_coords():
-    """Return {zip5: (lat, lng)} from the bundled CSV (US Census 2013 dataset)."""
+def load_zip_lookup():
+    """Return {zip5: {city, county, lat, lng}} from the bundled GeoNames-derived CSV.
+
+    The lat/lng are *city centroids* (averaged across all zips in that city),
+    not zip centroids — this means publishing them does not let anyone recover
+    the borrower's specific zip, only the city they live in.
+    """
     out = {}
-    if not ZIP_COORDS_CSV.exists():
-        print(f"# WARNING: {ZIP_COORDS_CSV} missing — no coords will be attached", flush=True)
+    if not ZIP_CITY_CSV.exists():
+        print(f"# WARNING: {ZIP_CITY_CSV} missing — no city info will be attached", flush=True)
         return out
-    with open(ZIP_COORDS_CSV) as f:
+    with open(ZIP_CITY_CSV) as f:
         reader = csv.DictReader(f)
         for row in reader:
-            z = (row.get("ZIP") or "").strip().zfill(5)
+            z = (row.get("zip") or "").strip().zfill(5)
             try:
-                lat = float((row.get("LAT") or "").strip())
-                lng = float((row.get("LNG") or "").strip())
+                lat = float((row.get("lat") or "").strip())
+                lng = float((row.get("lng") or "").strip())
             except ValueError:
                 continue
-            out[z] = (lat, lng)
+            out[z] = {
+                "city":   (row.get("city") or "").strip(),
+                "county": (row.get("county") or "").strip(),
+                "lat":    lat,
+                "lng":    lng,
+            }
     return out
 
 
@@ -93,27 +103,30 @@ def main() -> None:
     cur.execute(QUERY)
     rows = cur.fetchall()
 
-    zip_coords = load_zip_coords()
+    zip_lookup = load_zip_lookup()
 
     items = []
     target = None
-    coord_misses = 0
+    misses = 0
     for first_name, state, zipcode, amount, payout_date in rows:
         target = payout_date  # all rows share the same date by construction
         z5 = (zipcode or "").strip()[:5].zfill(5) if (zipcode or "").strip() else ""
-        coords = zip_coords.get(z5)
-        if not coords:
-            coord_misses += 1
+        info = zip_lookup.get(z5)
+        if not info:
+            misses += 1
+        # Note: we deliberately drop the zip here. The output JSON only carries
+        # first name, state, city, county, city-centroid lat/lng, and amount.
         items.append({
             "first_name": (first_name or "").strip(),
             "state":      (state or "").strip(),
-            "zip":        (zipcode or "").strip(),
+            "city":       info["city"]   if info else None,
+            "county":     info["county"] if info else None,
             "amount":     float(amount) if amount is not None else 0.0,
-            "lat":        coords[0] if coords else None,
-            "lng":        coords[1] if coords else None,
+            "lat":        info["lat"]    if info else None,
+            "lng":        info["lng"]    if info else None,
         })
     conn.close()
-    print(f"# zip coord misses: {coord_misses}/{len(items)}", flush=True)
+    print(f"# zip lookup misses: {misses}/{len(items)} (city blank for those rows)", flush=True)
 
     payload = {
         "schema_version": 1,

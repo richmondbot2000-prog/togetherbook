@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "updated_at": "2026-05-06T20:04:53.087503Z",
+  "updated_at": "2026-05-06T21:11:04.657953Z",
   "target_date": "2026-05-05",
   "totals": {
     "borrowers": 211
@@ -9,1690 +9,1901 @@
     {
       "first_name": "Andrew",
       "state": "AZ",
-      "zip": "85120",
+      "city": "Apache Junction",
+      "county": "Pinal",
       "amount": 5000.0,
-      "lat": 33.402386,
-      "lng": -111.567878
+      "lat": 33.3817,
+      "lng": -111.4884
     },
     {
       "first_name": "Billie",
       "state": "AZ",
-      "zip": "85716",
+      "city": "Tucson",
+      "county": "Pima",
       "amount": 3000.0,
-      "lat": 32.24154,
-      "lng": -110.923201
+      "lat": 32.2255,
+      "lng": -110.9447
     },
     {
       "first_name": "Gracely",
       "state": "AZ",
-      "zip": "85210",
+      "city": "Mesa",
+      "county": "Maricopa",
       "amount": 5000.0,
-      "lat": 33.389733,
-      "lng": -111.843505
+      "lat": 33.4141,
+      "lng": -111.7712
     },
     {
       "first_name": "Jacob",
       "state": "AZ",
-      "zip": "85338",
+      "city": "Goodyear",
+      "county": "Maricopa",
       "amount": 6000.0,
-      "lat": 33.372975,
-      "lng": -112.410829
+      "lat": 33.4579,
+      "lng": -112.389
     },
     {
       "first_name": "Joshua",
       "state": "AZ",
-      "zip": "85283",
+      "city": "Tempe",
+      "county": "Maricopa",
       "amount": 5000.0,
-      "lat": 33.364638,
-      "lng": -111.931604
+      "lat": 33.4005,
+      "lng": -111.9251
     },
     {
       "first_name": "Kaylee",
       "state": "AZ",
-      "zip": "85281",
+      "city": "Tempe",
+      "county": "Maricopa",
       "amount": 5500.0,
-      "lat": 33.42744,
-      "lng": -111.934004
+      "lat": 33.4005,
+      "lng": -111.9251
     },
     {
       "first_name": "Luchie",
       "state": "AZ",
-      "zip": "85027",
+      "city": "Phoenix",
+      "county": "Maricopa",
       "amount": 3000.0,
-      "lat": 33.679761,
-      "lng": -112.092529
+      "lat": 33.4916,
+      "lng": -112.0793
     },
     {
       "first_name": "Maria",
       "state": "AZ",
-      "zip": "85620",
+      "city": "Naco",
+      "county": "Cochise",
       "amount": 6000.0,
-      "lat": 31.337282,
-      "lng": -109.941325
+      "lat": 31.3373,
+      "lng": -109.9413
     },
     {
       "first_name": "Melissa",
       "state": "AZ",
-      "zip": "85257",
+      "city": "Scottsdale",
+      "county": "Maricopa",
       "amount": 5000.0,
-      "lat": 33.46196,
-      "lng": -111.916392
+      "lat": 33.5736,
+      "lng": -111.8878
     },
     {
       "first_name": "Valeria",
       "state": "AZ",
-      "zip": "85029",
+      "city": "Phoenix",
+      "county": "Maricopa",
       "amount": 3000.0,
-      "lat": 33.594738,
-      "lng": -112.109861
+      "lat": 33.4916,
+      "lng": -112.0793
     },
     {
       "first_name": "William",
       "state": "AZ",
-      "zip": "86442",
+      "city": "Bullhead City",
+      "county": "Mohave",
       "amount": 3000.0,
-      "lat": 35.089613,
-      "lng": -114.560868
+      "lat": 35.1431,
+      "lng": -114.5612
     },
     {
       "first_name": "Amber",
       "state": "CA",
-      "zip": "90706",
+      "city": "Bellflower",
+      "county": "Los Angeles",
       "amount": 3000.0,
-      "lat": 33.887821,
-      "lng": -118.12725
+      "lat": 33.8842,
+      "lng": -118.1217
     },
     {
       "first_name": "Blake",
       "state": "CA",
-      "zip": "92010",
+      "city": "Carlsbad",
+      "county": "San Diego",
       "amount": 3750.0,
-      "lat": 33.1585,
-      "lng": -117.277163
+      "lat": 33.1405,
+      "lng": -117.3139
     },
     {
       "first_name": "Christine",
       "state": "CA",
-      "zip": "94501",
+      "city": "Alameda",
+      "county": "Alameda",
       "amount": 8500.0,
-      "lat": 37.773793,
-      "lng": -122.278115
+      "lat": 37.7529,
+      "lng": -122.254
     },
     {
       "first_name": "Danae",
       "state": "CA",
-      "zip": "94601",
+      "city": "Oakland",
+      "county": "Alameda",
       "amount": 5500.0,
-      "lat": 37.775545,
-      "lng": -122.218705
+      "lat": 37.7977,
+      "lng": -122.2409
     },
     {
       "first_name": "Daniel",
       "state": "CA",
-      "zip": "92325",
+      "city": "Crestline",
+      "county": "San Bernardino",
       "amount": 3000.0,
-      "lat": 34.243482,
-      "lng": -117.281304
+      "lat": 34.2433,
+      "lng": -117.2811
     },
     {
       "first_name": "Darele",
       "state": "CA",
-      "zip": "95648",
+      "city": "Lincoln",
+      "county": "Placer",
       "amount": 3000.0,
-      "lat": 38.922812,
-      "lng": -121.312005
+      "lat": 38.8942,
+      "lng": -121.2908
     },
     {
       "first_name": "Edwin",
       "state": "CA",
-      "zip": "90038",
+      "city": "Los Angeles",
+      "county": "Los Angeles",
       "amount": 7000.0,
-      "lat": 34.088475,
-      "lng": -118.325527
+      "lat": 34.0337,
+      "lng": -118.2813
     },
     {
       "first_name": "Jacob",
       "state": "CA",
-      "zip": "90808",
+      "city": "Long Beach",
+      "county": "Los Angeles",
       "amount": 8500.0,
-      "lat": 33.823943,
-      "lng": -118.111335
+      "lat": 33.7882,
+      "lng": -118.1953
     },
     {
       "first_name": "James",
       "state": "CA",
-      "zip": "92821",
+      "city": "Brea",
+      "county": "Orange",
       "amount": 7750.0,
-      "lat": 33.927561,
-      "lng": -117.887086
+      "lat": 33.9236,
+      "lng": -117.8572
     },
     {
       "first_name": "Jamie",
       "state": "CA",
-      "zip": "95361",
+      "city": "Oakdale",
+      "county": "Stanislaus",
       "amount": 3000.0,
-      "lat": 37.787236,
-      "lng": -120.759202
+      "lat": 37.7741,
+      "lng": -120.8377
     },
     {
       "first_name": "Jesus",
       "state": "CA",
-      "zip": "95111",
+      "city": "San Jose",
+      "county": "Santa Clara",
       "amount": 6000.0,
-      "lat": 37.283111,
-      "lng": -121.826245
+      "lat": 37.3205,
+      "lng": -121.8794
     },
     {
       "first_name": "Jorge",
       "state": "CA",
-      "zip": "93454",
+      "city": "Santa Maria",
+      "county": "Santa Barbara",
       "amount": 7250.0,
-      "lat": 34.923013,
-      "lng": -120.259463
+      "lat": 34.9285,
+      "lng": -120.4453
     },
     {
       "first_name": "Joseph",
       "state": "CA",
-      "zip": "94403",
+      "city": "San Mateo",
+      "county": "San Mateo",
       "amount": 5000.0,
-      "lat": 37.538449,
-      "lng": -122.305447
+      "lat": 37.5504,
+      "lng": -122.3092
     },
     {
       "first_name": "Jumar",
       "state": "CA",
-      "zip": "94134",
+      "city": "San Francisco",
+      "county": "City and County of San Francisco",
       "amount": 6250.0,
-      "lat": 37.721052,
-      "lng": -122.413573
+      "lat": 37.7687,
+      "lng": -122.4244
     },
     {
       "first_name": "Karla",
       "state": "CA",
-      "zip": "92805",
+      "city": "Anaheim",
+      "county": "Orange",
       "amount": 6750.0,
-      "lat": 33.830457,
-      "lng": -117.905941
+      "lat": 33.8359,
+      "lng": -117.8977
     },
     {
       "first_name": "Kimberly",
       "state": "CA",
-      "zip": "93728",
+      "city": "Fresno",
+      "county": "Fresno",
       "amount": 6250.0,
-      "lat": 36.757294,
-      "lng": -119.818488
+      "lat": 36.7557,
+      "lng": -119.693
     },
     {
       "first_name": "Kimmy",
       "state": "CA",
-      "zip": "96035",
+      "city": "Gerber",
+      "county": "Tehama",
       "amount": 3500.0,
-      "lat": 40.045637,
-      "lng": -122.184859
+      "lat": 40.043,
+      "lng": -122.1649
     },
     {
       "first_name": "Linda",
       "state": "CA",
-      "zip": "96078",
+      "city": "Proberta",
+      "county": "Tehama",
       "amount": 4500.0,
-      "lat": null,
-      "lng": null
+      "lat": 40.0815,
+      "lng": -122.1705
     },
     {
       "first_name": "MarcAnthony",
       "state": "CA",
-      "zip": "91722",
+      "city": "Covina",
+      "county": "Los Angeles",
       "amount": 8000.0,
-      "lat": 34.097345,
-      "lng": -117.906736
+      "lat": 34.0923,
+      "lng": -117.8823
     },
     {
       "first_name": "Martin",
       "state": "CA",
-      "zip": "92551",
+      "city": "Moreno Valley",
+      "county": "Riverside",
       "amount": 4750.0,
-      "lat": 33.88274,
-      "lng": -117.224878
+      "lat": 33.9289,
+      "lng": -117.2263
     },
     {
       "first_name": "Maxwell",
       "state": "CA",
-      "zip": "96003",
+      "city": "Redding",
+      "county": "Shasta",
       "amount": 10000.0,
-      "lat": 40.751937,
-      "lng": -122.230678
+      "lat": 40.6302,
+      "lng": -122.3596
     },
     {
       "first_name": "Meylin",
       "state": "CA",
-      "zip": "94607",
+      "city": "Oakland",
+      "county": "Alameda",
       "amount": 7000.0,
-      "lat": 37.807215,
-      "lng": -122.301497
+      "lat": 37.7977,
+      "lng": -122.2409
     },
     {
       "first_name": "Noah",
       "state": "CA",
-      "zip": "90015",
+      "city": "Los Angeles",
+      "county": "Los Angeles",
       "amount": 5000.0,
-      "lat": 34.039378,
-      "lng": -118.2663
+      "lat": 34.0337,
+      "lng": -118.2813
     },
     {
       "first_name": "Quincy",
       "state": "CA",
-      "zip": "91602",
+      "city": "North Hollywood",
+      "county": "Los Angeles",
       "amount": 3000.0,
-      "lat": 34.150818,
-      "lng": -118.368159
+      "lat": 34.1744,
+      "lng": -118.3797
     },
     {
       "first_name": "Scott",
       "state": "CA",
-      "zip": "95123",
+      "city": "San Jose",
+      "county": "Santa Clara",
       "amount": 3000.0,
-      "lat": 37.244238,
-      "lng": -121.831604
+      "lat": 37.3205,
+      "lng": -121.8794
     },
     {
       "first_name": "somantha",
       "state": "CA",
-      "zip": "91708",
+      "city": "Chino",
+      "county": "San Bernardino",
       "amount": 5750.0,
-      "lat": 33.952902,
-      "lng": -117.639325
+      "lat": 33.9832,
+      "lng": -117.6624
     },
     {
       "first_name": "Amanda",
       "state": "FL",
-      "zip": "32404",
+      "city": "Panama City",
+      "county": "Bay",
       "amount": 5000.0,
-      "lat": 30.189031,
-      "lng": -85.506785
+      "lat": 30.1958,
+      "lng": -85.6642
     },
     {
       "first_name": "Antione",
       "state": "FL",
-      "zip": "32817",
+      "city": "Orlando",
+      "county": "Orange",
       "amount": 7000.0,
-      "lat": 28.591012,
-      "lng": -81.243652
+      "lat": 28.5178,
+      "lng": -81.3075
     },
     {
       "first_name": "Austin",
       "state": "FL",
-      "zip": "32219",
+      "city": "Jacksonville",
+      "county": "Duval",
       "amount": 8500.0,
-      "lat": 30.427093,
-      "lng": -81.818966
+      "lat": 30.3119,
+      "lng": -81.6533
     },
     {
       "first_name": "Brandie",
       "state": "FL",
-      "zip": "33304",
+      "city": "Fort Lauderdale",
+      "county": "Broward",
       "amount": 3000.0,
-      "lat": 26.140411,
-      "lng": -80.121184
+      "lat": 26.1276,
+      "lng": -80.2122
     },
     {
       "first_name": "Carlhenry",
       "state": "FL",
-      "zip": "33167",
+      "city": "Miami",
+      "county": "Miami-Dade",
       "amount": 5000.0,
-      "lat": 25.884867,
-      "lng": -80.239362
+      "lat": 25.769,
+      "lng": -80.2586
     },
     {
       "first_name": "Chad",
       "state": "FL",
-      "zip": "33435",
+      "city": "Boynton Beach",
+      "county": "Palm Beach",
       "amount": 10000.0,
-      "lat": 26.525785,
-      "lng": -80.061367
+      "lat": 26.5258,
+      "lng": -80.1081
     },
     {
       "first_name": "Christine",
       "state": "FL",
-      "zip": "33308",
+      "city": "Fort Lauderdale",
+      "county": "Broward",
       "amount": 3000.0,
-      "lat": 26.188511,
-      "lng": -80.104988
+      "lat": 26.1276,
+      "lng": -80.2122
     },
     {
       "first_name": "DANIELLE",
       "state": "FL",
-      "zip": "33325",
+      "city": "Fort Lauderdale",
+      "county": "Broward",
       "amount": 7000.0,
-      "lat": 26.112043,
-      "lng": -80.318317
+      "lat": 26.1276,
+      "lng": -80.2122
     },
     {
       "first_name": "Edwina",
       "state": "FL",
-      "zip": "34482",
+      "city": "Ocala",
+      "county": "Marion",
       "amount": 5000.0,
-      "lat": 29.244387,
-      "lng": -82.275029
+      "lat": 29.1703,
+      "lng": -82.1489
     },
     {
       "first_name": "Eula",
       "state": "FL",
-      "zip": "32209",
+      "city": "Jacksonville",
+      "county": "Duval",
       "amount": 3000.0,
-      "lat": 30.361015,
-      "lng": -81.696254
+      "lat": 30.3119,
+      "lng": -81.6533
     },
     {
       "first_name": "Jacinto",
       "state": "FL",
-      "zip": "33584",
+      "city": "Seffner",
+      "county": "Hillsborough",
       "amount": 5000.0,
-      "lat": 28.005479,
-      "lng": -82.2943
+      "lat": 27.9321,
+      "lng": -82.3625
     },
     {
       "first_name": "Jaime",
       "state": "FL",
-      "zip": "34772",
+      "city": "Saint Cloud",
+      "county": "Osceola",
       "amount": 7500.0,
-      "lat": 28.163035,
-      "lng": -81.264079
+      "lat": 28.2179,
+      "lng": -81.2102
     },
     {
       "first_name": "Jennifer",
       "state": "FL",
-      "zip": "32548",
+      "city": "Fort Walton Beach",
+      "county": "Okaloosa",
       "amount": 5000.0,
-      "lat": 30.403001,
-      "lng": -86.650482
+      "lat": 30.43,
+      "lng": -86.6245
     },
     {
       "first_name": "Jesse",
       "state": "FL",
-      "zip": "34104",
+      "city": "Naples",
+      "county": "Collier",
       "amount": 3000.0,
-      "lat": 26.149955,
-      "lng": -81.741562
+      "lat": 26.1736,
+      "lng": -81.7293
     },
     {
       "first_name": "Jessica",
       "state": "FL",
-      "zip": "33712",
+      "city": "Saint Petersburg",
+      "county": "Pinellas",
       "amount": 10000.0,
-      "lat": 27.734375,
-      "lng": -82.667894
+      "lat": 27.8273,
+      "lng": -82.7001
     },
     {
       "first_name": "Jonathan",
       "state": "FL",
-      "zip": "32824",
+      "city": "Orlando",
+      "county": "Orange",
       "amount": 5000.0,
-      "lat": 28.384164,
-      "lng": -81.33304
+      "lat": 28.5178,
+      "lng": -81.3075
     },
     {
       "first_name": "Joseph",
       "state": "FL",
-      "zip": "32703",
+      "city": "Apopka",
+      "county": "Orange",
       "amount": 5000.0,
-      "lat": 28.671439,
-      "lng": -81.553055
+      "lat": 28.6745,
+      "lng": -81.5048
     },
     {
       "first_name": "Katherine",
       "state": "FL",
-      "zip": "32162",
+      "city": "The Villages",
+      "county": "Sumter",
       "amount": 6250.0,
-      "lat": 28.914383,
-      "lng": -81.98956
+      "lat": 28.934,
+      "lng": -81.9757
     },
     {
       "first_name": "Kristal",
       "state": "FL",
-      "zip": "34741",
+      "city": "Kissimmee",
+      "county": "Osceola",
       "amount": 5000.0,
-      "lat": 28.30637,
-      "lng": -81.42706
+      "lat": 28.2686,
+      "lng": -81.447
     },
     {
       "first_name": "Linette",
       "state": "FL",
-      "zip": "32148",
+      "city": "Interlachen",
+      "county": "Putnam",
       "amount": 6750.0,
-      "lat": 29.617032,
-      "lng": -81.883646
+      "lat": 29.6256,
+      "lng": -81.891
     },
     {
       "first_name": "Marline",
       "state": "FL",
-      "zip": "33401",
+      "city": "West Palm Beach",
+      "county": "Palm Beach",
       "amount": 3000.0,
-      "lat": 26.715844,
-      "lng": -80.070249
+      "lat": 26.7121,
+      "lng": -80.0974
     },
     {
       "first_name": "Melanie",
       "state": "FL",
-      "zip": "34743",
+      "city": "Kissimmee",
+      "county": "Osceola",
       "amount": 3000.0,
-      "lat": 28.329308,
-      "lng": -81.355152
+      "lat": 28.2686,
+      "lng": -81.447
     },
     {
       "first_name": "Shayla",
       "state": "FL",
-      "zip": "33026",
+      "city": "Hollywood",
+      "county": "Broward",
       "amount": 3000.0,
-      "lat": 26.026198,
-      "lng": -80.295994
+      "lat": 26.0089,
+      "lng": -80.2171
     },
     {
       "first_name": "Almeda",
       "state": "GA",
-      "zip": "30741",
+      "city": "Rossville",
+      "county": "Walker",
       "amount": 7000.0,
-      "lat": 34.952685,
-      "lng": -85.281297
+      "lat": 34.9535,
+      "lng": -85.2968
     },
     {
       "first_name": "Brandy",
       "state": "GA",
-      "zip": "30734",
+      "city": "Ranger",
+      "county": "Gordon",
       "amount": 3250.0,
-      "lat": 34.532804,
-      "lng": -84.714916
+      "lat": 34.5404,
+      "lng": -84.727
     },
     {
       "first_name": "Crasetta",
       "state": "GA",
-      "zip": "30337",
+      "city": "Atlanta",
+      "county": "Fulton",
       "amount": 3250.0,
-      "lat": 33.640147,
-      "lng": -84.450081
+      "lat": 33.8171,
+      "lng": -84.3802
     },
     {
       "first_name": "Damy",
       "state": "GA",
-      "zip": "31781",
+      "city": "Poulan",
+      "county": "Worth",
       "amount": 5500.0,
-      "lat": 31.560577,
-      "lng": -83.796293
+      "lat": 31.5384,
+      "lng": -83.7843
     },
     {
       "first_name": "Darryl",
       "state": "GA",
-      "zip": "30046",
+      "city": "Lawrenceville",
+      "county": "Gwinnett",
       "amount": 5000.0,
-      "lat": 33.948632,
-      "lng": -83.995766
+      "lat": 33.9517,
+      "lng": -84.0217
     },
     {
       "first_name": "Destiny",
       "state": "GA",
-      "zip": "39845",
+      "city": "Donalsonville",
+      "county": "Baker",
       "amount": 3500.0,
-      "lat": 30.951468,
-      "lng": -84.892838
+      "lat": 31.0505,
+      "lng": -84.8801
     },
     {
       "first_name": "Justin",
       "state": "GA",
-      "zip": "31069",
+      "city": "Perry",
+      "county": "Houston",
       "amount": 7000.0,
-      "lat": 32.440068,
-      "lng": -83.748603
+      "lat": 32.4605,
+      "lng": -83.7283
     },
     {
       "first_name": "Justin",
       "state": "GA",
-      "zip": "30116",
+      "city": "Carrollton",
+      "county": "Carroll",
       "amount": 8500.0,
-      "lat": 33.54059,
-      "lng": -85.003082
+      "lat": 33.5911,
+      "lng": -85.076
     },
     {
       "first_name": "Kayla",
       "state": "GA",
-      "zip": "30161",
+      "city": "Rome",
+      "county": "Floyd",
       "amount": 4500.0,
-      "lat": 34.242301,
-      "lng": -85.171371
+      "lat": 34.2983,
+      "lng": -85.2102
     },
     {
       "first_name": "Leandra",
       "state": "GA",
-      "zip": "30134",
+      "city": "Douglasville",
+      "county": "Douglas",
       "amount": 7000.0,
-      "lat": 33.777518,
-      "lng": -84.781392
+      "lat": 33.7252,
+      "lng": -84.7464
     },
     {
       "first_name": "Lonnie",
       "state": "GA",
-      "zip": "30126",
+      "city": "Mableton",
+      "county": "Cobb",
       "amount": 3250.0,
-      "lat": 33.815025,
-      "lng": -84.553831
+      "lat": 33.8332,
+      "lng": -84.6031
     },
     {
       "first_name": "Marsha",
       "state": "GA",
-      "zip": "30453",
+      "city": "Reidsville",
+      "county": "Tattnall",
       "amount": 3250.0,
-      "lat": 32.011133,
-      "lng": -82.121758
+      "lat": 32.0709,
+      "lng": -82.1329
     },
     {
       "first_name": "Miles",
       "state": "GA",
-      "zip": "30096",
+      "city": "Duluth",
+      "county": "Gwinnett",
       "amount": 5000.0,
-      "lat": 33.974292,
-      "lng": -84.145426
+      "lat": 33.9912,
+      "lng": -84.1146
     },
     {
       "first_name": "Roy",
       "state": "GA",
-      "zip": "30033",
+      "city": "Decatur",
+      "county": "DeKalb",
       "amount": 6000.0,
-      "lat": 33.811659,
-      "lng": -84.28323
+      "lat": 33.7588,
+      "lng": -84.274
     },
     {
       "first_name": "Tosheika",
       "state": "GA",
-      "zip": "31548",
+      "city": "Kingsland",
+      "county": "Camden",
       "amount": 4250.0,
-      "lat": 30.796163,
-      "lng": -81.698233
+      "lat": 30.7977,
+      "lng": -81.7075
     },
     {
       "first_name": "Brenda",
       "state": "IA",
-      "zip": "50662",
+      "city": "Oelwein",
+      "county": "Fayette",
       "amount": 5750.0,
-      "lat": 42.688662,
-      "lng": -91.937486
+      "lat": 42.6811,
+      "lng": -91.9131
     },
     {
       "first_name": "RAFAEL",
       "state": "IA",
-      "zip": "50263",
+      "city": "Waukee",
+      "county": "Dallas",
       "amount": 4500.0,
-      "lat": 41.593171,
-      "lng": -93.874712
+      "lat": 41.593,
+      "lng": -93.8592
     },
     {
       "first_name": "Tyrell",
       "state": "IA",
-      "zip": "52803",
+      "city": "Davenport",
+      "county": "Scott",
       "amount": 6000.0,
-      "lat": 41.538947,
-      "lng": -90.555977
+      "lat": 41.5654,
+      "lng": -90.5916
     },
     {
       "first_name": "Breshey",
       "state": "IL",
-      "zip": "60443",
+      "city": "Matteson",
+      "county": "Cook",
       "amount": 3000.0,
-      "lat": 41.502184,
-      "lng": -87.748201
+      "lat": 41.5102,
+      "lng": -87.7406
     },
     {
       "first_name": "Christwean",
       "state": "IL",
-      "zip": "60076",
+      "city": "Skokie",
+      "county": "Cook",
       "amount": 5000.0,
-      "lat": 42.03526,
-      "lng": -87.729928
+      "lat": 42.0354,
+      "lng": -87.7434
     },
     {
       "first_name": "Dylan",
       "state": "IL",
-      "zip": "61761",
+      "city": "Normal",
+      "county": "McLean",
       "amount": 5000.0,
-      "lat": 40.529016,
-      "lng": -88.958935
+      "lat": 40.5114,
+      "lng": -88.9931
     },
     {
       "first_name": "Elliot",
       "state": "IL",
-      "zip": "60155",
+      "city": "Broadview",
+      "county": "Cook",
       "amount": 3000.0,
-      "lat": 41.857694,
-      "lng": -87.856223
+      "lat": 41.8577,
+      "lng": -87.8562
     },
     {
       "first_name": "Jordan",
       "state": "IL",
-      "zip": "60124",
+      "city": "Elgin",
+      "county": "Kane",
       "amount": 3250.0,
-      "lat": 42.020169,
-      "lng": -88.400686
+      "lat": 42.0419,
+      "lng": -88.308
     },
     {
       "first_name": "manda",
       "state": "IL",
-      "zip": "62442",
+      "city": "Martinsville",
+      "county": "Clark",
       "amount": 10000.0,
-      "lat": 39.303946,
-      "lng": -87.853807
+      "lat": 39.3174,
+      "lng": -87.8707
     },
     {
       "first_name": "Osvaldo",
       "state": "IL",
-      "zip": "60459",
+      "city": "Burbank",
+      "county": "Cook",
       "amount": 3000.0,
-      "lat": 41.744431,
-      "lng": -87.768576
+      "lat": 41.7447,
+      "lng": -87.7699
     },
     {
       "first_name": "Phillip",
       "state": "IL",
-      "zip": "61350",
+      "city": "Ottawa",
+      "county": "LaSalle",
       "amount": 7000.0,
-      "lat": 41.372095,
-      "lng": -88.865127
+      "lat": 41.3526,
+      "lng": -88.8416
     },
     {
       "first_name": "Sean",
       "state": "IL",
-      "zip": "60517",
+      "city": "Woodridge",
+      "county": "DuPage",
       "amount": 10000.0,
-      "lat": 41.740329,
-      "lng": -88.042149
+      "lat": 41.7518,
+      "lng": -88.0489
     },
     {
       "first_name": "todd",
       "state": "IL",
-      "zip": "60517",
+      "city": "Woodridge",
+      "county": "DuPage",
       "amount": 3000.0,
-      "lat": 41.740329,
-      "lng": -88.042149
+      "lat": 41.7518,
+      "lng": -88.0489
     },
     {
       "first_name": "Christian",
       "state": "IN",
-      "zip": "47720",
+      "city": "Evansville",
+      "county": "Vanderburgh",
       "amount": 4250.0,
-      "lat": 38.062897,
-      "lng": -87.641573
+      "lat": 37.9962,
+      "lng": -87.5702
     },
     {
       "first_name": "Holly",
       "state": "IN",
-      "zip": "46143",
+      "city": "Greenwood",
+      "county": "Johnson",
       "amount": 4250.0,
-      "lat": 39.59586,
-      "lng": -86.116319
+      "lat": 39.6092,
+      "lng": -86.1399
     },
     {
       "first_name": "Johnni",
       "state": "IN",
-      "zip": "46923",
+      "city": "Delphi",
+      "county": "Carroll",
       "amount": 3000.0,
-      "lat": 40.610524,
-      "lng": -86.637989
+      "lat": 40.5734,
+      "lng": -86.6788
     },
     {
       "first_name": "Kristopher",
       "state": "IN",
-      "zip": "46219",
+      "city": "Indianapolis",
+      "county": "Marion",
       "amount": 3000.0,
-      "lat": 39.782412,
-      "lng": -86.042939
+      "lat": 39.8003,
+      "lng": -86.1362
     },
     {
       "first_name": "Kimberly",
       "state": "KS",
-      "zip": "66801",
+      "city": "Emporia",
+      "county": "Lyon",
       "amount": 3000.0,
-      "lat": 38.414215,
-      "lng": -96.218301
+      "lat": 38.4184,
+      "lng": -96.1871
     },
     {
       "first_name": "Ronald",
       "state": "KS",
-      "zip": "66067",
+      "city": "Ottawa",
+      "county": "Franklin",
       "amount": 8500.0,
-      "lat": 38.623617,
-      "lng": -95.276284
+      "lat": 38.6142,
+      "lng": -95.2745
     },
     {
       "first_name": "Timothy",
       "state": "KS",
-      "zip": "66523",
+      "city": "Osage City",
+      "county": "Osage",
       "amount": 3000.0,
-      "lat": 38.61079,
-      "lng": -95.840023
+      "lat": 38.6269,
+      "lng": -95.8303
     },
     {
       "first_name": "Tracy",
       "state": "KS",
-      "zip": "66502",
+      "city": "Manhattan",
+      "county": "Riley",
       "amount": 5000.0,
-      "lat": 39.156299,
-      "lng": -96.521265
+      "lat": 39.2351,
+      "lng": -96.6197
     },
     {
       "first_name": "Brian",
       "state": "KY",
-      "zip": "40360",
+      "city": "Owingsville",
+      "county": "Bath",
       "amount": 5000.0,
-      "lat": 38.155201,
-      "lng": -83.789536
+      "lat": 38.1532,
+      "lng": -83.7564
     },
     {
       "first_name": "Ernest",
       "state": "KY",
-      "zip": "41045",
+      "city": "Ghent",
+      "county": "Carroll",
       "amount": 3000.0,
-      "lat": 38.717979,
-      "lng": -85.035298
+      "lat": 38.7188,
+      "lng": -85.0557
     },
     {
       "first_name": "Gage",
       "state": "KY",
-      "zip": "42408",
+      "city": "Dawson Springs",
+      "county": "Hopkins",
       "amount": 3000.0,
-      "lat": 37.179537,
-      "lng": -87.692699
+      "lat": 37.1964,
+      "lng": -87.6821
     },
     {
       "first_name": "Joshua",
       "state": "KY",
-      "zip": "42101",
+      "city": "Bowling Green",
+      "county": "Warren",
       "amount": 3000.0,
-      "lat": 37.058097,
-      "lng": -86.463061
+      "lat": 36.9609,
+      "lng": -86.4201
     },
     {
       "first_name": "Keiona",
       "state": "KY",
-      "zip": "40219",
+      "city": "Louisville",
+      "county": "Jefferson",
       "amount": 3000.0,
-      "lat": 38.137909,
-      "lng": -85.692693
+      "lat": 38.2084,
+      "lng": -85.6963
     },
     {
       "first_name": "Leighanne",
       "state": "KY",
-      "zip": "40031",
+      "city": "La Grange",
+      "county": "Oldham",
       "amount": 5000.0,
-      "lat": 38.429416,
-      "lng": -85.400814
+      "lat": 38.4038,
+      "lng": -85.4266
     },
     {
       "first_name": "Nathan",
       "state": "KY",
-      "zip": "40204",
+      "city": "Louisville",
+      "county": "Jefferson",
       "amount": 3000.0,
-      "lat": 38.239913,
-      "lng": -85.721591
+      "lat": 38.2084,
+      "lng": -85.6963
     },
     {
       "first_name": "Randall",
       "state": "KY",
-      "zip": "42501",
+      "city": "Somerset",
+      "county": "Pulaski",
       "amount": 3000.0,
-      "lat": 37.056193,
-      "lng": -84.450902
+      "lat": 37.1172,
+      "lng": -84.5577
     },
     {
       "first_name": "Sharrell",
       "state": "KY",
-      "zip": "40215",
+      "city": "Louisville",
+      "county": "Jefferson",
       "amount": 3000.0,
-      "lat": 38.190476,
-      "lng": -85.785734
+      "lat": 38.2084,
+      "lng": -85.6963
     },
     {
       "first_name": "Tanya",
       "state": "KY",
-      "zip": "40324",
+      "city": "Georgetown",
+      "county": "Scott",
       "amount": 3000.0,
-      "lat": 38.24538,
-      "lng": -84.550241
+      "lat": 38.2117,
+      "lng": -84.5562
     },
     {
       "first_name": "April",
       "state": "MO",
-      "zip": "64119",
+      "city": "Kansas City",
+      "county": "Clay",
       "amount": 3500.0,
-      "lat": 39.209967,
-      "lng": -94.514665
+      "lat": 39.1174,
+      "lng": -94.5672
     },
     {
       "first_name": "Audra",
       "state": "MO",
-      "zip": "63146",
+      "city": "Saint Louis",
+      "county": "St. Louis",
       "amount": 5000.0,
-      "lat": 38.697686,
-      "lng": -90.474667
+      "lat": 38.6403,
+      "lng": -90.2863
     },
     {
       "first_name": "Cody",
       "state": "MO",
-      "zip": "64759",
+      "city": "Lamar",
+      "county": "Barton",
       "amount": 7000.0,
-      "lat": 37.52122,
-      "lng": -94.25704
+      "lat": 37.5191,
+      "lng": -94.3364
     },
     {
       "first_name": "Dylan",
       "state": "MO",
-      "zip": "63901",
+      "city": "Poplar Bluff",
+      "county": "Butler",
       "amount": 3000.0,
-      "lat": 36.759059,
-      "lng": -90.460058
+      "lat": 36.7394,
+      "lng": -90.4118
     },
     {
       "first_name": "Erick",
       "state": "MO",
-      "zip": "64112",
+      "city": "Kansas City",
+      "county": "Jackson",
       "amount": 4000.0,
-      "lat": 39.035975,
-      "lng": -94.59519
+      "lat": 39.1174,
+      "lng": -94.5672
     },
     {
       "first_name": "Gina",
       "state": "MO",
-      "zip": "65656",
+      "city": "Galena",
+      "county": "Stone",
       "amount": 3000.0,
-      "lat": 36.793766,
-      "lng": -93.46783
+      "lat": 36.8198,
+      "lng": -93.4811
     },
     {
       "first_name": "Alex",
       "state": "NC",
-      "zip": "28081",
+      "city": "Kannapolis",
+      "county": "Cabarrus",
       "amount": 3000.0,
-      "lat": 35.502816,
-      "lng": -80.670173
+      "lat": 35.4444,
+      "lng": -80.5928
     },
     {
       "first_name": "Brandon",
       "state": "NC",
-      "zip": "27310",
+      "city": "Oak Ridge",
+      "county": "Guilford",
       "amount": 3000.0,
-      "lat": 36.174072,
-      "lng": -79.992233
+      "lat": 36.1673,
+      "lng": -79.9804
     },
     {
       "first_name": "chassidy",
       "state": "NC",
-      "zip": "27360",
+      "city": "Thomasville",
+      "county": "Davidson",
       "amount": 3000.0,
-      "lat": 35.86058,
-      "lng": -80.099288
+      "lat": 35.8771,
+      "lng": -80.1837
     },
     {
       "first_name": "DeMontre",
       "state": "NC",
-      "zip": "28277",
+      "city": "Charlotte",
+      "county": "Mecklenburg",
       "amount": 3000.0,
-      "lat": 35.052875,
-      "lng": -80.817552
+      "lat": 35.2288,
+      "lng": -80.8237
     },
     {
       "first_name": "Elijah",
       "state": "NC",
-      "zip": "28312",
+      "city": "Fayetteville",
+      "county": "Cumberland",
       "amount": 4000.0,
-      "lat": 34.947752,
-      "lng": -78.738133
+      "lat": 35.0449,
+      "lng": -78.9059
     },
     {
       "first_name": "Hannah",
       "state": "NC",
-      "zip": "27455",
+      "city": "Greensboro",
+      "county": "Guilford",
       "amount": 3000.0,
-      "lat": 36.187509,
-      "lng": -79.817677
+      "lat": 36.0786,
+      "lng": -79.8036
     },
     {
       "first_name": "Ina",
       "state": "NC",
-      "zip": "28090",
+      "city": "Lawndale",
+      "county": "Cleveland",
       "amount": 5000.0,
-      "lat": 35.454659,
-      "lng": -81.559555
+      "lat": 35.4449,
+      "lng": -81.5336
     },
     {
       "first_name": "Jessicka",
       "state": "NC",
-      "zip": "28303",
+      "city": "Fayetteville",
+      "county": "Cumberland",
       "amount": 3000.0,
-      "lat": 35.085644,
-      "lng": -78.959363
+      "lat": 35.0449,
+      "lng": -78.9059
     },
     {
       "first_name": "Kimberli",
       "state": "NC",
-      "zip": "28124",
+      "city": "Mount Pleasant",
+      "county": "Cabarrus",
       "amount": 3000.0,
-      "lat": 35.399738,
-      "lng": -80.408631
+      "lat": 35.4146,
+      "lng": -80.4171
     },
     {
       "first_name": "Magnolia",
       "state": "NC",
-      "zip": "28205",
+      "city": "Charlotte",
+      "county": "Mecklenburg",
       "amount": 3000.0,
-      "lat": 35.218791,
-      "lng": -80.789601
+      "lat": 35.2288,
+      "lng": -80.8237
     },
     {
       "first_name": "MICHAEL",
       "state": "NC",
-      "zip": "28677",
+      "city": "Statesville",
+      "county": "Iredell",
       "amount": 6000.0,
-      "lat": 35.738099,
-      "lng": -80.926089
+      "lat": 35.8156,
+      "lng": -80.889
     },
     {
       "first_name": "Nottanya fletcher",
       "state": "NC",
-      "zip": "27597",
+      "city": "Zebulon",
+      "county": "Wake",
       "amount": 3000.0,
-      "lat": 35.841015,
-      "lng": -78.30268
+      "lat": 35.8321,
+      "lng": -78.3174
     },
     {
       "first_name": "Rebecca",
       "state": "NC",
-      "zip": "27302",
+      "city": "Mebane",
+      "county": "Alamance",
       "amount": 6000.0,
-      "lat": 36.14203,
-      "lng": -79.266181
+      "lat": 36.0979,
+      "lng": -79.2719
     },
     {
       "first_name": "Rockey",
       "state": "NC",
-      "zip": "28262",
+      "city": "Charlotte",
+      "county": "Mecklenburg",
       "amount": 3000.0,
-      "lat": 35.322061,
-      "lng": -80.739981
+      "lat": 35.2288,
+      "lng": -80.8237
     },
     {
       "first_name": "Taviean",
       "state": "NC",
-      "zip": "28174",
+      "city": "Wingate",
+      "county": "Union",
       "amount": 3500.0,
-      "lat": 34.969035,
-      "lng": -80.43958
+      "lat": 34.9847,
+      "lng": -80.4476
     },
     {
       "first_name": "Taylor",
       "state": "NC",
-      "zip": "27357",
+      "city": "Stokesdale",
+      "county": "Guilford",
       "amount": 5000.0,
-      "lat": 36.2666,
-      "lng": -79.970625
+      "lat": 36.2552,
+      "lng": -79.9705
     },
     {
       "first_name": "Tonijah",
       "state": "NC",
-      "zip": "27707",
+      "city": "Durham",
+      "county": "Durham",
       "amount": 3000.0,
-      "lat": 35.954525,
-      "lng": -78.953317
+      "lat": 36.0205,
+      "lng": -78.8909
     },
     {
       "first_name": "Linda",
       "state": "ND",
-      "zip": "58078",
+      "city": "West Fargo",
+      "county": "Cass",
       "amount": 5000.0,
-      "lat": 46.8625,
-      "lng": -96.924088
+      "lat": 46.8907,
+      "lng": -96.9258
     },
     {
       "first_name": "Tayari",
       "state": "ND",
-      "zip": "58103",
+      "city": "Fargo",
+      "county": "Cass",
       "amount": 3000.0,
-      "lat": 46.85614,
-      "lng": -96.822073
+      "lat": 46.8698,
+      "lng": -96.8019
     },
     {
       "first_name": "Aaron",
       "state": "NM",
-      "zip": "87109",
+      "city": "Albuquerque",
+      "county": "Bernalillo",
       "amount": 7000.0,
-      "lat": 35.152882,
-      "lng": -106.575536
+      "lat": 35.0773,
+      "lng": -106.6448
     },
     {
       "first_name": "Jesus",
       "state": "NM",
-      "zip": "88012",
+      "city": "Las Cruces",
+      "county": "Do\u00f1a Ana",
       "amount": 5000.0,
-      "lat": 32.583386,
-      "lng": -106.771377
+      "lat": 32.3797,
+      "lng": -106.7691
     },
     {
       "first_name": "NIKKI",
       "state": "NM",
-      "zip": "87020",
+      "city": "Grants",
+      "county": "Cibola",
       "amount": 7000.0,
-      "lat": 34.86525,
-      "lng": -107.947956
+      "lat": 35.1476,
+      "lng": -107.8526
     },
     {
       "first_name": "Abigail",
       "state": "OH",
-      "zip": "45420",
+      "city": "Dayton",
+      "county": "Montgomery",
       "amount": 5000.0,
-      "lat": 39.718818,
-      "lng": -84.129169
+      "lat": 39.7466,
+      "lng": -84.1995
     },
     {
       "first_name": "Amara",
       "state": "OH",
-      "zip": "43224",
+      "city": "Columbus",
+      "county": "Franklin",
       "amount": 3000.0,
-      "lat": 40.043925,
-      "lng": -82.966265
+      "lat": 39.9923,
+      "lng": -82.9919
     },
     {
       "first_name": "Bianca",
       "state": "OH",
-      "zip": "44903",
+      "city": "Mansfield",
+      "county": "Richland",
       "amount": 3000.0,
-      "lat": 40.776344,
-      "lng": -82.527634
+      "lat": 40.7609,
+      "lng": -82.5169
     },
     {
       "first_name": "Brittany",
       "state": "OH",
-      "zip": "44125",
+      "city": "Cleveland",
+      "county": "Cuyahoga",
       "amount": 3000.0,
-      "lat": 41.405687,
-      "lng": -81.609466
+      "lat": 41.5231,
+      "lng": -81.6554
     },
     {
       "first_name": "Carmela",
       "state": "OH",
-      "zip": "44512",
+      "city": "Youngstown",
+      "county": "Mahoning",
       "amount": 4000.0,
-      "lat": 41.025661,
-      "lng": -80.668279
+      "lat": 41.0776,
+      "lng": -80.6803
     },
     {
       "first_name": "Christine",
       "state": "OH",
-      "zip": "44815",
+      "city": "Bettsville",
+      "county": "Seneca",
       "amount": 5000.0,
-      "lat": 41.246607,
-      "lng": -83.239471
+      "lat": 41.2469,
+      "lng": -83.2398
     },
     {
       "first_name": "DARREN",
       "state": "OH",
-      "zip": "45801",
+      "city": "Lima",
+      "county": "Allen",
       "amount": 3000.0,
-      "lat": 40.772863,
-      "lng": -84.034098
+      "lat": 40.7473,
+      "lng": -84.1222
     },
     {
       "first_name": "Heather",
       "state": "OH",
-      "zip": "44287",
+      "city": "West Salem",
+      "county": "Wayne",
       "amount": 5000.0,
-      "lat": 40.938453,
-      "lng": -82.102332
+      "lat": 40.9485,
+      "lng": -82.1066
     },
     {
       "first_name": "Jacquelyn",
       "state": "OH",
-      "zip": "43449",
+      "city": "Oak Harbor",
+      "county": "Ottawa",
       "amount": 3000.0,
-      "lat": 41.534376,
-      "lng": -83.13557
+      "lat": 41.5236,
+      "lng": -83.1278
     },
     {
       "first_name": "Jennifer",
       "state": "OH",
-      "zip": "45459",
+      "city": "Dayton",
+      "county": "Montgomery",
       "amount": 3000.0,
-      "lat": 39.647433,
-      "lng": -84.170598
+      "lat": 39.7466,
+      "lng": -84.1995
     },
     {
       "first_name": "Johnny",
       "state": "OH",
-      "zip": "44136",
+      "city": "Strongsville",
+      "county": "Cuyahoga",
       "amount": 3000.0,
-      "lat": 41.311507,
-      "lng": -81.811326
+      "lat": 41.3133,
+      "lng": -81.8424
     },
     {
       "first_name": "KC",
       "state": "OH",
-      "zip": "43160",
+      "city": "Washington Court House",
+      "county": "Fayette",
       "amount": 3500.0,
-      "lat": 39.526516,
-      "lng": -83.441323
+      "lat": 39.537,
+      "lng": -83.455
     },
     {
       "first_name": "kim",
       "state": "OH",
-      "zip": "43228",
+      "city": "Columbus",
+      "county": "Franklin",
       "amount": 3000.0,
-      "lat": 39.966129,
-      "lng": -83.125346
+      "lat": 39.9923,
+      "lng": -82.9919
     },
     {
       "first_name": "KIMBERLY",
       "state": "OH",
-      "zip": "43410",
+      "city": "Clyde",
+      "county": "Sandusky",
       "amount": 3000.0,
-      "lat": 41.311868,
-      "lng": -82.957583
+      "lat": 41.3024,
+      "lng": -82.9918
     },
     {
       "first_name": "Lanise",
       "state": "OH",
-      "zip": "43968",
+      "city": "Wellsville",
+      "county": "Columbiana",
       "amount": 5000.0,
-      "lat": 40.632407,
-      "lng": -80.683847
+      "lat": 40.6171,
+      "lng": -80.6621
     },
     {
       "first_name": "Matthew",
       "state": "OH",
-      "zip": "44140",
+      "city": "Bay Village",
+      "county": "Cuyahoga",
       "amount": 7000.0,
-      "lat": 41.487794,
-      "lng": -81.931435
+      "lat": 41.4841,
+      "lng": -81.9289
     },
     {
       "first_name": "Michael",
       "state": "OH",
-      "zip": "44720",
+      "city": "North Canton",
+      "county": "Stark",
       "amount": 5000.0,
-      "lat": 40.903454,
-      "lng": -81.433282
+      "lat": 40.7989,
+      "lng": -81.3784
     },
     {
       "first_name": "Nicole",
       "state": "OH",
-      "zip": "44830",
+      "city": "Fostoria",
+      "county": "Seneca",
       "amount": 3000.0,
-      "lat": 41.167936,
-      "lng": -83.398998
+      "lat": 41.1623,
+      "lng": -83.4139
     },
     {
       "first_name": "Richard",
       "state": "OH",
-      "zip": "44203",
+      "city": "Barberton",
+      "county": "Summit",
       "amount": 5000.0,
-      "lat": 41.020888,
-      "lng": -81.628652
+      "lat": 41.0197,
+      "lng": -81.6212
     },
     {
       "first_name": "Tabatha",
       "state": "OH",
-      "zip": "44125",
+      "city": "Cleveland",
+      "county": "Cuyahoga",
       "amount": 5000.0,
-      "lat": 41.405687,
-      "lng": -81.609466
+      "lat": 41.5231,
+      "lng": -81.6554
     },
     {
       "first_name": "Tracy",
       "state": "OH",
-      "zip": "45223",
+      "city": "Cincinnati",
+      "county": "Hamilton",
       "amount": 5000.0,
-      "lat": 39.17081,
-      "lng": -84.549528
+      "lat": 39.1705,
+      "lng": -84.5045
     },
     {
       "first_name": "Brittany",
       "state": "OK",
-      "zip": "73130",
+      "city": "Oklahoma City",
+      "county": "Oklahoma",
       "amount": 6250.0,
-      "lat": 35.458633,
-      "lng": -97.345632
+      "lat": 35.495,
+      "lng": -97.4886
     },
     {
       "first_name": "Erin",
       "state": "OK",
-      "zip": "73117",
+      "city": "Oklahoma City",
+      "county": "Oklahoma",
       "amount": 3000.0,
-      "lat": 35.474862,
-      "lng": -97.462502
+      "lat": 35.495,
+      "lng": -97.4886
     },
     {
       "first_name": "Joshua",
       "state": "OK",
-      "zip": "73012",
+      "city": "Edmond",
+      "county": "Oklahoma",
       "amount": 5000.0,
-      "lat": 35.667234,
-      "lng": -97.593657
+      "lat": 35.6621,
+      "lng": -97.4841
     },
     {
       "first_name": "Rita",
       "state": "OK",
-      "zip": "74107",
+      "city": "Tulsa",
+      "county": "Tulsa",
       "amount": 5000.0,
-      "lat": 36.114847,
-      "lng": -96.03232
+      "lat": 36.1384,
+      "lng": -95.97
     },
     {
       "first_name": "Shonda",
       "state": "OK",
-      "zip": "74730",
+      "city": "Calera",
+      "county": "Bryan",
       "amount": 7000.0,
-      "lat": 33.912019,
-      "lng": -96.430988
+      "lat": 33.9322,
+      "lng": -96.4308
     },
     {
       "first_name": "Amber",
       "state": "SC",
-      "zip": "29605",
+      "city": "Greenville",
+      "county": "Greenville",
       "amount": 3000.0,
-      "lat": 34.774425,
-      "lng": -82.37661
+      "lat": 34.8551,
+      "lng": -82.4125
     },
     {
       "first_name": "Asia",
       "state": "SC",
-      "zip": "29718",
+      "city": "Jefferson",
+      "county": "Chesterfield",
       "amount": 5000.0,
-      "lat": 34.624163,
-      "lng": -80.331295
+      "lat": 34.6546,
+      "lng": -80.3639
     },
     {
       "first_name": "Dennis",
       "state": "SC",
-      "zip": "29706",
+      "city": "Chester",
+      "county": "Chester",
       "amount": 3000.0,
-      "lat": 34.715558,
-      "lng": -81.23453
+      "lat": 34.7149,
+      "lng": -81.2186
     },
     {
       "first_name": "Keith",
       "state": "SC",
-      "zip": "29532",
+      "city": "Darlington",
+      "county": "Darlington",
       "amount": 3000.0,
-      "lat": 34.280331,
-      "lng": -79.869336
+      "lat": 34.3423,
+      "lng": -79.8577
     },
     {
       "first_name": "keya",
       "state": "SC",
-      "zip": "29487",
+      "city": "Wadmalaw Island",
+      "county": "Charleston",
       "amount": 3000.0,
-      "lat": 32.657682,
-      "lng": -80.183948
+      "lat": 32.6529,
+      "lng": -80.1829
     },
     {
       "first_name": "Alexandro",
       "state": "TX",
-      "zip": "79549",
+      "city": "Snyder",
+      "county": "Scurry",
       "amount": 4000.0,
-      "lat": 32.887589,
-      "lng": -100.841389
+      "lat": 32.7315,
+      "lng": -100.9176
     },
     {
       "first_name": "ANTHONY",
       "state": "TX",
-      "zip": "78653",
+      "city": "Manor",
+      "county": "Travis",
       "amount": 4000.0,
-      "lat": 30.339696,
-      "lng": -97.523512
+      "lat": 30.3388,
+      "lng": -97.5323
     },
     {
       "first_name": "Ashley",
       "state": "TX",
-      "zip": "78213",
+      "city": "San Antonio",
+      "county": "Bexar",
       "amount": 4500.0,
-      "lat": 29.516395,
-      "lng": -98.523017
+      "lat": 29.4647,
+      "lng": -98.4984
     },
     {
       "first_name": "Braeden",
       "state": "TX",
-      "zip": "76522",
+      "city": "Copperas Cove",
+      "county": "Coryell",
       "amount": 4250.0,
-      "lat": 31.219045,
-      "lng": -97.968224
+      "lat": 31.2029,
+      "lng": -97.9301
     },
     {
       "first_name": "Brandy",
       "state": "TX",
-      "zip": "76271",
+      "city": "Tioga",
+      "county": "Grayson",
       "amount": 3000.0,
-      "lat": 33.464637,
-      "lng": -96.892763
+      "lat": 33.4675,
+      "lng": -96.9097
     },
     {
       "first_name": "Bryam",
       "state": "TX",
-      "zip": "78253",
+      "city": "San Antonio",
+      "county": "Bexar",
       "amount": 4500.0,
-      "lat": 29.469011,
-      "lng": -98.797801
+      "lat": 29.4647,
+      "lng": -98.4984
     },
     {
       "first_name": "Caleb",
       "state": "TX",
-      "zip": "77856",
+      "city": "Franklin",
+      "county": "Robertson",
       "amount": 4500.0,
-      "lat": 31.075823,
-      "lng": -96.425784
+      "lat": 31.0001,
+      "lng": -96.5171
     },
     {
       "first_name": "Candice",
       "state": "TX",
-      "zip": "76013",
+      "city": "Arlington",
+      "county": "Tarrant",
       "amount": 3000.0,
-      "lat": 32.719328,
-      "lng": -97.155028
+      "lat": 32.7196,
+      "lng": -97.1604
     },
     {
       "first_name": "Chilena",
       "state": "TX",
-      "zip": "76067",
+      "city": "Mineral Wells",
+      "county": "Palo Pinto",
       "amount": 3000.0,
-      "lat": 32.799602,
-      "lng": -98.126806
+      "lat": 32.8085,
+      "lng": -98.1128
     },
     {
       "first_name": "Crystal",
       "state": "TX",
-      "zip": "79423",
+      "city": "Houston",
+      "county": "Harris",
+      "amount": 3000.0,
+      "lat": 29.7979,
+      "lng": -95.4191
+    },
+    {
+      "first_name": "Crystal",
+      "state": "TX",
+      "city": "Lubbock",
+      "county": "Lubbock",
       "amount": 4000.0,
-      "lat": 33.439976,
-      "lng": -101.855463
-    },
-    {
-      "first_name": "Crystal",
-      "state": "TX",
-      "zip": "77095",
-      "amount": 3000.0,
-      "lat": 29.909513,
-      "lng": -95.651476
+      "lat": 33.5743,
+      "lng": -101.8711
     },
     {
       "first_name": "David",
       "state": "TX",
-      "zip": "78207",
+      "city": "San Antonio",
+      "county": "Bexar",
       "amount": 3000.0,
-      "lat": 29.422124,
-      "lng": -98.525978
+      "lat": 29.4647,
+      "lng": -98.4984
     },
     {
       "first_name": "Debra",
       "state": "TX",
-      "zip": "75602",
+      "city": "Longview",
+      "county": "Gregg",
       "amount": 3000.0,
-      "lat": 32.449598,
-      "lng": -94.666048
+      "lat": 32.51,
+      "lng": -94.7648
     },
     {
       "first_name": "Gavin",
       "state": "TX",
-      "zip": "76180",
+      "city": "North Richland Hills",
+      "county": "Tarrant",
       "amount": 4500.0,
-      "lat": 32.840011,
-      "lng": -97.225295
+      "lat": 32.8614,
+      "lng": -97.2174
     },
     {
       "first_name": "Heather",
       "state": "TX",
-      "zip": "75092",
+      "city": "Sherman",
+      "county": "Grayson",
       "amount": 4500.0,
-      "lat": 33.652101,
-      "lng": -96.700254
+      "lat": 33.6388,
+      "lng": -96.6116
     },
     {
       "first_name": "Joseph",
       "state": "TX",
-      "zip": "77062",
+      "city": "Houston",
+      "county": "Harris",
       "amount": 3000.0,
-      "lat": 29.573552,
-      "lng": -95.130613
+      "lat": 29.7979,
+      "lng": -95.4191
     },
     {
       "first_name": "Lance",
       "state": "TX",
-      "zip": "78664",
+      "city": "Round Rock",
+      "county": "Williamson",
       "amount": 3000.0,
-      "lat": 30.501927,
-      "lng": -97.647251
+      "lat": 30.5846,
+      "lng": -97.6371
     },
     {
       "first_name": "LaQuanna",
       "state": "TX",
-      "zip": "77477",
+      "city": "Stafford",
+      "county": "Fort Bend",
       "amount": 3000.0,
-      "lat": 29.624261,
-      "lng": -95.568033
+      "lat": 29.6195,
+      "lng": -95.5627
     },
     {
       "first_name": "Laurie",
       "state": "TX",
-      "zip": "78539",
+      "city": "Edinburg",
+      "county": "Hidalgo",
       "amount": 3000.0,
-      "lat": 26.280689,
-      "lng": -98.183295
+      "lat": 26.3738,
+      "lng": -98.175
     },
     {
       "first_name": "Martin",
       "state": "TX",
-      "zip": "77429",
+      "city": "Cypress",
+      "county": "Harris",
       "amount": 4500.0,
-      "lat": 29.998421,
-      "lng": -95.66736
+      "lat": 29.9431,
+      "lng": -95.6785
     },
     {
       "first_name": "Michael",
       "state": "TX",
-      "zip": "77356",
+      "city": "Montgomery",
+      "county": "Montgomery",
       "amount": 4500.0,
-      "lat": 30.465662,
-      "lng": -95.729888
+      "lat": 30.3999,
+      "lng": -95.6977
     },
     {
       "first_name": "Morgan",
       "state": "TX",
-      "zip": "76502",
+      "city": "Temple",
+      "county": "Bell",
       "amount": 4500.0,
-      "lat": 31.103931,
-      "lng": -97.41202
+      "lat": 31.0685,
+      "lng": -97.3802
     },
     {
       "first_name": "Nicole",
       "state": "TX",
-      "zip": "75474",
+      "city": "Quinlan",
+      "county": "Hunt",
       "amount": 4500.0,
-      "lat": 32.9242,
-      "lng": -96.109811
+      "lat": 32.8983,
+      "lng": -96.1261
     },
     {
       "first_name": "Paul",
       "state": "TX",
-      "zip": "78504",
+      "city": "Mcallen",
+      "county": "Hidalgo",
       "amount": 4500.0,
-      "lat": 26.271965,
-      "lng": -98.23657
+      "lat": 26.2216,
+      "lng": -98.2294
     },
     {
       "first_name": "Robel",
       "state": "TX",
-      "zip": "75224",
+      "city": "Dallas",
+      "county": "Dallas",
       "amount": 3000.0,
-      "lat": 32.711405,
-      "lng": -96.838591
+      "lat": 32.7886,
+      "lng": -96.7872
     },
     {
       "first_name": "Seanna",
       "state": "TX",
-      "zip": "77346",
+      "city": "Humble",
+      "county": "Harris",
       "amount": 4000.0,
-      "lat": 29.994499,
-      "lng": -95.177499
+      "lat": 29.9895,
+      "lng": -95.2449
     },
     {
       "first_name": "Sonia",
       "state": "TX",
-      "zip": "75019",
+      "city": "Coppell",
+      "county": "Dallas",
       "amount": 4500.0,
-      "lat": 32.963417,
-      "lng": -96.984664
+      "lat": 32.9609,
+      "lng": -96.9977
     },
     {
       "first_name": "Stephen",
       "state": "TX",
-      "zip": "78216",
+      "city": "San Antonio",
+      "county": "Bexar",
       "amount": 3000.0,
-      "lat": 29.537264,
-      "lng": -98.487882
+      "lat": 29.4647,
+      "lng": -98.4984
     },
     {
       "first_name": "Treasure",
       "state": "TX",
-      "zip": "78744",
+      "city": "Austin",
+      "county": "Travis",
       "amount": 4500.0,
-      "lat": 30.176044,
-      "lng": -97.727787
+      "lat": 30.3094,
+      "lng": -97.7623
     },
     {
       "first_name": "Mindy",
       "state": "UT",
-      "zip": "84606",
+      "city": "Provo",
+      "county": "Utah",
       "amount": 8500.0,
-      "lat": 40.21444,
-      "lng": -111.625543
+      "lat": 40.2441,
+      "lng": -111.6449
     },
     {
       "first_name": "Steven",
       "state": "UT",
-      "zip": "84128",
+      "city": "West Valley City",
+      "county": "Salt Lake",
       "amount": 3000.0,
-      "lat": 40.70045,
-      "lng": -112.046772
+      "lat": 40.6916,
+      "lng": -112.0011
     },
     {
       "first_name": "Brandon",
       "state": "VA",
-      "zip": "22835",
+      "city": "Luray",
+      "county": "Page",
       "amount": 7000.0,
-      "lat": 38.669963,
-      "lng": -78.453689
+      "lat": 38.6548,
+      "lng": -78.4596
     },
     {
       "first_name": "Eugene",
       "state": "VA",
-      "zip": "22407",
+      "city": "Fredericksburg",
+      "county": "Spotsylvania",
       "amount": 3000.0,
-      "lat": 38.283474,
-      "lng": -77.575684
+      "lat": 38.3041,
+      "lng": -77.5042
     },
     {
       "first_name": "Jason",
       "state": "VA",
-      "zip": "23112",
+      "city": "Midlothian",
+      "county": "Chesterfield",
       "amount": 6500.0,
-      "lat": 37.433405,
-      "lng": -77.662862
+      "lat": 37.4745,
+      "lng": -77.6464
     },
     {
       "first_name": "Jennifer",
       "state": "VA",
-      "zip": "24137",
+      "city": "Penhook",
+      "county": "Franklin",
       "amount": 8500.0,
-      "lat": 36.927552,
-      "lng": -79.657504
+      "lat": 36.9201,
+      "lng": -79.6645
     },
     {
       "first_name": "John",
       "state": "VA",
-      "zip": "23513",
+      "city": "Norfolk",
+      "county": "Norfolk (city)",
       "amount": 8500.0,
-      "lat": 36.889916,
-      "lng": -76.238602
+      "lat": 36.8968,
+      "lng": -76.2584
     },
     {
       "first_name": "Kyvon",
       "state": "VA",
-      "zip": "22578",
+      "city": "White Stone",
+      "county": "Lancaster",
       "amount": 8500.0,
-      "lat": 37.636571,
-      "lng": -76.356134
+      "lat": 37.6886,
+      "lng": -76.3616
     },
     {
       "first_name": "Cody",
       "state": "WI",
-      "zip": "53214",
+      "city": "Milwaukee",
+      "county": "Milwaukee",
       "amount": 4250.0,
-      "lat": 43.020327,
-      "lng": -88.012871
+      "lat": 43.0498,
+      "lng": -87.9529
     },
     {
       "first_name": "Jaclyn",
       "state": "WI",
-      "zip": "53005",
+      "city": "Brookfield",
+      "county": "Waukesha",
       "amount": 5000.0,
-      "lat": 43.062401,
-      "lng": -88.098804
+      "lat": 43.0632,
+      "lng": -88.1171
     },
     {
       "first_name": "Jeffrey",
       "state": "WI",
-      "zip": "53704",
+      "city": "Madison",
+      "county": "Dane",
       "amount": 8500.0,
-      "lat": 43.136269,
-      "lng": -89.347319
+      "lat": 43.0724,
+      "lng": -89.4023
     },
     {
       "first_name": "Jorge",
       "state": "WI",
-      "zip": "53222",
+      "city": "Milwaukee",
+      "county": "Milwaukee",
       "amount": 3250.0,
-      "lat": 43.083208,
-      "lng": -88.036041
+      "lat": 43.0498,
+      "lng": -87.9529
     },
     {
       "first_name": "Julianne",
       "state": "WI",
-      "zip": "53204",
+      "city": "Milwaukee",
+      "county": "Milwaukee",
       "amount": 7000.0,
-      "lat": 43.018587,
-      "lng": -87.926053
+      "lat": 43.0498,
+      "lng": -87.9529
     },
     {
       "first_name": "Kaleb",
       "state": "WI",
-      "zip": "53561",
+      "city": "Merrimac",
+      "county": "Sauk",
       "amount": 3250.0,
-      "lat": 43.39494,
-      "lng": -89.638619
+      "lat": 43.3855,
+      "lng": -89.6323
     },
     {
       "first_name": "KRESENT",
       "state": "WI",
-      "zip": "54843",
+      "city": "Hayward",
+      "county": "Sawyer",
       "amount": 3500.0,
-      "lat": 46.023604,
-      "lng": -91.293027
+      "lat": 45.9552,
+      "lng": -91.2783
     },
     {
       "first_name": "Brittney",
       "state": "WY",
-      "zip": "82839",
+      "city": "Ranchester",
+      "county": "Sheridan",
       "amount": 3000.0,
-      "lat": 44.925813,
-      "lng": -107.161076
+      "lat": 44.9171,
+      "lng": -107.174
     },
     {
       "first_name": "KIERSTEN",
       "state": "WY",
-      "zip": "82604",
+      "city": "Casper",
+      "county": "Natrona",
       "amount": 3000.0,
-      "lat": 42.857603,
-      "lng": -106.770764
+      "lat": 42.8537,
+      "lng": -106.3314
     }
   ]
 }
