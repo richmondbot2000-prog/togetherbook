@@ -9,6 +9,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;700;800&family=Orbitron:wght@500;600;700;800&family=Roboto+Mono:wght@700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
 <style>
   :root {
     --bg: #060a1f;
@@ -66,35 +67,7 @@
     background: var(--bg-soft); padding: 1px 6px; border-radius: 4px; border: 1px solid var(--border);
     color: var(--accent-ink); }
 
-  /* TOP BAR */
-  .topbar {
-    position: sticky; top: 0; z-index: 50;
-    background: rgba(6, 10, 31, 0.85);
-    backdrop-filter: saturate(180%) blur(14px);
-    -webkit-backdrop-filter: saturate(180%) blur(14px);
-    border-bottom: 1px solid var(--border);
-    height: 64px; display: flex; align-items: center; padding: 0 24px;
-  }
-  .topbar .brand { font-family: var(--font-display); font-weight: 700; font-size: 1rem; letter-spacing: 0.05em;
-    text-transform: uppercase; display: flex; align-items: center; gap: 12px; color: var(--ink);
-    text-decoration: none; transition: color 0.15s ease; }
-  .topbar .brand:hover { color: var(--accent); text-decoration: none; }
-  .topbar .brand .brand-icon { display: block; width: 36px; height: 36px;
-    border-radius: 50%; object-fit: cover; background: #fff;
-    border: 1.5px solid rgba(0, 212, 255, 0.55);
-    box-shadow: 0 0 12px rgba(0, 212, 255, 0.55), inset 0 0 6px rgba(255,255,255,0.25);
-    animation: pulse-dot 3s ease-in-out infinite; }
-  .topbar .brand .brand-logo { display: block; height: 38px; width: auto;
-    filter: drop-shadow(0 0 6px rgba(122, 224, 122, 0.45)); }
-  @keyframes pulse-dot {
-    0%, 100% { box-shadow: 0 0 12px rgba(0, 212, 255, 0.55), inset 0 0 6px rgba(255,255,255,0.25); }
-    50%      { box-shadow: 0 0 22px rgba(0, 212, 255, 0.95), inset 0 0 8px rgba(255,255,255,0.4); }
-  }
-  .topbar nav { margin-left: auto; display: flex; gap: 22px; }
-  .topbar nav a { color: var(--ink-soft); font-family: var(--font-display); font-weight: 500; font-size: 0.78rem;
-    text-transform: uppercase; letter-spacing: 0.08em; }
-  .topbar nav a:hover { color: var(--accent); text-shadow: 0 0 8px rgba(0,212,255,0.6); text-decoration: none; }
-  .topbar nav a.active { color: var(--accent-ink); }
+  /* topbar + brand styles come from style.css now (shared with index/apis/robots) */
 
   /* CONTENT */
   main { max-width: 1080px; margin: 0 auto; padding: 56px 32px 120px; position: relative; z-index: 1; }
@@ -199,10 +172,6 @@
     table { font-size: 0.8rem; }
     th, td { padding: 8px 10px; }
     .bar-cell { display: none; }
-    .topbar { padding: 0 14px; }
-    .topbar nav { gap: 14px; }
-    .topbar nav a { font-size: 0.7rem; }
-    .topbar .brand { font-size: 0.85rem; }
   }
 </style>
 </head>
