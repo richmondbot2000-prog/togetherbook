@@ -1,0 +1,1078 @@
+{
+  "schema_version": 1,
+  "updated_at": "2026-05-06T15:35:30.434461Z",
+  "snapshot_date": "2026-05-06",
+  "source": "snapshot scan via local pyodbc",
+  "totals": {
+    "tables": 177,
+    "rows": 2412632354
+  },
+  "skipped_databases": [
+    "ReportingCreditbuilder",
+    "Whitebox"
+  ],
+  "items": [
+    {
+      "database": "ReportingApplications",
+      "schema": "dbo",
+      "table": "leads",
+      "rows": 392425427
+    },
+    {
+      "database": "ReportingCommunications",
+      "schema": "dbo",
+      "table": "Messages",
+      "rows": 248526468
+    },
+    {
+      "database": "ReportingLoanbook",
+      "schema": "dbo",
+      "table": "Loan_History",
+      "rows": 196274410
+    },
+    {
+      "database": "BackingTables",
+      "schema": "reporting",
+      "table": "leadacceptrates",
+      "rows": 170070354
+    },
+    {
+      "database": "ReportingApplications",
+      "schema": "dbo",
+      "table": "ApplicationHistories",
+      "rows": 109059203
+    },
+    {
+      "database": "ReportingCentralCrm",
+      "schema": "dbo",
+      "table": "GeneratedMessages",
+      "rows": 97326466
+    },
+    {
+      "database": "ReportingApplications",
+      "schema": "dbo",
+      "table": "Tasks",
+      "rows": 92825271
+    },
+    {
+      "database": "ReportingTracking",
+      "schema": "dbo",
+      "table": "WebVisits",
+      "rows": 91025575
+    },
+    {
+      "database": "ReportingBrokers",
+      "schema": "dbo",
+      "table": "LeadScorecardScores",
+      "rows": 83646155
+    },
+    {
+      "database": "ReportingApplications",
+      "schema": "dbo",
+      "table": "EventObjects",
+      "rows": 80708176
+    },
+    {
+      "database": "ReportingApplications",
+      "schema": "dbo",
+      "table": "Events",
+      "rows": 79309024
+    },
+    {
+      "database": "ReportingApplications",
+      "schema": "dbo",
+      "table": "LeadOutcomes",
+      "rows": 46234804
+    },
+    {
+      "database": "ReportingCommunications",
+      "schema": "dbo",
+      "table": "Attachments",
+      "rows": 45429456
+    },
+    {
+      "database": "ReportingPayments",
+      "schema": "dbo",
+      "table": "Events",
+      "rows": 36215423
+    },
+    {
+      "database": "ReportingApplications",
+      "schema": "dbo",
+      "table": "Addresses",
+      "rows": 34996394
+    },
+    {
+      "database": "ReportingPayments",
+      "schema": "dbo",
+      "table": "EventObjects",
+      "rows": 34419101
+    },
+    {
+      "database": "ReportingCommunications",
+      "schema": "dbo",
+      "table": "ShortUrls",
+      "rows": 33553892
+    },
+    {
+      "database": "ReportingApplications",
+      "schema": "dbo",
+      "table": "Telephones",
+      "rows": 29217508
+    },
+    {
+      "database": "BackingTables",
+      "schema": "reporting",
+      "table": "leadconversionbreakdown",
+      "rows": 27146441
+    },
+    {
+      "database": "BackingTables",
+      "schema": "reporting",
+      "table": "affiliatereportbreakdown",
+      "rows": 27057574
+    },
+    {
+      "database": "BackingTables",
+      "schema": "reporting",
+      "table": "brokertrendsbreakdown",
+      "rows": 26901523
+    },
+    {
+      "database": "BackingTables",
+      "schema": "reporting",
+      "table": "loanbookalerts",
+      "rows": 26166359
+    },
+    {
+      "database": "BackingTables",
+      "schema": "reporting",
+      "table": "leadswithlivecb_breakdown",
+      "rows": 23126918
+    },
+    {
+      "database": "ReportingApplications",
+      "schema": "dbo",
+      "table": "Emails",
+      "rows": 22812568
+    },
+    {
+      "database": "BackingTables",
+      "schema": "fincen",
+      "table": "customerformat",
+      "rows": 18375354
+    },
+    {
+      "database": "ReportingApplications",
+      "schema": "dbo",
+      "table": "GovernmentIdentities",
+      "rows": 17927368
+    },
+    {
+      "database": "ReportingApplications",
+      "schema": "dbo",
+      "table": "Customers",
+      "rows": 17695256
+    },
+    {
+      "database": "BackingTables",
+      "schema": "reporting",
+      "table": "sourceref2activity",
+      "rows": 17354145
+    },
+    {
+      "database": "BackingTables",
+      "schema": "reporting",
+      "table": "conversionratebreakdown",
+      "rows": 16595534
+    },
+    {
+      "database": "ReportingLoanbook",
+      "schema": "dbo",
+      "table": "Events",
+      "rows": 16568929
+    },
+    {
+      "database": "BackingTables",
+      "schema": "reporting",
+      "table": "areffirstseen",
+      "rows": 15258874
+    },
+    {
+      "database": "ReportingApplications",
+      "schema": "dbo",
+      "table": "Applications",
+      "rows": 14480415
+    },
+    {
+      "database": "ReportingApplications",
+      "schema": "dbo",
+      "table": "ESignatures",
+      "rows": 13860540
+    },
+    {
+      "database": "BackingTables",
+      "schema": "reporting",
+      "table": "paymentattemptsdata",
+      "rows": 13007330
+    },
+    {
+      "database": "ReportingLookup",
+      "schema": "dbo",
+      "table": "Lookups",
+      "rows": 12466792
+    },
+    {
+      "database": "ReportingLoanbook",
+      "schema": "dbo",
+      "table": "Transactions",
+      "rows": 11730253
+    },
+    {
+      "database": "BackingTables",
+      "schema": "reporting",
+      "table": "clickreportdata",
+      "rows": 11238443
+    },
+    {
+      "database": "BackingTables",
+      "schema": "reporting",
+      "table": "messagelist",
+      "rows": 10119399
+    },
+    {
+      "database": "ReportingBrokers",
+      "schema": "dbo",
+      "table": "PremiumLeadScores",
+      "rows": 9559367
+    },
+    {
+      "database": "BackingTables",
+      "schema": "reporting",
+      "table": "paymentcampaigns",
+      "rows": 9293376
+    },
+    {
+      "database": "ReportingApplications",
+      "schema": "dbo",
+      "table": "WebBehaviours",
+      "rows": 9255130
+    },
+    {
+      "database": "ReportingApplications",
+      "schema": "dbo",
+      "table": "Flags",
+      "rows": 9207494
+    },
+    {
+      "database": "ReportingPayments",
+      "schema": "dbo",
+      "table": "Payments",
+      "rows": 8421461
+    },
+    {
+      "database": "ReportingLoanbook",
+      "schema": "dbo",
+      "table": "Payment_Schedule",
+      "rows": 7711783
+    },
+    {
+      "database": "BackingTables",
+      "schema": "reporting",
+      "table": "financeprovisionfigures",
+      "rows": 7275600
+    },
+    {
+      "database": "BackingTables",
+      "schema": "reporting",
+      "table": "financialfiguresbreakdown",
+      "rows": 7273640
+    },
+    {
+      "database": "BackingTables",
+      "schema": "reporting",
+      "table": "callbreakdown",
+      "rows": 7155772
+    },
+    {
+      "database": "BackingTables",
+      "schema": "reporting",
+      "table": "affiliatesubsourceref2reportdata",
+      "rows": 6437080
+    },
+    {
+      "database": "ReportingCentralCrm",
+      "schema": "dbo",
+      "table": "RobotResponses",
+      "rows": 5272026
+    },
+    {
+      "database": "ReportingCentralCrm",
+      "schema": "dbo",
+      "table": "TriggeredMessages",
+      "rows": 5267678
+    },
+    {
+      "database": "BackingTables",
+      "schema": "reporting",
+      "table": "affiliatereportbidlevel",
+      "rows": 4591493
+    },
+    {
+      "database": "BackingTables",
+      "schema": "reporting",
+      "table": "breachdata",
+      "rows": 4430101
+    },
+    {
+      "database": "BackingTables",
+      "schema": "reporting",
+      "table": "paymentsdue_pd",
+      "rows": 4414274
+    },
+    {
+      "database": "BackingTables",
+      "schema": "reporting",
+      "table": "IFRS_Transaction",
+      "rows": 3734673
+    },
+    {
+      "database": "BackingTables",
+      "schema": "reporting",
+      "table": "humanactionsperloanbreakdown",
+      "rows": 3586702
+    },
+    {
+      "database": "BackingTables",
+      "schema": "reporting",
+      "table": "affiliatereportcampaignlevel",
+      "rows": 3052687
+    },
+    {
+      "database": "BackingTables",
+      "schema": "reporting",
+      "table": "ifrsbalances",
+      "rows": 2980560
+    },
+    {
+      "database": "BackingTables",
+      "schema": "reporting",
+      "table": "oxfordinvoices",
+      "rows": 2919088
+    },
+    {
+      "database": "BackingTables",
+      "schema": "reporting",
+      "table": "cbunreversed",
+      "rows": 2748383
+    },
+    {
+      "database": "ReportingBrokers",
+      "schema": "dbo",
+      "table": "SourceHistories",
+      "rows": 2566886
+    },
+    {
+      "database": "BackingTables",
+      "schema": "reporting",
+      "table": "cohortreportbreakdown",
+      "rows": 2141673
+    },
+    {
+      "database": "ReportingLoanbook",
+      "schema": "dbo",
+      "table": "AppLoginSuccesses",
+      "rows": 2002946
+    },
+    {
+      "database": "BackingTables",
+      "schema": "dbo",
+      "table": "event27_affordability_extract",
+      "rows": 1694961
+    },
+    {
+      "database": "ReportingLoanbook",
+      "schema": "dbo",
+      "table": "Allocate",
+      "rows": 1543981
+    },
+    {
+      "database": "BackingTables",
+      "schema": "reporting",
+      "table": "financeprovisionfigures_OLD",
+      "rows": 1454431
+    },
+    {
+      "database": "BackingTables",
+      "schema": "reporting",
+      "table": "financeprovisionfigures_ifrs_OLD",
+      "rows": 1431076
+    },
+    {
+      "database": "BackingTables",
+      "schema": "reporting",
+      "table": "leadconversionsummary",
+      "rows": 1061591
+    },
+    {
+      "database": "BackingTables",
+      "schema": "reporting",
+      "table": "collectionsactionclients",
+      "rows": 940135
+    },
+    {
+      "database": "BackingTables",
+      "schema": "reporting",
+      "table": "cbtotalpaid",
+      "rows": 864616
+    },
+    {
+      "database": "ReportingLoanbook",
+      "schema": "dbo",
+      "table": "CustomFlags",
+      "rows": 854983
+    },
+    {
+      "database": "BackingTables",
+      "schema": "reporting",
+      "table": "MonthlyAccruedInterest",
+      "rows": 786245
+    },
+    {
+      "database": "ReportingCentralCrm",
+      "schema": "dbo",
+      "table": "SentCampaigns",
+      "rows": 711745
+    },
+    {
+      "database": "BackingTables",
+      "schema": "reporting",
+      "table": "conversionratesummary",
+      "rows": 647938
+    },
+    {
+      "database": "BackingTables",
+      "schema": "reporting",
+      "table": "affiliatesubsourcereportdata",
+      "rows": 636839
+    },
+    {
+      "database": "ReportingApplications",
+      "schema": "dbo",
+      "table": "Audit",
+      "rows": 479600
+    },
+    {
+      "database": "ReportingLoanbook",
+      "schema": "dbo",
+      "table": "Telephones",
+      "rows": 375529
+    },
+    {
+      "database": "ReportingCommunications",
+      "schema": "dbo",
+      "table": "ShortUrlClicks",
+      "rows": 364240
+    },
+    {
+      "database": "ReportingLoanbook",
+      "schema": "dbo",
+      "table": "GovernmentIdentities",
+      "rows": 348128
+    },
+    {
+      "database": "ReportingLoanbook",
+      "schema": "dbo",
+      "table": "Emails",
+      "rows": 342530
+    },
+    {
+      "database": "ReportingLookup",
+      "schema": "dbo",
+      "table": "EmailLookups",
+      "rows": 328489
+    },
+    {
+      "database": "BackingTables",
+      "schema": "fincen",
+      "table": "namematch",
+      "rows": 322390
+    },
+    {
+      "database": "ReportingLoanbook",
+      "schema": "dbo",
+      "table": "Customer",
+      "rows": 308484
+    },
+    {
+      "database": "BackingTables",
+      "schema": "reporting",
+      "table": "ppctouches",
+      "rows": 252630
+    },
+    {
+      "database": "ReportingApplications",
+      "schema": "dbo",
+      "table": "VerbalContracts",
+      "rows": 245141
+    },
+    {
+      "database": "ReportingCommunications",
+      "schema": "dbo",
+      "table": "TwilioPhones",
+      "rows": 234171
+    },
+    {
+      "database": "BackingTables",
+      "schema": "reporting",
+      "table": "allocationbreakdown",
+      "rows": 233928
+    },
+    {
+      "database": "BackingTables",
+      "schema": "reporting",
+      "table": "facebookadvertselector_breakdown",
+      "rows": 209090
+    },
+    {
+      "database": "BackingTables",
+      "schema": "reporting",
+      "table": "payoutallocationbyagent",
+      "rows": 197542
+    },
+    {
+      "database": "BackingTables",
+      "schema": "mqf",
+      "table": "applicationhistorylist",
+      "rows": 194668
+    },
+    {
+      "database": "ReportingPayments",
+      "schema": "dbo",
+      "table": "Audit",
+      "rows": 191248
+    },
+    {
+      "database": "BackingTables",
+      "schema": "reporting",
+      "table": "payoutallocationbreakdown_v2",
+      "rows": 164485
+    },
+    {
+      "database": "ReportingLoanbook",
+      "schema": "dbo",
+      "table": "Loan",
+      "rows": 154320
+    },
+    {
+      "database": "ReportingLoanbook",
+      "schema": "dbo",
+      "table": "LoanAtInception",
+      "rows": 154320
+    },
+    {
+      "database": "BackingTables",
+      "schema": "reporting",
+      "table": "loansnapshot",
+      "rows": 154320
+    },
+    {
+      "database": "BackingTables",
+      "schema": "reporting",
+      "table": "currentloandetail",
+      "rows": 154272
+    },
+    {
+      "database": "BackingTables",
+      "schema": "tando",
+      "table": "debtcollectordata",
+      "rows": 154092
+    },
+    {
+      "database": "ReportingCentralCrm",
+      "schema": "dbo",
+      "table": "PaymentFactoryRuns",
+      "rows": 109604
+    },
+    {
+      "database": "BackingTables",
+      "schema": "reporting",
+      "table": "brokerdeclinebreakdown",
+      "rows": 108621
+    },
+    {
+      "database": "BackingTables",
+      "schema": "reporting",
+      "table": "leadacceptrates_summary",
+      "rows": 107588
+    },
+    {
+      "database": "BackingTables",
+      "schema": "reporting",
+      "table": "cohortreportbreakdown_v2",
+      "rows": 89555
+    },
+    {
+      "database": "BackingTables",
+      "schema": "reporting",
+      "table": "areffirstpaidout",
+      "rows": 77977
+    },
+    {
+      "database": "ReportingLoanbook",
+      "schema": "dbo",
+      "table": "PaymentScheduleChanges",
+      "rows": 73377
+    },
+    {
+      "database": "BackingTables",
+      "schema": "reporting",
+      "table": "addresshistory",
+      "rows": 69641
+    },
+    {
+      "database": "ReportingLoanbook",
+      "schema": "reporting",
+      "table": "oldbookmatch",
+      "rows": 66226
+    },
+    {
+      "database": "BackingTables",
+      "schema": "reporting",
+      "table": "oldbookmatch",
+      "rows": 66226
+    },
+    {
+      "database": "ReportingApplications",
+      "schema": "dbo",
+      "table": "SourceReference2Stats",
+      "rows": 62066
+    },
+    {
+      "database": "BackingTables",
+      "schema": "ctl",
+      "table": "proc_runtime_history",
+      "rows": 59792
+    },
+    {
+      "database": "BackingTables",
+      "schema": "reporting",
+      "table": "payoutsbysubsource",
+      "rows": 52402
+    },
+    {
+      "database": "ReportingLoanbook",
+      "schema": "dbo",
+      "table": "DefaultHistory",
+      "rows": 50827
+    },
+    {
+      "database": "BackingTables",
+      "schema": "reporting",
+      "table": "manualvcrcancellations",
+      "rows": 50630
+    },
+    {
+      "database": "BackingTables",
+      "schema": "reporting",
+      "table": "affiliatereportsummary",
+      "rows": 48276
+    },
+    {
+      "database": "BackingTables",
+      "schema": "reporting",
+      "table": "PpcSpend",
+      "rows": 47137
+    },
+    {
+      "database": "ReportingLoanbook",
+      "schema": "dbo",
+      "table": "Audit",
+      "rows": 38498
+    },
+    {
+      "database": "ReportingPayments",
+      "schema": "dbo",
+      "table": "PaymentPermissions",
+      "rows": 37332
+    },
+    {
+      "database": "BackingTables",
+      "schema": "reporting",
+      "table": "cohortreportdata",
+      "rows": 32250
+    },
+    {
+      "database": "BackingTables",
+      "schema": "reporting",
+      "table": "ifrsinterestrates",
+      "rows": 32053
+    },
+    {
+      "database": "BackingTables",
+      "schema": "reporting",
+      "table": "IFRS_Agreement_Detail",
+      "rows": 32053
+    },
+    {
+      "database": "BackingTables",
+      "schema": "reporting",
+      "table": "cashcollected",
+      "rows": 31580
+    },
+    {
+      "database": "BackingTables",
+      "schema": "reporting",
+      "table": "LoanTransferred",
+      "rows": 30292
+    },
+    {
+      "database": "BackingTables",
+      "schema": "reporting",
+      "table": "interestcollectedforecast",
+      "rows": 29525
+    },
+    {
+      "database": "BackingTables",
+      "schema": "reporting",
+      "table": "collectionsactionclient_summary",
+      "rows": 29369
+    },
+    {
+      "database": "BackingTables",
+      "schema": "fincen",
+      "table": "geographymatches_raw",
+      "rows": 27850
+    },
+    {
+      "database": "BackingTables",
+      "schema": "reporting",
+      "table": "transactionslast3days",
+      "rows": 27535
+    },
+    {
+      "database": "BackingTables",
+      "schema": "reporting",
+      "table": "payoutallocationbreakdown",
+      "rows": 27061
+    },
+    {
+      "database": "BackingTables",
+      "schema": "mqf",
+      "table": "customerlist_esignatures_raw",
+      "rows": 26190
+    },
+    {
+      "database": "BackingTables",
+      "schema": "reporting",
+      "table": "robotmessagebreakdown",
+      "rows": 22590
+    },
+    {
+      "database": "BackingTables",
+      "schema": "reporting",
+      "table": "ifrssettled",
+      "rows": 20326
+    },
+    {
+      "database": "BackingTables",
+      "schema": "mqf",
+      "table": "aprlist",
+      "rows": 20037
+    },
+    {
+      "database": "BackingTables",
+      "schema": "fincen",
+      "table": "namematches_raw",
+      "rows": 18796
+    },
+    {
+      "database": "BackingTables",
+      "schema": "fincen",
+      "table": "emailmatches_raw",
+      "rows": 18412
+    },
+    {
+      "database": "BackingTables",
+      "schema": "reporting",
+      "table": "loanchargeoffs",
+      "rows": 17182
+    },
+    {
+      "database": "BackingTables",
+      "schema": "mqf",
+      "table": "customerlist",
+      "rows": 16856
+    },
+    {
+      "database": "BackingTables",
+      "schema": "mqf",
+      "table": "customerlist_addresses",
+      "rows": 16856
+    },
+    {
+      "database": "BackingTables",
+      "schema": "mqf",
+      "table": "customerlist_ssns",
+      "rows": 16856
+    },
+    {
+      "database": "BackingTables",
+      "schema": "mqf",
+      "table": "customerlist_phones",
+      "rows": 16837
+    },
+    {
+      "database": "BackingTables",
+      "schema": "mqf",
+      "table": "applicationdatelist",
+      "rows": 16443
+    },
+    {
+      "database": "BackingTables",
+      "schema": "mqf",
+      "table": "customerlist_esignatures",
+      "rows": 15793
+    },
+    {
+      "database": "BackingTables",
+      "schema": "fincen",
+      "table": "ssnmatches_raw",
+      "rows": 14545
+    },
+    {
+      "database": "BackingTables",
+      "schema": "reporting",
+      "table": "payoutallocationbreakdown_v3",
+      "rows": 14510
+    },
+    {
+      "database": "BackingTables",
+      "schema": "reporting",
+      "table": "loanchargeoffs_ifrs",
+      "rows": 12074
+    },
+    {
+      "database": "BackingTables",
+      "schema": "mqf",
+      "table": "phoneemailchecktasks",
+      "rows": 11360
+    },
+    {
+      "database": "BackingTables",
+      "schema": "reporting",
+      "table": "ifrsmanualadjustments",
+      "rows": 10292
+    },
+    {
+      "database": "BackingTables",
+      "schema": "mqf",
+      "table": "activeeventlist",
+      "rows": 10052
+    },
+    {
+      "database": "BackingTables",
+      "schema": "mqf",
+      "table": "activegt",
+      "rows": 10034
+    },
+    {
+      "database": "BackingTables",
+      "schema": "mqf",
+      "table": "brwstate",
+      "rows": 10034
+    },
+    {
+      "database": "BackingTables",
+      "schema": "mqf",
+      "table": "creditchecks",
+      "rows": 9749
+    },
+    {
+      "database": "BackingTables",
+      "schema": "reporting",
+      "table": "acceptsperday_breakdown",
+      "rows": 9575
+    },
+    {
+      "database": "BackingTables",
+      "schema": "reporting",
+      "table": "casescleared",
+      "rows": 9553
+    },
+    {
+      "database": "BackingTables",
+      "schema": "mqf",
+      "table": "event27list",
+      "rows": 8198
+    },
+    {
+      "database": "BackingTables",
+      "schema": "mqf",
+      "table": "mqf",
+      "rows": 8083
+    },
+    {
+      "database": "ReportingCentralCrm",
+      "schema": "dbo",
+      "table": "RobotResponderAudits",
+      "rows": 7482
+    },
+    {
+      "database": "BackingTables",
+      "schema": "reporting",
+      "table": "stppreportdata",
+      "rows": 7450
+    },
+    {
+      "database": "BackingTables",
+      "schema": "reporting",
+      "table": "accountslast3days",
+      "rows": 6782
+    },
+    {
+      "database": "ReportingLoanbook",
+      "schema": "dbo",
+      "table": "Flags",
+      "rows": 6140
+    },
+    {
+      "database": "ReportingCentralCrm",
+      "schema": "dbo",
+      "table": "Campaigns",
+      "rows": 6072
+    },
+    {
+      "database": "BackingTables",
+      "schema": "reporting",
+      "table": "activeloansperweek",
+      "rows": 5731
+    },
+    {
+      "database": "BackingTables",
+      "schema": "fincen",
+      "table": "dataformat",
+      "rows": 4851
+    },
+    {
+      "database": "BackingTables",
+      "schema": "reporting",
+      "table": "cohortreportdata_v2",
+      "rows": 4478
+    },
+    {
+      "database": "BackingTables",
+      "schema": "reporting",
+      "table": "financialfiguresbreakdown_rgdc",
+      "rows": 4007
+    },
+    {
+      "database": "ReportingBrokers",
+      "schema": "dbo",
+      "table": "SourceRefs",
+      "rows": 3823
+    },
+    {
+      "database": "ReportingBrokers",
+      "schema": "dbo",
+      "table": "ExcludedRefs",
+      "rows": 3708
+    },
+    {
+      "database": "BackingTables",
+      "schema": "reporting",
+      "table": "payoutsafterblock",
+      "rows": 3704
+    },
+    {
+      "database": "BackingTables",
+      "schema": "reporting",
+      "table": "dia90_clear_breakdown",
+      "rows": 3615
+    },
+    {
+      "database": "BackingTables",
+      "schema": "moneymas",
+      "table": "agencyfile",
+      "rows": 3132
+    },
+    {
+      "database": "BackingTables",
+      "schema": "mqf",
+      "table": "prioreventlist",
+      "rows": 3059
+    },
+    {
+      "database": "ReportingLookup",
+      "schema": "dbo",
+      "table": "Carriers",
+      "rows": 2635
+    },
+    {
+      "database": "BackingTables",
+      "schema": "reporting",
+      "table": "tueflagreport_turkeyreceivers",
+      "rows": 1612
+    },
+    {
+      "database": "BackingTables",
+      "schema": "reporting",
+      "table": "gtdeclinereasons",
+      "rows": 1576
+    },
+    {
+      "database": "ReportingCentralCrm",
+      "schema": "dbo",
+      "table": "CannedMessages",
+      "rows": 1396
+    },
+    {
+      "database": "BackingTables",
+      "schema": "reporting",
+      "table": "activeloanspermonth",
+      "rows": 1339
+    },
+    {
+      "database": "BackingTables",
+      "schema": "mqf",
+      "table": "autopaylist",
+      "rows": 1267
+    },
+    {
+      "database": "BackingTables",
+      "schema": "fincen",
+      "table": "geographymatch",
+      "rows": 1231
+    },
+    {
+      "database": "ReportingApplications",
+      "schema": "dbo",
+      "table": "PayoutAllocationHistories",
+      "rows": 1137
+    },
+    {
+      "database": "BackingTables",
+      "schema": "reporting",
+      "table": "ddeventsreversed_last3days",
+      "rows": 1120
+    },
+    {
+      "database": "BackingTables",
+      "schema": "reporting",
+      "table": "collectionsactionclients_last3days",
+      "rows": 1118
+    },
+    {
+      "database": "BackingTables",
+      "schema": "reporting",
+      "table": "uszipcodes",
+      "rows": 1101
+    },
+    {
+      "database": "BackingTables",
+      "schema": "reporting",
+      "table": "baddebtbreakdown",
+      "rows": 1059
+    }
+  ]
+}

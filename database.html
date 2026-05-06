@@ -8,7 +8,7 @@
 <link rel="apple-touch-icon" href="site-icon.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&family=Orbitron:wght@500;600;700;800&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&family=Orbitron:wght@500;600;700;800&family=Roboto+Mono:wght@700;800&display=swap" rel="stylesheet">
 <style>
   :root {
     --bg: #060a1f;
@@ -198,6 +198,145 @@
     .topbar nav a { font-size: 0.85rem; }
     .topbar .brand { font-size: 0.95rem; }
   }
+
+  /* === Row-count flipboard list === */
+  .rc-section {
+    max-width: 1100px;
+    margin: 64px auto 32px;
+    padding: 28px 24px 32px;
+    border-top: 1px solid var(--border-soft);
+  }
+  .rc-section h2 {
+    font-family: var(--font-display);
+    font-size: 1.4rem;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin: 0 0 8px;
+  }
+  .rc-section .lead {
+    color: var(--ink-soft);
+    font-size: 0.95rem;
+    margin: 0 0 8px;
+  }
+  .rc-section .rc-meta {
+    color: var(--muted);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.78rem;
+    margin: 0 0 28px;
+  }
+  .rc-list {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(380px, 1fr));
+    gap: 18px;
+  }
+  .rc-row {
+    padding: 16px 18px;
+    background: linear-gradient(180deg, var(--bg-soft), var(--bg-soft-2));
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    transition: border-color 0.15s, box-shadow 0.15s;
+  }
+  .rc-row:hover {
+    border-color: var(--accent);
+    box-shadow: 0 0 18px rgba(0, 212, 255, 0.18);
+  }
+  .rc-label {
+    font-family: var(--font-display);
+    font-size: 0.78rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--ink);
+    margin: 0 0 2px;
+  }
+  .rc-sub {
+    color: var(--muted);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.74rem;
+    margin: 0 0 12px;
+    word-break: break-word;
+  }
+  .rc-flip {
+    display: flex;
+    gap: 3px;
+    align-items: center;
+    flex-wrap: wrap;
+    margin: 0 0 10px;
+  }
+  .rc-cell {
+    --flip-card: #f4f0e6;
+    --flip-card-2: #e8e1d0;
+    display: inline-block;
+    width: 28px;
+    height: 42px;
+    background: linear-gradient(180deg,
+      var(--flip-card) 0%,
+      var(--flip-card) 49.5%,
+      #d8d2c0 50%,
+      #d8d2c0 50.5%,
+      var(--flip-card-2) 51%,
+      var(--flip-card-2) 100%);
+    border-radius: 4px;
+    box-shadow:
+      inset 0 1px 0 rgba(255, 255, 255, 0.6),
+      inset 0 -1px 0 rgba(0, 0, 0, 0.1),
+      0 1px 2px rgba(0, 0, 0, 0.4);
+    position: relative;
+    overflow: hidden;
+  }
+  .rc-cell::before,
+  .rc-cell::after {
+    content: "";
+    position: absolute;
+    top: 50%;
+    width: 3px;
+    height: 4px;
+    background: #4a4438;
+    border-radius: 1px;
+    transform: translateY(-50%);
+    z-index: 2;
+  }
+  .rc-cell::before { left: 0; }
+  .rc-cell::after { right: 0; }
+  .rc-cell-digit {
+    display: block;
+    height: 42px;
+    line-height: 42px;
+    text-align: center;
+    font-family: 'Roboto Mono', ui-monospace, Menlo, monospace;
+    font-weight: 800;
+    font-size: 1.45rem;
+    color: #1a1a1a;
+  }
+  .rc-sep {
+    color: #6b6253;
+    font-family: 'Roboto Mono', ui-monospace, Menlo, monospace;
+    font-weight: 800;
+    font-size: 1.5rem;
+    padding: 0 1px;
+    align-self: center;
+    line-height: 1;
+  }
+  .rc-updated {
+    color: var(--muted);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.7rem;
+    letter-spacing: 0.02em;
+  }
+  .rc-skipped {
+    margin-top: 24px;
+    color: var(--muted);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.78rem;
+  }
+  @media (max-width: 540px) {
+    .rc-section { padding: 24px 16px; }
+    .rc-cell { width: 22px; height: 34px; }
+    .rc-cell-digit { height: 34px; line-height: 34px; font-size: 1.15rem; }
+    .rc-sep { font-size: 1.2rem; }
+  }
 </style>
 </head>
 <body>
@@ -214,6 +353,14 @@
 <main id="content">
   <p class="loading">Loading schema and rendering diagrams…</p>
 </main>
+
+<section class="rc-section" id="row-counts" aria-labelledby="rc-heading">
+  <h2 id="rc-heading">Live row counts</h2>
+  <p class="lead">How many rows sit in each table on the warehouse — the snapshot Claude pulled from the Fabric mirror.</p>
+  <p class="rc-meta" id="rcMeta">Loading…</p>
+  <div class="rc-list" id="rcList"></div>
+  <p class="rc-skipped" id="rcSkipped"></p>
+</section>
 
 <script src="https://cdn.jsdelivr.net/npm/marked@11/marked.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
@@ -274,6 +421,53 @@
       document.getElementById('content').innerHTML =
         `<h1>Database schema</h1><p style="color:#b91c1c">Error: ${err.message}</p>` +
         `<p>Open <a href="database.md">database.md</a> directly.</p>`;
+    });
+
+  // === Row-count flipboard list ===
+  const RC_DATE_OPTS = { year: 'numeric', month: 'short', day: 'numeric' };
+  function renderRowCounts(data) {
+    const meta = document.getElementById('rcMeta');
+    const list = document.getElementById('rcList');
+    const skipped = document.getElementById('rcSkipped');
+    const items = data.items || [];
+    const totalRows = (data.totals && data.totals.rows) || items.reduce((s, i) => s + (i.rows || 0), 0);
+    const updatedDate = new Date(data.snapshot_date || data.updated_at || Date.now());
+    const updatedLabel = updatedDate.toLocaleDateString('en-GB', RC_DATE_OPTS);
+
+    meta.textContent = `${items.length} tables · ${totalRows.toLocaleString('en-US')} total rows · snapshot ${updatedLabel}`;
+
+    const frag = document.createDocumentFragment();
+    for (const item of items) {
+      const digits = (item.rows || 0).toLocaleString('en-US');
+      const cells = [...digits].map(c =>
+        c === ','
+          ? `<span class="rc-sep">,</span>`
+          : `<span class="rc-cell"><span class="rc-cell-digit">${c}</span></span>`
+      ).join('');
+      const row = document.createElement('div');
+      row.className = 'rc-row';
+      row.innerHTML = `
+        <div class="rc-label">${item.database}</div>
+        <div class="rc-sub">${item.schema}.${item.table}</div>
+        <div class="rc-flip" aria-label="${digits} rows">${cells}</div>
+        <div class="rc-updated">Last updated ${updatedLabel}</div>
+      `;
+      frag.appendChild(row);
+    }
+    list.appendChild(frag);
+
+    if (data.skipped_databases && data.skipped_databases.length) {
+      skipped.textContent =
+        `Skipped this run (timed out): ${data.skipped_databases.join(', ')}.`;
+    }
+  }
+
+  fetch('row-counts.json', { cache: 'no-cache' })
+    .then(r => { if (!r.ok) throw new Error('row-counts.json HTTP ' + r.status); return r.json(); })
+    .then(renderRowCounts)
+    .catch(err => {
+      const meta = document.getElementById('rcMeta');
+      if (meta) meta.textContent = 'Could not load row counts: ' + err.message;
     });
 </script>
 
