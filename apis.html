@@ -48,7 +48,16 @@
     <button class="drawer-close" aria-label="Close menu"
             onclick="document.body.classList.remove('menu-open')">✕ Close menu</button>
     <h4>The 8 APIs</h4>
-    <ul class="sidebar-nav" id="sideNavApis"></ul>
+    <ul class="sidebar-nav" id="sideNavApis">
+      <li><a href="#gary"     onclick="document.body.classList.remove('menu-open')"><span class="em">🔒</span> Gary</a></li>
+      <li><a href="#anna"     onclick="document.body.classList.remove('menu-open')"><span class="em">📋</span> App Anna</a></li>
+      <li><a href="#bessie"   onclick="document.body.classList.remove('menu-open')"><span class="em">🦈</span> Bessie</a></li>
+      <li><a href="#whitney"  onclick="document.body.classList.remove('menu-open')"><span class="em">◻️</span> Whitney</a></li>
+      <li><a href="#larry"    onclick="document.body.classList.remove('menu-open')"><span class="em">📖</span> Larry</a></li>
+      <li><a href="#penny"    onclick="document.body.classList.remove('menu-open')"><span class="em">💳</span> Penny</a></li>
+      <li><a href="#connie"   onclick="document.body.classList.remove('menu-open')"><span class="em">💬</span> Connie</a></li>
+      <li><a href="#sherlock" onclick="document.body.classList.remove('menu-open')"><span class="em">🕵️</span> Sherlock</a></li>
+    </ul>
   </aside>
 
   <main>
@@ -426,13 +435,17 @@
     }
   ];
 
-  // Build sidebar nav — APIs
+  // Build sidebar nav — APIs.  Clear the static fallback first, then populate
+  // from the data array so any name changes flow through.
   const sideNavApis = document.getElementById('sideNavApis');
-  characters.forEach(c => {
-    const li = document.createElement('li');
-    li.innerHTML = `<a href="#${c.id}" onclick="document.body.classList.remove('menu-open')"><span class="em">${c.face}</span> ${c.name.split(' the ')[0]}</a>`;
-    sideNavApis.appendChild(li);
-  });
+  if (sideNavApis) {
+    sideNavApis.innerHTML = '';
+    characters.forEach(c => {
+      const li = document.createElement('li');
+      li.innerHTML = `<a href="#${c.id}" onclick="document.body.classList.remove('menu-open')"><span class="em">${c.face}</span> ${c.name.split(' the ')[0]}</a>`;
+      sideNavApis.appendChild(li);
+    });
+  }
 
 
   // Build helper sections

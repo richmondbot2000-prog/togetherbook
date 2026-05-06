@@ -48,7 +48,20 @@
     <button class="drawer-close" aria-label="Close menu"
             onclick="document.body.classList.remove('menu-open')">✕ Close menu</button>
     <h4>The 12 Robots</h4>
-    <ul class="sidebar-nav" id="sideNavRobots"></ul>
+    <ul class="sidebar-nav" id="sideNavRobots">
+      <li><a href="#night-counter"   onclick="document.body.classList.remove('menu-open')"><img class="emoji" src="https://api.iconify.design/fluent-emoji/owl.svg" /> Night Counter</a></li>
+      <li><a href="#quick-counter"   onclick="document.body.classList.remove('menu-open')"><img class="emoji" src="https://api.iconify.design/fluent-emoji/person-running.svg" /> Quick Counter</a></li>
+      <li><a href="#payment-matcher" onclick="document.body.classList.remove('menu-open')"><img class="emoji" src="https://api.iconify.design/fluent-emoji/puzzle-piece.svg" /> Payment Matcher</a></li>
+      <li><a href="#card-bank-tidier" onclick="document.body.classList.remove('menu-open')"><img class="emoji" src="https://api.iconify.design/fluent-emoji/man-mechanic.svg" /> Card-and-Bank Tidier</a></li>
+      <li><a href="#big-mailout"     onclick="document.body.classList.remove('menu-open')"><img class="emoji" src="https://api.iconify.design/fluent-emoji/dove.svg" /> Big Mailout Team</a></li>
+      <li><a href="#payment-collector" onclick="document.body.classList.remove('menu-open')"><img class="emoji" src="https://api.iconify.design/fluent-emoji/money-with-wings.svg" /> Payment Collector</a></li>
+      <li><a href="#reply-robots"    onclick="document.body.classList.remove('menu-open')"><img class="emoji" src="https://api.iconify.design/fluent-emoji/parrot.svg" /> Reply Robots</a></li>
+      <li><a href="#lookout"         onclick="document.body.classList.remove('menu-open')"><img class="emoji" src="https://api.iconify.design/fluent-emoji/rotating-light.svg" /> Lookout</a></li>
+      <li><a href="#loan-inspector"  onclick="document.body.classList.remove('menu-open')"><img class="emoji" src="https://api.iconify.design/fluent-emoji/face-with-monocle.svg" /> Loan Inspector</a></li>
+      <li><a href="#tidy-up-crew"    onclick="document.body.classList.remove('menu-open')"><img class="emoji" src="https://api.iconify.design/fluent-emoji/broom.svg" /> Tidy-Up Crew</a></li>
+      <li><a href="#card-sorter"     onclick="document.body.classList.remove('menu-open')"><img class="emoji" src="https://api.iconify.design/fluent-emoji/card-index-dividers.svg" /> Card Sorter</a></li>
+      <li><a href="#finder"          onclick="document.body.classList.remove('menu-open')"><img class="emoji" src="https://api.iconify.design/fluent-emoji/dog-face.svg" /> Finder</a></li>
+    </ul>
   </aside>
 
   <main>
@@ -178,6 +191,10 @@
   function renderAskerGroup(items, gridId, navId) {
     const grid = document.getElementById(gridId);
     const nav = document.getElementById(navId);
+    // Clear static fallback before re-rendering from data, so name changes
+    // in the data array flow through and we don't end up with duplicates.
+    if (nav) nav.innerHTML = '';
+    if (grid) grid.innerHTML = '';
     items.forEach(it => {
       // For sidebar/nav, always use the small Fluent Emoji icon — works at tiny size
       const navIconSrc = `https://api.iconify.design/fluent-emoji/${it.icon}.svg`;
