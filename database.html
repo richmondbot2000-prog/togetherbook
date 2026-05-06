@@ -226,16 +226,42 @@
     margin: 2px 0 8px;
   }
   .rc-list {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(420px, 1fr));
-    column-gap: 18px;
-    row-gap: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+  }
+  .rc-group {
     background: var(--bg-soft);
     border: 1px solid var(--border);
     border-radius: 6px;
-    padding: 4px 8px;
+    padding: 4px 10px 6px;
   }
-  .rc-row {
+  .rc-group-h {
+    margin: 4px 0 6px;
+    padding: 4px 0 6px;
+    border-bottom: 1px solid var(--border-soft);
+    font-family: var(--font-display);
+    font-size: 0.78rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--accent);
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 12px;
+    flex-wrap: wrap;
+  }
+  .rc-group-name { font-weight: 700; }
+  .rc-group-meta {
+    color: var(--muted);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.66rem;
+    font-weight: 400;
+    text-transform: none;
+    letter-spacing: 0;
+  }
+  .rc-group > .rc-row {
     display: grid;
     grid-template-columns: minmax(0, 1fr) auto auto auto;
     gap: 8px;
@@ -243,8 +269,18 @@
     padding: 1px 0;
     border-bottom: 1px solid rgba(255, 255, 255, 0.04);
   }
-  .rc-row:last-child { border-bottom: none; }
-  .rc-row:hover { background: rgba(0, 212, 255, 0.05); }
+  .rc-group > .rc-row:last-child { border-bottom: none; }
+  .rc-group > .rc-row:hover { background: rgba(0, 212, 255, 0.05); }
+  /* On wide viewports, two-column the rows inside the group */
+  @media (min-width: 880px) {
+    .rc-group {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      column-gap: 22px;
+      row-gap: 0;
+    }
+    .rc-group .rc-group-h { grid-column: 1 / -1; }
+  }
   .rc-label {
     font-family: 'JetBrains Mono', monospace;
     font-size: 0.7rem;
@@ -443,8 +479,25 @@
     meta.textContent = `${items.length} tables · ${totalRows.toLocaleString('en-US')} total rows · snapshot ${updatedLabel}`;
 
     const updatedShort = updatedDate.toLocaleDateString('en-GB', { day: 'numeric', month: 'short' });
-    const frag = document.createDocumentFragment();
+
+    // Group by database.schema; sort groups by total rows; sort items within
+    // each group by rows desc.
+    const groups = new Map();
     for (const item of items) {
+      const key = `${item.database}.${item.schema}`;
+      if (!groups.has(key)) groups.set(key, []);
+      groups.get(key).push(item);
+    }
+    const sortedGroups = [...groups.entries()]
+      .map(([key, list]) => ({
+        key,
+        list: list.slice().sort((a, b) => (b.rows || 0) - (a.rows || 0)),
+        rows: list.reduce((s, i) => s + (i.rows || 0), 0),
+        tables: list.length,
+      }))
+      .sort((a, b) => b.rows - a.rows);
+
+    const renderRowMarkup = (item) => {
       const digits = (item.rows || 0).toLocaleString('en-US');
       const cells = [...digits].map(c =>
         c === ','
@@ -454,17 +507,30 @@
       const colsLabel = item.columns != null
         ? `<span class="rc-cols">${item.columns}<span class="rc-cols-unit"> cols</span></span>`
         : '';
-      const row = document.createElement('div');
-      row.className = 'rc-row';
-      row.innerHTML = `
-        <div class="rc-label" title="${item.database} — ${item.schema}.${item.table}">
-          <span class="rc-db">${item.database}</span> · ${item.schema}.${item.table}
+      return `
+        <div class="rc-row">
+          <div class="rc-label" title="${item.schema}.${item.table}">
+            ${item.schema}.${item.table}
+          </div>
+          <div class="rc-flip" aria-label="${digits} rows">${cells}</div>
+          ${colsLabel}
+          <div class="rc-updated">${updatedShort}</div>
         </div>
-        <div class="rc-flip" aria-label="${digits} rows">${cells}</div>
-        ${colsLabel}
-        <div class="rc-updated">${updatedShort}</div>
       `;
-      frag.appendChild(row);
+    };
+
+    const frag = document.createDocumentFragment();
+    for (const g of sortedGroups) {
+      const section = document.createElement('div');
+      section.className = 'rc-group';
+      section.innerHTML = `
+        <h3 class="rc-group-h">
+          <span class="rc-group-name">${g.key}</span>
+          <span class="rc-group-meta">${g.tables} tables · ${g.rows.toLocaleString('en-US')} rows</span>
+        </h3>
+        ${g.list.map(renderRowMarkup).join('')}
+      `;
+      frag.appendChild(section);
     }
     list.appendChild(frag);
 
