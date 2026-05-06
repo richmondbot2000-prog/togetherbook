@@ -199,78 +199,86 @@
     .topbar .brand { font-size: 0.95rem; }
   }
 
-  /* === Row-count flipboard list === */
+  /* === Row-count flipboard list (compact, single-row cards) === */
   .rc-section {
-    max-width: 1100px;
-    margin: 64px auto 32px;
-    padding: 28px 24px 32px;
-    border-top: 1px solid var(--border-soft);
+    max-width: 1320px;
+    margin: 12px auto 18px;
+    padding: 10px 16px 16px;
   }
   .rc-section h2 {
     font-family: var(--font-display);
-    font-size: 1.4rem;
+    font-size: 1.1rem;
     font-weight: 700;
     letter-spacing: 0.04em;
     text-transform: uppercase;
     color: var(--accent);
-    margin: 0 0 8px;
+    margin: 0 0 4px;
   }
   .rc-section .lead {
     color: var(--ink-soft);
-    font-size: 0.95rem;
-    margin: 0 0 8px;
+    font-size: 0.82rem;
+    margin: 0 0 2px;
   }
   .rc-section .rc-meta {
     color: var(--muted);
     font-family: 'JetBrains Mono', monospace;
-    font-size: 0.78rem;
-    margin: 0 0 28px;
+    font-size: 0.72rem;
+    margin: 0 0 12px;
   }
   .rc-list {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(380px, 1fr));
-    gap: 18px;
+    grid-template-columns: repeat(auto-fit, minmax(440px, 1fr));
+    gap: 4px;
   }
   .rc-row {
-    padding: 16px 18px;
+    padding: 4px 10px;
     background: linear-gradient(180deg, var(--bg-soft), var(--bg-soft-2));
     border: 1px solid var(--border);
-    border-radius: 10px;
+    border-radius: 6px;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto auto;
+    gap: 10px;
+    align-items: center;
     transition: border-color 0.15s, box-shadow 0.15s;
   }
   .rc-row:hover {
     border-color: var(--accent);
-    box-shadow: 0 0 18px rgba(0, 212, 255, 0.18);
+    box-shadow: 0 0 12px rgba(0, 212, 255, 0.14);
   }
+  .rc-label-stack { min-width: 0; line-height: 1.15; }
   .rc-label {
     font-family: var(--font-display);
-    font-size: 0.78rem;
+    font-size: 0.7rem;
     font-weight: 700;
     text-transform: uppercase;
-    letter-spacing: 0.06em;
+    letter-spacing: 0.05em;
     color: var(--ink);
-    margin: 0 0 2px;
+    margin: 0;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
   }
   .rc-sub {
     color: var(--muted);
     font-family: 'JetBrains Mono', monospace;
-    font-size: 0.74rem;
-    margin: 0 0 12px;
-    word-break: break-word;
+    font-size: 0.66rem;
+    margin: 0;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
   }
   .rc-flip {
     display: flex;
-    gap: 3px;
+    gap: 0;
     align-items: center;
-    flex-wrap: wrap;
-    margin: 0 0 10px;
+    flex-wrap: nowrap;
   }
   .rc-cell {
     --flip-card: #f4f0e6;
     --flip-card-2: #e8e1d0;
     display: inline-block;
-    width: 28px;
-    height: 42px;
+    width: 18px;
+    height: 28px;
     background: linear-gradient(180deg,
       var(--flip-card) 0%,
       var(--flip-card) 49.5%,
@@ -278,11 +286,11 @@
       #d8d2c0 50.5%,
       var(--flip-card-2) 51%,
       var(--flip-card-2) 100%);
-    border-radius: 4px;
+    border-radius: 2px;
     box-shadow:
-      inset 0 1px 0 rgba(255, 255, 255, 0.6),
+      inset 0 1px 0 rgba(255, 255, 255, 0.55),
       inset 0 -1px 0 rgba(0, 0, 0, 0.1),
-      0 1px 2px rgba(0, 0, 0, 0.4);
+      0 1px 1px rgba(0, 0, 0, 0.35);
     position: relative;
     overflow: hidden;
   }
@@ -291,8 +299,8 @@
     content: "";
     position: absolute;
     top: 50%;
-    width: 3px;
-    height: 4px;
+    width: 2px;
+    height: 3px;
     background: #4a4438;
     border-radius: 1px;
     transform: translateY(-50%);
@@ -302,19 +310,19 @@
   .rc-cell::after { right: 0; }
   .rc-cell-digit {
     display: block;
-    height: 42px;
-    line-height: 42px;
+    height: 28px;
+    line-height: 28px;
     text-align: center;
     font-family: 'Roboto Mono', ui-monospace, Menlo, monospace;
     font-weight: 800;
-    font-size: 1.45rem;
+    font-size: 0.95rem;
     color: #1a1a1a;
   }
   .rc-sep {
     color: #6b6253;
     font-family: 'Roboto Mono', ui-monospace, Menlo, monospace;
     font-weight: 800;
-    font-size: 1.5rem;
+    font-size: 1rem;
     padding: 0 1px;
     align-self: center;
     line-height: 1;
@@ -322,20 +330,23 @@
   .rc-updated {
     color: var(--muted);
     font-family: 'JetBrains Mono', monospace;
-    font-size: 0.7rem;
+    font-size: 0.62rem;
     letter-spacing: 0.02em;
+    white-space: nowrap;
   }
   .rc-skipped {
-    margin-top: 24px;
+    margin-top: 12px;
     color: var(--muted);
     font-family: 'JetBrains Mono', monospace;
-    font-size: 0.78rem;
+    font-size: 0.72rem;
   }
   @media (max-width: 540px) {
-    .rc-section { padding: 24px 16px; }
-    .rc-cell { width: 22px; height: 34px; }
-    .rc-cell-digit { height: 34px; line-height: 34px; font-size: 1.15rem; }
-    .rc-sep { font-size: 1.2rem; }
+    .rc-section { padding: 10px 12px; }
+    .rc-row { grid-template-columns: minmax(0, 1fr) auto; padding: 4px 8px; }
+    .rc-row .rc-updated { display: none; }
+    .rc-cell { width: 14px; height: 22px; }
+    .rc-cell-digit { height: 22px; line-height: 22px; font-size: 0.78rem; }
+    .rc-sep { font-size: 0.85rem; }
   }
 </style>
 </head>
@@ -350,10 +361,6 @@
   </nav>
 </div>
 
-<main id="content">
-  <p class="loading">Loading schema and rendering diagrams…</p>
-</main>
-
 <section class="rc-section" id="row-counts" aria-labelledby="rc-heading">
   <h2 id="rc-heading">Live row counts</h2>
   <p class="lead">How many rows sit in each table on the warehouse — the snapshot Claude pulled from the Fabric mirror.</p>
@@ -361,6 +368,10 @@
   <div class="rc-list" id="rcList"></div>
   <p class="rc-skipped" id="rcSkipped"></p>
 </section>
+
+<main id="content">
+  <p class="loading">Loading schema and rendering diagrams…</p>
+</main>
 
 <script src="https://cdn.jsdelivr.net/npm/marked@11/marked.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
@@ -447,10 +458,12 @@
       const row = document.createElement('div');
       row.className = 'rc-row';
       row.innerHTML = `
-        <div class="rc-label">${item.database}</div>
-        <div class="rc-sub">${item.schema}.${item.table}</div>
+        <div class="rc-label-stack">
+          <div class="rc-label">${item.database}</div>
+          <div class="rc-sub">${item.schema}.${item.table}</div>
+        </div>
         <div class="rc-flip" aria-label="${digits} rows">${cells}</div>
-        <div class="rc-updated">Last updated ${updatedLabel}</div>
+        <div class="rc-updated">${updatedLabel}</div>
       `;
       frag.appendChild(row);
     }
