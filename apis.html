@@ -1,0 +1,560 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>BOOK — The APIs</title>
+<link rel="icon" type="image/png" href="site-icon.png">
+<link rel="apple-touch-icon" href="site-icon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&family=Orbitron:wght@500;600;700;800;900&family=Audiowide&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<script>
+  // Document-level fallback: close drawer when any link inside the sidebar is tapped.
+  // Runs before any other JS to guarantee the close behavior even if later scripts error out.
+  document.addEventListener('click', function (e) {
+    if (!document.body.classList.contains('menu-open')) return;
+    const link = e.target.closest('a');
+    if (link && e.target.closest('.sidebar')) {
+      document.body.classList.remove('menu-open');
+    }
+  }, true);
+</script>
+
+<div class="topbar">
+  <button class="menu-toggle" aria-label="Open navigation menu" id="menuToggle"
+          onclick="event.stopPropagation();document.body.classList.toggle('menu-open');">
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true" style="pointer-events:none">
+      <line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/>
+    </svg>
+  </button>
+  <a class="brand" href="index.html" aria-label="BOOK — home"><img class="brand-icon" src="site-icon.png" alt=""><img class="brand-logo" src="book-logo.png" alt="BOOK"></a>
+  <nav>
+    <a href="apis.html" class="active">APIs</a>
+    <a href="robots.html">Robots</a>
+    <a href="database.html">Schema</a>
+    <a href="stats.html">Stats</a>
+  </nav>
+</div>
+<div class="sidebar-backdrop" onclick="document.body.classList.remove('menu-open')"></div>
+
+<div class="layout">
+
+  <aside class="sidebar">
+    <button class="drawer-close" aria-label="Close menu"
+            onclick="document.body.classList.remove('menu-open')">✕ Close menu</button>
+    <h4>The 8 APIs</h4>
+    <ul class="sidebar-nav" id="sideNavApis"></ul>
+  </aside>
+
+  <main>
+
+    <section class="hero" id="meet">
+      <div class="crumb">Deep dive</div>
+      <h1>The APIs</h1>
+      <p class="lead">Eight quiet helpers. Each one has a special job. They sit and wait, and only answer when an asker comes. Click any helper below to learn what they do.</p>
+    </section>
+
+    <div id="helpers"></div>
+
+  </main>
+</div>
+
+<footer>
+  Made with care for curious minds. Each helper here is one of our real services — same job, friendlier face. ·
+  <a href="#meet">Back to top</a>
+</footer>
+
+<script>
+  const characters = [
+    {
+      id: "gary",
+      face: "🔒",
+      name: "Gary the Gatekeeper",
+      service: "API Gateway",
+      tag: "gateway.api.rgcore.com",
+      color: "#635bff",
+      tint: "#efeefd",
+      icon: "guard",
+      summary: "Gary stands at the front door of every app and checks who's allowed in.",
+      what: "When someone wants to do something on a phone or website, they show Gary their special wristband — we call it a token. If it's real and not too old, he lets them through. If somebody tries to sneak into someone else's stuff, Gary politely says 'No way!'",
+      can: [
+        "Give out a wristband when someone logs in",
+        "Swap an old wristband for a fresh one",
+        "Tell someone who they are",
+        "Decide which doors a wristband can open"
+      ],
+      callers: {
+        external: ["Mobile customers via TL App", "Future apps"],
+        frontend: ["TL App"],
+        robot: []
+      },
+      example: {
+        you: "Hi! I'd like to come in.",
+        them: "Show me your wristband, please. Hmm… yes, that's a real one! Here's a fresh one — it lasts 60 minutes."
+      },
+      real: {
+        name: "Login & token refresh",
+        endpoint: "POST /Gateway/API/V1/Account/Login"
+      },
+      dataIn: [
+        { key: "dob", type: "str", val: "1985-04-12" },
+        { key: "email", type: "str", val: "bob@example.com" },
+        { key: "phone", type: "str", val: "+447700900123" }
+      ],
+      dataOut: [
+        { key: "access_token", type: "str", val: "eyJhbGciOi…" },
+        { key: "refresh_token", type: "str", val: "rt_8f3a2c…" },
+        { key: "expires_in_minutes", type: "num", val: "60" },
+        { key: "lender_id", type: "num", val: "6" },
+        { key: "customer_type", type: "str", val: "BRW" }
+      ]
+    },
+    {
+      id: "anna",
+      face: "📋",
+      name: "App Anna",
+      service: "Central Applications",
+      tag: "applications.api.rgcore.com",
+      color: "#3b82f6",
+      tint: "#dbeafe",
+      icon: "woman-office-worker",
+      summary: "Anna keeps every loan application in tidy folders.",
+      what: "When somebody wants to borrow money, they fill in lots of forms. Anna keeps ALL the forms in tidy folders. If the same person applies twice, she doesn't make a new folder — she adds the new bits to their old one!",
+      can: [
+        "Add a new borrower to a folder",
+        "Add a guarantor (the helper grown-up)",
+        "Spot when someone's applied before",
+        "Write a note when something changes"
+      ],
+      callers: {
+        external: ["Customers on Apply Websites", "Veriff & Twilio webhooks"],
+        frontend: ["Apply Websites", "TL App", "Central CRM", "Admin Site"],
+        robot: ["Sensitive Data Deleter", "Whitebox Run"]
+      },
+      example: {
+        you: "Anna, do you have a folder for someone called Bob?",
+        them: "Let me check… yes! Bob applied last March. I'll add this new info to his existing folder so we don't have two."
+      },
+      real: {
+        name: "De-dupe & merge",
+        endpoint: "POST /API/Applications/DeDupe"
+      },
+      dataIn: [
+        { key: "first_name", type: "str", val: "Bob" },
+        { key: "last_name", type: "str", val: "Smith" },
+        { key: "dob", type: "str", val: "1985-04-12" },
+        { key: "email", type: "str", val: "bob@example.com" },
+        { key: "phone", type: "str", val: "+447700900123" }
+      ],
+      dataOut: [
+        { key: "found", type: "bool", val: "true" },
+        { key: "aref", type: "str", val: "0635311333050423022620" },
+        { key: "merged_with", type: "str", val: "0635311333050423022620" },
+        { key: "match_score", type: "num", val: "98" }
+      ]
+    },
+    {
+      id: "bessie",
+      face: "🦈",
+      name: "Bessie the Broker-Buddy",
+      service: "Central Brokers",
+      tag: "brokers.api.rgcore.com",
+      color: "#10b981",
+      tint: "#d1fae5",
+      icon: "woman-tipping-hand",
+      summary: "Bessie's broker friends bring her new customers.",
+      what: "Bessie has lots of friends called brokers. They tell her about people who need a loan. She checks each person's details, runs them through a quick scoring game, and if everything looks good, she passes them on to Anna!",
+      can: [
+        "Take a new lead from a broker",
+        "Run the Lead Scorecard quickly",
+        "Run the Premium Scorecard for a deeper look",
+        "Send the new application over to Anna"
+      ],
+      callers: {
+        external: ["Broker companies' systems"],
+        frontend: ["Sources Portal", "Admin Site (Manage Sources)"],
+        robot: []
+      },
+      example: {
+        you: "Hi Bessie! I have a new lead — Sarah needs a loan.",
+        them: "Let me score her quickly… nice, she passes! I'll send her over to Anna and let you know what happens."
+      },
+      real: {
+        name: "Broker lead intake",
+        endpoint: "POST /V1/API/Broker/{CampaignId}/CreateApplication"
+      },
+      dataIn: [
+        { key: "campaign_id", type: "num", val: "12345" },
+        { key: "first_name", type: "str", val: "Sarah" },
+        { key: "last_name", type: "str", val: "Jones" },
+        { key: "dob", type: "str", val: "1990-08-22" },
+        { key: "email", type: "str", val: "sarah@example.com" },
+        { key: "phone", type: "str", val: "+447700900456" },
+        { key: "loan_amount", type: "num", val: "5000" },
+        { key: "term_months", type: "num", val: "36" }
+      ],
+      dataOut: [
+        { key: "result", type: "str", val: "Accepted" },
+        { key: "code", type: "num", val: "200" },
+        { key: "aref", type: "str", val: "0635311333…" },
+        { key: "scorecard_passed", type: "bool", val: "true" },
+        { key: "message", type: "str", val: "Lead created" }
+      ]
+    },
+    {
+      id: "whitney",
+      face: "◻️",
+      name: "Whitney the Wise Wizard",
+      service: "Lender White Box",
+      tag: "whitebox.<lender>.rgcore.com",
+      color: "#a855f7",
+      tint: "#f3e8ff",
+      icon: "woman-mage",
+      summary: "Whitney is the magical decision-maker.",
+      what: "Whitney looks at credit reports, bank statements, ID checks, fraud checks, and military checks. She makes a list of jobs the agents need to do, and tells Anna whether the application can move forward!",
+      can: [
+        "Run all the checks at once",
+        "Update the agents' to-do list",
+        "Decide the application's status",
+        "Send a 'sorry, not this time' letter if needed"
+      ],
+      callers: {
+        external: ["Veriff, Lyons, GIACT webhooks"],
+        frontend: ["Central CRM (re-run buttons)", "Apply Websites"],
+        robot: ["Whitebox Run robot"]
+      },
+      example: {
+        you: "Whitney, can you check Sarah?",
+        them: "Sprinkling wisdom dust… credit ✓, bank ✓, ID ✓, fraud ✓. She's ready to sign! I've added her to the agents' list."
+      },
+      real: {
+        name: "Run underwriting checks",
+        endpoint: "GET /API/Whitebox/{ARef}/Check"
+      },
+      dataIn: [
+        { key: "aref", type: "str", val: "0635311333…" }
+      ],
+      dataOut: [
+        { key: "run_id", type: "num", val: "8421" },
+        { key: "status", type: "str", val: "VcReady" },
+        { key: "decision", type: "str", val: "Approved" },
+        { key: "tasks_added", type: "num", val: "5" },
+        { key: "credit_score", type: "num", val: "742" },
+        { key: "checks_passed", type: "bool", val: "true" }
+      ]
+    },
+    {
+      id: "larry",
+      face: "📖",
+      name: "Larry the Loanbook-Keeper",
+      service: "Central Loanbook",
+      tag: "loanbook.api.rgcore.com",
+      color: "#f97316",
+      tint: "#ffedd5",
+      icon: "man-office-worker",
+      summary: "Larry tracks every loan and every coin.",
+      what: "Once a loan is approved and the money goes out, Larry's in charge. He writes down EVERY single coin that comes in or goes out. Every night, he does his big check (Daily Update) to make sure all the numbers add up. He's super tidy — no fudging the books!",
+      can: [
+        "Make a new loan when payout happens",
+        "Record a payment coming in",
+        "Change a customer's payment day",
+        "Tell you the whole story of any loan"
+      ],
+      callers: {
+        external: ["HSBC NACHA returns", "ETransfer Interac emails"],
+        frontend: ["Central CRM", "Central Website self-service", "Admin Site"],
+        robot: ["Daily Update", "Mini Update", "Card Reconcile", "Payment Summary"]
+      },
+      example: {
+        you: "Larry, please record this £50 payment for loan 010100AQUA.",
+        them: "Got it! New balance is £450. I've added it to my big book — and I'll make sure tonight's Daily Update notices."
+      },
+      real: {
+        name: "Add transaction",
+        endpoint: "POST /V1/API/LoanBook/{LoanbookId}/AddTransaction"
+      },
+      dataIn: [
+        { key: "loanbook_id", type: "str", val: "010100AQUA" },
+        { key: "amount", type: "num", val: "50.00" },
+        { key: "transaction_type", type: "str", val: "Repayment" },
+        { key: "description", type: "str", val: "Monthly payment" },
+        { key: "client_type", type: "str", val: "TogetherLoansCRM" },
+        { key: "client_username", type: "str", val: "james@rgroup.co.uk" }
+      ],
+      dataOut: [
+        { key: "transaction_id", type: "num", val: "204891" },
+        { key: "new_balance", type: "num", val: "450.00" },
+        { key: "current_arrears", type: "num", val: "0.00" },
+        { key: "success", type: "bool", val: "true" }
+      ]
+    },
+    {
+      id: "penny",
+      face: "💳",
+      name: "Penny the Piggy-Banker",
+      service: "Central Payments",
+      tag: "payments.api.rgcore.com",
+      color: "#ec4899",
+      tint: "#fce7f3",
+      icon: "pig-face",
+      summary: "Penny keeps cards and bank accounts safe.",
+      what: "Penny takes card and bank account details and turns them into safe little tokens. The real numbers never, ever leave her safe. When it's time to take a payment, she works with card friends like BridgePay, Checkout, and GoCardless to make it happen.",
+      can: [
+        "Save a card or bank safely",
+        "Take one payment",
+        "Process LOTS of payments at once",
+        "Refund a customer if something goes wrong"
+      ],
+      callers: {
+        external: ["Card processor webhooks", "Customers entering card details"],
+        frontend: ["Central Website", "Central CRM Pages", "TL App"],
+        robot: ["Payments Factory", "Card Deactivator", "SlimPay Chargebacks"]
+      },
+      example: {
+        you: "Penny, take £25 from the card ending 4242.",
+        them: "Sending it to my safe friends… approved! It'll show on the customer's statement as 'TOGETHER LOANS'."
+      },
+      real: {
+        name: "Take a payment",
+        endpoint: "POST /V1/API/Payments/TakePayment/{PaymentId}"
+      },
+      dataIn: [
+        { key: "payment_id", type: "num", val: "98214" },
+        { key: "amount", type: "num", val: "25.00" },
+        { key: "client_type", type: "str", val: "TogetherLoansCRM" },
+        { key: "client_username", type: "str", val: "james@rgroup.co.uk" }
+      ],
+      dataOut: [
+        { key: "event_id", type: "num", val: "552107" },
+        { key: "success", type: "bool", val: "true" },
+        { key: "external_id", type: "str", val: "bp_8f3a2c1d" },
+        { key: "status", type: "str", val: "Approved" },
+        { key: "card_last_four", type: "str", val: "4242" }
+      ]
+    },
+    {
+      id: "connie",
+      face: "💬",
+      name: "Connie the Courier",
+      service: "Central Communications",
+      tag: "communications.api.rgcore.com",
+      color: "#facc15",
+      tint: "#fef9c3",
+      icon: "love-letter",
+      summary: "Connie sends and receives every message.",
+      what: "Connie is the platform's postie. She sends SMSes, emails, letters, even phone calls. She also catches the replies. Every message — in or out — gets stored in her big book so we always know who said what and when!",
+      can: [
+        "Send an SMS, email, or letter",
+        "Receive a reply or an inbound call",
+        "Send a 2FA code",
+        "Build a PDF (statements, contracts)"
+      ],
+      callers: {
+        external: ["Twilio inbound SMS/calls", "IMAP mailboxes", "Sendgrid status webhooks"],
+        frontend: ["Central CRM", "Apply Websites (2FA)", "Central Website"],
+        robot: ["Message Factory", "Robot Responders", "Email-In webjob", "Transcription robots"]
+      },
+      example: {
+        you: "Send Bob an SMS saying his payment was received.",
+        them: "On it! Off it goes via Twilio… delivered! I've saved a copy in my book in case Bob wants to see it later."
+      },
+      real: {
+        name: "Send an SMS",
+        endpoint: "POST /V2/API/SMS/Send"
+      },
+      dataIn: [
+        { key: "external_address", type: "str", val: "+447700900123" },
+        { key: "message_body", type: "str", val: "Payment received, thanks!" },
+        { key: "aref", type: "str", val: "0635311333…" },
+        { key: "loanbook_id", type: "str", val: "010100AQUA" },
+        { key: "client_type", type: "str", val: "TogetherLoansCRM" },
+        { key: "client_username", type: "str", val: "james@rgroup.co.uk" }
+      ],
+      dataOut: [
+        { key: "message_id", type: "num", val: "771203" },
+        { key: "comm_id", type: "str", val: "SM8f3a2c1d…" },
+        { key: "status", type: "str", val: "Delivered" },
+        { key: "sent_at_utc", type: "str", val: "2026-05-05T13:42:00Z" }
+      ]
+    },
+    {
+      id: "sherlock",
+      face: "🕵️",
+      name: "Sherlock the Snoop",
+      service: "Socials Search",
+      tag: "socials.api.rgcore.com",
+      color: "#7c3aed",
+      tint: "#ede9fe",
+      icon: "detective",
+      summary: "Sherlock looks people up online.",
+      what: "When the team needs to learn a bit more about a customer, Sherlock looks them up on Facebook and LinkedIn. He uses his magnifying glass (and his friend at People Data Labs) to find what's public about a person. He writes down every search in his notebook so he never has to ask twice!",
+      can: [
+        "Look up the latest results for a customer",
+        "Run a fresh search using email, phone, and address",
+        "Find Facebook and LinkedIn profiles",
+        "Remember every search in his notebook"
+      ],
+      callers: {
+        external: [],
+        frontend: ["Central CRM (manual lookup)"],
+        robot: ["Underwriting orchestrator"]
+      },
+      example: {
+        you: "Sherlock, can you find Sarah online?",
+        them: "Checking my notebook… haven't seen her before. *peek peek* Found her LinkedIn! Saving it for next time."
+      },
+      real: {
+        name: "Run socials search",
+        endpoint: "POST /API/SocialsSearch/{ARef}/{GtRef}"
+      },
+      dataIn: [
+        { key: "aref", type: "str", val: "0635311333…" },
+        { key: "gt_ref", type: "num", val: "1" }
+      ],
+      dataOut: [
+        { key: "social_id", type: "num", val: "44102" },
+        { key: "facebook_url", type: "str", val: "facebook.com/sarah.j" },
+        { key: "linkedin_url", type: "str", val: "linkedin.com/in/sarahj" },
+        { key: "found", type: "bool", val: "true" },
+        { key: "checked_at_utc", type: "str", val: "2026-05-05T13:42:00Z" }
+      ]
+    }
+  ];
+
+  // Build sidebar nav — APIs
+  const sideNavApis = document.getElementById('sideNavApis');
+  characters.forEach(c => {
+    const li = document.createElement('li');
+    li.innerHTML = `<a href="#${c.id}" onclick="document.body.classList.remove('menu-open')"><span class="em">${c.face}</span> ${c.name.split(' the ')[0]}</a>`;
+    sideNavApis.appendChild(li);
+  });
+
+
+  // Build helper sections
+  const helpersWrap = document.getElementById('helpers');
+  characters.forEach(c => {
+    const section = document.createElement('section');
+    section.className = 'helper';
+    section.id = c.id;
+    section.style.setProperty('--accent-tint', c.tint);
+    section.style.setProperty('--accent-color', c.color);
+
+    const callerRows = ['external', 'frontend', 'robot'].map(type => {
+      const items = c.callers[type] || [];
+      if (items.length === 0) return '';
+      const label = type === 'external' ? 'Outside' : type === 'frontend' ? 'Screen' : 'Robot';
+      return `<div class="caller-row"><span class="caller-pill ${type}">${label}</span><span class="caller-things">${items.join(', ')}</span></div>`;
+    }).filter(x => x).join('');
+
+    section.innerHTML = `
+      <div class="helper-grid">
+        <div class="helper-content">
+          <div class="helper-row">
+            <div class="character-face">
+              <img class="character" src="https://api.iconify.design/fluent-emoji/${c.icon}.svg" alt="${c.name}" />
+            </div>
+            <div class="helper-meta">
+              <p class="helper-name">${c.name}</p>
+              <p class="helper-role">${c.summary}</p>
+              <span class="helper-tag">${c.service}</span>
+            </div>
+          </div>
+
+          <h3>What ${c.name.split(' ')[0]} does</h3>
+          <p>${c.what}</p>
+
+          <h3>Things ${c.name.split(' ')[0]} can do</h3>
+          <ul class="things">
+            ${c.can.map(x => `<li>${x}</li>`).join('')}
+          </ul>
+
+          <h3>Who calls me</h3>
+          <div class="callers-list">${callerRows}</div>
+        </div>
+
+        <aside class="example-panel">
+          <div class="example-panel-head">
+            <span><span class="dot"></span>Example chat</span>
+            <span style="opacity: 0.6">${c.id}.example</span>
+          </div>
+          <div class="example-panel-body">
+            <div class="quote-row">
+              <span class="quote-label">You</span>
+              <div class="quote-bubble">${c.example.you}</div>
+            </div>
+            <div class="quote-row them">
+              <span class="quote-label">${c.face} ${c.name.split(' ')[0]}</span>
+              <div class="quote-bubble them">${c.example.them}</div>
+            </div>
+            <details class="advanced">
+              <summary>Show what gets sent and received</summary>
+              <div class="details-body">
+                <div class="data-block">
+                  <div class="data-label in"><span class="arrow">↓</span> Data in</div>
+                  <div class="data-list">
+                    ${c.dataIn.map(d => `<div class="data-row"><span class="data-key">${d.key}</span><span class="data-val ${d.type}">${d.val}</span></div>`).join('')}
+                  </div>
+                </div>
+                <div class="data-block">
+                  <div class="data-label out"><span class="arrow">↑</span> Data out</div>
+                  <div class="data-list">
+                    ${c.dataOut.map(d => `<div class="data-row"><span class="data-key">${d.key}</span><span class="data-val ${d.type}">${d.val}</span></div>`).join('')}
+                  </div>
+                </div>
+                <div class="data-block">
+                  <div class="data-label"><span class="arrow">⌘</span> Endpoint</div>
+                  <span class="endpoint-pill"><span class="verb">${c.real.endpoint.split(' ')[0]}</span>${c.real.endpoint.split(' ').slice(1).join(' ')}</span>
+                </div>
+              </div>
+            </details>
+          </div>
+        </aside>
+      </div>
+    `;
+    helpersWrap.appendChild(section);
+  });
+
+  // Active section highlighting in sidebar
+  const navLinks = document.querySelectorAll('.sidebar-nav a');
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        const id = entry.target.id;
+        navLinks.forEach(link => {
+          link.classList.toggle('active', link.getAttribute('href') === `#${id}`);
+        });
+      }
+    });
+  }, { rootMargin: '-30% 0px -65% 0px' });
+  document.querySelectorAll('section[id]').forEach(s => observer.observe(s));
+
+  // Mobile drawer: the toggle/close behavior is handled by inline onclick attributes
+  // on the hamburger button, the close button, the backdrop, and every sidebar link.
+  // We add only one extra niceness here: Escape key closes the drawer.
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') document.body.classList.remove('menu-open');
+  });
+
+  // Twemoji parsing — replace native emoji with Twitter SVGs for consistency
+  const twemojiScript = document.createElement('script');
+  twemojiScript.src = 'https://cdn.jsdelivr.net/gh/jdecked/twemoji@latest/dist/twemoji.min.js';
+  twemojiScript.crossOrigin = 'anonymous';
+  twemojiScript.onload = () => {
+    if (window.twemoji) {
+      window.twemoji.parse(document.body, {
+        folder: 'svg',
+        ext: '.svg',
+        base: 'https://cdn.jsdelivr.net/gh/jdecked/twemoji@latest/assets/'
+      });
+    }
+  };
+  document.head.appendChild(twemojiScript);
+</script>
+
+</body>
+</html>
