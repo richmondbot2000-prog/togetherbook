@@ -1,0 +1,68 @@
+name: Refresh row counts
+
+# Re-runs the Fabric warehouse scan and commits an updated `row-counts.json`
+# back to main. The kids-site database page reads that JSON.
+
+on:
+  schedule:
+    - cron: '0 4 * * 0'   # 04:00 UTC every Sunday
+  workflow_dispatch:        # allow manual trigger from the Actions tab
+
+permissions:
+  contents: write           # needed for the auto-commit step
+
+concurrency:
+  group: refresh-row-counts
+  cancel-in-progress: false
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install Microsoft ODBC Driver 18
+        run: |
+          set -euo pipefail
+          source /etc/os-release
+          curl -fsSL https://packages.microsoft.com/keys/microsoft.asc \
+            | sudo gpg --dearmor -o /usr/share/keyrings/microsoft-prod.gpg
+          echo "deb [arch=amd64,arm64,armhf signed-by=/usr/share/keyrings/microsoft-prod.gpg] https://packages.microsoft.com/ubuntu/${VERSION_ID}/prod $(lsb_release -cs) main" \
+            | sudo tee /etc/apt/sources.list.d/mssql-release.list
+          sudo apt-get update
+          sudo ACCEPT_EULA=Y apt-get install -y msodbcsql18 unixodbc-dev
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install Python deps
+        run: pip install --quiet pyodbc==5.*
+
+      - name: Scan warehouse
+        env:
+          FABRIC_SQL_ENDPOINT: d76gbn5gtayeppltcrsxsvkluq-ruqkpz7fkwpelmnjh4kbg2lqpi.datawarehouse.fabric.microsoft.com
+          FABRIC_TENANT_ID:    b760fc1f-98a6-4730-bd73-146579554ba4
+          FABRIC_CLIENT_ID:    b8fb2709-6e42-4a1e-91e6-8a3807a9884d
+          FABRIC_CLIENT_SECRET: ${{ secrets.FABRIC_CLIENT_SECRET }}
+          PER_DB_TIMEOUT_SECONDS: '240'
+        run: python scripts/scan_row_counts.py
+
+      - name: Commit if row-counts.json changed
+        run: |
+          set -euo pipefail
+          if git diff --quiet -- row-counts.json; then
+            echo "no changes — nothing to commit"
+            exit 0
+          fi
+          git config user.name  "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add row-counts.json
+          ROWS=$(python -c "import json; d=json.load(open('row-counts.json')); print(f\"{d['totals']['rows']:,}\")")
+          TABLES=$(python -c "import json; d=json.load(open('row-counts.json')); print(d['totals']['tables'])")
+          git commit -m "Refresh row counts: ${TABLES} tables, ${ROWS} rows"
+          git push
