@@ -28,37 +28,69 @@
     font-size: 0.78rem;
     margin: 0 0 24px;
   }
-  .yp-table-wrap {
+  .yp-states {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(360px, 1fr));
+    gap: 16px;
+  }
+  .yp-state {
     background: var(--bg-soft);
     border: 1px solid var(--border);
     border-radius: 8px;
     overflow: hidden;
   }
+  .yp-state-h {
+    margin: 0;
+    padding: 10px 14px;
+    background: var(--bg-soft-2);
+    border-bottom: 1px solid var(--border-soft);
+    font-family: var(--font-display);
+    font-size: 0.85rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--accent);
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: 12px;
+  }
+  .yp-state-meta {
+    color: var(--muted);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.7rem;
+    font-weight: 500;
+    letter-spacing: 0;
+    text-transform: none;
+  }
   table.yp-table {
     width: 100%;
     border-collapse: collapse;
-    font-size: 0.92rem;
+    font-size: 0.88rem;
   }
   table.yp-table th, table.yp-table td {
     text-align: left;
-    padding: 10px 16px;
-    border-bottom: 1px solid var(--border-soft);
+    padding: 6px 14px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.04);
   }
   table.yp-table th {
-    font-family: var(--font-display);
-    font-size: 0.72rem;
-    font-weight: 700;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.66rem;
+    font-weight: 600;
     text-transform: uppercase;
     letter-spacing: 0.06em;
-    color: var(--accent);
-    background: var(--bg-soft-2);
-    position: sticky; top: 64px;
+    color: var(--muted);
   }
   table.yp-table tr:last-child td { border-bottom: none; }
   table.yp-table tr:hover td { background: rgba(0, 212, 255, 0.05); }
-  table.yp-table td.borrower { color: var(--ink); }
-  table.yp-table td.state, table.yp-table td.zip {
+  table.yp-table td.first-name { color: var(--ink); }
+  table.yp-table td.zip {
     font-family: 'JetBrains Mono', monospace; color: var(--ink-soft);
+  }
+  table.yp-table td.amount {
+    font-family: 'JetBrains Mono', monospace; color: var(--ink-soft);
+    text-align: right;
+    white-space: nowrap;
   }
 </style>
 </head>
@@ -162,19 +194,15 @@
       <p class="lead">US borrowers whose loans paid out on <strong id="ypDate">…</strong>.</p>
       <p class="yp-meta" id="ypMeta">Loading…</p>
 
-      <div class="yp-table-wrap">
-        <table class="yp-table" id="ypTable">
-          <thead>
-            <tr><th>Borrower</th><th>State</th><th>Zip</th></tr>
-          </thead>
-          <tbody id="ypBody"></tbody>
-        </table>
-      </div>
+      <div class="yp-states" id="ypStates"></div>
     </section>
   </main>
 </div>
 
 <script>
+  const fmtUSD0 = new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 0 });
+  const fmtUSD2 = new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' });
+
   fetch('yesterday-payouts.json', { cache: 'no-cache' })
     .then(r => { if (!r.ok) throw new Error('HTTP ' + r.status); return r.json(); })
     .then(data => {
@@ -183,21 +211,47 @@
         : 'unknown date';
       document.getElementById('ypDate').textContent = dateLabel;
       const updated = data.updated_at ? new Date(data.updated_at).toLocaleString('en-GB') : '';
-      const n = (data.totals && data.totals.borrowers) || (data.items || []).length;
-      document.getElementById('ypMeta').textContent =
-        `${n} borrowers · last refreshed ${updated}`;
 
-      const body = document.getElementById('ypBody');
-      const frag = document.createDocumentFragment();
-      for (const it of (data.items || [])) {
-        const tr = document.createElement('tr');
-        tr.innerHTML =
-          `<td class="borrower">${it.borrower || ''}</td>` +
-          `<td class="state">${it.state || ''}</td>` +
-          `<td class="zip">${it.zip || ''}</td>`;
-        frag.appendChild(tr);
+      const items = data.items || [];
+      const total = items.reduce((s, i) => s + (i.amount || 0), 0);
+      document.getElementById('ypMeta').textContent =
+        `${items.length} borrowers · ${fmtUSD0.format(total)} paid out · last refreshed ${updated}`;
+
+      // Group by state
+      const byState = new Map();
+      for (const it of items) {
+        const s = it.state || '—';
+        if (!byState.has(s)) byState.set(s, []);
+        byState.get(s).push(it);
       }
-      body.appendChild(frag);
+      const sortedStates = [...byState.entries()].sort((a, b) => a[0].localeCompare(b[0]));
+
+      const root = document.getElementById('ypStates');
+      const frag = document.createDocumentFragment();
+      for (const [state, list] of sortedStates) {
+        const stateTotal = list.reduce((s, i) => s + (i.amount || 0), 0);
+        const card = document.createElement('div');
+        card.className = 'yp-state';
+        const rows = list.map(it =>
+          `<tr>` +
+            `<td class="first-name">${it.first_name || ''}</td>` +
+            `<td class="zip">${it.zip || ''}</td>` +
+            `<td class="amount">${fmtUSD2.format(it.amount || 0)}</td>` +
+          `</tr>`
+        ).join('');
+        card.innerHTML = `
+          <h3 class="yp-state-h">
+            <span>${state}</span>
+            <span class="yp-state-meta">${list.length} · ${fmtUSD0.format(stateTotal)}</span>
+          </h3>
+          <table class="yp-table">
+            <thead><tr><th>First name</th><th>Zip</th><th style="text-align:right">Amount</th></tr></thead>
+            <tbody>${rows}</tbody>
+          </table>
+        `;
+        frag.appendChild(card);
+      }
+      root.appendChild(frag);
     })
     .catch(err => {
       const meta = document.getElementById('ypMeta');

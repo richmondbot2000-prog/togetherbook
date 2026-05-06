@@ -46,9 +46,10 @@ DECLARE @days_back int = CASE DATENAME(weekday, GETDATE())
 DECLARE @target date = DATEADD(day, -@days_back, CAST(GETDATE() AS date));
 
 SELECT
-  c.FirstName + ' ' + c.SurName AS borrower,
-  c.StateCounty                 AS state,
-  c.Postcode                    AS zip,
+  c.FirstName              AS first_name,
+  c.StateCounty            AS state,
+  c.Postcode               AS zip,
+  li.LoanAmountAtInception AS amount,
   CAST(li.LoanAgreementDateLocal AS date) AS payout_date
 FROM dbo.LoanAtInception li
 JOIN dbo.Loan      l  ON l.LoanBookID = li.LoanBookID
@@ -56,7 +57,7 @@ JOIN dbo.Customer  c  ON c.LoanBookID = li.LoanBookID AND c.RelationToBrw IS NUL
 JOIN dbo.Lenders   le ON le.LenderID  = l.LenderID
 WHERE le.Country = 'USA'
   AND CAST(li.LoanAgreementDateLocal AS date) = @target
-ORDER BY c.SurName, c.FirstName
+ORDER BY c.StateCounty, c.FirstName
 """
 
 
@@ -72,12 +73,13 @@ def main() -> None:
 
     items = []
     target = None
-    for borrower, state, zipcode, payout_date in rows:
+    for first_name, state, zipcode, amount, payout_date in rows:
         target = payout_date  # all rows share the same date by construction
         items.append({
-            "borrower": (borrower or "").strip(),
-            "state":    (state or "").strip(),
-            "zip":      (zipcode or "").strip(),
+            "first_name": (first_name or "").strip(),
+            "state":      (state or "").strip(),
+            "zip":        (zipcode or "").strip(),
+            "amount":     float(amount) if amount is not None else 0.0,
         })
     conn.close()
 
