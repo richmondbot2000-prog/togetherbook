@@ -81,12 +81,42 @@
     border: 1px solid var(--border);
     border-radius: 12px;
     padding: 18px 20px;
+    position: relative;
     transition: border-color 0.15s, box-shadow 0.15s, transform 0.15s;
   }
   .bw-card:hover {
     border-color: var(--accent);
     box-shadow: var(--shadow-glow-cyan, 0 0 18px rgba(0, 212, 255, 0.18));
     transform: translateY(-1px);
+  }
+
+  /* Big brand logo pinned to the top-right of Trustpilot + BBB review
+     cards. Other sources keep the small favicon-sized site pill in the
+     foot bar — only the two formal review sources get the hero logo. */
+  .bw-card.has-hero-logo { padding-right: 130px; }
+  .bw-card-hero-logo {
+    position: absolute;
+    top: 14px;
+    right: 14px;
+    width: 100px;
+    height: 64px;
+    background: white;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 6px 12px;
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.25);
+  }
+  .bw-card-hero-logo img {
+    max-height: 100%;
+    max-width: 100%;
+    object-fit: contain;
+    display: block;
+  }
+  @media (max-width: 720px) {
+    .bw-card.has-hero-logo { padding-right: 96px; }
+    .bw-card-hero-logo { width: 72px; height: 48px; padding: 4px 8px; }
   }
   .bw-card-headline {
     font-size: 1.05rem;
@@ -424,6 +454,15 @@
     return "https://www.google.com/s2/favicons?sz=64&domain=" + encodeURIComponent(domain);
   }
 
+  // High-resolution brand logos for the two formal review sources. The
+  // hero logo sits in a white pill in the top-right of the review card —
+  // 256px Google favicon endpoint reliably returns the apple-touch-icon
+  // for these domains, which is the proper full-colour brandmark.
+  const HERO_LOGOS = {
+    trustpilot: { src: "https://www.google.com/s2/favicons?sz=256&domain=trustpilot.com", alt: "Trustpilot" },
+    bbb:        { src: "https://www.google.com/s2/favicons?sz=256&domain=bbb.org",        alt: "Better Business Bureau" },
+  };
+
   function fmtDate(iso) {
     if (!iso) return "";
     const d = new Date(iso + "T00:00:00Z");
@@ -441,12 +480,20 @@
     // Stars sit ABOVE the headline now, on their own row, large.
     const starHtml = (m.score && m.score_max) ? stars(m.score, m.score_max) : "";
 
+    // Big brand logo pinned to the top-right of Trustpilot + BBB cards.
+    const hero = HERO_LOGOS[m.source];
+    const heroLogoHtml = hero
+      ? '<div class="bw-card-hero-logo"><img src="' + hero.src
+        + '" alt="' + escapeHtml(hero.alt) + ' logo" loading="lazy" /></div>'
+      : "";
+    const cardClass = hero ? "bw-card has-hero-logo" : "bw-card";
+
     const headlineLink =
       '<a href="' + escapeHtml(m.url) + '" target="_blank" rel="noopener noreferrer">'
       + escapeHtml(m.title) + "</a>";
 
     const headline =
-      starHtml + '<div class="bw-card-headline">' + headlineLink + "</div>";
+      heroLogoHtml + starHtml + '<div class="bw-card-headline">' + headlineLink + "</div>";
 
     const snippet = m.snippet
       ? '<blockquote class="bw-card-snippet">' + highlight(m.snippet) + "</blockquote>"
@@ -471,7 +518,7 @@
     const foot =
       '<div class="bw-card-foot">' + sitePill + author + date + brandTag + readLink + '</div>';
 
-    return '<article class="bw-card">' + headline + snippet + foot + "</article>";
+    return '<article class="' + cardClass + '">' + headline + snippet + foot + "</article>";
   }
 
   function visible(m) {
