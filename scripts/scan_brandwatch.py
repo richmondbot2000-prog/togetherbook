@@ -175,6 +175,35 @@ def _http_get(url: str, **kwargs) -> requests.Response:
     return requests.get(url, headers=headers, timeout=HTTP_TIMEOUT, **kwargs)
 
 
+def _http_get_proxied(url: str, **kwargs) -> requests.Response:
+    """
+    Like _http_get, but routes through ScraperAPI when SCRAPERAPI_KEY is set.
+
+    Used for sites like Trustpilot and BBB that 403 every cloud-IP runner via
+    Cloudflare. ScraperAPI rotates residential IPs and handles JS challenges
+    behind the scenes. Costs 25 ScraperAPI credits per call (premium = anti-bot).
+    Free tier is 5,000 credits/month → 200 such calls/month — comfortably above
+    our daily-scan footprint of ~120/month.
+
+    If the key isn't set, falls back to a direct fetch (which will probably 403).
+    """
+    key = os.environ.get("SCRAPERAPI_KEY")
+    if not key:
+        return _http_get(url, **kwargs)
+    proxied = (
+        "https://api.scraperapi.com"
+        f"?api_key={quote_plus(key)}"
+        f"&url={quote_plus(url)}"
+        f"&premium=true"
+        f"&country_code=us"
+    )
+    # Use a longer timeout — ScraperAPI may take 20–40 s to fetch a Cloudflare-
+    # protected page through its rotation logic.
+    kwargs.setdefault("timeout", 70)
+    return _http_get(proxied, **{k: v for k, v in kwargs.items() if k != "timeout"},
+                     timeout=kwargs["timeout"])
+
+
 # --------------------------------------------------------------------------
 # Sources
 
@@ -188,7 +217,9 @@ def fetch_trustpilot(brand: dict) -> list[dict]:
     """
     url = f"https://www.trustpilot.com/review/{brand['domain']}"
     headers = {
-        # Trustpilot ships Cloudflare. A real browser UA gets through reliably.
+        # Trustpilot ships Cloudflare. Direct fetch from cloud IPs always 403s,
+        # but the request is routed via ScraperAPI when SCRAPERAPI_KEY is set —
+        # see _http_get_proxied. Browser UA still helps when called directly.
         "User-Agent": (
             "Mozilla/5.0 (Macintosh; Intel Mac OS X 14_0) "
             "AppleWebKit/605.1.15 (KHTML, like Gecko) "
@@ -196,7 +227,7 @@ def fetch_trustpilot(brand: dict) -> list[dict]:
         ),
         "Accept": "text/html,application/xhtml+xml",
     }
-    r = _http_get(url, headers=headers)
+    r = _http_get_proxied(url, headers=headers)
     if r.status_code == 404:
         return []
     r.raise_for_status()
@@ -388,7 +419,7 @@ def fetch_bbb(brand: dict) -> list[dict]:
         ),
         "Accept": "text/html,application/xhtml+xml",
     }
-    r = _http_get(url, headers=headers)
+    r = _http_get_proxied(url, headers=headers)
     r.raise_for_status()
 
     # Search results have stars + business name + URL. Pull those out of the

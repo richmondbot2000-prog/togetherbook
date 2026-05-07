@@ -68,6 +68,11 @@ jobs:
           # (Reddit increasingly 403s these from cloud-IP runners).
           REDDIT_CLIENT_ID:     ${{ secrets.REDDIT_CLIENT_ID }}
           REDDIT_CLIENT_SECRET: ${{ secrets.REDDIT_CLIENT_SECRET }}
+          # Optional — when set, Trustpilot and BBB requests route through
+          # ScraperAPI (residential-IP proxy + Cloudflare bypass). 25 credits
+          # per request; 5,000-credit free tier is plenty for this site's
+          # daily-scan footprint. When absent, those two sources will 403.
+          SCRAPERAPI_KEY:       ${{ secrets.SCRAPERAPI_KEY }}
         run: python scripts/scan_brandwatch.py
 
       - name: Commit if brandwatch.json changed
