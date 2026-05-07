@@ -1,0 +1,94 @@
+name: Refresh brandwatch
+
+# Pulls recent public mentions of Together Loans and TransformCredit from
+# Trustpilot, Reddit, and Google News and commits brandwatch.json back to
+# main. The kids site reads that JSON on the Brandwatch page.
+#
+# Same hourly + guard + retry-on-rebase pattern as refresh-yesterday-payouts
+# and refresh-row-counts: GitHub Actions cron is unreliable on free public
+# repos, so we try every hour from 06:00–23:00 UTC and skip cleanly once the
+# day's snapshot is already in the file.
+
+on:
+  schedule:
+    - cron: '0 6-23 * * *'
+  workflow_dispatch:        # manual trigger from the Actions tab
+
+permissions:
+  contents: write
+
+concurrency:
+  group: refresh-brandwatch
+  cancel-in-progress: false
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Skip if already up to date
+        id: guard
+        run: |
+          set -euo pipefail
+          EXPECTED=$(date -u +%Y-%m-%d)
+          if [ -f brandwatch.json ]; then
+            CURRENT=$(python3 -c "import json; print(json.load(open('brandwatch.json')).get('snapshot_date',''))")
+          else
+            CURRENT=""
+          fi
+          echo "expected_snapshot_date=$EXPECTED  current_snapshot_date=$CURRENT"
+          if [ "$CURRENT" = "$EXPECTED" ]; then
+            echo "Snapshot already taken for $EXPECTED — skipping the rest of the job."
+            echo "skip=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "Need to refresh: have '$CURRENT', want '$EXPECTED'."
+            echo "skip=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Set up Python
+        if: steps.guard.outputs.skip != 'true'
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install Python deps
+        if: steps.guard.outputs.skip != 'true'
+        run: pip install --quiet 'requests>=2.31'
+
+      - name: Scan
+        if: steps.guard.outputs.skip != 'true'
+        run: python scripts/scan_brandwatch.py
+
+      - name: Commit if brandwatch.json changed
+        if: steps.guard.outputs.skip != 'true'
+        run: |
+          set -euo pipefail
+          if git diff --quiet -- brandwatch.json; then
+            echo "no changes — nothing to commit"
+            exit 0
+          fi
+          git config user.name  "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add brandwatch.json
+          N=$(python -c "import json; d=json.load(open('brandwatch.json')); print(d['totals']['all'])")
+          DATE=$(python -c "import json; d=json.load(open('brandwatch.json')); print(d.get('snapshot_date',''))")
+          git commit -m "Refresh brandwatch: ${N} mentions on ${DATE}"
+
+          # If a sibling refresh-* workflow committed in parallel, the push
+          # will be rejected. Rebase onto the latest main and retry.
+          for attempt in 1 2 3; do
+            if git push; then
+              break
+            fi
+            if [ "$attempt" -eq 3 ]; then
+              echo "::error::Push failed after 3 attempts"
+              exit 1
+            fi
+            echo "Push rejected (concurrent commit); rebasing and retrying (attempt $attempt)…"
+            git fetch origin main
+            git rebase origin/main
+          done

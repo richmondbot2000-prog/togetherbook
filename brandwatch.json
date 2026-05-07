@@ -1,0 +1,17 @@
+{
+  "schema_version": 1,
+  "snapshot_date": "1970-01-01",
+  "updated_at": "1970-01-01T00:00:00Z",
+  "brands": ["Together Loans", "TransformCredit"],
+  "totals": {
+    "all": 0,
+    "by_source": {"trustpilot": 0, "reddit": 0, "google_news": 0},
+    "by_brand":  {"together_loans": 0, "transform_credit": 0}
+  },
+  "source_status": {
+    "trustpilot":   {"ok": true, "fetched": 0, "error": null},
+    "reddit":       {"ok": true, "fetched": 0, "error": null},
+    "google_news":  {"ok": true, "fetched": 0, "error": null}
+  },
+  "mentions": []
+}

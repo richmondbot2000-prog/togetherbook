@@ -1,0 +1,610 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>BOOK — Brandwatch</title>
+<link rel="icon" type="image/png" href="site-icon.png">
+<link rel="apple-touch-icon" href="site-icon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&family=Orbitron:wght@500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+<style>
+  .bw-section { max-width: 920px; margin: 0 auto; padding: 56px 32px 120px; }
+  .bw-section h1 {
+    font-family: var(--font-display);
+    font-size: clamp(2rem, 5vw, 3rem);
+    font-weight: 800;
+    letter-spacing: 0.02em;
+    text-transform: uppercase;
+    margin: 0 0 12px;
+    color: var(--ink);
+  }
+  .bw-section .lead { color: var(--ink-soft); font-size: 1.05rem; margin: 0 0 4px; }
+  .bw-meta {
+    color: var(--muted);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.78rem;
+    margin: 0 0 28px;
+  }
+
+  /* STATS BANNER */
+  .bw-stats {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    gap: 12px;
+    margin: 0 0 28px;
+  }
+  .bw-stat {
+    background: linear-gradient(160deg, var(--bg-soft) 0%, var(--bg-soft-2) 100%);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 14px 16px;
+  }
+  .bw-stat-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.66rem;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--muted);
+    margin: 0 0 4px;
+  }
+  .bw-stat-value {
+    font-family: var(--font-display);
+    font-size: 1.6rem;
+    font-weight: 700;
+    color: var(--ink);
+    line-height: 1;
+  }
+  .bw-stat-sub {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.72rem;
+    color: var(--ink-soft);
+    margin-top: 6px;
+  }
+
+  /* FILTER BAR */
+  .bw-filters { margin: 0 0 24px; display: flex; flex-direction: column; gap: 10px; }
+  .bw-filter-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    align-items: center;
+  }
+  .bw-filter-row .bw-filter-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.66rem;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--muted);
+    margin-right: 6px;
+  }
+  .bw-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: var(--bg-soft);
+    border: 1px solid var(--border);
+    color: var(--ink-soft);
+    padding: 6px 12px;
+    border-radius: 999px;
+    font-size: 0.82rem;
+    font-weight: 500;
+    cursor: pointer;
+    user-select: none;
+    transition: background 0.15s, color 0.15s, border-color 0.15s, box-shadow 0.15s;
+  }
+  .bw-pill:hover { color: var(--ink); border-color: var(--accent); }
+  .bw-pill.active {
+    background: var(--accent-soft);
+    border-color: var(--accent);
+    color: var(--accent-ink);
+    box-shadow: 0 0 12px rgba(0, 212, 255, 0.25);
+  }
+  .bw-pill .bw-pill-count {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.7rem;
+    color: var(--muted);
+  }
+  .bw-pill.active .bw-pill-count { color: var(--accent-ink); }
+
+  /* FEED */
+  .bw-feed { display: flex; flex-direction: column; gap: 14px; }
+  .bw-card {
+    background: linear-gradient(160deg, var(--bg-soft) 0%, var(--bg-soft-2) 100%);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 18px 20px;
+    transition: border-color 0.15s, box-shadow 0.15s, transform 0.15s;
+  }
+  .bw-card:hover {
+    border-color: var(--accent);
+    box-shadow: var(--shadow-glow-cyan, 0 0 18px rgba(0, 212, 255, 0.18));
+    transform: translateY(-1px);
+  }
+  .bw-card-headline {
+    font-size: 1.05rem;
+    font-weight: 700;
+    line-height: 1.35;
+    margin: 0 0 8px;
+  }
+  .bw-card-headline a {
+    color: var(--ink);
+    text-decoration: none;
+  }
+  .bw-card-headline a:hover {
+    color: var(--accent-ink);
+    text-decoration: none;
+  }
+  .bw-card-stars {
+    display: inline-flex;
+    align-items: center;
+    gap: 2px;
+    font-size: 0.95rem;
+    margin-right: 10px;
+    letter-spacing: 1px;
+    vertical-align: 2px;
+  }
+  .bw-card-stars .star-on  { color: #ffd66b; text-shadow: 0 0 6px rgba(255, 214, 107, 0.5); }
+  .bw-card-stars .star-off { color: #2a2f55; }
+  .bw-card-snippet {
+    color: var(--ink-soft);
+    font-size: 0.95rem;
+    line-height: 1.55;
+    margin: 0 0 14px;
+    font-style: italic;
+    border-left: 2px solid var(--accent);
+    padding: 2px 0 2px 12px;
+  }
+  .bw-card-snippet mark {
+    background: rgba(255, 57, 168, 0.18);
+    color: var(--ink);
+    border-radius: 3px;
+    padding: 0 3px;
+    font-style: normal;
+    font-weight: 600;
+  }
+  .bw-card-foot {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    align-items: center;
+    font-size: 0.82rem;
+    color: var(--muted);
+  }
+  .bw-card-site {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid var(--border-soft);
+    padding: 4px 10px;
+    border-radius: 6px;
+  }
+  .bw-card-site img {
+    width: 16px;
+    height: 16px;
+    border-radius: 3px;
+    background: white;
+    object-fit: contain;
+  }
+  .bw-card-site .bw-card-site-name {
+    color: var(--ink-soft);
+    font-weight: 500;
+  }
+  .bw-card-author { color: var(--muted); }
+  .bw-card-date {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.74rem;
+    color: var(--muted);
+  }
+  .bw-card-readlink {
+    margin-left: auto;
+    color: var(--accent-ink);
+    font-weight: 500;
+    text-decoration: none;
+    font-size: 0.82rem;
+  }
+  .bw-card-readlink:hover { text-decoration: underline; }
+
+  /* BRAND TAG (small chip showing which brand the mention is about) */
+  .bw-brand-tag {
+    display: inline-block;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.66rem;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--accent-ink);
+    background: rgba(0, 212, 255, 0.07);
+    border: 1px solid rgba(0, 212, 255, 0.3);
+    padding: 2px 7px;
+    border-radius: 4px;
+  }
+  .bw-brand-tag.tc {
+    color: #ff39a8;
+    background: rgba(255, 57, 168, 0.08);
+    border-color: rgba(255, 57, 168, 0.3);
+  }
+
+  /* EMPTY / WARNING STATES */
+  .bw-empty, .bw-source-warning {
+    background: var(--bg-soft);
+    border: 1px dashed var(--border);
+    border-radius: 10px;
+    padding: 20px 22px;
+    color: var(--ink-soft);
+    margin: 0 0 16px;
+    font-size: 0.95rem;
+  }
+  .bw-source-warning { border-color: #b45309; color: #fcd34d; }
+  .bw-source-warning strong { color: #fde68a; }
+</style>
+</head>
+<body>
+
+<script>
+  // Document-level fallback: close drawer when any link inside the sidebar is tapped.
+  document.addEventListener('click', function (e) {
+    if (!document.body.classList.contains('menu-open')) return;
+    const link = e.target.closest('a');
+    if (link && e.target.closest('.sidebar')) {
+      document.body.classList.remove('menu-open');
+    }
+  }, true);
+</script>
+
+<div class="topbar">
+  <button class="menu-toggle" aria-label="Open navigation menu" id="menuToggle"
+          onclick="event.stopPropagation();document.body.classList.toggle('menu-open');">
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true" style="pointer-events:none">
+      <line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/>
+    </svg>
+  </button>
+  <a class="brand" href="index.html" aria-label="BOOK — home"><img class="brand-icon" src="site-icon.png" alt=""><img class="brand-logo" src="book-logo.png" alt="BOOK"></a>
+  <nav>
+    <a href="index.html">Home</a>
+    <a href="apis.html">APIs</a>
+    <a href="robots.html">Robots</a>
+    <a href="yesterday.html">Yesterday</a>
+    <a href="brandwatch.html" class="active">Brandwatch</a>
+    <a href="database.html">Schema</a>
+    <a href="stats.html">Stats</a>
+  </nav>
+</div>
+<div class="sidebar-backdrop" onclick="document.body.classList.remove('menu-open')"></div>
+
+<div class="layout">
+
+  <aside class="sidebar">
+    <button class="drawer-close" aria-label="Close menu"
+            onclick="document.body.classList.remove('menu-open')">✕ Close menu</button>
+
+    <h4><a href="index.html"    onclick="document.body.classList.remove('menu-open')">Home</a></h4>
+    <ul class="sidebar-nav">
+      <li><a href="index.html#meet"         onclick="document.body.classList.remove('menu-open')"><span class="em">🏠</span> Overview</a></li>
+      <li><a href="index.html#apis"         onclick="document.body.classList.remove('menu-open')"><span class="em">🛎️</span> APIs (intro)</a></li>
+      <li><a href="index.html#robots"       onclick="document.body.classList.remove('menu-open')"><span class="em">🤖</span> Robots (intro)</a></li>
+      <li><a href="index.html#screens"      onclick="document.body.classList.remove('menu-open')"><span class="em">🖥️</span> The Screens</a></li>
+      <li><a href="index.html#outside"      onclick="document.body.classList.remove('menu-open')"><span class="em">🏢</span> Outside Askers</a></li>
+      <li><a href="index.html#story"        onclick="document.body.classList.remove('menu-open')"><span class="em">📖</span> A loan story</a></li>
+      <li><a href="index.html#rules"        onclick="document.body.classList.remove('menu-open')"><span class="em">📚</span> How they talk</a></li>
+      <li><a href="index.html#commandments" onclick="document.body.classList.remove('menu-open')"><span class="em">📜</span> The Commandments</a></li>
+    </ul>
+
+    <h4><a href="apis.html"     onclick="document.body.classList.remove('menu-open')">The 8 APIs</a></h4>
+    <ul class="sidebar-nav" id="sideNavApis">
+      <li><a href="apis.html#gary"     onclick="document.body.classList.remove('menu-open')"><span class="em">🔒</span> Gary</a></li>
+      <li><a href="apis.html#anna"     onclick="document.body.classList.remove('menu-open')"><span class="em">📋</span> App Anna</a></li>
+      <li><a href="apis.html#bessie"   onclick="document.body.classList.remove('menu-open')"><span class="em">🦈</span> Bessie</a></li>
+      <li><a href="apis.html#whitney"  onclick="document.body.classList.remove('menu-open')"><span class="em">◻️</span> Whitney</a></li>
+      <li><a href="apis.html#larry"    onclick="document.body.classList.remove('menu-open')"><span class="em">📖</span> Larry</a></li>
+      <li><a href="apis.html#penny"    onclick="document.body.classList.remove('menu-open')"><span class="em">💳</span> Penny</a></li>
+      <li><a href="apis.html#connie"   onclick="document.body.classList.remove('menu-open')"><span class="em">💬</span> Connie</a></li>
+      <li><a href="apis.html#sherlock" onclick="document.body.classList.remove('menu-open')"><span class="em">🕵️</span> Sherlock</a></li>
+    </ul>
+
+    <h4><a href="robots.html"   onclick="document.body.classList.remove('menu-open')">The 12 Robots</a></h4>
+    <ul class="sidebar-nav" id="sideNavRobots">
+      <li><a href="robots.html#night-counter"     onclick="document.body.classList.remove('menu-open')"><img class="emoji" src="https://api.iconify.design/fluent-emoji/owl.svg" /> Night Counter</a></li>
+      <li><a href="robots.html#quick-counter"     onclick="document.body.classList.remove('menu-open')"><img class="emoji" src="https://api.iconify.design/fluent-emoji/person-running.svg" /> Quick Counter</a></li>
+      <li><a href="robots.html#payment-matcher"   onclick="document.body.classList.remove('menu-open')"><img class="emoji" src="https://api.iconify.design/fluent-emoji/puzzle-piece.svg" /> Payment Matcher</a></li>
+      <li><a href="robots.html#card-bank-tidier"  onclick="document.body.classList.remove('menu-open')"><img class="emoji" src="https://api.iconify.design/fluent-emoji/man-mechanic.svg" /> Card-and-Bank Tidier</a></li>
+      <li><a href="robots.html#big-mailout"       onclick="document.body.classList.remove('menu-open')"><img class="emoji" src="https://api.iconify.design/fluent-emoji/dove.svg" /> Big Mailout Team</a></li>
+      <li><a href="robots.html#payment-collector" onclick="document.body.classList.remove('menu-open')"><img class="emoji" src="https://api.iconify.design/fluent-emoji/money-with-wings.svg" /> Payment Collector</a></li>
+      <li><a href="robots.html#reply-robots"      onclick="document.body.classList.remove('menu-open')"><img class="emoji" src="https://api.iconify.design/fluent-emoji/parrot.svg" /> Reply Robots</a></li>
+      <li><a href="robots.html#lookout"           onclick="document.body.classList.remove('menu-open')"><img class="emoji" src="https://api.iconify.design/fluent-emoji/rotating-light.svg" /> Lookout</a></li>
+      <li><a href="robots.html#loan-inspector"    onclick="document.body.classList.remove('menu-open')"><img class="emoji" src="https://api.iconify.design/fluent-emoji/face-with-monocle.svg" /> Loan Inspector</a></li>
+      <li><a href="robots.html#tidy-up-crew"      onclick="document.body.classList.remove('menu-open')"><img class="emoji" src="https://api.iconify.design/fluent-emoji/broom.svg" /> Tidy-Up Crew</a></li>
+      <li><a href="robots.html#card-sorter"       onclick="document.body.classList.remove('menu-open')"><img class="emoji" src="https://api.iconify.design/fluent-emoji/card-index-dividers.svg" /> Card Sorter</a></li>
+      <li><a href="robots.html#finder"            onclick="document.body.classList.remove('menu-open')"><img class="emoji" src="https://api.iconify.design/fluent-emoji/dog-face.svg" /> Finder</a></li>
+    </ul>
+
+    <h4><a href="yesterday.html"  onclick="document.body.classList.remove('menu-open')">Yesterday</a></h4>
+    <ul class="sidebar-nav">
+      <li><a href="yesterday.html" onclick="document.body.classList.remove('menu-open')"><span class="em">📅</span> Yesterday's payouts</a></li>
+    </ul>
+
+    <h4><a href="brandwatch.html"  onclick="document.body.classList.remove('menu-open')">Brandwatch</a></h4>
+    <ul class="sidebar-nav">
+      <li><a href="brandwatch.html" onclick="document.body.classList.remove('menu-open')"><span class="em">📡</span> What people are saying</a></li>
+    </ul>
+
+    <h4><a href="database.html" onclick="document.body.classList.remove('menu-open')">Schema</a></h4>
+    <ul class="sidebar-nav">
+      <li><a href="database.html"            onclick="document.body.classList.remove('menu-open')"><span class="em">🗄️</span> Database schema</a></li>
+      <li><a href="database.html#row-counts" onclick="document.body.classList.remove('menu-open')"><span class="em">📈</span> Live row counts</a></li>
+    </ul>
+
+    <h4><a href="stats.html"    onclick="document.body.classList.remove('menu-open')">Stats</a></h4>
+    <ul class="sidebar-nav">
+      <li><a href="stats.html" onclick="document.body.classList.remove('menu-open')"><span class="em">📊</span> How big our world is</a></li>
+    </ul>
+  </aside>
+
+  <main>
+    <section class="bw-section">
+      <h1>Brandwatch</h1>
+      <p class="lead">What people are saying about <strong>Together Loans</strong> and <strong>TransformCredit</strong> across Trustpilot, Reddit, and the news.</p>
+      <p class="bw-meta" id="bwMeta">Loading…</p>
+
+      <div class="bw-stats" id="bwStats" hidden>
+        <div class="bw-stat">
+          <div class="bw-stat-label">All mentions</div>
+          <div class="bw-stat-value" id="statTotal">0</div>
+          <div class="bw-stat-sub">since last refresh</div>
+        </div>
+        <div class="bw-stat">
+          <div class="bw-stat-label">Trustpilot</div>
+          <div class="bw-stat-value" id="statTp">0</div>
+          <div class="bw-stat-sub">customer reviews</div>
+        </div>
+        <div class="bw-stat">
+          <div class="bw-stat-label">Reddit</div>
+          <div class="bw-stat-value" id="statRd">0</div>
+          <div class="bw-stat-sub">posts &amp; threads</div>
+        </div>
+        <div class="bw-stat">
+          <div class="bw-stat-label">News</div>
+          <div class="bw-stat-value" id="statGn">0</div>
+          <div class="bw-stat-sub">press &amp; blogs</div>
+        </div>
+      </div>
+
+      <div id="bwSourceWarnings"></div>
+
+      <div class="bw-filters" id="bwFilters" hidden>
+        <div class="bw-filter-row">
+          <span class="bw-filter-label">Source</span>
+          <button class="bw-pill active" data-filter="source" data-value="all">All <span class="bw-pill-count" id="filterCountAllSrc">0</span></button>
+          <button class="bw-pill" data-filter="source" data-value="trustpilot">Trustpilot <span class="bw-pill-count" id="filterCountTp">0</span></button>
+          <button class="bw-pill" data-filter="source" data-value="reddit">Reddit <span class="bw-pill-count" id="filterCountRd">0</span></button>
+          <button class="bw-pill" data-filter="source" data-value="google_news">News <span class="bw-pill-count" id="filterCountGn">0</span></button>
+        </div>
+        <div class="bw-filter-row">
+          <span class="bw-filter-label">Brand</span>
+          <button class="bw-pill active" data-filter="brand" data-value="all">All <span class="bw-pill-count" id="filterCountAllBr">0</span></button>
+          <button class="bw-pill" data-filter="brand" data-value="together_loans">Together Loans <span class="bw-pill-count" id="filterCountTl">0</span></button>
+          <button class="bw-pill" data-filter="brand" data-value="transform_credit">TransformCredit <span class="bw-pill-count" id="filterCountTc">0</span></button>
+        </div>
+      </div>
+
+      <div class="bw-feed" id="bwFeed">
+        <!-- mention cards rendered here -->
+      </div>
+
+      <div class="bw-empty" id="bwEmpty" hidden>
+        No mentions in the snapshot yet. The page refreshes hourly — check back in an hour for the first batch.
+      </div>
+    </section>
+  </main>
+</div>
+
+<script>
+  // ----------------------------------------------------------------
+  // Brandwatch page logic — fetches brandwatch.json, renders mention
+  // cards (sorted desc by date by the scanner), wires up the Source +
+  // Brand filter pills.
+  // ----------------------------------------------------------------
+
+  const SOURCE_LABELS = {
+    trustpilot:  "Trustpilot",
+    reddit:      "Reddit",
+    google_news: "News",
+  };
+
+  const BRAND_LABELS = {
+    together_loans:   "Together Loans",
+    transform_credit: "TransformCredit",
+  };
+
+  // Phrases the snippet might contain that should be visually highlighted.
+  const HIGHLIGHT_TERMS = [
+    "Together Loans", "togetherloans",
+    "Transform Credit", "TransformCredit", "transformcredit",
+  ];
+
+  let allMentions = [];
+  let activeSource = "all";
+  let activeBrand  = "all";
+
+  function escapeHtml(s) {
+    return (s || "").replace(/[&<>"']/g, c => ({
+      "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;"
+    })[c]);
+  }
+
+  function highlight(text) {
+    let html = escapeHtml(text);
+    for (const term of HIGHLIGHT_TERMS) {
+      const re = new RegExp("(" + term.replace(/[-/\\^$*+?.()|[\]{}]/g, "\\$&") + ")", "gi");
+      html = html.replace(re, "<mark>$1</mark>");
+    }
+    return html;
+  }
+
+  function stars(rating, max) {
+    if (!rating || !max) return "";
+    let s = '<span class="bw-card-stars" aria-label="' + rating + " out of " + max + ' stars">';
+    for (let i = 1; i <= max; i++) {
+      s += '<span class="' + (i <= rating ? "star-on" : "star-off") + '">★</span>';
+    }
+    s += "</span>";
+    return s;
+  }
+
+  function favicon(domain) {
+    if (!domain) return "site-icon.png";
+    return "https://www.google.com/s2/favicons?sz=64&domain=" + encodeURIComponent(domain);
+  }
+
+  function fmtDate(iso) {
+    if (!iso) return "";
+    const d = new Date(iso + "T00:00:00Z");
+    if (isNaN(d.getTime())) return iso;
+    const months = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+    return d.getUTCDate() + " " + months[d.getUTCMonth()] + " " + d.getUTCFullYear();
+  }
+
+  function renderCard(m) {
+    const brandTag = (m.brand === "transform_credit")
+      ? '<span class="bw-brand-tag tc">TransformCredit</span>'
+      : '<span class="bw-brand-tag">Together Loans</span>';
+
+    const starHtml = (m.source === "trustpilot") ? stars(m.score, m.score_max) : "";
+
+    const headlineLink =
+      '<a href="' + escapeHtml(m.url) + '" target="_blank" rel="noopener noreferrer">'
+      + escapeHtml(m.title) + "</a>";
+
+    const headline =
+      '<div class="bw-card-headline">' + starHtml + headlineLink + "</div>";
+
+    const snippet = m.snippet
+      ? '<blockquote class="bw-card-snippet">' + highlight(m.snippet) + "</blockquote>"
+      : "";
+
+    const sitePill =
+      '<span class="bw-card-site">'
+        + '<img src="' + favicon(m.site_domain) + '" alt="" loading="lazy" '
+        +   'onerror="this.onerror=null;this.src=\'site-icon.png\';" />'
+        + '<span class="bw-card-site-name">' + escapeHtml(m.site_name || SOURCE_LABELS[m.source]) + '</span>'
+      + '</span>';
+
+    const author = m.author ? '<span class="bw-card-author">' + escapeHtml(m.author) + '</span>' : "";
+    const date   = m.date   ? '<span class="bw-card-date">'   + fmtDate(m.date)              + '</span>' : "";
+
+    const readLink =
+      '<a class="bw-card-readlink" href="' + escapeHtml(m.url) + '" '
+      + 'target="_blank" rel="noopener noreferrer">'
+      + 'Read on ' + escapeHtml(m.site_name || SOURCE_LABELS[m.source]) + ' →'
+      + "</a>";
+
+    const foot =
+      '<div class="bw-card-foot">' + sitePill + author + date + brandTag + readLink + '</div>';
+
+    return '<article class="bw-card">' + headline + snippet + foot + "</article>";
+  }
+
+  function visible(m) {
+    if (activeSource !== "all" && m.source !== activeSource) return false;
+    if (activeBrand  !== "all" && m.brand  !== activeBrand)  return false;
+    return true;
+  }
+
+  function render() {
+    const feed = document.getElementById("bwFeed");
+    const empty = document.getElementById("bwEmpty");
+    const filtered = allMentions.filter(visible);
+    if (filtered.length === 0) {
+      feed.innerHTML = "";
+      empty.hidden = false;
+      empty.textContent = (allMentions.length === 0)
+        ? "No mentions in the snapshot yet. The page refreshes hourly — check back in an hour for the first batch."
+        : "No mentions match the current filters.";
+    } else {
+      empty.hidden = true;
+      feed.innerHTML = filtered.map(renderCard).join("");
+    }
+  }
+
+  function setStats(payload) {
+    const t = payload.totals || {};
+    document.getElementById("statTotal").textContent = t.all || 0;
+    document.getElementById("statTp").textContent    = (t.by_source && t.by_source.trustpilot)  || 0;
+    document.getElementById("statRd").textContent    = (t.by_source && t.by_source.reddit)      || 0;
+    document.getElementById("statGn").textContent    = (t.by_source && t.by_source.google_news) || 0;
+    document.getElementById("bwStats").hidden = false;
+
+    document.getElementById("filterCountAllSrc").textContent = t.all || 0;
+    document.getElementById("filterCountTp").textContent     = (t.by_source && t.by_source.trustpilot)  || 0;
+    document.getElementById("filterCountRd").textContent     = (t.by_source && t.by_source.reddit)      || 0;
+    document.getElementById("filterCountGn").textContent     = (t.by_source && t.by_source.google_news) || 0;
+    document.getElementById("filterCountAllBr").textContent  = t.all || 0;
+    document.getElementById("filterCountTl").textContent     = (t.by_brand  && t.by_brand.together_loans)   || 0;
+    document.getElementById("filterCountTc").textContent     = (t.by_brand  && t.by_brand.transform_credit) || 0;
+  }
+
+  function setMeta(payload) {
+    const date = payload.snapshot_date || "";
+    const updated = payload.updated_at || "";
+    let suffix = "";
+    if (updated) {
+      const d = new Date(updated);
+      if (!isNaN(d.getTime())) {
+        suffix = " · refreshed " + d.toUTCString();
+      }
+    }
+    document.getElementById("bwMeta").textContent =
+      "Snapshot: " + (date || "—") + suffix;
+  }
+
+  function showSourceWarnings(payload) {
+    const wrap = document.getElementById("bwSourceWarnings");
+    const ss = payload.source_status || {};
+    const broken = Object.entries(ss).filter(([_, v]) => v && v.ok === false);
+    if (broken.length === 0) { wrap.innerHTML = ""; return; }
+    wrap.innerHTML = broken.map(([k, v]) =>
+      '<div class="bw-source-warning"><strong>' + escapeHtml(SOURCE_LABELS[k] || k) + ' temporarily unavailable.</strong> '
+      + escapeHtml(v.error || "Unknown error.")
+      + ' Mentions from this source may be missing from the list below.</div>'
+    ).join("");
+  }
+
+  function wireFilters() {
+    document.getElementById("bwFilters").hidden = false;
+    document.querySelectorAll(".bw-pill").forEach(pill => {
+      pill.addEventListener("click", () => {
+        const filter = pill.dataset.filter;
+        const value  = pill.dataset.value;
+        document
+          .querySelectorAll('.bw-pill[data-filter="' + filter + '"]')
+          .forEach(p => p.classList.remove("active"));
+        pill.classList.add("active");
+        if (filter === "source") activeSource = value;
+        if (filter === "brand")  activeBrand  = value;
+        render();
+      });
+    });
+  }
+
+  fetch("brandwatch.json?bust=" + Date.now())
+    .then(r => r.json())
+    .then(payload => {
+      allMentions = payload.mentions || [];
+      // Belt and braces: sort desc by date in case the file is unsorted.
+      allMentions.sort((a, b) => (b.date || "").localeCompare(a.date || ""));
+      setMeta(payload);
+      setStats(payload);
+      showSourceWarnings(payload);
+      wireFilters();
+      render();
+    })
+    .catch(err => {
+      console.error("brandwatch.json fetch failed:", err);
+      document.getElementById("bwMeta").textContent = "Could not load brandwatch.json — try again in a minute.";
+    });
+</script>
+
+</body>
+</html>
