@@ -180,16 +180,24 @@ def _http_get_proxied(url: str, *, tier: str = "premium", **kwargs) -> requests.
     """
     Like _http_get, but routes through ScraperAPI when SCRAPERAPI_KEY is set.
 
-    Used for sites like Trustpilot and BBB that 403 every cloud-IP runner via
-    Cloudflare. ScraperAPI rotates residential IPs and handles JS challenges
-    behind the scenes.
+    `tier` selects the ScraperAPI parameter set (and thus credit cost). The
+    right tier is highly target-specific — what works for one Cloudflare-
+    fronted site fails on another. Tiers determined by direct probing
+    2026-05-07:
 
-    `tier` selects the ScraperAPI tier (and thus credit cost):
-      - "premium"       : 25 credits  — covers basic Cloudflare (BBB)
-      - "ultra_premium" : 75 credits  — covers high-defence sites (Trustpilot)
+      "render"    (10 credits) : &render=true alone.
+                                 Required for Trustpilot — its Cloudflare
+                                 challenge needs JS execution. premium=true
+                                 alone returns 500.
+      "premium"   (25 credits) : &premium=true alone.
+                                 Required for BBB — adding render=true
+                                 *breaks* BBB and returns 500.
+      "ultra"     (75 credits) : &ultra_premium=true.
+                                 Free trial accounts get 403 here; this is
+                                 effectively paid-only. Kept for future
+                                 reference.
 
-    Includes one retry on 5xx (ScraperAPI 500s on premium tier are sometimes
-    transient — their backend has occasional momentary failures).
+    Includes one retry on 5xx (transient ScraperAPI failures).
 
     If SCRAPERAPI_KEY isn't set, falls back to a direct fetch.
     """
@@ -197,27 +205,27 @@ def _http_get_proxied(url: str, *, tier: str = "premium", **kwargs) -> requests.
     if not key:
         return _http_get(url, **kwargs)
 
-    base = (
-        "https://api.scraperapi.com"
-        f"?api_key={quote_plus(key)}"
-        f"&url={quote_plus(url)}"
-        f"&country_code=us"
-    )
-    if tier == "ultra_premium":
-        base += "&ultra_premium=true"
-    else:
-        base += "&premium=true"
+    params = [
+        f"api_key={quote_plus(key)}",
+        f"url={quote_plus(url)}",
+        "country_code=us",
+    ]
+    if tier == "render":
+        params.append("render=true")
+    elif tier == "ultra":
+        params.append("ultra_premium=true")
+    else:  # "premium"
+        params.append("premium=true")
+    base = "https://api.scraperapi.com?" + "&".join(params)
 
-    # ScraperAPI takes 20–40 s for premium and up to 70 s for ultra_premium
-    # because of additional JS-rendering and IP-rotation steps.
-    kwargs.setdefault("timeout", 90 if tier == "ultra_premium" else 70)
+    # ScraperAPI takes 20–60 s for these depending on tier and target.
+    kwargs.setdefault("timeout", 90)
 
     last: requests.Response | None = None
     for attempt in (1, 2):
         last = _http_get(base, **kwargs)
         if last.status_code < 500:
             return last
-        # Transient 5xx — small back-off before retry.
         if attempt == 1:
             import time as _t
             _t.sleep(2)
@@ -247,10 +255,11 @@ def fetch_trustpilot(brand: dict) -> list[dict]:
         ),
         "Accept": "text/html,application/xhtml+xml",
     }
-    # Trustpilot is one of ScraperAPI's hardest targets — their `premium` tier
-    # (25 credits) consistently 500s here. Use `ultra_premium` (75 credits)
-    # which is the documented escalation path for high-defence sites.
-    r = _http_get_proxied(url, headers=headers, tier="ultra_premium")
+    # Trustpilot's Cloudflare challenge needs JS execution to clear. Tested
+    # 2026-05-07: render=true (10 credits) works; premium=true (25) doesn't;
+    # ultra_premium=true (75) is paid-only. Render is both cheaper and more
+    # reliable here.
+    r = _http_get_proxied(url, headers=headers, tier="render")
     if r.status_code == 404:
         return []
     r.raise_for_status()
@@ -445,42 +454,66 @@ def fetch_bbb(brand: dict) -> list[dict]:
     r = _http_get_proxied(url, headers=headers)
     r.raise_for_status()
 
-    # Search results have stars + business name + URL. Pull those out of the
-    # HTML and surface as a single "BBB profile" mention per brand.
-    # BBB has tweaked its DOM repeatedly over the years; try several link
-    # patterns in turn.
-    patterns = [
-        # Modern (2024+) profile link with optional category in path
-        r'<a[^>]+href="(/us/[a-z]{2}/[^/"]+/profile/[^"]+/[^"]+)"[^>]*>([^<]+)</a>',
-        # Older form with explicit "online-loans" / "loans" category
-        r'<a[^>]+href="(/us/[a-z]{2}/[^/"]+/profile/(?:online-loans|loans|consumer-finance-companies)/[^"]+)"[^>]*>([^<]+)</a>',
-        # Catch-all: any `/profile/` href that looks like a business
-        r'<a[^>]+href="(/us/[^"]*?/profile/[^"]+)"[^>]*>([^<]+)</a>',
-    ]
-    matches: list[tuple[str, str]] = []
-    for pat in patterns:
-        matches = re.findall(pat, r.text, re.IGNORECASE)
-        if matches:
+    # BBB's profile URLs follow:
+    #   /us/{state}/{city}/profile/{category-slug}/{business-slug}-{org}-{id}
+    # Their search results wrap the link in rich HTML (<h3>, etc.) — text
+    # capture between tags doesn't work. Extract the href only, derive the
+    # business name from the slug.
+    href_re = re.compile(
+        r'href="(/us/[a-z]{2}/[^/"]+/profile/[^/"]+/[^"]+)"',
+        re.IGNORECASE,
+    )
+    raw_hrefs = href_re.findall(r.text)
+    # Dedupe while preserving order
+    seen = set()
+    hrefs = []
+    for h in raw_hrefs:
+        if h in seen:
+            continue
+        # Skip non-profile sub-paths like .../leave-a-review or .../complaints
+        if "/leave-a-review" in h or "/complaints" in h or "/customer-reviews" in h:
+            continue
+        seen.add(h)
+        hrefs.append(h)
+        if len(hrefs) >= 5:
             break
 
-    # Diagnostic: if no profile cards were extracted, dump a peek at the HTML
-    # so the workflow log shows what BBB returned (helps when their DOM shifts).
-    if not matches:
+    if not hrefs:
         snippet = re.sub(r"\s+", " ", r.text[:600])
-        print(f"  bbb: no profile links matched any pattern. response_size={len(r.text)} preview: {snippet}", flush=True)
-    matches = matches[:5]
+        print(f"  bbb: no profile hrefs matched. response_size={len(r.text)} preview: {snippet}", flush=True)
 
-    for href, name in matches:
+    today = dt.datetime.utcnow().date().isoformat()
+
+    for href in hrefs:
+        # Derive a friendly name from the last path component:
+        # `together-loans-0654-90019971` → `Together Loans`
+        slug = href.rstrip("/").rsplit("/", 1)[-1]
+        # Drop trailing chunks that are pure digits (BBB's org and unit IDs)
+        parts = [p for p in slug.split("-") if not p.isdigit()]
+        # Drop common 4-character "bureau code" tokens
+        parts = [p for p in parts if not (len(p) == 4 and p.isdigit())]
+        name = " ".join(p.capitalize() for p in parts) or "BBB Profile"
+
+        # Category — second-to-last path component, e.g. "consumer-finance-companies"
+        path_pieces = href.strip("/").split("/")
+        category_slug = path_pieces[-2] if len(path_pieces) >= 2 else ""
+        category = category_slug.replace("-", " ").title() if category_slug else ""
+
         full_url = "https://www.bbb.org" + href
+        snippet = (
+            f"Better Business Bureau profile in the {category} category."
+            if category else f"Better Business Bureau profile for {brand['label']}."
+        )
+
         out.append({
             "source":      "bbb",
             "brand":       brand["key"],
             "id":          f"bbb-{re.sub(r'[^a-zA-Z0-9]+', '-', href)[-50:]}",
-            "title":       _short(html.unescape(name).strip(), 200) or "BBB Profile",
-            "snippet":     f"Better Business Bureau profile for {brand['label']}.",
+            "title":       _short(name, 200),
+            "snippet":     snippet,
             "url":         full_url,
-            "date":        dt.datetime.utcnow().date().isoformat(),
-            "author":      None,
+            "date":        today,
+            "author":      category or None,
             "score":       None,
             "score_max":   None,
             "site_name":   "BBB",
