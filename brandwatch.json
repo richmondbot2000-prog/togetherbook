@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
-  "snapshot_date": "1970-01-01",
-  "updated_at": "2026-05-07T19:19:50Z",
+  "snapshot_date": "2026-05-07",
+  "updated_at": "2026-05-07T19:23:13Z",
   "brands": [
     "Together Loans",
     "TransformCredit"
@@ -27,12 +27,12 @@
     "trustpilot": {
       "ok": false,
       "fetched": 0,
-      "error": "TypeError: requests.api.get() got multiple values for keyword argument 'timeout'"
+      "error": "HTTPError: 500 Server Error: Internal Server Error for url: https://api.scraperapi.com/?api_key=d45dbd4045b58d674921125d0e585bca&url=https%3A%2F%2Fwww.trustpilot.com%2Freview%2Ftransformcredit.com&premium=true&country_code=us"
     },
     "bbb": {
-      "ok": false,
+      "ok": true,
       "fetched": 0,
-      "error": "TypeError: requests.api.get() got multiple values for keyword argument 'timeout'"
+      "error": null
     },
     "reddit": {
       "ok": false,
