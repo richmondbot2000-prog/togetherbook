@@ -66,38 +66,66 @@ import requests
 #              kept ONLY if its title or snippet contains at least one of
 #              these strings (case-insensitive). Strict so we drop the
 #              "transform" + "credit" coincidences.
+# Borrower-context words. If the spaced two-word brand phrase appears AND any
+# of these is also in the title+snippet, it's almost certainly a real brand
+# mention (someone discussing their loan experience), not a news-headline
+# verb-phrase ("Aims to Transform Credit Markets", "show bringing together
+# loans from museums"). Tuned against the actual top Reddit + Bluesky hits
+# 2026-05-07. "experience" / "review" are deliberately omitted — too generic;
+# "personalized banking experiences" in fintech ads matches them.
+_BORROWER_CONTEXT = [
+    "co-signer", "cosigner", "co signer", "co-sign", "cosign", "co-signed",
+    "cosigned", "co signed",
+    "company called", "this company",
+    "customer service", "voicemail",
+    "credit score", "interest rate",
+    "approval", "approved", "denied", "applied", "application",
+    "settlement", "settlements",
+    "scam", "scammer", "scammed", "fraud", "ripoff", "ripped off",
+    "complaint", "dealt with",
+]
+
 BRANDS = [
     {
         "key":             "together_loans",
         "label":           "Together Loans",
         "domain":          "togetherloans.com",
         "queries":         ['"Together Loans"', "togetherloans.com"],
-        # `precision_terms` is matched case-insensitive — only contains the
-        # unambiguous one-word form. The spaced "together loans" was a
-        # case-insensitive precision term but matched generic phrases like
-        # "show bringing together loans from museums" (museum-loan noise).
+        # `precision_terms` (case-insensitive): the unambiguous one-word
+        # form only. Drops the verb-phrase noise like "show bringing together
+        # loans from museums".
         "precision_terms":            ["togetherloans"],
-        # `precision_terms_strict` is matched case-SENSITIVE. People naming
-        # the brand write it "Together Loans" (both words capitalized);
-        # verb-phrase usage is lowercase or sentence-start ("Together
-        # loans..."). Strict capitalization is a strong brand-form signal.
-        "precision_terms_strict":     ["Together Loans"],
-        "contextual_pairs":           [],
+        # Strict-CS removed — see comment on contextual_pairs below.
+        "precision_terms_strict":     [],
+        # `contextual_pairs` (case-insensitive substring): the spaced phrase
+        # "together loan" is a substring of both "together loan" and
+        # "together loans", so this trigger covers both singular and plural.
+        # Requires at least one borrower-context word in the same
+        # title+snippet — that's how we keep "Has anyone dealt with a
+        # company called together loans? Customer service won't return calls"
+        # while dropping "Sibling A and B bought a house together. Loan type
+        # was FHA". Replaces the old strict-CS filter, which couldn't catch
+        # lowercase "together loans" in real Reddit posts.
+        "contextual_pairs":           [("together loan", _BORROWER_CONTEXT)],
     },
     {
         "key":             "transform_credit",
         "label":           "TransformCredit",
         "domain":          "transformcredit.com",
         "queries":         ['"TransformCredit"', '"Transform Credit"', "transformcredit.com"],
-        # Same two-tier filter as Together Loans:
-        #   case-insensitive  : the unambiguous one-word brand spelling.
-        #   case-SENSITIVE    : the spaced proper-noun "Transform Credit".
-        # Drops the lowercase verb-phrase usage ("transform credit agreement
-        # onboarding") that strict-CI was designed to drop, while still
-        # admitting articles where journalists write "Transform Credit".
+        # `precision_terms` (case-insensitive): the brand's own one-word
+        # spelling, unambiguous.
         "precision_terms":            ["transformcredit", "transformcredit.com"],
-        "precision_terms_strict":     ["Transform Credit"],
-        "contextual_pairs":           [],
+        # Strict-CS "Transform Credit" was REMOVED — the fintech press
+        # title-cases verb phrases too aggressively ("Transform Credit
+        # Markets", "Transform Credit Union", "Aims to Transform Credit
+        # Accessibility") and Bluesky is full of news-bot reposts that match.
+        "precision_terms_strict":     [],
+        # Same contextual approach as together_loans. Keeps real Reddit
+        # discussion ("Does Transform Credit do settlements?", "Transform
+        # credit co-signer needed") while dropping fintech-industry verb-
+        # phrase reposts.
+        "contextual_pairs":           [("transform credit", _BORROWER_CONTEXT)],
     },
 ]
 
