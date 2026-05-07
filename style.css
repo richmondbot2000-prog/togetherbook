@@ -822,6 +822,9 @@
     overflow: hidden;
     font-family: 'JetBrains Mono', monospace;
     font-size: 0.78rem;
+    /* The panel sits on a dark page but the panel itself is white,
+       so text colours need to be readable on white — not the page's --ink. */
+    color: #374151;
   }
   .data-row {
     display: grid;
@@ -829,12 +832,10 @@
     gap: 12px;
     padding: 7px 11px;
     align-items: baseline;
-    border-bottom: 1px solid var(--border-soft);
   }
-  .data-row:last-child { border-bottom: none; }
-  .data-key { color: var(--ink); font-weight: 500; }
+  .data-key { color: #374151; font-weight: 500; }
   .data-val {
-    color: var(--accent-ink);
+    color: #374151;
     text-align: right;
     word-break: break-all;
   }
