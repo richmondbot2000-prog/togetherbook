@@ -662,24 +662,36 @@ def fetch_bbb(brand: dict, known_ids: set[str] | None = None) -> list[dict]:
                         rating = None
                     author = rv.get("displayName") or None
 
-                    # BBB stores dates as either a string or a nested object —
-                    # tolerate both. Wrapper string-ifies anything weird so
-                    # downstream slicing can't crash the whole run.
+                    # BBB stores the date in one of three shapes (observed
+                    # 2026-05-07): a {day, month, year} dict (current shape,
+                    # all string fields zero-padded), a {value/iso} dict, or
+                    # a plain ISO string. Try each in turn — anything else
+                    # falls through to `today` as a safe default.
                     raw_date = rv.get("date") or ""
-                    if isinstance(raw_date, dict):
-                        raw_date = raw_date.get("value") or raw_date.get("iso") or ""
-                    if not isinstance(raw_date, str):
-                        raw_date = str(raw_date)
-
                     iso_date = ""
-                    for fmt in ("%Y-%m-%dT%H:%M:%S", "%Y-%m-%d", "%m/%d/%Y", "%m/%d/%y"):
-                        try:
-                            iso_date = dt.datetime.strptime(raw_date[:19], fmt).date().isoformat()
-                            break
-                        except ValueError:
-                            continue
-                    if not iso_date and len(raw_date) >= 10:
-                        iso_date = raw_date[:10]
+                    if isinstance(raw_date, dict):
+                        if all(k in raw_date for k in ("year", "month", "day")):
+                            try:
+                                iso_date = (
+                                    f"{int(raw_date['year']):04d}-"
+                                    f"{int(raw_date['month']):02d}-"
+                                    f"{int(raw_date['day']):02d}"
+                                )
+                            except (TypeError, ValueError):
+                                pass
+                        else:
+                            raw_date = raw_date.get("value") or raw_date.get("iso") or ""
+                    if not iso_date:
+                        if not isinstance(raw_date, str):
+                            raw_date = str(raw_date)
+                        for fmt in ("%Y-%m-%dT%H:%M:%S", "%Y-%m-%d", "%m/%d/%Y", "%m/%d/%y"):
+                            try:
+                                iso_date = dt.datetime.strptime(raw_date[:19], fmt).date().isoformat()
+                                break
+                            except ValueError:
+                                continue
+                        if not iso_date and len(raw_date) >= 10:
+                            iso_date = raw_date[:10]
 
                     body = rv.get("text") or rv.get("extendedText") or ""
                     if not isinstance(body, str):

@@ -7,14 +7,12 @@
     "TransformCredit"
   ],
   "totals": {
-    "all": 17,
+    "all": 7,
     "by_source": {
-      "bbb": 10,
       "bluesky": 6,
       "google_news": 1
     },
     "by_brand": {
-      "together_loans": 10,
       "transform_credit": 7
     }
   },
@@ -61,146 +59,6 @@
     }
   },
   "mentions": [
-    {
-      "source": "bbb",
-      "brand": "together_loans",
-      "id": "bbb-0654_90019971_673439",
-      "title": "Together Loans — 4-star review",
-      "snippet": "They were quick they were great very very nice people getting alone from them was wonderful very good experience and very helpful I would recommend them to a lot to people",
-      "url": "https://www.bbb.org/us/il/chicago/profile/consumer-finance-companies/together-loans-0654-90019971/customer-reviews",
-      "date": "2026-05-07",
-      "author": "Kimmy K",
-      "score": 4,
-      "score_max": 5,
-      "site_name": "BBB",
-      "site_domain": "bbb.org"
-    },
-    {
-      "source": "bbb",
-      "brand": "together_loans",
-      "id": "bbb-0654_90019971_673190",
-      "title": "Together Loans — 5-star review",
-      "snippet": "Very professional and very good with assisting me through everything",
-      "url": "https://www.bbb.org/us/il/chicago/profile/consumer-finance-companies/together-loans-0654-90019971/customer-reviews",
-      "date": "2026-05-07",
-      "author": "James R",
-      "score": 5,
-      "score_max": 5,
-      "site_name": "BBB",
-      "site_domain": "bbb.org"
-    },
-    {
-      "source": "bbb",
-      "brand": "together_loans",
-      "id": "bbb-0654_90019971_672866",
-      "title": "Together Loans — 5-star review",
-      "snippet": "Wonderful ??????I recommend this loan place anytime Great job you guys",
-      "url": "https://www.bbb.org/us/il/chicago/profile/consumer-finance-companies/together-loans-0654-90019971/customer-reviews",
-      "date": "2026-05-07",
-      "author": "Eric M",
-      "score": 5,
-      "score_max": 5,
-      "site_name": "BBB",
-      "site_domain": "bbb.org"
-    },
-    {
-      "source": "bbb",
-      "brand": "together_loans",
-      "id": "bbb-0654_90019971_672661",
-      "title": "Together Loans — 5-star review",
-      "snippet": "I applied , talk to real person , process and load paid out withing 5 hours this is amazon , I have never seen this before . Nice customer service, very polite.",
-      "url": "https://www.bbb.org/us/il/chicago/profile/consumer-finance-companies/together-loans-0654-90019971/customer-reviews",
-      "date": "2026-05-07",
-      "author": "Son of M",
-      "score": 5,
-      "score_max": 5,
-      "site_name": "BBB",
-      "site_domain": "bbb.org"
-    },
-    {
-      "source": "bbb",
-      "brand": "together_loans",
-      "id": "bbb-0654_90019971_672369",
-      "title": "Together Loans — 5-star review",
-      "snippet": "Fast service and very profesional, waiting for the deposit now.",
-      "url": "https://www.bbb.org/us/il/chicago/profile/consumer-finance-companies/together-loans-0654-90019971/customer-reviews",
-      "date": "2026-05-07",
-      "author": "Andres V",
-      "score": 5,
-      "score_max": 5,
-      "site_name": "BBB",
-      "site_domain": "bbb.org"
-    },
-    {
-      "source": "bbb",
-      "brand": "together_loans",
-      "id": "bbb-0654_90019971_671398",
-      "title": "Together Loans — 5-star review",
-      "snippet": "Together loans, are quick and easy! And they work fast",
-      "url": "https://www.bbb.org/us/il/chicago/profile/consumer-finance-companies/together-loans-0654-90019971/customer-reviews",
-      "date": "2026-05-07",
-      "author": "Betty L",
-      "score": 5,
-      "score_max": 5,
-      "site_name": "BBB",
-      "site_domain": "bbb.org"
-    },
-    {
-      "source": "bbb",
-      "brand": "together_loans",
-      "id": "bbb-0654_90019971_671339",
-      "title": "Together Loans — 5-star review",
-      "snippet": "I was able to reach a real person to discuss my concerns.",
-      "url": "https://www.bbb.org/us/il/chicago/profile/consumer-finance-companies/together-loans-0654-90019971/customer-reviews",
-      "date": "2026-05-07",
-      "author": "Aaron S",
-      "score": 5,
-      "score_max": 5,
-      "site_name": "BBB",
-      "site_domain": "bbb.org"
-    },
-    {
-      "source": "bbb",
-      "brand": "together_loans",
-      "id": "bbb-0654_90019971_671321",
-      "title": "Together Loans — 5-star review",
-      "snippet": "This process has been easy to apply and navigate. They communicate through every step. I recommend their services to everyone!",
-      "url": "https://www.bbb.org/us/il/chicago/profile/consumer-finance-companies/together-loans-0654-90019971/customer-reviews",
-      "date": "2026-05-07",
-      "author": "Kyleen C",
-      "score": 5,
-      "score_max": 5,
-      "site_name": "BBB",
-      "site_domain": "bbb.org"
-    },
-    {
-      "source": "bbb",
-      "brand": "together_loans",
-      "id": "bbb-0654_90019971_670618",
-      "title": "Together Loans — 5-star review",
-      "snippet": "In my experience Together Loans is a good company and the loan process is straightforward if you read everything on the website, follow directions and ask questions about anything you may be concerned about. If you ask a question and don't get a response, ask again because they…",
-      "url": "https://www.bbb.org/us/il/chicago/profile/consumer-finance-companies/together-loans-0654-90019971/customer-reviews",
-      "date": "2026-05-07",
-      "author": "Hubert W",
-      "score": 5,
-      "score_max": 5,
-      "site_name": "BBB",
-      "site_domain": "bbb.org"
-    },
-    {
-      "source": "bbb",
-      "brand": "together_loans",
-      "id": "bbb-0654_90019971_670398",
-      "title": "Together Loans — 5-star review",
-      "snippet": "Appreciate there thorough steps to secure my private information and frequent updates",
-      "url": "https://www.bbb.org/us/il/chicago/profile/consumer-finance-companies/together-loans-0654-90019971/customer-reviews",
-      "date": "2026-05-07",
-      "author": "Chris H",
-      "score": 5,
-      "score_max": 5,
-      "site_name": "BBB",
-      "site_domain": "bbb.org"
-    },
     {
       "source": "bluesky",
       "brand": "transform_credit",
