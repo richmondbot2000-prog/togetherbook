@@ -191,6 +191,10 @@ def _http_get_proxied(url: str, *, tier: str = "premium", **kwargs) -> requests.
     fronted site fails on another. Tiers determined by direct probing
     2026-05-07:
 
+      "basic"     ( 1 credit ) : just country_code=us, no render or premium.
+                                 Enough for plain JSON APIs that block cloud
+                                 IPs but don't gate on JS-execution or
+                                 fingerprinting (Reddit's .json endpoint).
       "render"    (10 credits) : &render=true alone.
                                  Required for Trustpilot — its Cloudflare
                                  challenge needs JS execution. premium=true
@@ -216,7 +220,9 @@ def _http_get_proxied(url: str, *, tier: str = "premium", **kwargs) -> requests.
         f"url={quote_plus(url)}",
         "country_code=us",
     ]
-    if tier == "render":
+    if tier == "basic":
+        pass  # no extra params — residential IP only, 1 credit
+    elif tier == "render":
         params.append("render=true")
     elif tier == "ultra":
         params.append("ultra_premium=true")
@@ -371,22 +377,29 @@ def _reddit_oauth_token() -> str | None:
 
 def fetch_reddit(brand: dict) -> list[dict]:
     """
-    Reddit search. If REDDIT_CLIENT_ID / REDDIT_CLIENT_SECRET are present
-    (recommended), use OAuth via oauth.reddit.com — reliable from cloud IPs.
-    Otherwise fall back to the unauth endpoint, which Reddit increasingly
-    blocks from cloud-IP runners (we try www → old → api in turn).
+    Reddit search. Three paths, in priority order:
+
+      1. OAuth via oauth.reddit.com — sanctioned, free, reliable.
+         Used when REDDIT_CLIENT_ID + REDDIT_CLIENT_SECRET are set.
+      2. ScraperAPI residential proxy at the "basic" tier (1 credit/req).
+         Used when no OAuth credentials but SCRAPERAPI_KEY is set. Reddit
+         blocks cloud IPs but the .json endpoint is just JSON — a
+         residential exit is enough, no JS rendering needed.
+      3. Direct unauth fetch trying www → old → api in turn.
+         Almost always 403s from cloud-IP runners now. Kept as a final
+         fallback for local/dev runs.
     """
     out: list[dict] = []
     seen_ids: set[str] = set()
 
     token = _reddit_oauth_token()
+    has_proxy = bool(os.environ.get("SCRAPERAPI_KEY"))
 
     for query in brand["queries"]:
         data = None
         last_err: Exception | None = None
 
         if token:
-            # Authenticated path — single, reliable host.
             try:
                 r = _http_get(
                     f"https://oauth.reddit.com/search.json"
@@ -397,8 +410,18 @@ def fetch_reddit(brand: dict) -> list[dict]:
                 data = r.json().get("data", {}).get("children", [])
             except Exception as e:
                 last_err = e
+        elif has_proxy:
+            try:
+                r = _http_get_proxied(
+                    f"https://www.reddit.com/search.json"
+                    f"?q={quote_plus(query)}&sort=new&limit={PER_BRAND_LIMIT}&t=year",
+                    tier="basic",
+                )
+                r.raise_for_status()
+                data = r.json().get("data", {}).get("children", [])
+            except Exception as e:
+                last_err = e
         else:
-            # Unauth fallback — try a few hosts in turn.
             for host in ("www.reddit.com", "old.reddit.com", "api.reddit.com"):
                 try:
                     r = _http_get(
@@ -408,7 +431,8 @@ def fetch_reddit(brand: dict) -> list[dict]:
                     if r.status_code in (403, 429):
                         last_err = RuntimeError(
                             f"reddit {host} returned {r.status_code} for {query!r} "
-                            f"(set REDDIT_CLIENT_ID + REDDIT_CLIENT_SECRET to use OAuth)"
+                            f"(set REDDIT_CLIENT_ID + REDDIT_CLIENT_SECRET to use OAuth, "
+                            f"or set SCRAPERAPI_KEY for the proxy fallback)"
                         )
                         continue
                     r.raise_for_status()
