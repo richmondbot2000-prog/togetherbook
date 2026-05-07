@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
-  "snapshot_date": "1970-01-01",
-  "updated_at": "2026-05-07T17:52:02Z",
+  "snapshot_date": "2026-05-07",
+  "updated_at": "2026-05-07T19:05:54Z",
   "brands": [
     "Together Loans",
     "TransformCredit"
@@ -13,7 +13,9 @@
       "bbb": 0,
       "reddit": 0,
       "bluesky": 4,
+      "lemmy": 0,
       "hackernews": 0,
+      "courtlistener": 0,
       "google_news": 1
     },
     "by_brand": {
@@ -42,9 +44,19 @@
       "fetched": 14,
       "error": null
     },
+    "lemmy": {
+      "ok": true,
+      "fetched": 0,
+      "error": null
+    },
     "hackernews": {
       "ok": true,
       "fetched": 1,
+      "error": null
+    },
+    "courtlistener": {
+      "ok": true,
+      "fetched": 14,
       "error": null
     },
     "google_news": {
