@@ -68,23 +68,37 @@ import requests
 #              "transform" + "credit" coincidences.
 BRANDS = [
     {
-        "key":             "together_loans",
-        "label":           "Together Loans",
-        "domain":          "togetherloans.com",
-        "queries":         ['"Together Loans"', "togetherloans.com"],
-        "precision_terms": ["together loans", "togetherloans"],
+        "key":              "together_loans",
+        "label":            "Together Loans",
+        "domain":           "togetherloans.com",
+        "queries":          ['"Together Loans"', "togetherloans.com"],
+        # "together loans" is unambiguous enough as a phrase that we don't
+        # need a contextual-pair gate; a brand-only filter is fine.
+        "precision_terms":  ["together loans", "togetherloans"],
+        "contextual_pairs": [],
     },
     {
-        "key":             "transform_credit",
-        "label":           "TransformCredit",
-        "domain":          "transformcredit.com",
-        "queries":         ['"TransformCredit"', '"Transform Credit"', "transformcredit.com"],
-        # Both spellings allowed: the brand uses "TransformCredit" (one word)
-        # in branding, but most journalists write "Transform Credit" (two words).
-        # The two-word form re-admits some "transform the credit ecosystem"
-        # type generic news; we accept that noise rather than drop legitimate
-        # brand articles.
-        "precision_terms": ["transformcredit", "transform credit"],
+        "key":              "transform_credit",
+        "label":            "TransformCredit",
+        "domain":           "transformcredit.com",
+        "queries":          ['"TransformCredit"', '"Transform Credit"', "transformcredit.com"],
+        # Two-tier precision filter:
+        #   strong_terms: any single occurrence is enough to keep the mention.
+        #     "TransformCredit" (one word) and the URL are unambiguous brand.
+        #   contextual_terms: the spaced form "transform credit" is ambiguous
+        #     (matches generic phrases like "transform credit agreement
+        #     onboarding"). Only keep it if at least one disambiguating
+        #     lending-context word appears in the same title+snippet.
+        "precision_terms": ["transformcredit", "transformcredit.com"],
+        "contextual_pairs": [
+            ("transform credit", [
+                "loan", "lender", "lending", "borrower", "guarantor",
+                "review", "complaint", "debt", "personal finance",
+                "consumer finance", "financial services", "money",
+                "illinois", "cila", "fcra", "interest rate", "apr",
+                "subprime", "underwriting", "co-signer", "cosigner",
+            ]),
+        ],
     },
 ]
 
@@ -417,13 +431,17 @@ def fetch_bluesky(brand: dict) -> list[dict]:
     """
     Bluesky's public XRPC search endpoint. No auth, returns recent posts
     matching the brand's queries.
+
+    NOTE the host is `api.bsky.app` — `public.api.bsky.app` was retired
+    behind a WAF and now 403s every caller. The new host returns valid
+    JSON (often empty) without authentication.
     """
     out: list[dict] = []
     seen_uris: set[str] = set()
 
     for query in brand["queries"]:
         url = (
-            "https://public.api.bsky.app/xrpc/app.bsky.feed.searchPosts"
+            "https://api.bsky.app/xrpc/app.bsky.feed.searchPosts"
             f"?q={quote_plus(query)}&limit={PER_BRAND_LIMIT}&sort=latest"
         )
         r = _http_get(url)
@@ -625,23 +643,35 @@ def run() -> dict:
         seen.add(k)
         deduped.append(m)
 
-    # Precision filter: drop mentions whose title + snippet don't actually
-    # contain the brand. Catches Google News false positives like
-    # "Finastra transform credit agreement onboarding" when searching for
-    # the TransformCredit lender. Case-insensitive substring match against
-    # each brand's `precision_terms`.
-    precision_by_brand = {b["key"]: [t.lower() for t in b["precision_terms"]] for b in BRANDS}
+    # Precision filter — two-tier per brand. A mention is kept if EITHER:
+    #   (a) any of the brand's `precision_terms` appears in title+snippet, OR
+    #   (b) one of the brand's `contextual_pairs` matches — i.e. the trigger
+    #       phrase appears AND at least one context word also appears in the
+    #       same title+snippet. This is how we keep "Transform Credit" (the
+    #       lender) but drop "transform credit agreement onboarding" (the
+    #       verb phrase).
+    by_brand_cfg = {b["key"]: b for b in BRANDS}
     filtered = []
     dropped = 0
     for m in deduped:
-        terms = precision_by_brand.get(m["brand"], [])
+        cfg = by_brand_cfg.get(m["brand"], {})
         haystack = ((m.get("title") or "") + " " + (m.get("snippet") or "")).lower()
-        if any(t in haystack for t in terms):
+        kept = False
+        for t in cfg.get("precision_terms", []):
+            if t.lower() in haystack:
+                kept = True
+                break
+        if not kept:
+            for trigger, ctx_words in cfg.get("contextual_pairs", []):
+                if trigger.lower() in haystack and any(w.lower() in haystack for w in ctx_words):
+                    kept = True
+                    break
+        if kept:
             filtered.append(m)
         else:
             dropped += 1
     if dropped:
-        print(f"\nprecision filter: dropped {dropped} mentions with no brand term in title/snippet", flush=True)
+        print(f"\nprecision filter: dropped {dropped} mentions with no brand signal in title/snippet", flush=True)
     deduped = filtered
 
     # Sort by date desc; missing dates sink to the bottom.
