@@ -860,10 +860,21 @@ def run() -> dict:
     #       same title+snippet. This is how we keep "Transform Credit" (the
     #       lender) but drop "transform credit agreement onboarding" (the
     #       verb phrase).
+    #
+    # SKIP-LIST: certain sources are scoped to the brand by their URL alone
+    # (e.g. trustpilot.com/review/transformcredit.com is, by construction,
+    # only about TransformCredit). Every result we get from those sources is
+    # already disambiguated; running the precision filter just kills real
+    # reviews where the customer didn't happen to mention the brand by name.
+    UNFILTERED_SOURCES = {"trustpilot", "bbb"}
+
     by_brand_cfg = {b["key"]: b for b in BRANDS}
     filtered = []
     dropped = 0
     for m in deduped:
+        if m["source"] in UNFILTERED_SOURCES:
+            filtered.append(m)
+            continue
         cfg = by_brand_cfg.get(m["brand"], {})
         haystack = ((m.get("title") or "") + " " + (m.get("snippet") or "")).lower()
         kept = False
