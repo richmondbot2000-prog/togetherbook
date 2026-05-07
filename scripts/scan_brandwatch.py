@@ -68,30 +68,36 @@ import requests
 #              "transform" + "credit" coincidences.
 BRANDS = [
     {
-        "key":              "together_loans",
-        "label":            "Together Loans",
-        "domain":           "togetherloans.com",
-        "queries":          ['"Together Loans"', "togetherloans.com"],
-        # "together loans" is unambiguous enough as a phrase that we don't
-        # need a contextual-pair gate; a brand-only filter is fine.
-        "precision_terms":  ["together loans", "togetherloans"],
-        "contextual_pairs": [],
+        "key":             "together_loans",
+        "label":           "Together Loans",
+        "domain":          "togetherloans.com",
+        "queries":         ['"Together Loans"', "togetherloans.com"],
+        # `precision_terms` is matched case-insensitive — only contains the
+        # unambiguous one-word form. The spaced "together loans" was a
+        # case-insensitive precision term but matched generic phrases like
+        # "show bringing together loans from museums" (museum-loan noise).
+        "precision_terms":            ["togetherloans"],
+        # `precision_terms_strict` is matched case-SENSITIVE. People naming
+        # the brand write it "Together Loans" (both words capitalized);
+        # verb-phrase usage is lowercase or sentence-start ("Together
+        # loans..."). Strict capitalization is a strong brand-form signal.
+        "precision_terms_strict":     ["Together Loans"],
+        "contextual_pairs":           [],
     },
     {
-        "key":              "transform_credit",
-        "label":            "TransformCredit",
-        "domain":           "transformcredit.com",
-        "queries":          ['"TransformCredit"', '"Transform Credit"', "transformcredit.com"],
-        # STRICT — only the unambiguous one-word form ("TransformCredit") or
-        # the URL counts. The spaced form "Transform Credit" was tested with
-        # a contextual gate (require a lending-context word nearby) but the
-        # generic verb-phrase usage in fintech overlaps too heavily with
-        # legitimate brand context. Cleaner to lose some legit press than to
-        # keep showing "transform credit agreement onboarding" articles.
-        # If/when the brand spelling fork stops being a problem, re-add the
-        # contextual_pairs entry that lived here in commit 6cae2a2.
-        "precision_terms":  ["transformcredit", "transformcredit.com"],
-        "contextual_pairs": [],
+        "key":             "transform_credit",
+        "label":           "TransformCredit",
+        "domain":          "transformcredit.com",
+        "queries":         ['"TransformCredit"', '"Transform Credit"', "transformcredit.com"],
+        # Same two-tier filter as Together Loans:
+        #   case-insensitive  : the unambiguous one-word brand spelling.
+        #   case-SENSITIVE    : the spaced proper-noun "Transform Credit".
+        # Drops the lowercase verb-phrase usage ("transform credit agreement
+        # onboarding") that strict-CI was designed to drop, while still
+        # admitting articles where journalists write "Transform Credit".
+        "precision_terms":            ["transformcredit", "transformcredit.com"],
+        "precision_terms_strict":     ["Transform Credit"],
+        "contextual_pairs":           [],
     },
 ]
 
@@ -484,33 +490,94 @@ def fetch_bbb(brand: dict) -> list[dict]:
 
     today = dt.datetime.utcnow().date().isoformat()
 
+    # For each profile we found in search, follow through to its
+    # /customer-reviews page and pull the actual review items. BBB embeds
+    # the review array as JSON in window.__PRELOADED_STATE__, at path
+    #   businessProfile.customerReviews.items[]
+    # with keys: reviewStarRating, displayName, text, date, id, etc.
+    # If the reviews page can't be fetched or has no items, fall back to
+    # surfacing the profile listing as a single mention.
     for href in hrefs:
-        # Derive a friendly name from the last path component:
-        # `together-loans-0654-90019971` → `Together Loans`
-        slug = href.rstrip("/").rsplit("/", 1)[-1]
-        # Drop trailing chunks that are pure digits (BBB's org and unit IDs)
-        parts = [p for p in slug.split("-") if not p.isdigit()]
-        # Drop common 4-character "bureau code" tokens
-        parts = [p for p in parts if not (len(p) == 4 and p.isdigit())]
-        name = " ".join(p.capitalize() for p in parts) or "BBB Profile"
+        full_url = "https://www.bbb.org" + href
+        reviews_url = full_url.rstrip("/") + "/customer-reviews"
 
-        # Category — second-to-last path component, e.g. "consumer-finance-companies"
+        # Derive friendly name + category from the slug in case we need a
+        # fallback "profile listing" mention.
+        slug = href.rstrip("/").rsplit("/", 1)[-1]
+        parts = [p for p in slug.split("-") if not p.isdigit() and not (len(p) == 4 and p.isdigit())]
+        biz_name = " ".join(p.capitalize() for p in parts) or "BBB Profile"
         path_pieces = href.strip("/").split("/")
         category_slug = path_pieces[-2] if len(path_pieces) >= 2 else ""
         category = category_slug.replace("-", " ").title() if category_slug else ""
 
-        full_url = "https://www.bbb.org" + href
-        snippet = (
-            f"Better Business Bureau profile in the {category} category."
-            if category else f"Better Business Bureau profile for {brand['label']}."
-        )
+        review_items: list[dict] = []
+        try:
+            rr = _http_get_proxied(reviews_url, headers=headers)
+            rr.raise_for_status()
+            m = re.search(
+                r'window\.__PRELOADED_STATE__\s*=\s*({.+?});</script>',
+                rr.text, re.DOTALL,
+            )
+            if m:
+                state = json.loads(m.group(1))
+                review_items = (
+                    (state.get("businessProfile", {}) or {})
+                    .get("customerReviews", {}) or {}
+                ).get("items") or []
+        except Exception as e:
+            print(f"  bbb: reviews-page fetch/parse failed for {full_url}: {e}", flush=True)
 
+        if review_items:
+            for rv in review_items[:10]:
+                review_id = rv.get("id") or rv.get("customerReviewGuid") or ""
+                rating = rv.get("reviewStarRating")
+                try:
+                    rating = int(rating) if rating is not None else None
+                except (TypeError, ValueError):
+                    rating = None
+                author = rv.get("displayName") or None
+                # Date format from BBB tends to be "MM/DD/YYYY" or ISO; normalize.
+                raw_date = rv.get("date") or ""
+                iso_date = ""
+                for fmt in ("%Y-%m-%dT%H:%M:%S", "%Y-%m-%d", "%m/%d/%Y", "%m/%d/%y"):
+                    try:
+                        iso_date = dt.datetime.strptime(raw_date[:19], fmt).date().isoformat()
+                        break
+                    except ValueError:
+                        continue
+                if not iso_date and len(raw_date) >= 10:
+                    iso_date = raw_date[:10]
+                body = rv.get("text") or rv.get("extendedText") or ""
+                title = (
+                    f"{biz_name} — {rating}-star review"
+                    if rating else f"{biz_name} review"
+                )
+                out.append({
+                    "source":      "bbb",
+                    "brand":       brand["key"],
+                    "id":          f"bbb-{review_id or re.sub(r'[^a-zA-Z0-9]+', '-', href)[-30:]}",
+                    "title":       _short(title, 200),
+                    "snippet":     _short(body, 280) or f"BBB review of {biz_name}.",
+                    "url":         reviews_url,
+                    "date":        iso_date or today,
+                    "author":      author,
+                    "score":       rating,
+                    "score_max":   5,
+                    "site_name":   "BBB",
+                    "site_domain": "bbb.org",
+                })
+            continue
+
+        # Fallback — surface the profile listing as a single mention.
         out.append({
             "source":      "bbb",
             "brand":       brand["key"],
             "id":          f"bbb-{re.sub(r'[^a-zA-Z0-9]+', '-', href)[-50:]}",
-            "title":       _short(name, 200),
-            "snippet":     snippet,
+            "title":       _short(biz_name, 200),
+            "snippet":     (
+                f"Better Business Bureau profile in the {category} category."
+                if category else f"Better Business Bureau profile for {brand['label']}."
+            ),
             "url":         full_url,
             "date":        today,
             "author":      category or None,
@@ -876,17 +943,30 @@ def run() -> dict:
             filtered.append(m)
             continue
         cfg = by_brand_cfg.get(m["brand"], {})
-        haystack = ((m.get("title") or "") + " " + (m.get("snippet") or "")).lower()
+        title_snippet = (m.get("title") or "") + " " + (m.get("snippet") or "")
+        haystack_ci   = title_snippet.lower()
+        haystack_cs   = title_snippet  # case-sensitive
+
         kept = False
+        # Tier 1: case-insensitive precision terms (one-word brand, URL).
         for t in cfg.get("precision_terms", []):
-            if t.lower() in haystack:
+            if t.lower() in haystack_ci:
                 kept = True
                 break
+        # Tier 2: case-SENSITIVE precision terms (proper-noun spaced form).
+        # "Together Loans" matches; "together loans" / "Together loans" don't.
         if not kept:
-            for trigger, ctx_words in cfg.get("contextual_pairs", []):
-                if trigger.lower() in haystack and any(w.lower() in haystack for w in ctx_words):
+            for t in cfg.get("precision_terms_strict", []):
+                if t in haystack_cs:
                     kept = True
                     break
+        # Tier 3: contextual pairs (trigger + at least one context word).
+        if not kept:
+            for trigger, ctx_words in cfg.get("contextual_pairs", []):
+                if trigger.lower() in haystack_ci and any(w.lower() in haystack_ci for w in ctx_words):
+                    kept = True
+                    break
+
         if kept:
             filtered.append(m)
         else:
