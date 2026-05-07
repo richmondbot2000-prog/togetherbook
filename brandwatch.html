@@ -29,41 +29,6 @@
     margin: 0 0 28px;
   }
 
-  /* STATS BANNER */
-  .bw-stats {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
-    gap: 12px;
-    margin: 0 0 28px;
-  }
-  .bw-stat {
-    background: linear-gradient(160deg, var(--bg-soft) 0%, var(--bg-soft-2) 100%);
-    border: 1px solid var(--border);
-    border-radius: 10px;
-    padding: 14px 16px;
-  }
-  .bw-stat-label {
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 0.66rem;
-    text-transform: uppercase;
-    letter-spacing: 0.08em;
-    color: var(--muted);
-    margin: 0 0 4px;
-  }
-  .bw-stat-value {
-    font-family: var(--font-display);
-    font-size: 1.6rem;
-    font-weight: 700;
-    color: var(--ink);
-    line-height: 1;
-  }
-  .bw-stat-sub {
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 0.72rem;
-    color: var(--ink-soft);
-    margin-top: 6px;
-  }
-
   /* FILTER BAR */
   .bw-filters { margin: 0 0 24px; display: flex; flex-direction: column; gap: 10px; }
   .bw-filter-row {
@@ -361,54 +326,6 @@
       <p class="lead">What people are saying about <strong>Together Loans</strong> and <strong>TransformCredit</strong> across Trustpilot, Reddit, and the news.</p>
       <p class="bw-meta" id="bwMeta">Loading…</p>
 
-      <div class="bw-stats" id="bwStats" hidden>
-        <div class="bw-stat">
-          <div class="bw-stat-label">All mentions</div>
-          <div class="bw-stat-value" id="statTotal">0</div>
-          <div class="bw-stat-sub">since last refresh</div>
-        </div>
-        <div class="bw-stat">
-          <div class="bw-stat-label">Trustpilot</div>
-          <div class="bw-stat-value" id="statTp">0</div>
-          <div class="bw-stat-sub">customer reviews</div>
-        </div>
-        <div class="bw-stat">
-          <div class="bw-stat-label">BBB</div>
-          <div class="bw-stat-value" id="statBbb">0</div>
-          <div class="bw-stat-sub">profile listings</div>
-        </div>
-        <div class="bw-stat">
-          <div class="bw-stat-label">Reddit</div>
-          <div class="bw-stat-value" id="statRd">0</div>
-          <div class="bw-stat-sub">posts &amp; threads</div>
-        </div>
-        <div class="bw-stat">
-          <div class="bw-stat-label">Bluesky</div>
-          <div class="bw-stat-value" id="statBs">0</div>
-          <div class="bw-stat-sub">recent posts</div>
-        </div>
-        <div class="bw-stat">
-          <div class="bw-stat-label">Lemmy</div>
-          <div class="bw-stat-value" id="statLm">0</div>
-          <div class="bw-stat-sub">forum posts</div>
-        </div>
-        <div class="bw-stat">
-          <div class="bw-stat-label">Hacker News</div>
-          <div class="bw-stat-value" id="statHn">0</div>
-          <div class="bw-stat-sub">stories</div>
-        </div>
-        <div class="bw-stat">
-          <div class="bw-stat-label">Court records</div>
-          <div class="bw-stat-value" id="statCl">0</div>
-          <div class="bw-stat-sub">US legal filings</div>
-        </div>
-        <div class="bw-stat">
-          <div class="bw-stat-label">News</div>
-          <div class="bw-stat-value" id="statGn">0</div>
-          <div class="bw-stat-sub">press &amp; blogs</div>
-        </div>
-      </div>
-
       <div id="bwSourceWarnings"></div>
 
       <div class="bw-filters" id="bwFilters" hidden>
@@ -583,17 +500,6 @@
     const t = payload.totals || {};
     const bs = t.by_source || {};
     const bb = t.by_brand  || {};
-
-    document.getElementById("statTotal").textContent = t.all || 0;
-    document.getElementById("statTp").textContent    = bs.trustpilot     || 0;
-    document.getElementById("statBbb").textContent   = bs.bbb            || 0;
-    document.getElementById("statRd").textContent    = bs.reddit         || 0;
-    document.getElementById("statBs").textContent    = bs.bluesky        || 0;
-    document.getElementById("statLm").textContent    = bs.lemmy          || 0;
-    document.getElementById("statHn").textContent    = bs.hackernews     || 0;
-    document.getElementById("statCl").textContent    = bs.courtlistener  || 0;
-    document.getElementById("statGn").textContent    = bs.google_news    || 0;
-    document.getElementById("bwStats").hidden = false;
 
     document.getElementById("filterCountAllSrc").textContent = t.all || 0;
     document.getElementById("filterCountTp").textContent     = bs.trustpilot     || 0;
