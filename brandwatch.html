@@ -29,67 +29,6 @@
     margin: 0 0 28px;
   }
 
-  /* WHERE TO READ FULL REVIEWS */
-  .bw-platforms {
-    margin: 0 0 28px;
-    padding: 14px 18px 16px;
-    background: linear-gradient(160deg, var(--bg-soft) 0%, var(--bg-soft-2) 100%);
-    border: 1px solid var(--border);
-    border-radius: 10px;
-  }
-  .bw-platforms-title {
-    margin: 0 0 12px;
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 0.66rem;
-    font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: 0.08em;
-    color: var(--muted);
-  }
-  .bw-platforms-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-    gap: 8px;
-  }
-  .bw-platform {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    padding: 8px 12px;
-    background: var(--bg);
-    border: 1px solid var(--border-soft);
-    border-radius: 8px;
-    color: var(--ink);
-    text-decoration: none;
-    transition: border-color 0.15s, background 0.15s, transform 0.15s;
-  }
-  .bw-platform:hover {
-    border-color: var(--accent);
-    background: rgba(0, 212, 255, 0.05);
-    transform: translateY(-1px);
-    text-decoration: none;
-  }
-  .bw-platform-logo {
-    width: 22px;
-    height: 22px;
-    border-radius: 4px;
-    background: white;
-    object-fit: contain;
-    flex-shrink: 0;
-  }
-  .bw-platform-name {
-    font-weight: 600;
-    color: var(--ink);
-    font-size: 0.86rem;
-    line-height: 1.1;
-  }
-  .bw-platform-brand {
-    color: var(--accent-ink);
-    font-size: 0.76rem;
-    font-family: 'JetBrains Mono', monospace;
-    margin-top: 2px;
-  }
-
   /* STATS BANNER */
   .bw-stats {
     display: grid;
@@ -408,42 +347,6 @@
       <h1>Brandwatch</h1>
       <p class="lead">What people are saying about <strong>Together Loans</strong> and <strong>TransformCredit</strong> across Trustpilot, Reddit, and the news.</p>
       <p class="bw-meta" id="bwMeta">Loading…</p>
-
-      <!-- WHERE TO READ FULL REVIEWS — direct click-throughs that work even
-           when our scraping of the review platforms gets blocked. -->
-      <div class="bw-platforms">
-        <h3 class="bw-platforms-title">Read full reviews on</h3>
-        <div class="bw-platforms-grid">
-          <a class="bw-platform" href="https://www.trustpilot.com/review/togetherloans.com" target="_blank" rel="noopener noreferrer">
-            <img class="bw-platform-logo" src="https://www.google.com/s2/favicons?sz=64&amp;domain=trustpilot.com" alt="" />
-            <div class="bw-platform-meta">
-              <div class="bw-platform-name">Trustpilot</div>
-              <div class="bw-platform-brand">Together Loans →</div>
-            </div>
-          </a>
-          <a class="bw-platform" href="https://www.trustpilot.com/review/transformcredit.com" target="_blank" rel="noopener noreferrer">
-            <img class="bw-platform-logo" src="https://www.google.com/s2/favicons?sz=64&amp;domain=trustpilot.com" alt="" />
-            <div class="bw-platform-meta">
-              <div class="bw-platform-name">Trustpilot</div>
-              <div class="bw-platform-brand">TransformCredit →</div>
-            </div>
-          </a>
-          <a class="bw-platform" href="https://www.bbb.org/search?find_country=USA&amp;find_text=togetherloans.com" target="_blank" rel="noopener noreferrer">
-            <img class="bw-platform-logo" src="https://www.google.com/s2/favicons?sz=64&amp;domain=bbb.org" alt="" />
-            <div class="bw-platform-meta">
-              <div class="bw-platform-name">BBB</div>
-              <div class="bw-platform-brand">Together Loans →</div>
-            </div>
-          </a>
-          <a class="bw-platform" href="https://www.bbb.org/search?find_country=USA&amp;find_text=transformcredit.com" target="_blank" rel="noopener noreferrer">
-            <img class="bw-platform-logo" src="https://www.google.com/s2/favicons?sz=64&amp;domain=bbb.org" alt="" />
-            <div class="bw-platform-meta">
-              <div class="bw-platform-name">BBB</div>
-              <div class="bw-platform-brand">TransformCredit →</div>
-            </div>
-          </a>
-        </div>
-      </div>
 
       <div class="bw-stats" id="bwStats" hidden>
         <div class="bw-stat">
