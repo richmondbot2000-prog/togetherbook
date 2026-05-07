@@ -62,4 +62,18 @@ jobs:
           N=$(python -c "import json; d=json.load(open('yesterday-payouts.json')); print(d['totals']['borrowers'])")
           DATE=$(python -c "import json; d=json.load(open('yesterday-payouts.json')); print(d.get('target_date',''))")
           git commit -m "Refresh yesterday payouts: ${N} borrowers on ${DATE}"
-          git push
+
+          # If a sibling workflow (e.g. refresh-row-counts) committed in parallel,
+          # the push will be rejected. Rebase onto the latest main and retry.
+          for attempt in 1 2 3; do
+            if git push; then
+              break
+            fi
+            if [ "$attempt" -eq 3 ]; then
+              echo "::error::Push failed after 3 attempts"
+              exit 1
+            fi
+            echo "Push rejected (concurrent commit); rebasing and retrying (attempt $attempt)…"
+            git fetch origin main
+            git rebase origin/main
+          done

@@ -63,4 +63,18 @@ jobs:
           ROWS=$(python -c "import json; d=json.load(open('row-counts.json')); print(f\"{d['totals']['rows']:,}\")")
           TABLES=$(python -c "import json; d=json.load(open('row-counts.json')); print(d['totals']['tables'])")
           git commit -m "Refresh row counts: ${TABLES} tables, ${ROWS} rows"
-          git push
+
+          # If a sibling workflow (e.g. refresh-yesterday-payouts) committed in parallel,
+          # the push will be rejected. Rebase onto the latest main and retry.
+          for attempt in 1 2 3; do
+            if git push; then
+              break
+            fi
+            if [ "$attempt" -eq 3 ]; then
+              echo "::error::Push failed after 3 attempts"
+              exit 1
+            fi
+            echo "Push rejected (concurrent commit); rebasing and retrying (attempt $attempt)…"
+            git fetch origin main
+            git rebase origin/main
+          done
