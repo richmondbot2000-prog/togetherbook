@@ -29,6 +29,67 @@
     margin: 0 0 28px;
   }
 
+  /* WHERE TO READ FULL REVIEWS */
+  .bw-platforms {
+    margin: 0 0 28px;
+    padding: 14px 18px 16px;
+    background: linear-gradient(160deg, var(--bg-soft) 0%, var(--bg-soft-2) 100%);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+  }
+  .bw-platforms-title {
+    margin: 0 0 12px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.66rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--muted);
+  }
+  .bw-platforms-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 8px;
+  }
+  .bw-platform {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 8px 12px;
+    background: var(--bg);
+    border: 1px solid var(--border-soft);
+    border-radius: 8px;
+    color: var(--ink);
+    text-decoration: none;
+    transition: border-color 0.15s, background 0.15s, transform 0.15s;
+  }
+  .bw-platform:hover {
+    border-color: var(--accent);
+    background: rgba(0, 212, 255, 0.05);
+    transform: translateY(-1px);
+    text-decoration: none;
+  }
+  .bw-platform-logo {
+    width: 22px;
+    height: 22px;
+    border-radius: 4px;
+    background: white;
+    object-fit: contain;
+    flex-shrink: 0;
+  }
+  .bw-platform-name {
+    font-weight: 600;
+    color: var(--ink);
+    font-size: 0.86rem;
+    line-height: 1.1;
+  }
+  .bw-platform-brand {
+    color: var(--accent-ink);
+    font-size: 0.76rem;
+    font-family: 'JetBrains Mono', monospace;
+    margin-top: 2px;
+  }
+
   /* STATS BANNER */
   .bw-stats {
     display: grid;
@@ -348,6 +409,42 @@
       <p class="lead">What people are saying about <strong>Together Loans</strong> and <strong>TransformCredit</strong> across Trustpilot, Reddit, and the news.</p>
       <p class="bw-meta" id="bwMeta">Loading…</p>
 
+      <!-- WHERE TO READ FULL REVIEWS — direct click-throughs that work even
+           when our scraping of the review platforms gets blocked. -->
+      <div class="bw-platforms">
+        <h3 class="bw-platforms-title">Read full reviews on</h3>
+        <div class="bw-platforms-grid">
+          <a class="bw-platform" href="https://www.trustpilot.com/review/togetherloans.com" target="_blank" rel="noopener noreferrer">
+            <img class="bw-platform-logo" src="https://www.google.com/s2/favicons?sz=64&amp;domain=trustpilot.com" alt="" />
+            <div class="bw-platform-meta">
+              <div class="bw-platform-name">Trustpilot</div>
+              <div class="bw-platform-brand">Together Loans →</div>
+            </div>
+          </a>
+          <a class="bw-platform" href="https://www.trustpilot.com/review/transformcredit.com" target="_blank" rel="noopener noreferrer">
+            <img class="bw-platform-logo" src="https://www.google.com/s2/favicons?sz=64&amp;domain=trustpilot.com" alt="" />
+            <div class="bw-platform-meta">
+              <div class="bw-platform-name">Trustpilot</div>
+              <div class="bw-platform-brand">TransformCredit →</div>
+            </div>
+          </a>
+          <a class="bw-platform" href="https://www.bbb.org/search?find_country=USA&amp;find_text=togetherloans.com" target="_blank" rel="noopener noreferrer">
+            <img class="bw-platform-logo" src="https://www.google.com/s2/favicons?sz=64&amp;domain=bbb.org" alt="" />
+            <div class="bw-platform-meta">
+              <div class="bw-platform-name">BBB</div>
+              <div class="bw-platform-brand">Together Loans →</div>
+            </div>
+          </a>
+          <a class="bw-platform" href="https://www.bbb.org/search?find_country=USA&amp;find_text=transformcredit.com" target="_blank" rel="noopener noreferrer">
+            <img class="bw-platform-logo" src="https://www.google.com/s2/favicons?sz=64&amp;domain=bbb.org" alt="" />
+            <div class="bw-platform-meta">
+              <div class="bw-platform-name">BBB</div>
+              <div class="bw-platform-brand">TransformCredit →</div>
+            </div>
+          </a>
+        </div>
+      </div>
+
       <div class="bw-stats" id="bwStats" hidden>
         <div class="bw-stat">
           <div class="bw-stat-label">All mentions</div>
@@ -360,9 +457,24 @@
           <div class="bw-stat-sub">customer reviews</div>
         </div>
         <div class="bw-stat">
+          <div class="bw-stat-label">BBB</div>
+          <div class="bw-stat-value" id="statBbb">0</div>
+          <div class="bw-stat-sub">profile listings</div>
+        </div>
+        <div class="bw-stat">
           <div class="bw-stat-label">Reddit</div>
           <div class="bw-stat-value" id="statRd">0</div>
           <div class="bw-stat-sub">posts &amp; threads</div>
+        </div>
+        <div class="bw-stat">
+          <div class="bw-stat-label">Bluesky</div>
+          <div class="bw-stat-value" id="statBs">0</div>
+          <div class="bw-stat-sub">recent posts</div>
+        </div>
+        <div class="bw-stat">
+          <div class="bw-stat-label">Hacker News</div>
+          <div class="bw-stat-value" id="statHn">0</div>
+          <div class="bw-stat-sub">stories</div>
         </div>
         <div class="bw-stat">
           <div class="bw-stat-label">News</div>
@@ -378,7 +490,10 @@
           <span class="bw-filter-label">Source</span>
           <button class="bw-pill active" data-filter="source" data-value="all">All <span class="bw-pill-count" id="filterCountAllSrc">0</span></button>
           <button class="bw-pill" data-filter="source" data-value="trustpilot">Trustpilot <span class="bw-pill-count" id="filterCountTp">0</span></button>
+          <button class="bw-pill" data-filter="source" data-value="bbb">BBB <span class="bw-pill-count" id="filterCountBbb">0</span></button>
           <button class="bw-pill" data-filter="source" data-value="reddit">Reddit <span class="bw-pill-count" id="filterCountRd">0</span></button>
+          <button class="bw-pill" data-filter="source" data-value="bluesky">Bluesky <span class="bw-pill-count" id="filterCountBs">0</span></button>
+          <button class="bw-pill" data-filter="source" data-value="hackernews">Hacker News <span class="bw-pill-count" id="filterCountHn">0</span></button>
           <button class="bw-pill" data-filter="source" data-value="google_news">News <span class="bw-pill-count" id="filterCountGn">0</span></button>
         </div>
         <div class="bw-filter-row">
@@ -409,7 +524,10 @@
 
   const SOURCE_LABELS = {
     trustpilot:  "Trustpilot",
+    bbb:         "BBB",
     reddit:      "Reddit",
+    bluesky:     "Bluesky",
+    hackernews:  "Hacker News",
     google_news: "News",
   };
 
@@ -530,19 +648,28 @@
 
   function setStats(payload) {
     const t = payload.totals || {};
+    const bs = t.by_source || {};
+    const bb = t.by_brand  || {};
+
     document.getElementById("statTotal").textContent = t.all || 0;
-    document.getElementById("statTp").textContent    = (t.by_source && t.by_source.trustpilot)  || 0;
-    document.getElementById("statRd").textContent    = (t.by_source && t.by_source.reddit)      || 0;
-    document.getElementById("statGn").textContent    = (t.by_source && t.by_source.google_news) || 0;
+    document.getElementById("statTp").textContent    = bs.trustpilot  || 0;
+    document.getElementById("statBbb").textContent   = bs.bbb         || 0;
+    document.getElementById("statRd").textContent    = bs.reddit      || 0;
+    document.getElementById("statBs").textContent    = bs.bluesky     || 0;
+    document.getElementById("statHn").textContent    = bs.hackernews  || 0;
+    document.getElementById("statGn").textContent    = bs.google_news || 0;
     document.getElementById("bwStats").hidden = false;
 
     document.getElementById("filterCountAllSrc").textContent = t.all || 0;
-    document.getElementById("filterCountTp").textContent     = (t.by_source && t.by_source.trustpilot)  || 0;
-    document.getElementById("filterCountRd").textContent     = (t.by_source && t.by_source.reddit)      || 0;
-    document.getElementById("filterCountGn").textContent     = (t.by_source && t.by_source.google_news) || 0;
+    document.getElementById("filterCountTp").textContent     = bs.trustpilot  || 0;
+    document.getElementById("filterCountBbb").textContent    = bs.bbb         || 0;
+    document.getElementById("filterCountRd").textContent     = bs.reddit      || 0;
+    document.getElementById("filterCountBs").textContent     = bs.bluesky     || 0;
+    document.getElementById("filterCountHn").textContent     = bs.hackernews  || 0;
+    document.getElementById("filterCountGn").textContent     = bs.google_news || 0;
     document.getElementById("filterCountAllBr").textContent  = t.all || 0;
-    document.getElementById("filterCountTl").textContent     = (t.by_brand  && t.by_brand.together_loans)   || 0;
-    document.getElementById("filterCountTc").textContent     = (t.by_brand  && t.by_brand.transform_credit) || 0;
+    document.getElementById("filterCountTl").textContent     = bb.together_loans   || 0;
+    document.getElementById("filterCountTc").textContent     = bb.transform_credit || 0;
   }
 
   function setMeta(payload) {

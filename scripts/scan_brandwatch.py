@@ -46,6 +46,7 @@ from __future__ import annotations
 import datetime as dt
 import html
 import json
+import os
 import re
 import sys
 import xml.etree.ElementTree as ET
@@ -77,8 +78,13 @@ BRANDS = [
         "key":             "transform_credit",
         "label":           "TransformCredit",
         "domain":          "transformcredit.com",
-        "queries":         ['"TransformCredit"', "transformcredit.com"],
-        "precision_terms": ["transformcredit"],   # the brand spells itself one word; "transform credit" is the false positive
+        "queries":         ['"TransformCredit"', '"Transform Credit"', "transformcredit.com"],
+        # Both spellings allowed: the brand uses "TransformCredit" (one word)
+        # in branding, but most journalists write "Transform Credit" (two words).
+        # The two-word form re-admits some "transform the credit ecosystem"
+        # type generic news; we accept that noise rather than drop legitimate
+        # brand articles.
+        "precision_terms": ["transformcredit", "transform credit"],
     },
 ]
 
@@ -233,42 +239,89 @@ def fetch_trustpilot(brand: dict) -> list[dict]:
     return out
 
 
+_REDDIT_OAUTH_TOKEN_CACHE: dict | None = None
+
+
+def _reddit_oauth_token() -> str | None:
+    """
+    If REDDIT_CLIENT_ID + REDDIT_CLIENT_SECRET are set, fetch a bearer token
+    via the client_credentials grant. Cached for the run.
+    Returns None if no creds (caller falls back to unauth).
+    """
+    global _REDDIT_OAUTH_TOKEN_CACHE
+    if _REDDIT_OAUTH_TOKEN_CACHE is not None:
+        return _REDDIT_OAUTH_TOKEN_CACHE.get("access_token")
+
+    cid = os.environ.get("REDDIT_CLIENT_ID")
+    sec = os.environ.get("REDDIT_CLIENT_SECRET")
+    if not cid or not sec:
+        _REDDIT_OAUTH_TOKEN_CACHE = {}
+        return None
+
+    r = requests.post(
+        "https://www.reddit.com/api/v1/access_token",
+        auth=(cid, sec),
+        data={"grant_type": "client_credentials"},
+        headers={"User-Agent": USER_AGENT},
+        timeout=HTTP_TIMEOUT,
+    )
+    r.raise_for_status()
+    payload = r.json()
+    _REDDIT_OAUTH_TOKEN_CACHE = payload
+    return payload.get("access_token")
+
+
 def fetch_reddit(brand: dict) -> list[dict]:
     """
-    Reddit's public search.json endpoint. Returns recent posts that match
-    any of the brand's quoted queries.
-
-    Reddit aggressively blocks cloud-IP unauth calls; we fall back across
-    a few hosts before giving up.
+    Reddit search. If REDDIT_CLIENT_ID / REDDIT_CLIENT_SECRET are present
+    (recommended), use OAuth via oauth.reddit.com — reliable from cloud IPs.
+    Otherwise fall back to the unauth endpoint, which Reddit increasingly
+    blocks from cloud-IP runners (we try www → old → api in turn).
     """
     out: list[dict] = []
     seen_ids: set[str] = set()
 
-    hosts = ["www.reddit.com", "old.reddit.com", "api.reddit.com"]
+    token = _reddit_oauth_token()
 
     for query in brand["queries"]:
-        last_err: Exception | None = None
         data = None
-        for host in hosts:
-            url = (
-                f"https://{host}/search.json"
-                f"?q={quote_plus(query)}&sort=new&limit={PER_BRAND_LIMIT}&t=year"
-            )
+        last_err: Exception | None = None
+
+        if token:
+            # Authenticated path — single, reliable host.
             try:
-                r = _http_get(url)
-                if r.status_code in (403, 429):
-                    last_err = RuntimeError(
-                        f"reddit {host} returned {r.status_code} for {query!r}"
-                    )
-                    continue
+                r = _http_get(
+                    f"https://oauth.reddit.com/search.json"
+                    f"?q={quote_plus(query)}&sort=new&limit={PER_BRAND_LIMIT}&t=year",
+                    headers={"Authorization": f"bearer {token}"},
+                )
                 r.raise_for_status()
                 data = r.json().get("data", {}).get("children", [])
-                break  # this host worked
             except Exception as e:
                 last_err = e
-                continue
+        else:
+            # Unauth fallback — try a few hosts in turn.
+            for host in ("www.reddit.com", "old.reddit.com", "api.reddit.com"):
+                try:
+                    r = _http_get(
+                        f"https://{host}/search.json"
+                        f"?q={quote_plus(query)}&sort=new&limit={PER_BRAND_LIMIT}&t=year"
+                    )
+                    if r.status_code in (403, 429):
+                        last_err = RuntimeError(
+                            f"reddit {host} returned {r.status_code} for {query!r} "
+                            f"(set REDDIT_CLIENT_ID + REDDIT_CLIENT_SECRET to use OAuth)"
+                        )
+                        continue
+                    r.raise_for_status()
+                    data = r.json().get("data", {}).get("children", [])
+                    break
+                except Exception as e:
+                    last_err = e
+                    continue
+
         if data is None:
-            raise last_err or RuntimeError(f"reddit: every host failed for {query!r}")
+            raise last_err or RuntimeError(f"reddit: every path failed for {query!r}")
         for child in data:
             d = child.get("data", {})
             rid = d.get("id")
@@ -303,6 +356,163 @@ def fetch_reddit(brand: dict) -> list[dict]:
                 "score_max":   None,
                 "site_name":   f"r/{sub}" if sub else "Reddit",
                 "site_domain": "reddit.com",
+            })
+    return out
+
+
+def fetch_bbb(brand: dict) -> list[dict]:
+    """
+    BBB (Better Business Bureau) — search the public business-search page
+    for the brand and return any business profiles + reviews found.
+
+    BBB is Cloudflare-protected like Trustpilot, so this often 403s from
+    cloud-IP runners. The page surfaces source-status warnings when it does.
+    """
+    out: list[dict] = []
+    url = (
+        "https://www.bbb.org/search?find_country=USA"
+        f"&find_text={quote_plus(brand['domain'])}&page=1"
+    )
+    headers = {
+        "User-Agent": (
+            "Mozilla/5.0 (Macintosh; Intel Mac OS X 14_0) "
+            "AppleWebKit/605.1.15 (KHTML, like Gecko) "
+            "Version/17.0 Safari/605.1.15"
+        ),
+        "Accept": "text/html,application/xhtml+xml",
+    }
+    r = _http_get(url, headers=headers)
+    r.raise_for_status()
+
+    # Search results have stars + business name + URL. Pull those out of the
+    # HTML and surface as a single "BBB profile" mention per brand. Real
+    # per-review parsing would need to fetch each profile in turn — out of
+    # scope for v1 since the search itself often gets blocked.
+    profile_re = re.compile(
+        r'<a[^>]+href="(/us/[^"]+/profile/[^"]+)"[^>]*>([^<]+)</a>',
+        re.IGNORECASE,
+    )
+    matches = profile_re.findall(r.text)[:5]
+
+    for href, name in matches:
+        full_url = "https://www.bbb.org" + href
+        out.append({
+            "source":      "bbb",
+            "brand":       brand["key"],
+            "id":          f"bbb-{re.sub(r'[^a-zA-Z0-9]+', '-', href)[-50:]}",
+            "title":       _short(html.unescape(name).strip(), 200) or "BBB Profile",
+            "snippet":     f"Better Business Bureau profile for {brand['label']}.",
+            "url":         full_url,
+            "date":        dt.datetime.utcnow().date().isoformat(),
+            "author":      None,
+            "score":       None,
+            "score_max":   None,
+            "site_name":   "BBB",
+            "site_domain": "bbb.org",
+        })
+    return out
+
+
+def fetch_bluesky(brand: dict) -> list[dict]:
+    """
+    Bluesky's public XRPC search endpoint. No auth, returns recent posts
+    matching the brand's queries.
+    """
+    out: list[dict] = []
+    seen_uris: set[str] = set()
+
+    for query in brand["queries"]:
+        url = (
+            "https://public.api.bsky.app/xrpc/app.bsky.feed.searchPosts"
+            f"?q={quote_plus(query)}&limit={PER_BRAND_LIMIT}&sort=latest"
+        )
+        r = _http_get(url)
+        r.raise_for_status()
+        posts = r.json().get("posts", [])
+        for p in posts:
+            uri = p.get("uri") or ""
+            if not uri or uri in seen_uris:
+                continue
+            seen_uris.add(uri)
+
+            author = p.get("author", {}) or {}
+            handle = author.get("handle") or "unknown"
+            record = p.get("record", {}) or {}
+            text   = record.get("text") or ""
+            indexed_at = p.get("indexedAt") or record.get("createdAt") or ""
+            iso_date = indexed_at[:10] if indexed_at else ""
+
+            # Convert at://did:plc:.../app.bsky.feed.post/{rkey} into
+            # https://bsky.app/profile/{handle}/post/{rkey}
+            post_url = uri
+            m = re.search(r"app\.bsky\.feed\.post/([^/]+)$", uri)
+            if m:
+                post_url = f"https://bsky.app/profile/{handle}/post/{m.group(1)}"
+
+            stable_id = re.sub(r"[^a-zA-Z0-9]+", "-", uri)[-40:]
+
+            out.append({
+                "source":      "bluesky",
+                "brand":       brand["key"],
+                "id":          f"bs-{stable_id}",
+                "title":       _short(text, 100) or "(post)",
+                "snippet":     _snippet_around_brand(text, brand, 280),
+                "url":         post_url,
+                "date":        iso_date,
+                "author":      f"@{handle}",
+                "score":       p.get("likeCount") or None,
+                "score_max":   None,
+                "site_name":   "Bluesky",
+                "site_domain": "bsky.app",
+            })
+    return out
+
+
+def fetch_hackernews(brand: dict) -> list[dict]:
+    """
+    Hacker News via the free Algolia search API. No auth.
+    Returns stories matching the brand's queries, most recent first.
+    """
+    out: list[dict] = []
+    seen_ids: set[str] = set()
+
+    for query in brand["queries"]:
+        url = (
+            "https://hn.algolia.com/api/v1/search_by_date"
+            f"?query={quote_plus(query)}&tags=story&hitsPerPage={PER_BRAND_LIMIT}"
+        )
+        r = _http_get(url)
+        r.raise_for_status()
+        for hit in r.json().get("hits", []):
+            obj_id = hit.get("objectID")
+            if not obj_id or obj_id in seen_ids:
+                continue
+            seen_ids.add(obj_id)
+
+            title = hit.get("title") or ""
+            target = hit.get("url") or f"https://news.ycombinator.com/item?id={obj_id}"
+            created = hit.get("created_at_i")
+            iso_date = (
+                dt.datetime.utcfromtimestamp(int(created)).date().isoformat()
+                if created else ""
+            )
+            author = hit.get("author")
+            domain_match = re.search(r"https?://(?:www\.)?([^/]+)", target)
+            site_domain = domain_match.group(1) if domain_match else "news.ycombinator.com"
+
+            out.append({
+                "source":      "hackernews",
+                "brand":       brand["key"],
+                "id":          f"hn-{obj_id}",
+                "title":       _short(title, 200) or "(no title)",
+                "snippet":     _snippet_around_brand(title, brand, 280),
+                "url":         f"https://news.ycombinator.com/item?id={obj_id}",
+                "date":        iso_date,
+                "author":      author,
+                "score":       hit.get("points") or None,
+                "score_max":   None,
+                "site_name":   "Hacker News",
+                "site_domain": "news.ycombinator.com",
             })
     return out
 
@@ -376,7 +586,10 @@ def run() -> dict:
 
     source_status: dict[str, dict] = {
         "trustpilot":   {"ok": True, "fetched": 0, "error": None},
+        "bbb":          {"ok": True, "fetched": 0, "error": None},
         "reddit":       {"ok": True, "fetched": 0, "error": None},
+        "bluesky":      {"ok": True, "fetched": 0, "error": None},
+        "hackernews":   {"ok": True, "fetched": 0, "error": None},
         "google_news":  {"ok": True, "fetched": 0, "error": None},
     }
     all_mentions: list[dict] = []
@@ -385,7 +598,10 @@ def run() -> dict:
         print(f"== {brand['label']} ==", flush=True)
         for source_key, fn in (
             ("trustpilot",  fetch_trustpilot),
+            ("bbb",         fetch_bbb),
             ("reddit",      fetch_reddit),
+            ("bluesky",     fetch_bluesky),
+            ("hackernews",  fetch_hackernews),
             ("google_news", fetch_google_news),
         ):
             try:
@@ -431,7 +647,7 @@ def run() -> dict:
     # Sort by date desc; missing dates sink to the bottom.
     deduped.sort(key=lambda m: (m.get("date") or ""), reverse=True)
 
-    by_source = {"trustpilot": 0, "reddit": 0, "google_news": 0}
+    by_source = {k: 0 for k in source_status.keys()}
     by_brand  = {b["key"]: 0 for b in BRANDS}
     for m in deduped:
         by_source[m["source"]] = by_source.get(m["source"], 0) + 1
@@ -456,12 +672,11 @@ def main():
     out_path = Path(__file__).resolve().parent.parent / "brandwatch.json"
     payload = run()
     out_path.write_text(json.dumps(payload, indent=2, ensure_ascii=False))
+    bs = payload["totals"]["by_source"]
+    breakdown = ", ".join(f"{k} {v}" for k, v in bs.items())
     print(
         f"\nwrote {out_path.relative_to(out_path.parent.parent)}: "
-        f"{payload['totals']['all']} mentions "
-        f"(trustpilot {payload['totals']['by_source']['trustpilot']}, "
-        f"reddit {payload['totals']['by_source']['reddit']}, "
-        f"news {payload['totals']['by_source']['google_news']})",
+        f"{payload['totals']['all']} mentions ({breakdown})",
         flush=True,
     )
 

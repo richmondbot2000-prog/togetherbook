@@ -61,6 +61,13 @@ jobs:
 
       - name: Scan
         if: steps.guard.outputs.skip != 'true'
+        env:
+          # Optional — only set if a Reddit OAuth app is registered. When
+          # present, the scanner uses authenticated calls (reliable from
+          # cloud IPs). When absent, it falls back to anonymous reads
+          # (Reddit increasingly 403s these from cloud-IP runners).
+          REDDIT_CLIENT_ID:     ${{ secrets.REDDIT_CLIENT_ID }}
+          REDDIT_CLIENT_SECRET: ${{ secrets.REDDIT_CLIENT_SECRET }}
         run: python scripts/scan_brandwatch.py
 
       - name: Commit if brandwatch.json changed
