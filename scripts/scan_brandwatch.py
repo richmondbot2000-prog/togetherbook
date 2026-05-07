@@ -551,43 +551,57 @@ def fetch_bbb(brand: dict) -> list[dict]:
 
         if review_items:
             for rv in review_items[:10]:
-                review_id = rv.get("id") or rv.get("customerReviewGuid") or ""
-                rating = rv.get("reviewStarRating")
                 try:
-                    rating = int(rating) if rating is not None else None
-                except (TypeError, ValueError):
-                    rating = None
-                author = rv.get("displayName") or None
-                # Date format from BBB tends to be "MM/DD/YYYY" or ISO; normalize.
-                raw_date = rv.get("date") or ""
-                iso_date = ""
-                for fmt in ("%Y-%m-%dT%H:%M:%S", "%Y-%m-%d", "%m/%d/%Y", "%m/%d/%y"):
+                    review_id = rv.get("id") or rv.get("customerReviewGuid") or ""
+                    rating = rv.get("reviewStarRating")
                     try:
-                        iso_date = dt.datetime.strptime(raw_date[:19], fmt).date().isoformat()
-                        break
-                    except ValueError:
-                        continue
-                if not iso_date and len(raw_date) >= 10:
-                    iso_date = raw_date[:10]
-                body = rv.get("text") or rv.get("extendedText") or ""
-                title = (
-                    f"{biz_name} — {rating}-star review"
-                    if rating else f"{biz_name} review"
-                )
-                out.append({
-                    "source":      "bbb",
-                    "brand":       brand["key"],
-                    "id":          f"bbb-{review_id or re.sub(r'[^a-zA-Z0-9]+', '-', href)[-30:]}",
-                    "title":       _short(title, 200),
-                    "snippet":     _short(body, 280) or f"BBB review of {biz_name}.",
-                    "url":         reviews_url,
-                    "date":        iso_date or today,
-                    "author":      author,
-                    "score":       rating,
-                    "score_max":   5,
-                    "site_name":   "BBB",
-                    "site_domain": "bbb.org",
-                })
+                        rating = int(rating) if rating is not None else None
+                    except (TypeError, ValueError):
+                        rating = None
+                    author = rv.get("displayName") or None
+
+                    # BBB stores dates as either a string or a nested object —
+                    # tolerate both. Wrapper string-ifies anything weird so
+                    # downstream slicing can't crash the whole run.
+                    raw_date = rv.get("date") or ""
+                    if isinstance(raw_date, dict):
+                        raw_date = raw_date.get("value") or raw_date.get("iso") or ""
+                    if not isinstance(raw_date, str):
+                        raw_date = str(raw_date)
+
+                    iso_date = ""
+                    for fmt in ("%Y-%m-%dT%H:%M:%S", "%Y-%m-%d", "%m/%d/%Y", "%m/%d/%y"):
+                        try:
+                            iso_date = dt.datetime.strptime(raw_date[:19], fmt).date().isoformat()
+                            break
+                        except ValueError:
+                            continue
+                    if not iso_date and len(raw_date) >= 10:
+                        iso_date = raw_date[:10]
+
+                    body = rv.get("text") or rv.get("extendedText") or ""
+                    if not isinstance(body, str):
+                        body = ""
+                    title = (
+                        f"{biz_name} — {rating}-star review"
+                        if rating else f"{biz_name} review"
+                    )
+                    out.append({
+                        "source":      "bbb",
+                        "brand":       brand["key"],
+                        "id":          f"bbb-{review_id or re.sub(r'[^a-zA-Z0-9]+', '-', href)[-30:]}",
+                        "title":       _short(title, 200),
+                        "snippet":     _short(body, 280) or f"BBB review of {biz_name}.",
+                        "url":         reviews_url,
+                        "date":        iso_date or today,
+                        "author":      author,
+                        "score":       rating,
+                        "score_max":   5,
+                        "site_name":   "BBB",
+                        "site_domain": "bbb.org",
+                    })
+                except Exception as e:
+                    print(f"  bbb: skipping review ({e}) raw={rv!r:.200}", flush=True)
             continue
 
         # Fallback — surface the profile listing as a single mention.
@@ -950,18 +964,28 @@ def run() -> dict:
     #       lender) but drop "transform credit agreement onboarding" (the
     #       verb phrase).
     #
-    # SKIP-LIST: certain sources are scoped to the brand by their URL alone
-    # (e.g. trustpilot.com/review/transformcredit.com is, by construction,
-    # only about TransformCredit). Every result we get from those sources is
-    # already disambiguated; running the precision filter just kills real
-    # reviews where the customer didn't happen to mention the brand by name.
+    # Per-source filter strictness:
+    #   UNFILTERED — URL is already brand-scoped, no filter.
+    #     trustpilot.com/review/X.com only returns reviews of X.com; bbb.org
+    #     profile pages are brand-specific. Every result is relevant.
+    #   NEWS_LIKE  — strict only: case-INSENSITIVE precision_terms.
+    #     Headlines and legal case captions title-case phrases as a matter
+    #     of style, so the "proper-noun" capitalization signal is meaningless
+    #     here. "Transform Credit Agreement Onboarding" is a headline, not a
+    #     brand mention. Drop the strict / contextual tiers for these.
+    #   Else (social) — full filter: case-insensitive + case-sensitive +
+    #     contextual. Casual users on Reddit / Bluesky / Lemmy / HN write
+    #     consistently when naming a brand; lowercase usually means the verb
+    #     phrase. Strict capitalization "Transform Credit" is a real signal.
     UNFILTERED_SOURCES = {"trustpilot", "bbb"}
+    NEWS_LIKE_SOURCES  = {"google_news", "courtlistener"}
 
     by_brand_cfg = {b["key"]: b for b in BRANDS}
     filtered = []
     dropped = 0
     for m in deduped:
-        if m["source"] in UNFILTERED_SOURCES:
+        src = m["source"]
+        if src in UNFILTERED_SOURCES:
             filtered.append(m)
             continue
         cfg = by_brand_cfg.get(m["brand"], {})
@@ -971,23 +995,25 @@ def run() -> dict:
 
         kept = False
         # Tier 1: case-insensitive precision terms (one-word brand, URL).
+        # Always applied — these are unambiguous.
         for t in cfg.get("precision_terms", []):
             if t.lower() in haystack_ci:
                 kept = True
                 break
-        # Tier 2: case-SENSITIVE precision terms (proper-noun spaced form).
-        # "Together Loans" matches; "together loans" / "Together loans" don't.
-        if not kept:
+
+        # Tiers 2+3 only for non-news sources (social, etc.). News headlines
+        # capitalize phrases regardless of brand-vs-verb, so the strict /
+        # contextual signals don't disambiguate there.
+        if not kept and src not in NEWS_LIKE_SOURCES:
             for t in cfg.get("precision_terms_strict", []):
                 if t in haystack_cs:
                     kept = True
                     break
-        # Tier 3: contextual pairs (trigger + at least one context word).
-        if not kept:
-            for trigger, ctx_words in cfg.get("contextual_pairs", []):
-                if trigger.lower() in haystack_ci and any(w.lower() in haystack_ci for w in ctx_words):
-                    kept = True
-                    break
+            if not kept:
+                for trigger, ctx_words in cfg.get("contextual_pairs", []):
+                    if trigger.lower() in haystack_ci and any(w.lower() in haystack_ci for w in ctx_words):
+                        kept = True
+                        break
 
         if kept:
             filtered.append(m)
