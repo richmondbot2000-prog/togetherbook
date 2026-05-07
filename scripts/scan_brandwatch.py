@@ -241,15 +241,23 @@ def _http_get_proxied(url: str, *, tier: str = "premium", **kwargs) -> requests.
 # --------------------------------------------------------------------------
 # Sources
 
+TRUSTPILOT_MAX_PAGES = 5  # 5 × 20 = 100 most-recent reviews per brand per scan
+
+
 def fetch_trustpilot(brand: dict) -> list[dict]:
     """
     Trustpilot embeds a JSON blob in a <script id="__NEXT_DATA__"> tag with
     every review on the page. Pull that blob, walk its 'reviews' list.
 
-    If the brand has no Trustpilot profile (404) we return [] and let the
-    caller record source_status accordingly.
+    Paginates through TRUSTPILOT_MAX_PAGES pages of reviews (default 5) for
+    historical depth. Each page costs 10 ScraperAPI credits (render=true).
+
+    If the brand has no Trustpilot profile (404 on page 1) we return [] and
+    let the caller record source_status accordingly. If a later page 404s,
+    we silently stop (probably ran past the end of available reviews).
     """
-    url = f"https://www.trustpilot.com/review/{brand['domain']}"
+    out: list[dict] = []
+    seen_ids: set[str] = set()
     headers = {
         # Trustpilot ships Cloudflare. Direct fetch from cloud IPs always 403s,
         # but the request is routed via ScraperAPI when SCRAPERAPI_KEY is set —
@@ -265,53 +273,67 @@ def fetch_trustpilot(brand: dict) -> list[dict]:
     # 2026-05-07: render=true (10 credits) works; premium=true (25) doesn't;
     # ultra_premium=true (75) is paid-only. Render is both cheaper and more
     # reliable here.
-    r = _http_get_proxied(url, headers=headers, tier="render")
-    if r.status_code == 404:
-        return []
-    r.raise_for_status()
+    base_url = f"https://www.trustpilot.com/review/{brand['domain']}"
 
-    m = re.search(
-        r'<script id="__NEXT_DATA__"[^>]*>(.+?)</script>',
-        r.text, re.DOTALL,
-    )
-    if not m:
-        return []
-    blob = json.loads(m.group(1))
+    for page in range(1, TRUSTPILOT_MAX_PAGES + 1):
+        page_url = base_url if page == 1 else f"{base_url}?page={page}"
+        r = _http_get_proxied(page_url, headers=headers, tier="render")
+        if r.status_code == 404:
+            # Page 1 missing → no profile. Later page missing → past the end.
+            if page == 1:
+                return []
+            break
+        r.raise_for_status()
 
-    reviews = (
-        blob.get("props", {})
-            .get("pageProps", {})
-            .get("reviews", [])
-    )
+        m = re.search(
+            r'<script id="__NEXT_DATA__"[^>]*>(.+?)</script>',
+            r.text, re.DOTALL,
+        )
+        if not m:
+            if page == 1:
+                return []
+            break
+        blob = json.loads(m.group(1))
 
-    out = []
-    for rv in reviews[:PER_BRAND_LIMIT]:
-        try:
-            review_id = rv.get("id") or ""
-            title = rv.get("title") or ""
-            body  = rv.get("text")  or ""
-            rating = int(rv.get("rating") or 0) or None
-            created = rv.get("dates", {}).get("publishedDate") or rv.get("createdAt")
-            consumer = rv.get("consumer", {}).get("displayName")
-            slug = rv.get("id", "")
-            link = f"{url}#{slug}" if slug else url
-            iso_date = (created or "")[:10]
-            out.append({
-                "source":      "trustpilot",
-                "brand":       brand["key"],
-                "id":          f"tp-{review_id}",
-                "title":       _short(title, 200) or "(no title)",
-                "snippet":     _snippet_around_brand(body, brand, 280),
-                "url":         link,
-                "date":        iso_date,
-                "author":      consumer,
-                "score":       rating,
-                "score_max":   5,
-                "site_name":   "Trustpilot",
-                "site_domain": "trustpilot.com",
-            })
-        except Exception as e:
-            print(f"  trustpilot: skipping review ({e})", flush=True)
+        reviews = (
+            blob.get("props", {})
+                .get("pageProps", {})
+                .get("reviews", [])
+        )
+        if not reviews:
+            break  # past the end of available pages
+
+        for rv in reviews:
+            try:
+                review_id = rv.get("id") or ""
+                if not review_id or review_id in seen_ids:
+                    continue
+                seen_ids.add(review_id)
+
+                title = rv.get("title") or ""
+                body  = rv.get("text")  or ""
+                rating = int(rv.get("rating") or 0) or None
+                created = rv.get("dates", {}).get("publishedDate") or rv.get("createdAt")
+                consumer = rv.get("consumer", {}).get("displayName")
+                slug = rv.get("id", "")
+                link = f"{base_url}#{slug}" if slug else base_url
+                iso_date = (created or "")[:10]
+                out.append({
+                    "source":      "trustpilot",
+                    "brand":       brand["key"],
+                    "id":          f"tp-{review_id}",
+                    "title":       _short(title, 200) or "(no title)",
+                    "snippet":     _snippet_around_brand(body, brand, 280),
+                    "url":         link,
+                    "date":        iso_date,
+                    "author":      consumer,
+                    "score":       rating,
+                    "score_max":   5,
+                    "site_name":   "Trustpilot",
+                    "site_domain": "trustpilot.com",
+                })
+            except Exception as e:
+                print(f"  trustpilot: skipping review ({e})", flush=True)
     return out
 
 
