@@ -72,7 +72,7 @@ SELECT
   l.LenderID,
   c.FirstName,
   c.MiddleName,
-  c.LastName
+  c.Surname
 FROM dbo.LoanAtInception li
 JOIN dbo.Loan      l  ON l.LoanBookID = li.LoanBookID
 JOIN dbo.Customer  c  ON c.LoanBookID = li.LoanBookID
@@ -195,7 +195,7 @@ def main() -> None:
     # of name parts across BRW + every GT row for that loan.
     loans: dict[int, dict] = {}
     for (loanbook_id, payout_date, lender_id,
-         first_name, middle_name, last_name) in cur.fetchall():
+         first_name, middle_name, surname) in cur.fetchall():
         lid  = int(lender_id) if lender_id else None
         lbid = int(loanbook_id)
         rec = loans.get(lbid)
@@ -207,7 +207,7 @@ def main() -> None:
                 "name_parts":   [],
             }
             loans[lbid] = rec
-        for n in (first_name, middle_name, last_name):
+        for n in (first_name, middle_name, surname):
             n = (n or "").strip()
             if n:
                 rec["name_parts"].append(n)
