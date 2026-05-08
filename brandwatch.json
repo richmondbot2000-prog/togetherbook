@@ -1,28 +1,32 @@
 {
   "schema_version": 1,
-  "snapshot_date": "2026-05-07",
-  "updated_at": "2026-05-07T21:55:24Z",
+  "snapshot_date": "2026-05-08",
+  "updated_at": "2026-05-08T10:54:29Z",
   "brands": [
     "Together Loans",
     "TransformCredit"
   ],
   "totals": {
-    "all": 237,
+    "all": 238,
     "by_source": {
       "trustpilot": 202,
       "bbb": 10,
-      "reddit": 24,
+      "reddit": 25,
+      "bluesky": 0,
+      "lemmy": 0,
+      "hackernews": 0,
+      "courtlistener": 0,
       "google_news": 1
     },
     "by_brand": {
       "together_loans": 228,
-      "transform_credit": 9
+      "transform_credit": 10
     }
   },
   "source_status": {
     "trustpilot": {
       "ok": true,
-      "fetched": 200,
+      "fetched": 0,
       "error": null
     },
     "bbb": {
@@ -567,6 +571,20 @@
       "site_domain": "bbb.org"
     },
     {
+      "source": "reddit",
+      "brand": "together_loans",
+      "id": "rd-1t1432e",
+      "title": "Looking for a co-signer",
+      "snippet": "…w this sub is full of scammers but I was hoping to see if I could get someone who’s willing to help me out. I’m looking for a co-signer for together loans 700+ credit score needed willing to pay once it’s been processed. I’ve already gotten scammed here once and honestly idk what ",
+      "url": "https://www.reddit.com/r/findacosigner/comments/1t1432e/looking_for_a_cosigner/",
+      "date": "2026-05-01",
+      "author": "u/lurkercauseyolo",
+      "score": 1,
+      "score_max": null,
+      "site_name": "r/findacosigner",
+      "site_domain": "reddit.com"
+    },
+    {
       "source": "trustpilot",
       "brand": "together_loans",
       "id": "tp-69f8a8ec694b75a6d313003f",
@@ -621,20 +639,6 @@
       "score_max": 5,
       "site_name": "Trustpilot",
       "site_domain": "trustpilot.com"
-    },
-    {
-      "source": "reddit",
-      "brand": "together_loans",
-      "id": "rd-1t1432e",
-      "title": "Looking for a co-signer",
-      "snippet": "…w this sub is full of scammers but I was hoping to see if I could get someone who’s willing to help me out. I’m looking for a co-signer for together loans 700+ credit score needed willing to pay once it’s been processed. I’ve already gotten scammed here once and honestly idk what ",
-      "url": "https://www.reddit.com/r/findacosigner/comments/1t1432e/looking_for_a_cosigner/",
-      "date": "2026-05-01",
-      "author": "u/lurkercauseyolo",
-      "score": 1,
-      "score_max": null,
-      "site_name": "r/findacosigner",
-      "site_domain": "reddit.com"
     },
     {
       "source": "trustpilot",
@@ -873,6 +877,20 @@
       "score_max": 5,
       "site_name": "BBB",
       "site_domain": "bbb.org"
+    },
+    {
+      "source": "reddit",
+      "brand": "transform_credit",
+      "id": "rd-1sy3qyl",
+      "title": "Transform credit co-signer needed",
+      "snippet": "I need to get a loan to help pay for bills for a few months that my paycheck barely covers",
+      "url": "https://www.reddit.com/r/findacosigner/comments/1sy3qyl/transform_credit_cosigner_needed/",
+      "date": "2026-04-28",
+      "author": "u/Acceptable-Lemon4979",
+      "score": 0,
+      "score_max": null,
+      "site_name": "r/findacosigner",
+      "site_domain": "reddit.com"
     },
     {
       "source": "trustpilot",
@@ -1757,6 +1775,34 @@
       "site_domain": "bbb.org"
     },
     {
+      "source": "reddit",
+      "brand": "together_loans",
+      "id": "rd-1srsej6",
+      "title": "Has anyone dealt with a company called together loans? I’ve been getting charged $5 a month for their “credit builder” and I have no recollection of signing up for that.",
+      "snippet": "I’ve called customer service time after time and have to leave a voicemail every time. I haven’t received any callbacks and my banking is saying the only thing I can do is completely change my checking account.",
+      "url": "https://www.reddit.com/r/Mortgages/comments/1srsej6/has_anyone_dealt_with_a_company_called_together/",
+      "date": "2026-04-21",
+      "author": "u/pizza_with_ranch",
+      "score": 2,
+      "score_max": null,
+      "site_name": "r/Mortgages",
+      "site_domain": "reddit.com"
+    },
+    {
+      "source": "reddit",
+      "brand": "together_loans",
+      "id": "rd-1srscfn",
+      "title": "Has anyone had experience with a company called together loans? I’ve been getting charged $5 a month for a year for their “credit builder” thing I have no recollection of signing up for",
+      "snippet": "They’ve been pulling directly from my checking account. I have called customer service and left voicemail after voicemail and have gotten no callback. My bank won’t dispute the charges and I’ll have to get a completely new checking account and I’d rather not have to do that.",
+      "url": "https://www.reddit.com/r/CRedit/comments/1srscfn/has_anyone_had_experience_with_a_company_called/",
+      "date": "2026-04-21",
+      "author": "u/pizza_with_ranch",
+      "score": 1,
+      "score_max": null,
+      "site_name": "r/CRedit",
+      "site_domain": "reddit.com"
+    },
+    {
       "source": "trustpilot",
       "brand": "together_loans",
       "id": "tp-69f123346ff295b091f82afa",
@@ -1951,34 +1997,6 @@
       "score_max": 5,
       "site_name": "Trustpilot",
       "site_domain": "trustpilot.com"
-    },
-    {
-      "source": "reddit",
-      "brand": "together_loans",
-      "id": "rd-1srsej6",
-      "title": "Has anyone dealt with a company called together loans? I’ve been getting charged $5 a month for their “credit builder” and I have no recollection of signing up for that.",
-      "snippet": "I’ve called customer service time after time and have to leave a voicemail every time. I haven’t received any callbacks and my banking is saying the only thing I can do is completely change my checking account.",
-      "url": "https://www.reddit.com/r/Mortgages/comments/1srsej6/has_anyone_dealt_with_a_company_called_together/",
-      "date": "2026-04-21",
-      "author": "u/pizza_with_ranch",
-      "score": 2,
-      "score_max": null,
-      "site_name": "r/Mortgages",
-      "site_domain": "reddit.com"
-    },
-    {
-      "source": "reddit",
-      "brand": "together_loans",
-      "id": "rd-1srscfn",
-      "title": "Has anyone had experience with a company called together loans? I’ve been getting charged $5 a month for a year for their “credit builder” thing I have no recollection of signing up for",
-      "snippet": "They’ve been pulling directly from my checking account. I have called customer service and left voicemail after voicemail and have gotten no callback. My bank won’t dispute the charges and I’ll have to get a completely new checking account and I’d rather not have to do that.",
-      "url": "https://www.reddit.com/r/CRedit/comments/1srscfn/has_anyone_had_experience_with_a_company_called/",
-      "date": "2026-04-21",
-      "author": "u/pizza_with_ranch",
-      "score": 1,
-      "score_max": null,
-      "site_name": "r/CRedit",
-      "site_domain": "reddit.com"
     },
     {
       "source": "trustpilot",
@@ -2955,7 +2973,7 @@
       "url": "https://www.reddit.com/r/findacosigner/comments/1sa4v8k/scammer_alert/",
       "date": "2026-04-02",
       "author": "u/dlopez2018",
-      "score": 6,
+      "score": 4,
       "score_max": null,
       "site_name": "r/findacosigner",
       "site_domain": "reddit.com"
@@ -3053,7 +3071,7 @@
       "url": "https://www.reddit.com/r/debtfree/comments/1rjs7hz/anyone_have_experience_with_together_loans_seems/",
       "date": "2026-03-03",
       "author": "u/PM_Me_Money_Daddy",
-      "score": 6,
+      "score": 7,
       "score_max": null,
       "site_name": "r/debtfree",
       "site_domain": "reddit.com"
@@ -3081,7 +3099,7 @@
       "url": "https://www.reddit.com/r/Scams/comments/1r8j5km/us_tcrdt_com_stkgpbbbg_phishingsmishing_scam/",
       "date": "2026-02-18",
       "author": "u/ImplementLong5304",
-      "score": 5,
+      "score": 3,
       "score_max": null,
       "site_name": "r/Scams",
       "site_domain": "reddit.com"
@@ -3185,20 +3203,6 @@
       "site_domain": "reddit.com"
     },
     {
-      "source": "trustpilot",
-      "brand": "together_loans",
-      "id": "tp-69e9550fab8c62c399b4609a",
-      "title": "Nice people to work with very good…",
-      "snippet": "Nice people to work with very good service awesome.",
-      "url": "https://www.trustpilot.com/review/transformcredit.com#69e9550fab8c62c399b4609a",
-      "date": "2025-12-16",
-      "author": "Washington",
-      "score": 5,
-      "score_max": 5,
-      "site_name": "Trustpilot",
-      "site_domain": "trustpilot.com"
-    },
-    {
       "source": "reddit",
       "brand": "together_loans",
       "id": "rd-1pofpzi",
@@ -3211,6 +3215,20 @@
       "score_max": null,
       "site_name": "r/askgaybros",
       "site_domain": "reddit.com"
+    },
+    {
+      "source": "trustpilot",
+      "brand": "together_loans",
+      "id": "tp-69e9550fab8c62c399b4609a",
+      "title": "Nice people to work with very good…",
+      "snippet": "Nice people to work with very good service awesome.",
+      "url": "https://www.trustpilot.com/review/transformcredit.com#69e9550fab8c62c399b4609a",
+      "date": "2025-12-16",
+      "author": "Washington",
+      "score": 5,
+      "score_max": 5,
+      "site_name": "Trustpilot",
+      "site_domain": "trustpilot.com"
     },
     {
       "source": "reddit",
@@ -3283,20 +3301,6 @@
       "site_domain": "reddit.com"
     },
     {
-      "source": "trustpilot",
-      "brand": "together_loans",
-      "id": "tp-69fb77ecbf7e9a48b1e4d424",
-      "title": "Great company",
-      "snippet": "Great company, Easy to get a lone from with co-signer",
-      "url": "https://www.trustpilot.com/review/transformcredit.com#69fb77ecbf7e9a48b1e4d424",
-      "date": "2025-10-21",
-      "author": "customerJeannie",
-      "score": 5,
-      "score_max": 5,
-      "site_name": "Trustpilot",
-      "site_domain": "trustpilot.com"
-    },
-    {
       "source": "reddit",
       "brand": "transform_credit",
       "id": "rd-1ocmme8",
@@ -3309,6 +3313,20 @@
       "score_max": null,
       "site_name": "r/findacosigner",
       "site_domain": "reddit.com"
+    },
+    {
+      "source": "trustpilot",
+      "brand": "together_loans",
+      "id": "tp-69fb77ecbf7e9a48b1e4d424",
+      "title": "Great company",
+      "snippet": "Great company, Easy to get a lone from with co-signer",
+      "url": "https://www.trustpilot.com/review/transformcredit.com#69fb77ecbf7e9a48b1e4d424",
+      "date": "2025-10-21",
+      "author": "customerJeannie",
+      "score": 5,
+      "score_max": 5,
+      "site_name": "Trustpilot",
+      "site_domain": "trustpilot.com"
     },
     {
       "source": "reddit",
