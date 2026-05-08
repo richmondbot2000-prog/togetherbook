@@ -191,13 +191,16 @@ def main() -> None:
     cur = conn.cursor()
     cur.execute(LOANS_QUERY)
 
-    # Key: LoanBookID. Value: dict with payout_date, lender, and the union
-    # of name parts across BRW + every GT row for that loan.
-    loans: dict[int, dict] = {}
+    # Key: LoanBookID (alphanumeric string, e.g. "091158GRID"). Value:
+    # dict with payout_date, lender, and the union of name parts across
+    # BRW + every GT row for that loan.
+    loans: dict[str, dict] = {}
     for (loanbook_id, payout_date, lender_id,
          first_name, middle_name, surname) in cur.fetchall():
         lid  = int(lender_id) if lender_id else None
-        lbid = int(loanbook_id)
+        lbid = str(loanbook_id).strip() if loanbook_id is not None else ""
+        if not lbid:
+            continue
         rec = loans.get(lbid)
         if rec is None:
             rec = {
@@ -229,20 +232,21 @@ def main() -> None:
     # Dedup key: (LoanBookID, gtref_or_0). BRW emails have gtref=NULL, each
     # GT has its own gtref >= 1. (gtref=99 is a sentinel meaning "we know
     # it's the active GT but don't know which one" — treat as one bucket.)
-    seen_keys: set[tuple[int, int]] = set()
+    seen_keys: set[tuple[str, int]] = set()
     first_contacts: list[dict] = []
     skipped_no_loan       = 0
     skipped_before_payout = 0
 
     for (loanbook_id, aref, gtref, utc_time, subject, body,
          ext_addr, ext_name) in cur.fetchall():
-        if loanbook_id is None:
+        lbid = str(loanbook_id).strip() if loanbook_id is not None else ""
+        if not lbid:
             continue
         gtkey = int(gtref) if gtref else 0
-        key   = (int(loanbook_id), gtkey)
+        key   = (lbid, gtkey)
         if key in seen_keys:
             continue
-        loan = loans.get(int(loanbook_id))
+        loan = loans.get(lbid)
         if loan is None:
             skipped_no_loan += 1
             continue
