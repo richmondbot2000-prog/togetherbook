@@ -31,6 +31,13 @@ MAX_BODY_CHARS  = 1200      # cap per email so the JSON stays under a few MB
 MAX_ITEMS_OUT   = 200       # most recent N first-contacts on the page
 MONTHS_BACK     = 3
 
+# LenderId → display label. The Lenders table's name column isn't documented
+# in the wiki I had access to when writing this; hard-mapping by id is more
+# reliable than guessing the column name. Add new IDs here as they appear.
+LENDER_LABELS = {
+    6: "Together Loans / TransformCredit",
+}
+
 
 def env(name: str) -> str:
     v = os.environ.get(name)
@@ -59,7 +66,6 @@ SELECT
   li.LoanBookID,
   CAST(li.LoanAgreementDateLocal AS date) AS PayoutDate,
   l.LenderID,
-  le.Name      AS LenderName,
   c.GtRef,
   c.RelationToBrw,
   c.FirstName,
@@ -186,16 +192,17 @@ def main() -> None:
     # Key: (LoanBookID, gtref_or_0). Value: dict with payout_date, lender,
     # role (BRW/GT), and the name parts to redact.
     loans: dict[tuple[int, int], dict] = {}
-    for (loanbook_id, payout_date, lender_id, lender_name,
+    for (loanbook_id, payout_date, lender_id,
          gtref, relation_to_brw, first_name, middle_name, last_name) in cur.fetchall():
         gtkey = int(gtref) if gtref else 0
         # GT rows have RelationToBrw set; BRW rows have it NULL (per the
         # yesterday-payouts script's convention).
         role = "BRW" if relation_to_brw is None else "GT"
+        lid = int(lender_id) if lender_id else None
         loans[(int(loanbook_id), gtkey)] = {
             "payout_date":  payout_date,
-            "lender_id":    int(lender_id) if lender_id else None,
-            "lender_name":  (lender_name or "").strip(),
+            "lender_id":    lid,
+            "lender_name":  LENDER_LABELS.get(lid, f"Lender {lid}" if lid else "Unknown lender"),
             "role":         role,
             "name_parts":   [
                 (first_name  or "").strip(),
