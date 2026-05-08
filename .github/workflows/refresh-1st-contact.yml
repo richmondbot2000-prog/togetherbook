@@ -80,13 +80,14 @@ jobs:
         if: steps.guard.outputs.skip != 'true'
         run: |
           set -euo pipefail
-          if git diff --quiet -- first-contact.json; then
+          # Stage first so untracked-new-file shows up in --cached diff.
+          git add first-contact.json
+          if git diff --cached --quiet -- first-contact.json; then
             echo "no changes — nothing to commit"
             exit 0
           fi
           git config user.name  "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add first-contact.json
           N=$(python -c "import json; d=json.load(open('first-contact.json')); print(d['totals']['items'])")
           DATE=$(python -c "import json; d=json.load(open('first-contact.json')); print(d.get('snapshot_date',''))")
           git commit -m "Refresh 1st-contact: ${N} items on ${DATE}"
