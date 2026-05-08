@@ -454,14 +454,32 @@
     return "https://www.google.com/s2/favicons?sz=64&domain=" + encodeURIComponent(domain);
   }
 
-  // High-resolution brand logos for the two formal review sources. The
-  // hero logo sits in a white pill in the top-right of the review card —
-  // 256px Google favicon endpoint reliably returns the apple-touch-icon
-  // for these domains, which is the proper full-colour brandmark.
+  // High-resolution brand logos for each source. The hero logo sits in a
+  // white pill in the top-right of the card — 256px Google favicon endpoint
+  // reliably returns the apple-touch-icon for these domains, which is the
+  // proper full-colour brandmark.
   const HERO_LOGOS = {
-    trustpilot: { src: "https://www.google.com/s2/favicons?sz=256&domain=trustpilot.com", alt: "Trustpilot" },
-    bbb:        { src: "https://www.google.com/s2/favicons?sz=256&domain=bbb.org",        alt: "Better Business Bureau" },
+    trustpilot:    { src: "https://www.google.com/s2/favicons?sz=256&domain=trustpilot.com",       alt: "Trustpilot" },
+    bbb:           { src: "https://www.google.com/s2/favicons?sz=256&domain=bbb.org",              alt: "Better Business Bureau" },
+    reddit:        { src: "https://www.google.com/s2/favicons?sz=256&domain=reddit.com",           alt: "Reddit" },
+    bluesky:       { src: "https://www.google.com/s2/favicons?sz=256&domain=bsky.app",             alt: "Bluesky" },
+    lemmy:         { src: "https://www.google.com/s2/favicons?sz=256&domain=lemmy.world",          alt: "Lemmy" },
+    hackernews:    { src: "https://www.google.com/s2/favicons?sz=256&domain=news.ycombinator.com", alt: "Hacker News" },
+    courtlistener: { src: "https://www.google.com/s2/favicons?sz=256&domain=courtlistener.com",    alt: "CourtListener" },
   };
+
+  // Google News articles aren't actually published by Google News — they're
+  // indexed from real publishers (Forbes, Bloomberg, etc). Use the article's
+  // own publisher domain as the hero logo so readers see who actually wrote it.
+  function getHeroLogo(m) {
+    if (m.source === "google_news" && m.site_domain) {
+      return {
+        src: "https://www.google.com/s2/favicons?sz=256&domain=" + encodeURIComponent(m.site_domain),
+        alt: m.site_name || m.site_domain,
+      };
+    }
+    return HERO_LOGOS[m.source];
+  }
 
   function fmtDate(iso) {
     if (!iso) return "";
@@ -480,8 +498,9 @@
     // Stars sit ABOVE the headline now, on their own row, large.
     const starHtml = (m.score && m.score_max) ? stars(m.score, m.score_max) : "";
 
-    // Big brand logo pinned to the top-right of Trustpilot + BBB cards.
-    const hero = HERO_LOGOS[m.source];
+    // Big brand logo pinned to the top-right of every card. For news mentions
+    // it's the publisher's mark; for everything else it's the source platform.
+    const hero = getHeroLogo(m);
     const heroLogoHtml = hero
       ? '<div class="bw-card-hero-logo"><img src="' + hero.src
         + '" alt="' + escapeHtml(hero.alt) + ' logo" loading="lazy" /></div>'
