@@ -7,20 +7,16 @@
     "TransformCredit"
   ],
   "totals": {
-    "all": 236,
+    "all": 237,
     "by_source": {
-      "trustpilot": 200,
+      "trustpilot": 202,
       "bbb": 10,
-      "reddit": 25,
-      "bluesky": 0,
-      "lemmy": 0,
-      "hackernews": 0,
-      "courtlistener": 0,
+      "reddit": 24,
       "google_news": 1
     },
     "by_brand": {
-      "together_loans": 226,
-      "transform_credit": 10
+      "together_loans": 228,
+      "transform_credit": 9
     }
   },
   "source_status": {
@@ -684,7 +680,7 @@
     },
     {
       "source": "trustpilot",
-      "brand": "transform_credit",
+      "brand": "together_loans",
       "id": "tp-69fd0ace87efe73f25fe85da",
       "title": "Be nice and helpful",
       "snippet": "Keep doing what u do",
@@ -698,7 +694,7 @@
     },
     {
       "source": "trustpilot",
-      "brand": "transform_credit",
+      "brand": "together_loans",
       "id": "tp-69fd05ed18da8bfe689ec876",
       "title": "Very professional",
       "snippet": "Very professional, courteous and detailed information.",
