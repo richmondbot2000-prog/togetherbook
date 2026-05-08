@@ -91,6 +91,14 @@ BRANDS = [
         "label":           "Together Loans",
         "domain":          "togetherloans.com",
         "queries":         ['"Together Loans"', "togetherloans.com"],
+        # Trustpilot's "Together Loans" business profile actually lives at
+        # the slug transformcredit.com (verified 2026-05-07 via Trustpilot
+        # search: id=transformcredit.com, displayName='Together Loans',
+        # country=United States, 8069 reviews). togetherloans.com itself
+        # is a stub Trustpilot page with 0 reviews. So we override the
+        # Trustpilot slug here while keeping `domain` as togetherloans.com
+        # for BBB / favicon / display.
+        "trustpilot_slug":            "transformcredit.com",
         # `precision_terms` (case-insensitive): the unambiguous one-word
         # form only. Drops the verb-phrase noise like "show bringing together
         # loans from museums".
@@ -113,6 +121,12 @@ BRANDS = [
         "label":           "TransformCredit",
         "domain":          "transformcredit.com",
         "queries":         ['"TransformCredit"', '"Transform Credit"', "transformcredit.com"],
+        # No separate Trustpilot profile — TransformCredit and Together
+        # Loans share one profile on Trustpilot, attributed to together_loans
+        # above (since Trustpilot itself calls the profile "Together Loans").
+        # None tells fetch_trustpilot to skip this brand entirely, so we
+        # don't pull the same 8069 reviews twice with conflicting brand tags.
+        "trustpilot_slug":            None,
         # `precision_terms` (case-insensitive): the brand's own one-word
         # spelling, unambiguous.
         "precision_terms":            ["transformcredit", "transformcredit.com"],
@@ -275,7 +289,19 @@ def _http_get_proxied(url: str, *, tier: str = "premium", **kwargs) -> requests.
 # --------------------------------------------------------------------------
 # Sources
 
-TRUSTPILOT_MAX_PAGES = 5  # 5 × 20 = 100 most-recent reviews per brand per scan
+# Trustpilot pages: 20 reviews each, 10 ScraperAPI credits each (render=true).
+# Trustpilot caps public pagination at page 10 — pages 11+ return zero
+# reviews regardless of the actual review count, even on profiles with
+# thousands of reviews (verified 2026-05-07 against transformcredit.com,
+# 8069 total reviews — page 10 has 20, page 11 has 0). The deeper history
+# lives behind their paid Business API. So 10 pages × 20 = 200 reviews is
+# the absolute hard cap per scan from public pages, ≈ 25 days at current
+# velocity.
+#
+# Steady-state cost is much lower — once the cumulative archive has
+# overlap with page 1, fetch_trustpilot short-circuits at the archive
+# boundary (typically 10 credits/scan, not 100).
+TRUSTPILOT_MAX_PAGES = 10
 
 
 def fetch_trustpilot(brand: dict, known_ids: set[str] | None = None) -> list[dict]:
@@ -307,6 +333,18 @@ def fetch_trustpilot(brand: dict, known_ids: set[str] | None = None) -> list[dic
     known_ids = known_ids or set()
     out: list[dict] = []
     seen_ids: set[str] = set()
+
+    # `trustpilot_slug` is a per-brand override of the URL path slug. When
+    # absent, we fall back to brand['domain']. When explicitly None, the
+    # brand has no Trustpilot profile and we return [] without burning a
+    # single ScraperAPI credit.
+    if "trustpilot_slug" in brand:
+        slug = brand["trustpilot_slug"]
+    else:
+        slug = brand["domain"]
+    if not slug:
+        return []
+
     headers = {
         # Trustpilot ships Cloudflare. Direct fetch from cloud IPs always 403s,
         # but the request is routed via ScraperAPI when SCRAPERAPI_KEY is set —
@@ -322,7 +360,7 @@ def fetch_trustpilot(brand: dict, known_ids: set[str] | None = None) -> list[dic
     # 2026-05-07: render=true (10 credits) works; premium=true (25) doesn't;
     # ultra_premium=true (75) is paid-only. Render is both cheaper and more
     # reliable here.
-    base_url = f"https://www.trustpilot.com/review/{brand['domain']}"
+    base_url = f"https://www.trustpilot.com/review/{slug}"
 
     for page in range(1, TRUSTPILOT_MAX_PAGES + 1):
         page_url = base_url if page == 1 else f"{base_url}?page={page}"
