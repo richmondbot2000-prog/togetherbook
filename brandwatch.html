@@ -369,6 +369,7 @@
           <button class="bw-pill" data-filter="source" data-value="lemmy">Lemmy <span class="bw-pill-count" id="filterCountLm">0</span></button>
           <button class="bw-pill" data-filter="source" data-value="hackernews">Hacker News <span class="bw-pill-count" id="filterCountHn">0</span></button>
           <button class="bw-pill" data-filter="source" data-value="courtlistener">Court records <span class="bw-pill-count" id="filterCountCl">0</span></button>
+          <button class="bw-pill" data-filter="source" data-value="cfpb">CFPB <span class="bw-pill-count" id="filterCountCfpb">0</span></button>
           <button class="bw-pill" data-filter="source" data-value="google_news">News <span class="bw-pill-count" id="filterCountGn">0</span></button>
         </div>
         <div class="bw-filter-row">
@@ -405,6 +406,7 @@
     lemmy:         "Lemmy",
     hackernews:    "Hacker News",
     courtlistener: "Court records",
+    cfpb:          "CFPB",
     google_news:   "News",
   };
 
@@ -466,6 +468,7 @@
     lemmy:         { src: "https://www.google.com/s2/favicons?sz=256&domain=lemmy.world",          alt: "Lemmy" },
     hackernews:    { src: "https://www.google.com/s2/favicons?sz=256&domain=news.ycombinator.com", alt: "Hacker News" },
     courtlistener: { src: "https://www.google.com/s2/favicons?sz=256&domain=courtlistener.com",    alt: "CourtListener" },
+    cfpb:          { src: "https://www.google.com/s2/favicons?sz=256&domain=consumerfinance.gov", alt: "CFPB" },
   };
 
   // Google News articles aren't actually published by Google News — they're
@@ -575,6 +578,7 @@
     document.getElementById("filterCountLm").textContent     = bs.lemmy          || 0;
     document.getElementById("filterCountHn").textContent     = bs.hackernews     || 0;
     document.getElementById("filterCountCl").textContent     = bs.courtlistener  || 0;
+    document.getElementById("filterCountCfpb").textContent   = bs.cfpb           || 0;
     document.getElementById("filterCountGn").textContent     = bs.google_news    || 0;
     document.getElementById("filterCountAllBr").textContent  = t.all || 0;
     document.getElementById("filterCountTl").textContent     = bb.together_loans   || 0;

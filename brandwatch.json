@@ -1,13 +1,13 @@
 {
   "schema_version": 1,
   "snapshot_date": "2026-05-08",
-  "updated_at": "2026-05-08T10:54:29Z",
+  "updated_at": "2026-05-08T15:25:57Z",
   "brands": [
     "Together Loans",
     "TransformCredit"
   ],
   "totals": {
-    "all": 238,
+    "all": 244,
     "by_source": {
       "trustpilot": 202,
       "bbb": 10,
@@ -16,11 +16,12 @@
       "lemmy": 0,
       "hackernews": 0,
       "courtlistener": 0,
-      "google_news": 1
+      "google_news": 1,
+      "cfpb": 6
     },
     "by_brand": {
       "together_loans": 228,
-      "transform_credit": 10
+      "transform_credit": 16
     }
   },
   "source_status": {
@@ -61,7 +62,12 @@
     },
     "google_news": {
       "ok": true,
-      "fetched": 71,
+      "fetched": 72,
+      "error": null
+    },
+    "cfpb": {
+      "ok": true,
+      "fetched": 6,
       "error": null
     }
   },
@@ -2973,7 +2979,7 @@
       "url": "https://www.reddit.com/r/findacosigner/comments/1sa4v8k/scammer_alert/",
       "date": "2026-04-02",
       "author": "u/dlopez2018",
-      "score": 4,
+      "score": 6,
       "score_max": null,
       "site_name": "r/findacosigner",
       "site_domain": "reddit.com"
@@ -3071,10 +3077,24 @@
       "url": "https://www.reddit.com/r/debtfree/comments/1rjs7hz/anyone_have_experience_with_together_loans_seems/",
       "date": "2026-03-03",
       "author": "u/PM_Me_Money_Daddy",
-      "score": 7,
+      "score": 6,
       "score_max": null,
       "site_name": "r/debtfree",
       "site_domain": "reddit.com"
+    },
+    {
+      "source": "cfpb",
+      "brand": "transform_credit",
+      "id": "cfpb-19936383",
+      "title": "Problem with the payoff process at the end of the loan",
+      "snippet": "…he primary borrower ceased payments. Despite my clear and repeated requests for 'Paid in Full \" credit reporting, Together Loans ( formerly Transform Credit ) has obstructed the payoff process for two months. On XX/XX/XXXX, XX/XX/XXXX, and XX/XX/XXXX, I sent formal emails ( includ",
+      "url": "https://www.consumerfinance.gov/data-research/consumer-complaints/search/detail/19936383/",
+      "date": "2026-03-03",
+      "author": null,
+      "score": null,
+      "score_max": null,
+      "site_name": "CFPB",
+      "site_domain": "consumerfinance.gov"
     },
     {
       "source": "reddit",
@@ -3099,7 +3119,7 @@
       "url": "https://www.reddit.com/r/Scams/comments/1r8j5km/us_tcrdt_com_stkgpbbbg_phishingsmishing_scam/",
       "date": "2026-02-18",
       "author": "u/ImplementLong5304",
-      "score": 3,
+      "score": 4,
       "score_max": null,
       "site_name": "r/Scams",
       "site_domain": "reddit.com"
@@ -3131,6 +3151,20 @@
       "score_max": null,
       "site_name": "r/findacosigner",
       "site_domain": "reddit.com"
+    },
+    {
+      "source": "cfpb",
+      "brand": "transform_credit",
+      "id": "cfpb-18964782",
+      "title": "Struggling to pay your loan",
+      "snippet": "I am filing this complaint regarding my personal loan account originally issued by Transform Credit, now operating under the name Together Loans, which has been placed with a third-party collection agency. I have made repeated good-faith e…",
+      "url": "https://www.consumerfinance.gov/data-research/consumer-complaints/search/detail/18964782/",
+      "date": "2026-01-23",
+      "author": null,
+      "score": null,
+      "score_max": null,
+      "site_name": "CFPB",
+      "site_domain": "consumerfinance.gov"
     },
     {
       "source": "trustpilot",
@@ -3183,7 +3217,7 @@
       "url": "https://www.reddit.com/r/findacosigner/comments/1q7hl9n/co_signers_beware/",
       "date": "2026-01-08",
       "author": "u/Dirftboat95",
-      "score": 8,
+      "score": 10,
       "score_max": null,
       "site_name": "r/findacosigner",
       "site_domain": "reddit.com"
@@ -3243,6 +3277,20 @@
       "score_max": null,
       "site_name": "r/financialhelping",
       "site_domain": "reddit.com"
+    },
+    {
+      "source": "cfpb",
+      "brand": "transform_credit",
+      "id": "cfpb-17875787",
+      "title": "Problem with the payoff process at the end of the loan",
+      "snippet": "…ys. The company further provided the original promissory note marked * * PAID * *. Despite this, on XX/XX/year>, I received an email from a Transform Credit representative ( XXXX ) claiming the Paid in Full letter had been sent in error and that I still owed {$6000.00}. Their onli",
+      "url": "https://www.consumerfinance.gov/data-research/consumer-complaints/search/detail/17875787/",
+      "date": "2025-11-21",
+      "author": null,
+      "score": null,
+      "score_max": null,
+      "site_name": "CFPB",
+      "site_domain": "consumerfinance.gov"
     },
     {
       "source": "reddit",
@@ -3309,7 +3357,7 @@
       "url": "https://www.reddit.com/r/findacosigner/comments/1ocmme8/need_a_cosigner/",
       "date": "2025-10-21",
       "author": "u/CodyPalmer7",
-      "score": 3,
+      "score": 4,
       "score_max": null,
       "site_name": "r/findacosigner",
       "site_domain": "reddit.com"
@@ -3397,6 +3445,48 @@
       "score_max": null,
       "site_name": "Traders Union",
       "site_domain": "tradersunion.com"
+    },
+    {
+      "source": "cfpb",
+      "brand": "transform_credit",
+      "id": "cfpb-7067339",
+      "title": "Attempts to collect debt not owed — Debt was paid",
+      "snippet": "…cided to default in the loan. XXXX : I expressly requested via text that the lender not deduct funds from my account XXXX : I was called by TransformCredit to confirm a payment for the collections. I informed the rep that I did not want to move forward continuing these payments, u",
+      "url": "https://www.consumerfinance.gov/data-research/consumer-complaints/search/detail/7067339/",
+      "date": "2023-06-04",
+      "author": null,
+      "score": null,
+      "score_max": null,
+      "site_name": "CFPB",
+      "site_domain": "consumerfinance.gov"
+    },
+    {
+      "source": "cfpb",
+      "brand": "transform_credit",
+      "id": "cfpb-7012251",
+      "title": "Attempts to collect debt not owed — Debt is not yours",
+      "snippet": "… read and understand the terms of the agreement. If you have any questions about our application process please visit our website https : //transformcredit.comXXXX XXXX @ Transform Credit 2 Attachments Scanned by XXXX",
+      "url": "https://www.consumerfinance.gov/data-research/consumer-complaints/search/detail/7012251/",
+      "date": "2023-05-22",
+      "author": null,
+      "score": null,
+      "score_max": null,
+      "site_name": "CFPB",
+      "site_domain": "consumerfinance.gov"
+    },
+    {
+      "source": "cfpb",
+      "brand": "transform_credit",
+      "id": "cfpb-5520960",
+      "title": "Incorrect information on your report — Information belongs to someone else",
+      "snippet": "…ompany is transform credit inc . I did not open an account this company and I did not recieve any money from then. The website is https : //transformcredit.com/ I need this removed from my credit immediately",
+      "url": "https://www.consumerfinance.gov/data-research/consumer-complaints/search/detail/5520960/",
+      "date": "2022-04-30",
+      "author": null,
+      "score": null,
+      "score_max": null,
+      "site_name": "CFPB",
+      "site_domain": "consumerfinance.gov"
     }
   ]
 }

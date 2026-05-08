@@ -941,6 +941,109 @@ def fetch_courtlistener(brand: dict) -> list[dict]:
     return out
 
 
+# Per-brand company-name patterns for the CFPB `company` field. Free-text
+# search across ALL CFPB fields returns mountains of noise (e.g. "together
+# loans" matches every Truist / SunTrust complaint because of their merger
+# language). The structured `company` field is the legal entity the
+# complaint was filed against — much more reliable. Patterns observed in
+# the CFPB API 2026-05-08:
+#   - Transform Credit  → "Transform Credit Inc."
+#   - Together Loans    → unknown — there may be no CFPB-registered entity
+#                          under this name, or it operates under a parent
+#                          company. Pattern still allows for it if filed.
+CFPB_COMPANY_PATTERNS = {
+    "together_loans":   re.compile(r"\btogether\s*loans?\b", re.IGNORECASE),
+    "transform_credit": re.compile(r"\btransform\s*credit\b", re.IGNORECASE),
+}
+
+
+def fetch_cfpb(brand: dict) -> list[dict]:
+    """
+    CFPB Consumer Complaint Database — federal database of complaints filed
+    by consumers against US financial institutions. Public JSON API, no auth.
+
+    Search-term query returns hits across multiple fields including the
+    free-text narrative, so we post-filter on the structured `company` field
+    via CFPB_COMPANY_PATTERNS to drop matches against unrelated companies
+    that just happened to mention the brand's name in passing.
+    """
+    pattern = CFPB_COMPANY_PATTERNS.get(brand["key"])
+    if pattern is None:
+        return []
+
+    out: list[dict] = []
+    seen_ids: set[str] = set()
+    for query in brand["queries"]:
+        bare = query.strip('"')
+        url = (
+            "https://www.consumerfinance.gov/data-research/consumer-complaints/"
+            "search/api/v1/"
+            f"?search_term={quote_plus(bare)}"
+            "&size=50"
+            "&sort=created_date_desc"
+            "&no_aggs=true"
+        )
+        r = _http_get(url)
+        r.raise_for_status()
+        data = r.json()
+        hits = (data.get("hits") or {}).get("hits") or []
+
+        for h in hits:
+            src = h.get("_source") or {}
+            company = src.get("company") or ""
+            if not pattern.search(company):
+                continue
+
+            cid = str(src.get("complaint_id") or h.get("_id") or "")
+            if not cid or cid in seen_ids:
+                continue
+            seen_ids.add(cid)
+
+            issue     = src.get("issue") or ""
+            sub_issue = src.get("sub_issue") or ""
+            product   = src.get("product") or ""
+            narrative = src.get("complaint_what_happened") or ""
+            state     = src.get("state") or ""
+            date_recv = (src.get("date_received") or "")[:10]
+            response  = src.get("company_response") or ""
+
+            title = issue + (f" — {sub_issue}" if sub_issue else "")
+            if not title:
+                title = product or "CFPB complaint"
+
+            # Most complaints don't include the narrative (consumers must opt
+            # in to publish their story). Fall back to a one-line summary.
+            if narrative.strip():
+                snippet = _snippet_around_brand(narrative, brand, 280)
+            else:
+                bits = [f"Complaint filed against {company}"]
+                if product: bits.append(f"about {product.lower()}")
+                if state:   bits.append(f"in {state}")
+                if response: bits.append(f"— {response.lower()}")
+                snippet = ". ".join(bits) + "."
+
+            detail_url = (
+                "https://www.consumerfinance.gov/data-research/"
+                f"consumer-complaints/search/detail/{cid}/"
+            )
+
+            out.append({
+                "source":      "cfpb",
+                "brand":       brand["key"],
+                "id":          f"cfpb-{cid}",
+                "title":       _short(title, 200),
+                "snippet":     snippet,
+                "url":         detail_url,
+                "date":        date_recv,
+                "author":      None,
+                "score":       None,
+                "score_max":   None,
+                "site_name":   "CFPB",
+                "site_domain": "consumerfinance.gov",
+            })
+    return out
+
+
 def fetch_lemmy(brand: dict) -> list[dict]:
     """
     Lemmy (federated Reddit-alternative) — search the lemmy.world instance
@@ -1072,6 +1175,7 @@ def run() -> dict:
         "hackernews":     {"ok": True, "fetched": 0, "error": None},
         "courtlistener":  {"ok": True, "fetched": 0, "error": None},
         "google_news":    {"ok": True, "fetched": 0, "error": None},
+        "cfpb":           {"ok": True, "fetched": 0, "error": None},
     }
     all_mentions: list[dict] = []
 
@@ -1111,6 +1215,7 @@ def run() -> dict:
             ("hackernews",     fetch_hackernews),
             ("courtlistener",  fetch_courtlistener),
             ("google_news",    fetch_google_news),
+            ("cfpb",           fetch_cfpb),
         ):
             try:
                 if source_key in archive_ids:
@@ -1166,7 +1271,7 @@ def run() -> dict:
     #     contextual. Casual users on Reddit / Bluesky / Lemmy / HN write
     #     consistently when naming a brand; lowercase usually means the verb
     #     phrase. Strict capitalization "Transform Credit" is a real signal.
-    UNFILTERED_SOURCES = {"trustpilot", "bbb"}
+    UNFILTERED_SOURCES = {"trustpilot", "bbb", "cfpb"}
     NEWS_LIKE_SOURCES  = {"google_news", "courtlistener"}
 
     by_brand_cfg = {b["key"]: b for b in BRANDS}
