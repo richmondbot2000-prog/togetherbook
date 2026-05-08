@@ -1,15 +1,15 @@
 {
   "schema_version": 1,
-  "snapshot_date": "2026-05-07",
-  "updated_at": "2026-05-07T21:32:51Z",
+  "snapshot_date": "2026-05-08",
+  "updated_at": "2026-05-08T05:47:55Z",
   "brands": [
     "Together Loans",
     "TransformCredit"
   ],
   "totals": {
-    "all": 136,
+    "all": 139,
     "by_source": {
-      "trustpilot": 100,
+      "trustpilot": 103,
       "bbb": 10,
       "reddit": 25,
       "bluesky": 0,
@@ -20,18 +20,18 @@
     },
     "by_brand": {
       "together_loans": 26,
-      "transform_credit": 110
+      "transform_credit": 113
     }
   },
   "source_status": {
     "trustpilot": {
       "ok": true,
-      "fetched": 100,
+      "fetched": 3,
       "error": null
     },
     "bbb": {
       "ok": true,
-      "fetched": 10,
+      "fetched": 0,
       "error": null
     },
     "reddit": {
@@ -61,11 +61,25 @@
     },
     "google_news": {
       "ok": true,
-      "fetched": 73,
+      "fetched": 71,
       "error": null
     }
   },
   "mentions": [
+    {
+      "source": "trustpilot",
+      "brand": "transform_credit",
+      "id": "tp-69fce9d4e5113d383d20fa6f",
+      "title": "Lolo",
+      "snippet": "Hi there, this company had placed a $3200 payment on my credit report. I have never had an account with them. If you try to call them you cant. Nor have o ever received any funds from this company. There are messages this company is still asking me to finish my application. In a…",
+      "url": "https://www.trustpilot.com/review/transformcredit.com#69fce9d4e5113d383d20fa6f",
+      "date": "2026-05-07",
+      "author": "Lolo G",
+      "score": 1,
+      "score_max": 5,
+      "site_name": "Trustpilot",
+      "site_domain": "trustpilot.com"
+    },
     {
       "source": "bbb",
       "brand": "together_loans",
@@ -627,6 +641,34 @@
       "site_domain": "trustpilot.com"
     },
     {
+      "source": "trustpilot",
+      "brand": "transform_credit",
+      "id": "tp-69fd0ace87efe73f25fe85da",
+      "title": "Be nice and helpful",
+      "snippet": "Keep doing what u do",
+      "url": "https://www.trustpilot.com/review/transformcredit.com#69fd0ace87efe73f25fe85da",
+      "date": "2026-04-30",
+      "author": "Shawn. Clark",
+      "score": 5,
+      "score_max": 5,
+      "site_name": "Trustpilot",
+      "site_domain": "trustpilot.com"
+    },
+    {
+      "source": "trustpilot",
+      "brand": "transform_credit",
+      "id": "tp-69fd05ed18da8bfe689ec876",
+      "title": "Very professional",
+      "snippet": "Very professional, courteous and detailed information.",
+      "url": "https://www.trustpilot.com/review/transformcredit.com#69fd05ed18da8bfe689ec876",
+      "date": "2026-04-30",
+      "author": "Raul",
+      "score": 5,
+      "score_max": 5,
+      "site_name": "Trustpilot",
+      "site_domain": "trustpilot.com"
+    },
+    {
       "source": "bbb",
       "brand": "together_loans",
       "id": "bbb-0654_90019971_672661",
@@ -837,6 +879,20 @@
       "site_domain": "trustpilot.com"
     },
     {
+      "source": "reddit",
+      "brand": "transform_credit",
+      "id": "rd-1sy3qyl",
+      "title": "Transform credit co-signer needed",
+      "snippet": "I need to get a loan to help pay for bills for a few months that my paycheck barely covers",
+      "url": "https://www.reddit.com/r/findacosigner/comments/1sy3qyl/transform_credit_cosigner_needed/",
+      "date": "2026-04-28",
+      "author": "u/Acceptable-Lemon4979",
+      "score": 0,
+      "score_max": null,
+      "site_name": "r/findacosigner",
+      "site_domain": "reddit.com"
+    },
+    {
       "source": "bbb",
       "brand": "together_loans",
       "id": "bbb-0654_90019971_671398",
@@ -1003,20 +1059,6 @@
       "score_max": 5,
       "site_name": "Trustpilot",
       "site_domain": "trustpilot.com"
-    },
-    {
-      "source": "reddit",
-      "brand": "transform_credit",
-      "id": "rd-1sy3qyl",
-      "title": "Transform credit co-signer needed",
-      "snippet": "I need to get a loan to help pay for bills for a few months that my paycheck barely covers",
-      "url": "https://www.reddit.com/r/findacosigner/comments/1sy3qyl/transform_credit_cosigner_needed/",
-      "date": "2026-04-28",
-      "author": "u/Acceptable-Lemon4979",
-      "score": 0,
-      "score_max": null,
-      "site_name": "r/findacosigner",
-      "site_domain": "reddit.com"
     },
     {
       "source": "bbb",
@@ -1629,7 +1671,7 @@
       "url": "https://www.reddit.com/r/findacosigner/comments/1sa4v8k/scammer_alert/",
       "date": "2026-04-02",
       "author": "u/dlopez2018",
-      "score": 4,
+      "score": 6,
       "score_max": null,
       "site_name": "r/findacosigner",
       "site_domain": "reddit.com"
@@ -1741,7 +1783,7 @@
       "url": "https://www.reddit.com/r/Scams/comments/1r8j5km/us_tcrdt_com_stkgpbbbg_phishingsmishing_scam/",
       "date": "2026-02-18",
       "author": "u/ImplementLong5304",
-      "score": 2,
+      "score": 4,
       "score_max": null,
       "site_name": "r/Scams",
       "site_domain": "reddit.com"
@@ -1797,7 +1839,7 @@
       "url": "https://www.reddit.com/r/findacosigner/comments/1q7hl9n/co_signers_beware/",
       "date": "2026-01-08",
       "author": "u/Dirftboat95",
-      "score": 10,
+      "score": 8,
       "score_max": null,
       "site_name": "r/findacosigner",
       "site_domain": "reddit.com"
@@ -1895,6 +1937,20 @@
       "url": "https://www.reddit.com/r/findacosigner/comments/1oh5p65/co_sign/",
       "date": "2025-10-27",
       "author": "u/Flimsy_Suspect3208",
+      "score": 3,
+      "score_max": null,
+      "site_name": "r/findacosigner",
+      "site_domain": "reddit.com"
+    },
+    {
+      "source": "reddit",
+      "brand": "transform_credit",
+      "id": "rd-1ocmme8",
+      "title": "Need a co-signer",
+      "snippet": "Hello, I'm looking for a co-signer for my transform credit loan so I can get back on track with bills. First off though, I'm not paying anything upfront. Zero negotiations on that. If you want payme…",
+      "url": "https://www.reddit.com/r/findacosigner/comments/1ocmme8/need_a_cosigner/",
+      "date": "2025-10-21",
+      "author": "u/CodyPalmer7",
       "score": 4,
       "score_max": null,
       "site_name": "r/findacosigner",
@@ -1913,20 +1969,6 @@
       "score_max": 5,
       "site_name": "Trustpilot",
       "site_domain": "trustpilot.com"
-    },
-    {
-      "source": "reddit",
-      "brand": "transform_credit",
-      "id": "rd-1ocmme8",
-      "title": "Need a co-signer",
-      "snippet": "Hello, I'm looking for a co-signer for my transform credit loan so I can get back on track with bills. First off though, I'm not paying anything upfront. Zero negotiations on that. If you want payme…",
-      "url": "https://www.reddit.com/r/findacosigner/comments/1ocmme8/need_a_cosigner/",
-      "date": "2025-10-21",
-      "author": "u/CodyPalmer7",
-      "score": 5,
-      "score_max": null,
-      "site_name": "r/findacosigner",
-      "site_domain": "reddit.com"
     },
     {
       "source": "reddit",
