@@ -1,13 +1,13 @@
 {
   "schema_version": 1,
   "snapshot_date": "2026-05-08",
-  "updated_at": "2026-05-08T15:25:57Z",
+  "updated_at": "2026-05-08T15:42:57Z",
   "brands": [
     "Together Loans",
     "TransformCredit"
   ],
   "totals": {
-    "all": 244,
+    "all": 251,
     "by_source": {
       "trustpilot": 202,
       "bbb": 10,
@@ -17,11 +17,12 @@
       "hackernews": 0,
       "courtlistener": 0,
       "google_news": 1,
-      "cfpb": 6
+      "cfpb": 6,
+      "youtube": 7
     },
     "by_brand": {
-      "together_loans": 228,
-      "transform_credit": 16
+      "together_loans": 233,
+      "transform_credit": 18
     }
   },
   "source_status": {
@@ -68,6 +69,11 @@
     "cfpb": {
       "ok": true,
       "fetched": 6,
+      "error": null
+    },
+    "youtube": {
+      "ok": true,
+      "fetched": 64,
       "error": null
     }
   },
@@ -2979,7 +2985,7 @@
       "url": "https://www.reddit.com/r/findacosigner/comments/1sa4v8k/scammer_alert/",
       "date": "2026-04-02",
       "author": "u/dlopez2018",
-      "score": 6,
+      "score": 5,
       "score_max": null,
       "site_name": "r/findacosigner",
       "site_domain": "reddit.com"
@@ -3077,7 +3083,7 @@
       "url": "https://www.reddit.com/r/debtfree/comments/1rjs7hz/anyone_have_experience_with_together_loans_seems/",
       "date": "2026-03-03",
       "author": "u/PM_Me_Money_Daddy",
-      "score": 6,
+      "score": 4,
       "score_max": null,
       "site_name": "r/debtfree",
       "site_domain": "reddit.com"
@@ -3217,7 +3223,7 @@
       "url": "https://www.reddit.com/r/findacosigner/comments/1q7hl9n/co_signers_beware/",
       "date": "2026-01-08",
       "author": "u/Dirftboat95",
-      "score": 10,
+      "score": 9,
       "score_max": null,
       "site_name": "r/findacosigner",
       "site_domain": "reddit.com"
@@ -3251,6 +3257,20 @@
       "site_domain": "reddit.com"
     },
     {
+      "source": "youtube",
+      "brand": "together_loans",
+      "id": "yt-4Lo5UJzgyPY",
+      "title": "TogetherLoans.com Review – Loan Application Process, Rates & My Experience",
+      "snippet": "TogetherLoans #LoanReview #PersonalFinance TogetherLoans.com review: I walk through the loan application process, typical ...",
+      "url": "https://www.youtube.com/watch?v=4Lo5UJzgyPY",
+      "date": "2025-12-16",
+      "author": "Calderon Bridger",
+      "score": null,
+      "score_max": null,
+      "site_name": "Calderon Bridger",
+      "site_domain": "youtube.com"
+    },
+    {
       "source": "trustpilot",
       "brand": "together_loans",
       "id": "tp-69e9550fab8c62c399b4609a",
@@ -3263,6 +3283,62 @@
       "score_max": 5,
       "site_name": "Trustpilot",
       "site_domain": "trustpilot.com"
+    },
+    {
+      "source": "youtube",
+      "brand": "together_loans",
+      "id": "yt-M4wez7gF8eo",
+      "title": "TogetherLoans.com – Honest Breakdown: Is It a Real Lending Platform?",
+      "snippet": "In this video, we take a deep and honest look at Together Loans — a lending platform offering personal and cosigned loans.",
+      "url": "https://www.youtube.com/watch?v=M4wez7gF8eo",
+      "date": "2025-12-15",
+      "author": "Your Guide Is Here",
+      "score": null,
+      "score_max": null,
+      "site_name": "Your Guide Is Here",
+      "site_domain": "youtube.com"
+    },
+    {
+      "source": "youtube",
+      "brand": "together_loans",
+      "id": "yt-aZodYQe7Vqc",
+      "title": "TogetherLoans Reviews - Is TogetherLoans.com Legit or Scam?",
+      "snippet": "TogetherLoans Reviews – Is TogetherLoans.com Legit or Scam? TogetherLoans review, TogetherLoans.com scam check, online ...",
+      "url": "https://www.youtube.com/watch?v=aZodYQe7Vqc",
+      "date": "2025-12-13",
+      "author": "HOA HORROR",
+      "score": null,
+      "score_max": null,
+      "site_name": "HOA HORROR",
+      "site_domain": "youtube.com"
+    },
+    {
+      "source": "youtube",
+      "brand": "together_loans",
+      "id": "yt-lKgZgwib-3U",
+      "title": "Together Loans Review - Legit or Scam Platform?",
+      "snippet": "Amazon Best Discounts: https://amzn.to/3KcFsVk TogetherLoans.com claims to offer personal loans up to $10000, focusing more ...",
+      "url": "https://www.youtube.com/watch?v=lKgZgwib-3U",
+      "date": "2025-12-13",
+      "author": "Info Men",
+      "score": null,
+      "score_max": null,
+      "site_name": "Info Men",
+      "site_domain": "youtube.com"
+    },
+    {
+      "source": "youtube",
+      "brand": "together_loans",
+      "id": "yt-48udEM1yk4c",
+      "title": "Together Loans Reviews -- Is Legit or a Scam?",
+      "snippet": "TogetherLoans.com Reviews - Is Together Loans Legit or Scam? Hey there. If you're looking for a loan but have had trouble with ...",
+      "url": "https://www.youtube.com/watch?v=48udEM1yk4c",
+      "date": "2025-12-12",
+      "author": "Sigma Tech  💻",
+      "score": null,
+      "score_max": null,
+      "site_name": "Sigma Tech  💻",
+      "site_domain": "youtube.com"
     },
     {
       "source": "reddit",
@@ -3357,7 +3433,7 @@
       "url": "https://www.reddit.com/r/findacosigner/comments/1ocmme8/need_a_cosigner/",
       "date": "2025-10-21",
       "author": "u/CodyPalmer7",
-      "score": 4,
+      "score": 3,
       "score_max": null,
       "site_name": "r/findacosigner",
       "site_domain": "reddit.com"
@@ -3389,6 +3465,20 @@
       "score_max": null,
       "site_name": "r/findacosigner",
       "site_domain": "reddit.com"
+    },
+    {
+      "source": "youtube",
+      "brand": "transform_credit",
+      "id": "yt-mZciwG9KGo8",
+      "title": "TransformCredit.com Review – Is Transform Credit Legit?",
+      "snippet": "Transform Credit Loan Review – Is Transform Credit Legit or a Scam? If you've been denied a loan because of your credit score, ...",
+      "url": "https://www.youtube.com/watch?v=mZciwG9KGo8",
+      "date": "2025-05-24",
+      "author": "Sigma Tech  💻",
+      "score": null,
+      "score_max": null,
+      "site_name": "Sigma Tech  💻",
+      "site_domain": "youtube.com"
     },
     {
       "source": "trustpilot",
@@ -3445,6 +3535,20 @@
       "score_max": null,
       "site_name": "Traders Union",
       "site_domain": "tradersunion.com"
+    },
+    {
+      "source": "youtube",
+      "brand": "transform_credit",
+      "id": "yt-t0_BAxZ83N8",
+      "title": "transformcredit com review is transformcredit com legit or scam",
+      "snippet": "Visit our website** [https://verifygiant.com/](https://verifygiant.com/) **Instantly check trust scores of any hotel, company or website ...",
+      "url": "https://www.youtube.com/watch?v=t0_BAxZ83N8",
+      "date": "2024-12-29",
+      "author": "Verify Giant - TOKYO HQ 111",
+      "score": null,
+      "score_max": null,
+      "site_name": "Verify Giant - TOKYO HQ 111",
+      "site_domain": "youtube.com"
     },
     {
       "source": "cfpb",
