@@ -78,13 +78,13 @@ jobs:
         if: steps.guard.outputs.skip != 'true'
         run: |
           set -euo pipefail
-          if git diff --quiet -- staff-activity.json; then
-            echo "no changes — nothing to commit"
-            exit 0
-          fi
           git config user.name  "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git add staff-activity.json
+          if git diff --cached --quiet -- staff-activity.json; then
+            echo "no changes — nothing to commit"
+            exit 0
+          fi
           ACTIVE=$(python -c "import json; print(json.load(open('staff-activity.json'))['active_count'])")
           git commit -m "Refresh staff activity: ${ACTIVE} active in last 60d"
           for attempt in 1 2 3; do
