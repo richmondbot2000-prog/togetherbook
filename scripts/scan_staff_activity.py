@@ -62,18 +62,17 @@ KNOWN_DOMAINS = [
 # Days of activity to consider — anything older is excluded entirely.
 WINDOW_DAYS = 60
 
-# Common timestamp column names on Events / mutation tables, in order of
-# preference. We pick the first one that exists on the table.
-TIMESTAMP_CANDIDATES = [
-    "DateTimeUTC",
-    "EventDateUTC",
-    "CreatedDateUTC",
-    "CreatedAtUTC",
-    "ModifiedDateUTC",
-    "ModifiedAtUTC",
-    "TimestampUTC",
-    "InsertDateUTC",
-]
+# Datetime SQL types we accept for the activity timestamp.
+TS_DATA_TYPES = ('datetime', 'datetime2', 'datetimeoffset', 'smalldatetime', 'date')
+
+# Preference order when a table has multiple datetime columns — pick the
+# most semantically "happened-at" one we can find.
+TS_NAME_PREF = (
+    "DateTimeUTC", "EventDateUTC", "CreatedDateUTC", "CreatedAtUTC",
+    "EventDateTime", "DateTime", "EventDate", "Created", "CreatedAt",
+    "ModifiedDateUTC", "ModifiedAtUTC", "ModifiedDate", "ModifiedAt",
+    "InsertDateUTC", "InsertedAt", "Stamp", "Timestamp", "EventTime",
+)
 
 QUERY_TIMEOUT = 240
 
@@ -140,28 +139,47 @@ def short_warehouse(db: str) -> str:
 
 
 def find_tables_and_timestamp(cur, database: str) -> list[tuple[str, str, str]]:
-    """Return [(schema, table, ts_col), ...] for every table in this DB that has
-    both ClientUsername and at least one of our timestamp candidates."""
+    """Return [(schema, table, ts_col), ...] for every table in this DB that
+    has a ClientUsername column plus at least one datetime-typed column.
+
+    The timestamp column is picked by:
+      1) name match against TS_NAME_PREF (in order), then
+      2) first datetime-typed column we find.
+    """
+    # First: every table that has a ClientUsername column.
     cur.execute("""
-        SELECT TABLE_SCHEMA, TABLE_NAME, COLUMN_NAME
+        SELECT TABLE_SCHEMA, TABLE_NAME
         FROM INFORMATION_SCHEMA.COLUMNS
         WHERE COLUMN_NAME = 'ClientUsername'
-            OR COLUMN_NAME IN ('DateTimeUTC','EventDateUTC','CreatedDateUTC',
-                               'CreatedAtUTC','ModifiedDateUTC','ModifiedAtUTC',
-                               'TimestampUTC','InsertDateUTC')
     """)
-    by_table: dict[tuple[str, str], set[str]] = defaultdict(set)
-    for s, t, c in cur.fetchall():
-        by_table[(s, t)].add(c)
+    cu_tables = {(s, t) for s, t in cur.fetchall()}
+    if not cu_tables:
+        return []
+
+    # Second: every datetime-ish column on any table.
+    placeholders = ",".join(["?"] * len(TS_DATA_TYPES))
+    cur.execute(
+        f"""
+        SELECT TABLE_SCHEMA, TABLE_NAME, COLUMN_NAME, DATA_TYPE
+        FROM INFORMATION_SCHEMA.COLUMNS
+        WHERE DATA_TYPE IN ({placeholders})
+        """,
+        list(TS_DATA_TYPES),
+    )
+    ts_by_table: dict[tuple[str, str], list[str]] = defaultdict(list)
+    for s, t, c, _ in cur.fetchall():
+        ts_by_table[(s, t)].append(c)
 
     out: list[tuple[str, str, str]] = []
-    for (schema, table), cols in by_table.items():
-        if "ClientUsername" not in cols:
+    for st in cu_tables:
+        cols = ts_by_table.get(st, [])
+        if not cols:
             continue
-        for ts in TIMESTAMP_CANDIDATES:
-            if ts in cols:
-                out.append((schema, table, ts))
-                break
+        # Try name preferences first
+        chosen = next((p for p in TS_NAME_PREF if p in cols), None)
+        if not chosen:
+            chosen = cols[0]   # fall back to whichever datetime column is first
+        out.append((st[0], st[1], chosen))
     return out
 
 
