@@ -112,9 +112,6 @@
 .qb-brand-logo {
   display: block;
   height: 36px; width: auto;
-  /* Logo PNG has a white card behind it; multiply lets the cream paper
-     bleed through the negative space. */
-  mix-blend-mode: multiply;
 }
 @media (max-width: 760px) {
   .qb-brand-logo { height: 28px; }
