@@ -1,0 +1,173 @@
+{
+  "snapshot_at": "2026-05-09T22:08:48.857929+00:00",
+  "snapshot_date": "2026-05-09",
+  "window_days": 60,
+  "cutoff_utc": "2026-03-10T22:08:48.857929+00:00",
+  "active_count": 18,
+  "active_users": [
+    {
+      "email": "james.webster@letme.co.uk",
+      "writes_60d": 93787,
+      "last_active_utc": "2026-05-09T22:04:52.079631",
+      "tenants": [
+        "rapida",
+        "transform"
+      ],
+      "top_warehouse": "applications"
+    },
+    {
+      "email": "dorota.kazmierczyk@letme.com",
+      "writes_60d": 3951,
+      "last_active_utc": "2026-05-09T07:35:58.964585",
+      "tenants": [
+        "fianceo",
+        "rapida"
+      ],
+      "top_warehouse": "loanbook"
+    },
+    {
+      "email": "sophia.ugwunne@letme.com",
+      "writes_60d": 3717,
+      "last_active_utc": "2026-05-08T22:48:38.911614",
+      "tenants": [
+        "transform"
+      ],
+      "top_warehouse": "applications"
+    },
+    {
+      "email": "morgan.smith@letme.com",
+      "writes_60d": 2327,
+      "last_active_utc": "2026-05-07T16:41:35.283969",
+      "tenants": [
+        "transform"
+      ],
+      "top_warehouse": "applications"
+    },
+    {
+      "email": "mourad.malki@clearloans.com.au",
+      "writes_60d": 1119,
+      "last_active_utc": "2026-05-09T20:20:07.869537",
+      "tenants": [
+        "transform"
+      ],
+      "top_warehouse": "applications"
+    },
+    {
+      "email": "ben.gardner@letme.com",
+      "writes_60d": 744,
+      "last_active_utc": "2026-05-08T19:53:23.367202",
+      "tenants": [
+        "transform"
+      ],
+      "top_warehouse": "applications"
+    },
+    {
+      "email": "laura.chadbourne@letme.co.uk",
+      "writes_60d": 701,
+      "last_active_utc": "2026-05-08T13:52:12.222607",
+      "tenants": [
+        "transform"
+      ],
+      "top_warehouse": "applications"
+    },
+    {
+      "email": "igor.kravcov@letme.com",
+      "writes_60d": 483,
+      "last_active_utc": "2026-05-08T13:04:04.249574",
+      "tenants": [
+        "rgroup"
+      ],
+      "top_warehouse": "applications"
+    },
+    {
+      "email": "adnan.turken@letme.co.uk",
+      "writes_60d": 291,
+      "last_active_utc": "2026-05-07T05:06:44.887821",
+      "tenants": [
+        "rgroup"
+      ],
+      "top_warehouse": "applications"
+    },
+    {
+      "email": "kelly.black@letme.com",
+      "writes_60d": 237,
+      "last_active_utc": "2026-05-08T16:39:43.346789",
+      "tenants": [
+        "transform"
+      ],
+      "top_warehouse": "applications"
+    },
+    {
+      "email": "max.dynowski@letme.co.uk",
+      "writes_60d": 205,
+      "last_active_utc": "2026-05-09T05:02:51.405187",
+      "tenants": [
+        "lendingmate"
+      ],
+      "top_warehouse": "loanbook"
+    },
+    {
+      "email": "clementia.dsouza@letme.com",
+      "writes_60d": 184,
+      "last_active_utc": "2026-05-07T06:41:08.522773",
+      "tenants": [
+        "transform"
+      ],
+      "top_warehouse": "loanbook"
+    },
+    {
+      "email": "lucian.teodoroiu@letme.co.uk",
+      "writes_60d": 167,
+      "last_active_utc": "2026-05-08T13:52:01.134720",
+      "tenants": [
+        "transform"
+      ],
+      "top_warehouse": "applications"
+    },
+    {
+      "email": "raveeha.ejaz@letme.com",
+      "writes_60d": 132,
+      "last_active_utc": "2026-05-08T10:48:41.687315",
+      "tenants": [
+        "transform"
+      ],
+      "top_warehouse": "applications"
+    },
+    {
+      "email": "kamran.kamaei@letme.com",
+      "writes_60d": 130,
+      "last_active_utc": "2026-05-08T19:57:05.114702",
+      "tenants": [
+        "rgroup"
+      ],
+      "top_warehouse": "applications"
+    },
+    {
+      "email": "ekrem.yurtman@letme.com",
+      "writes_60d": 58,
+      "last_active_utc": "2026-05-07T05:40:34.375172",
+      "tenants": [
+        "transform"
+      ],
+      "top_warehouse": "applications"
+    },
+    {
+      "email": "victor.igbaifua@letme.com",
+      "writes_60d": 5,
+      "last_active_utc": "2026-04-17T04:37:57.786280",
+      "tenants": [
+        "lendingmate"
+      ],
+      "top_warehouse": "loanbook"
+    },
+    {
+      "email": "tarek.benamor@letme.com",
+      "writes_60d": 4,
+      "last_active_utc": "2026-05-06T12:40:33.655519",
+      "tenants": [
+        "fianceo"
+      ],
+      "top_warehouse": "loanbook"
+    }
+  ]
+}
