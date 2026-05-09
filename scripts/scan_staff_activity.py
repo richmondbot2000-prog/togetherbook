@@ -117,19 +117,27 @@ def domain_from_username(un: str) -> str:
 
 
 def short_tenant(domain: str) -> str:
-    """Short label for the tenant pill on the directory card."""
+    """Short label for the tenant pill on the directory card.
+
+    Consolidates aliases of the same tenant: togetherloans + transformcredit
+    are the same lender (Together Loans / Transform Credit), tandolan +
+    tandolaina are sibling Nordic brands.
+    """
     return {
         "rgroup.co.uk": "rgroup",
+        "rgdc.co.uk": "rgdc",
         "letme.co.uk": "letme",
         "letme.com": "letme",
         "transformcredit.com": "transform",
+        "togetherloans.com": "transform",
+        "togetherloans.co.uk": "transform",
         "lendingmate.ca": "lendingmate",
         "rapida.bg": "rapida",
         "rapidamoney.pl": "rapida",
         "clearloans.com.au": "clearloans",
         "fianceo.com": "fianceo",
         "tandolan.dk": "tandolan",
-        "tandolaina.fi": "tandolaina",
+        "tandolaina.fi": "tandolan",
     }.get(domain, domain.split(".")[0])
 
 
@@ -235,11 +243,11 @@ def scan_database(database: str, cutoff: datetime.datetime) -> dict[str, dict]:
 
 
 def primary_tenant_priority(tenant: str) -> int:
-    """Sort key for the directory ordering. Transform/Together first, rgroup
-    second, everything else last (alphabetical within)."""
+    """Sort key for the directory ordering. Transform/Together first, all RG
+    internal brands second, everything else last."""
     if tenant in ("transform", "together"):
         return 0
-    if tenant == "rgroup":
+    if tenant in ("rgroup", "rgdc", "letme"):
         return 1
     return 2
 
