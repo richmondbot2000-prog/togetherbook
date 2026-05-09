@@ -40,8 +40,8 @@ jobs:
             CURRENT=""
           fi
           echo "expected_snapshot_date=$EXPECTED  current_snapshot_date=$CURRENT"
-          if [ "$CURRENT" = "$EXPECTED" ]; then
-            echo "Snapshot already taken for $EXPECTED — skipping."
+          if [ "$CURRENT" = "$EXPECTED" ] && [ "${GITHUB_EVENT_NAME:-}" != "workflow_dispatch" ]; then
+            echo "Snapshot already taken for $EXPECTED — skipping (scheduled run)."
             echo "skip=true" >> "$GITHUB_OUTPUT"
           else
             echo "skip=false" >> "$GITHUB_OUTPUT"

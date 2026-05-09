@@ -53,12 +53,17 @@ def build_service():
 
 
 def fetch_users(service, domain: str) -> list[dict]:
-    """Page through users.list — Workspace caps at 500/page, we follow nextPageToken."""
+    """Page through users.list — Workspace caps at 500/page, we follow nextPageToken.
+
+    Uses `customer='my_customer'` rather than `domain=` so we get every active
+    user across all the tenant's domains (letme.co.uk + any aliases). The admin
+    console's "59 active users" count is across the whole customer.
+    """
     out: list[dict] = []
     page_token: str | None = None
     while True:
         kwargs = {
-            'domain': domain,
+            'customer': 'my_customer',
             'maxResults': PAGE_SIZE,
             'orderBy': 'email',
             'projection': 'full',   # need 'full' for organizations + photos
