@@ -15,166 +15,188 @@
 <link rel="stylesheet" href="quiet-extras.css">
 <link rel="stylesheet" href="quiet-legacy.css">
 <style>
+  /* Quiet Edition palette wired in via quiet-tokens / quiet-legacy.
+     This block adds the page-specific stats / split-flap rules, retuned
+     for cream paper + ink + brass. */
   :root {
-    --bg: #060a1f;
-    --bg-soft: #0e1438;
-    --bg-soft-2: #161e4d;
-    --ink: #e6f1ff;
-    --ink-soft: #b8c4e8;
-    --muted: #7686b8;
-    --border: #28315c;
-    --border-soft: #1a2148;
-    --accent: #00d4ff;
-    --accent-2: #ff39a8;
-    --accent-3: #ffe066;
-    --accent-soft: #0c2a3e;
-    --accent-ink: #67e8ff;
-    --shadow-glow-cyan: 0 0 22px rgba(0, 212, 255, 0.32);
-    --shadow-glow-pink: 0 0 22px rgba(255, 57, 168, 0.30);
-    --font-display: 'Orbitron', system-ui, sans-serif;
-    --flip-card: #f4f0e6;
-    --flip-card-2: #ebe5d4;
-    --flip-ink: #1a1714;
-    --flip-split: rgba(0,0,0,0.35);
+    --flip-card: #FDFBF4;
+    --flip-card-2: #F5ECD4;
+    --flip-ink: #11192E;
   }
   * { box-sizing: border-box; }
-  html { scroll-behavior: smooth; scroll-padding-top: 80px; }
-  body {
-    margin: 0; background: var(--bg); color: var(--ink);
-    font-family: 'Inter', -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
-    font-size: 15.5px; line-height: 1.65; -webkit-font-smoothing: antialiased;
-    position: relative; overflow-x: hidden;
-  }
-  body::before {
-    content: ""; position: fixed; inset: 0; z-index: -2; pointer-events: none;
-    background-image:
-      radial-gradient(1px 1px at 20% 30%, #fff, transparent),
-      radial-gradient(1px 1px at 80% 10%, #67e8ff, transparent),
-      radial-gradient(1px 1px at 50% 70%, #fff, transparent),
-      radial-gradient(2px 2px at 90% 50%, #fff, transparent),
-      radial-gradient(1px 1px at 10% 80%, #ff39a8, transparent),
-      radial-gradient(1px 1px at 70% 90%, #fff, transparent),
-      radial-gradient(1px 1px at 35% 50%, #67e8ff, transparent),
-      radial-gradient(1px 1px at 60% 25%, #fff, transparent);
-    background-size: 800px 800px; opacity: 0.55;
-    animation: drift-stars 200s linear infinite;
-  }
-  body::after {
-    content: ""; position: fixed; inset: 0; z-index: -1; pointer-events: none;
-    background: radial-gradient(ellipse at 25% 15%, rgba(103,232,255,0.07), transparent 50%),
-                radial-gradient(ellipse at 75% 85%, rgba(255,57,168,0.06), transparent 50%);
-  }
-  @keyframes drift-stars { from { background-position: 0 0; } to { background-position: 800px 400px; } }
-  a { color: var(--accent); text-decoration: none; }
-  a:hover { text-decoration: underline; }
-  code { font-family: 'JetBrains Mono', ui-monospace, Menlo, monospace; font-size: 0.86em;
-    background: var(--bg-soft); padding: 1px 6px; border-radius: 4px; border: 1px solid var(--border);
-    color: var(--accent-ink); }
+  html { scroll-behavior: smooth; scroll-padding-top: 96px; }
 
-  /* topbar + brand styles come from style.css now (shared with index/apis/robots) */
+  a { color: var(--teal-500); text-decoration: underline;
+      text-decoration-color: color-mix(in srgb, var(--teal-500) 35%, transparent);
+      text-underline-offset: 0.18em; }
+  a:hover { color: var(--red-500); text-decoration-color: currentColor; }
 
   /* CONTENT */
-  main { max-width: 1080px; margin: 0 auto; padding: 56px 32px 120px; position: relative; z-index: 1; }
-  @media (max-width: 800px) { main { padding: 4px 3px 80px; } }
-  h1 { font-family: var(--font-display); font-size: clamp(2rem, 5vw, 3.2rem); font-weight: 800;
-    letter-spacing: 0.02em; margin: 0 0 14px; line-height: 1.05; text-transform: uppercase;
-    background: linear-gradient(135deg, #67e8ff, #00d4ff 50%, #ff39a8);
-    -webkit-background-clip: text; background-clip: text; color: transparent;
-    text-shadow: 0 0 40px rgba(0,212,255,0.18); }
-  .subtitle { color: var(--ink-soft); font-size: 1.1rem; margin: 0 0 48px; max-width: 780px; }
+  main.qb-page { max-width: 1080px; padding-top: 32px; padding-bottom: 120px; }
+  @media (max-width: 800px) { main.qb-page { padding: 4px 18px 80px; } }
 
-  h2 { font-family: var(--font-display); font-size: 1.4rem; font-weight: 700; letter-spacing: 0.04em;
-    text-transform: uppercase; margin: 64px 0 16px; padding-top: 28px;
-    border-top: 1px solid var(--border-soft); line-height: 1.25; color: var(--accent); }
+  main h1 {
+    font: 400 72px/1.02 var(--font-display);
+    color: var(--ink-900);
+    letter-spacing: -0.02em;
+    margin: 8px 0 14px;
+    text-wrap: balance;
+  }
+  .subtitle {
+    font: 400 19px/1.6 var(--font-display);
+    color: var(--ink-700);
+    margin: 0 0 56px; max-width: 720px;
+    text-wrap: pretty;
+  }
 
-  /* FLIP BOARD ROWS */
+  main h2 {
+    font: 400 32px/1.15 var(--font-display);
+    color: var(--ink-900);
+    letter-spacing: -0.012em;
+    margin: 72px 0 14px;
+    padding-top: 28px;
+    border-top: 1px solid var(--ink-300);
+  }
+
+  /* FLIP BOARD ROWS — antique split-flap on cream paper */
   .flip-row { margin: 0 0 56px; }
-  .flip-meta-top { display: flex; align-items: baseline; gap: 14px; margin: 0 0 14px;
-    flex-wrap: wrap; }
-  .flip-label { font-family: var(--font-display); font-size: 0.85rem; font-weight: 700;
-    text-transform: uppercase; letter-spacing: 0.08em; color: var(--accent-ink); }
-  .flip-sub { color: var(--muted); font-size: 0.85rem; }
-  .flip-updated { color: var(--muted); font-family: 'JetBrains Mono', monospace;
-    font-size: 0.72rem; letter-spacing: 0.04em; margin: 12px 0 0; }
+  .flip-meta-top {
+    display: flex; align-items: baseline; gap: 14px;
+    margin: 0 0 16px; flex-wrap: wrap;
+  }
+  .flip-label {
+    font: italic 400 15px/1 var(--font-display);
+    color: var(--red-500); letter-spacing: 0.02em;
+    display: flex; align-items: center; gap: 14px;
+  }
+  .flip-label::before {
+    content: ""; flex: 0 0 36px; height: 1px; background: var(--brass-300);
+  }
+  .flip-sub {
+    font: 400 14px/1.4 var(--font-display);
+    color: var(--ink-600);
+  }
+  .flip-updated {
+    font: 400 11px/1 var(--font-mono);
+    color: var(--ink-500);
+    letter-spacing: 0.04em; margin: 16px 0 0;
+  }
 
   .flipboard { display: flex; gap: 4px; align-items: center; flex-wrap: wrap; }
 
   .flip-with-meme { display: flex; align-items: center; gap: 28px; flex-wrap: wrap; }
-  .loc-meme { display: block; max-width: 320px; width: 100%; height: auto;
-    border-radius: 8px; border: 1px solid var(--border);
-    box-shadow: 0 8px 24px rgba(0,0,0,0.45); }
+  .loc-meme {
+    display: block; max-width: 320px; width: 100%; height: auto;
+    border: 1px solid var(--paper-300);
+  }
   @media (max-width: 720px) { .loc-meme { max-width: 100%; } }
+
   .flip-cell {
     display: inline-block; width: 56px; height: 84px;
     background: linear-gradient(180deg, var(--flip-card) 0%, var(--flip-card) 49.5%,
-                                       #d8d2c0 50%, #d8d2c0 50.5%,
+                                       #cbc5b3 50%, #cbc5b3 50.5%,
                                        var(--flip-card-2) 51%, var(--flip-card-2) 100%);
-    border-radius: 6px;
-    overflow: hidden;
-    position: relative;
+    border-radius: 3px;
+    overflow: hidden; position: relative;
     box-shadow:
-      0 2px 0 rgba(0,0,0,0.25),
-      0 4px 8px rgba(0,0,0,0.45),
-      inset 0 1px 0 rgba(255,255,255,0.5),
-      inset 0 -1px 0 rgba(0,0,0,0.18);
+      inset 0 1px 0 rgba(255,255,255,0.6),
+      inset 0 -1px 0 rgba(0,0,0,0.08),
+      0 1px 2px rgba(17,25,46,0.18);
+    border: 1px solid var(--paper-300);
   }
   .flip-cell::before {
-    /* spindle peg left */
     content: ""; position: absolute; left: -2px; top: 50%; transform: translateY(-50%);
-    width: 4px; height: 8px; background: #4a4133; border-radius: 1px; z-index: 3;
+    width: 4px; height: 8px; background: var(--brass-700); border-radius: 1px; z-index: 3;
   }
   .flip-cell::after {
-    /* spindle peg right */
     content: ""; position: absolute; right: -2px; top: 50%; transform: translateY(-50%);
-    width: 4px; height: 8px; background: #4a4133; border-radius: 1px; z-index: 3;
+    width: 4px; height: 8px; background: var(--brass-700); border-radius: 1px; z-index: 3;
   }
   .flip-strip { display: block; will-change: transform; }
   .flip-strip > span {
     display: block; height: 84px; line-height: 84px; text-align: center;
     font-family: 'Roboto Mono', 'JetBrains Mono', ui-monospace, Menlo, monospace;
     font-weight: 800; font-size: 56px; color: var(--flip-ink);
-    text-shadow: 0 1px 0 rgba(255,255,255,0.4);
+    text-shadow: 0 1px 0 rgba(255,255,255,0.5);
   }
   .flip-sep {
     display: inline-flex; align-items: flex-end; justify-content: center;
     width: 18px; height: 84px; padding-bottom: 12px;
     font-family: 'Roboto Mono', monospace; font-weight: 800; font-size: 56px;
-    color: var(--accent-ink); text-shadow: 0 0 8px rgba(0,212,255,0.5);
+    color: var(--brass-500);
     line-height: 1;
   }
 
-  /* TABLES (kept for the breakdown sections below) */
-  .table-wrap { background: var(--bg-soft); border: 1px solid var(--border); border-radius: 12px; overflow: hidden; margin: 16px 0 8px; }
-  table { border-collapse: collapse; width: 100%; font-size: 0.9rem; }
-  th, td { padding: 10px 14px; border-bottom: 1px solid var(--border-soft); text-align: left; vertical-align: middle; }
+  /* TABLES — quiet editorial, paper plates */
+  .table-wrap {
+    background: var(--paper-50);
+    border: 1px solid var(--paper-300);
+    overflow: hidden; margin: 16px 0 8px;
+    position: relative;
+  }
+  .table-wrap::before {
+    content: ""; position: absolute; inset: 4px;
+    border: 1px solid var(--brass-300); opacity: 0.35; pointer-events: none;
+  }
+  table { border-collapse: collapse; width: 100%; font-size: 14px; }
+  th, td {
+    padding: 10px 14px; border-bottom: 1px dashed var(--divider);
+    text-align: left; vertical-align: middle;
+  }
   tr:last-child td { border-bottom: none; }
-  th { background: var(--bg-soft-2); font-family: var(--font-display); font-size: 0.7rem; text-transform: uppercase;
-    letter-spacing: 0.08em; font-weight: 600; color: var(--muted); white-space: nowrap; }
-  td.num { font-family: 'JetBrains Mono', monospace; font-size: 0.85rem; text-align: right; color: var(--ink); }
-  tbody tr:hover { background: rgba(0, 212, 255, 0.04); }
+  th {
+    background: transparent;
+    border-bottom: 1px solid var(--ink-300);
+    font-family: var(--font-body);
+    font-size: 11px; font-weight: 600; color: var(--ink-500);
+    text-transform: uppercase; letter-spacing: 0.16em;
+    white-space: nowrap;
+  }
+  td.num {
+    font: 500 13px/1.2 var(--font-mono);
+    text-align: right; color: var(--ink-900);
+  }
+  tbody tr:hover { background: rgba(200, 151, 63, 0.06); }
+  td strong { color: var(--ink-900); font-weight: 500; font-style: italic;
+              font-family: var(--font-display); }
+
   .bar-cell { width: 28%; min-width: 120px; }
-  .bar { height: 8px; background: var(--bg-soft-2); border-radius: 4px; overflow: hidden; border: 1px solid var(--border-soft); }
-  .bar-fill { height: 100%; background: linear-gradient(90deg, var(--accent), var(--accent-ink)); border-radius: 3px; box-shadow: 0 0 8px rgba(0,212,255,0.5); }
-  .bar-fill-pink { background: linear-gradient(90deg, var(--accent-2), #ff8fc7); box-shadow: 0 0 8px rgba(255,57,168,0.5); }
-  .pill { display: inline-block; padding: 2px 9px; border-radius: 999px; font-size: 0.74rem;
-    background: var(--accent-soft); color: var(--accent-ink); border: 1px solid var(--border);
-    font-family: 'JetBrains Mono', monospace; }
-  .note { color: var(--muted); font-size: 0.85rem; margin: 12px 0 0; }
+  .bar {
+    height: 6px; background: var(--paper-200);
+    border-radius: 3px; overflow: hidden;
+    border: 1px solid var(--paper-300);
+  }
+  .bar-fill {
+    height: 100%; background: var(--brass-500);
+    border-radius: 2px;
+  }
+  .bar-fill-pink { background: var(--red-500); }
+
+  .pill {
+    display: inline-block; padding: 2px 9px;
+    font: 500 11px/1.5 var(--font-mono);
+    color: var(--ink-700);
+    background: var(--paper-200);
+    border: 1px solid var(--paper-300);
+    border-radius: var(--radius-xs);
+  }
+  .note {
+    color: var(--ink-500); font: italic 400 14px/1.6 var(--font-display);
+    margin: 12px 0 0;
+  }
 
   @media (prefers-reduced-motion: reduce) {
-    body::before { animation: none; }
-    .topbar .brand .brand-icon { animation: none; }
     .flip-strip { transition: none !important; }
   }
 
   @media (max-width: 720px) {
-    main { padding: 32px 18px 80px; }
-    h1 { font-size: 1.8rem; }
-    h2 { font-size: 1.15rem; }
+    main h1 { font-size: 36px; }
+    main h2 { font-size: 24px; margin: 48px 0 12px; padding-top: 18px; }
+    .subtitle { font-size: 16px; margin-bottom: 36px; }
     .flip-cell { width: 38px; height: 58px; }
     .flip-strip > span { height: 58px; line-height: 58px; font-size: 38px; }
     .flip-sep { width: 12px; height: 58px; font-size: 38px; padding-bottom: 8px; }
-    table { font-size: 0.8rem; }
+    table { font-size: 13px; }
     th, td { padding: 8px 10px; }
     .bar-cell { display: none; }
   }
@@ -185,7 +207,6 @@
 <header class="qb-topbar">
   <a class="qb-brand" href="index.html" aria-label="TogetherBOOK — home">
     <img class="qb-brand-logo" src="togetherbook-logo.png" alt="TogetherBOOK">
-    <span class="qb-brand-sub">a storybook of Central Services</span>
   </a>
   <nav class="qb-nav">
     <a class="qb-nav-link" href="index.html">Helpers</a>
@@ -198,7 +219,6 @@
     <a class="qb-nav-link" href="database.html">Schema</a>
     <a class="qb-nav-link is-active" href="stats.html">Stats</a>
   </nav>
-  <div class="qb-folio">Vol. I &nbsp;·&nbsp; mmxxvi</div>
 </header>
 <main class="qb-page">
   <h1>How big our world is</h1>

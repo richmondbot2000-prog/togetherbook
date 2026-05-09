@@ -15,236 +15,192 @@
 <link rel="stylesheet" href="quiet-extras.css">
 <link rel="stylesheet" href="quiet-legacy.css">
 <style>
-  :root {
-    --bg: #060a1f;
-    --bg-soft: #0e1438;
-    --bg-soft-2: #161e4d;
-    --ink: #e6f1ff;
-    --ink-soft: #b8c4e8;
-    --muted: #7686b8;
-    --border: #28315c;
-    --border-soft: #1a2148;
-    --accent: #00d4ff;
-    --accent-soft: #0c2a3e;
-    --accent-ink: #67e8ff;
-    --font-display: 'Orbitron', system-ui, sans-serif;
-  }
+  /* Quiet Edition palette is wired in via quiet-tokens / quiet-legacy.
+     This block adds the page-specific schema viewer + flipboard rules. */
   * { box-sizing: border-box; }
-  html { scroll-behavior: smooth; scroll-padding-top: 80px; }
-  body {
-    margin: 0;
-    background: var(--bg);
-    color: var(--ink);
-    font-family: 'Inter', -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
-    font-size: 15.5px;
-    line-height: 1.65;
-    -webkit-font-smoothing: antialiased;
-  }
-  a { color: var(--accent); text-decoration: none; }
-  a:hover { text-decoration: underline; }
-  code { font-family: 'JetBrains Mono', ui-monospace, Menlo, monospace; font-size: 0.88em; background: var(--bg-soft); padding: 1px 5px; border-radius: 4px; border: 1px solid var(--border); }
-  pre { background: var(--bg-soft); border: 1px solid var(--border); border-radius: 8px; padding: 14px 18px; overflow-x: auto; }
-  pre code { background: none; border: none; padding: 0; font-size: 0.85em; }
+  html { scroll-behavior: smooth; scroll-padding-top: 96px; }
 
-  /* TOP BAR */
-  /* topbar + brand styles come from style.css now (shared with index/apis/robots) */
+  a { color: var(--teal-500); text-decoration: underline;
+      text-decoration-color: color-mix(in srgb, var(--teal-500) 35%, transparent);
+      text-underline-offset: 0.18em; }
+  a:hover { color: var(--red-500); text-decoration-color: currentColor; }
+
+  pre { background: var(--paper-200); border: 1px solid var(--paper-300);
+        border-radius: var(--radius-xs); padding: 14px 18px; overflow-x: auto; }
+  pre code { background: none; border: none; padding: 0;
+             font-size: 0.85em; color: var(--ink-900); }
 
   /* CONTENT */
-  main {
-    max-width: 980px;
-    margin: 0 auto;
-    padding: 60px 32px 120px;
+  main.qb-page { max-width: 920px; padding-top: 32px; padding-bottom: 120px; }
+  main h1 {
+    font: 400 56px/1.05 var(--font-display);
+    color: var(--ink-900);
+    letter-spacing: -0.018em;
+    margin: 8px 0 16px;
+    text-wrap: balance;
   }
-  h1 {
-    font-family: var(--font-display);
-    font-size: clamp(1.8rem, 4vw, 2.6rem);
-    font-weight: 800;
-    letter-spacing: 0.02em;
-    margin: 0 0 12px;
-    line-height: 1.1;
-    text-transform: uppercase;
-    background: linear-gradient(135deg, #67e8ff, #00d4ff 50%, #ff39a8);
-    -webkit-background-clip: text;
-    background-clip: text;
-    color: transparent;
-  }
-  h2 {
-    font-family: var(--font-display);
-    font-size: 1.5rem;
-    font-weight: 700;
-    letter-spacing: 0.02em;
-    text-transform: uppercase;
+  main h2 {
+    font: 400 32px/1.15 var(--font-display);
+    color: var(--ink-900);
+    letter-spacing: -0.012em;
     margin: 56px 0 12px;
     padding-top: 24px;
-    border-top: 1px solid var(--border-soft);
-    line-height: 1.25;
-    scroll-margin-top: 80px;
-    color: var(--accent);
+    border-top: 1px solid var(--ink-300);
+    scroll-margin-top: 96px;
   }
-  h3 {
-    font-size: 1.05rem;
-    font-weight: 700;
-    letter-spacing: 0.05em;
-    margin: 32px 0 10px;
-    color: var(--ink);
-    text-transform: uppercase;
-    font-family: var(--font-display);
+  main h3 {
+    font: italic 400 18px/1.3 var(--font-display);
+    color: var(--red-500);
+    letter-spacing: 0.005em;
+    margin: 28px 0 8px;
   }
-  p { margin: 0 0 14px; color: var(--ink-soft); }
-  p strong, li strong, td strong { color: var(--ink); font-weight: 600; }
-  em { color: var(--ink-soft); }
-  hr { border: none; border-top: 1px solid var(--border); margin: 40px 0; }
-  blockquote { margin: 14px 0; padding: 10px 16px; border-left: 3px solid var(--accent); background: var(--accent-soft); color: var(--ink); font-style: normal; }
+  main p { margin: 0 0 14px; color: var(--ink-700); }
+  main p strong, main li strong, main td strong { color: var(--ink-900); font-weight: 500; }
+  main em { color: var(--ink-800); font-style: italic; }
+  hr { border: none; border-top: 1px solid var(--divider); margin: 40px 0; }
+  blockquote {
+    margin: 14px 0; padding: 10px 16px;
+    border-left: 2px solid var(--brass-500);
+    background: transparent; color: var(--ink-800); font-style: italic;
+  }
 
   /* TABLES */
-  table {
-    border-collapse: collapse;
-    width: 100%;
-    margin: 12px 0 20px;
-    font-size: 0.88rem;
-  }
+  table { border-collapse: collapse; width: 100%; margin: 12px 0 20px; font-size: 14px; }
   th, td {
-    padding: 8px 10px;
-    border-bottom: 1px solid var(--border-soft);
-    text-align: left;
-    vertical-align: top;
+    padding: 8px 10px; border-bottom: 1px dashed var(--divider);
+    text-align: left; vertical-align: top;
   }
   th {
-    background: var(--bg-soft);
-    border-bottom: 2px solid var(--border);
-    font-size: 0.75rem;
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
-    font-weight: 700;
-    color: var(--muted);
+    background: transparent;
+    border-bottom: 1px solid var(--ink-300);
+    font-family: var(--font-body);
+    font-size: 11px; font-weight: 600; color: var(--ink-500);
+    text-transform: uppercase; letter-spacing: 0.16em;
     white-space: nowrap;
   }
-  td code { font-size: 0.82em; }
-  td:first-child code { font-weight: 600; color: var(--ink); }
+  td code { font-size: 0.86em; }
+  td:first-child code { font-weight: 500; color: var(--ink-900); }
 
-  /* MERMAID */
+  /* MERMAID — pale paper plate with brass border */
   .mermaid {
-    background: var(--bg-soft);
-    border: 1px solid var(--border);
-    border-radius: 12px;
+    background: var(--paper-50);
+    border: 1px solid var(--paper-300);
     padding: 24px;
     margin: 16px 0 24px;
-    text-align: center;
-    overflow-x: auto;
+    text-align: center; overflow-x: auto;
+    position: relative;
+  }
+  .mermaid::before {
+    content: ""; position: absolute; inset: 4px;
+    border: 1px solid var(--brass-300); opacity: 0.4; pointer-events: none;
   }
 
   /* MARKDOWN LIST */
-  ul, ol { margin: 0 0 14px; padding-left: 24px; color: var(--ink-soft); }
-  li { margin: 4px 0; }
-  li > p { margin: 0; }
+  main ul, main ol { margin: 0 0 14px; padding-left: 24px; color: var(--ink-700); }
+  main li { margin: 4px 0; }
+  main li > p { margin: 0; }
 
   /* TOC */
   .toc {
-    background: var(--bg-soft);
-    border: 1px solid var(--border);
-    border-radius: 12px;
+    background: var(--paper-50);
+    border: 1px solid var(--paper-300);
     padding: 18px 22px;
     margin: 24px 0 40px;
+    position: relative;
+  }
+  .toc::before {
+    content: ""; position: absolute; inset: 4px;
+    border: 1px solid var(--brass-300); opacity: 0.4; pointer-events: none;
   }
   .toc h3 {
     margin: 0 0 8px;
-    font-size: 0.78rem;
-    text-transform: uppercase;
-    letter-spacing: 0.06em;
-    color: var(--muted);
-    font-weight: 700;
+    font-family: var(--font-body) !important;
+    font-size: 11px !important;
+    font-weight: 600 !important;
+    color: var(--ink-500) !important;
+    text-transform: uppercase !important;
+    letter-spacing: 0.18em !important;
+    font-style: normal !important;
   }
   .toc ul { padding-left: 18px; margin: 0; }
-  .toc li { font-size: 0.92rem; margin: 3px 0; }
+  .toc li { font-size: 14px; margin: 3px 0; }
 
   /* LOADING */
   .loading {
-    text-align: center;
-    color: var(--muted);
-    padding: 80px 0;
-    font-size: 0.95rem;
+    text-align: center; color: var(--ink-500);
+    padding: 80px 0; font-size: 15px;
+    font-style: italic;
   }
 
   @media (max-width: 700px) {
-    main { padding: 4px 3px 80px; }
-    h1 { font-size: 1.7rem; }
-    h2 { font-size: 1.3rem; }
-    table { font-size: 0.8rem; }
+    main.qb-page { padding: 4px 18px 80px; }
+    main h1 { font-size: 36px; }
+    main h2 { font-size: 24px; margin: 36px 0 10px; padding-top: 16px; }
+    table { font-size: 13px; }
     th, td { padding: 6px 8px; }
   }
 
-  /* === Row-count flipboard list (dense flight-board style) === */
+  /* === Row-count flipboard list — antique split-flap on cream paper === */
   .rc-section {
-    max-width: 1320px;
-    margin: 8px auto 16px;
-    padding: 6px 16px 12px;
+    max-width: 1100px;
+    margin: 12px auto 24px;
+    padding: 12px 32px 24px;
   }
   .rc-section h2 {
-    font-family: var(--font-display);
-    font-size: 1rem;
-    font-weight: 700;
-    letter-spacing: 0.04em;
-    text-transform: uppercase;
-    color: var(--accent);
-    margin: 0 0 2px;
+    font: italic 400 15px/1 var(--font-display);
+    color: var(--red-500);
+    letter-spacing: 0.02em;
+    margin: 0 0 6px;
+    border: none; padding: 0;
+    display: flex; align-items: center; gap: 14px;
+  }
+  .rc-section h2::before {
+    content: ""; flex: 0 0 36px; height: 1px; background: var(--brass-300);
   }
   .rc-section .lead {
-    color: var(--ink-soft);
-    font-size: 0.78rem;
-    margin: 0;
+    color: var(--ink-700); font-size: 14px;
+    margin: 0; font-family: var(--font-display);
   }
   .rc-section .rc-meta {
-    color: var(--muted);
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 0.7rem;
-    margin: 2px 0 8px;
+    color: var(--ink-500);
+    font: 500 11px/1 var(--font-mono);
+    letter-spacing: 0.04em; margin: 6px 0 14px;
   }
-  .rc-list {
-    display: flex;
-    flex-direction: column;
-    gap: 18px;
-  }
+  .rc-list { display: flex; flex-direction: column; gap: 18px; }
   .rc-group {
-    background: var(--bg-soft);
-    border: 1px solid var(--border);
-    border-radius: 6px;
-    padding: 4px 10px 6px;
+    background: var(--paper-50);
+    border: 1px solid var(--paper-300);
+    padding: 8px 14px 10px;
+    position: relative;
+  }
+  .rc-group::before {
+    content: ""; position: absolute; inset: 4px;
+    border: 1px solid var(--brass-300); opacity: 0.35; pointer-events: none;
   }
   .rc-group-h {
-    margin: 4px 0 6px;
-    padding: 4px 0 6px;
-    border-bottom: 1px solid var(--border-soft);
-    font-family: var(--font-display);
-    font-size: 0.78rem;
-    font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: 0.06em;
-    color: var(--accent);
-    display: flex;
-    align-items: baseline;
-    justify-content: space-between;
-    gap: 12px;
-    flex-wrap: wrap;
+    margin: 4px 0 8px; padding: 4px 0 8px;
+    border-bottom: 1px solid var(--paper-300);
+    font: italic 400 14px/1.2 var(--font-display);
+    color: var(--ink-900);
+    text-transform: none; letter-spacing: 0.005em;
+    display: flex; align-items: baseline; justify-content: space-between;
+    gap: 12px; flex-wrap: wrap;
   }
-  .rc-group-name { font-weight: 700; }
+  .rc-group-name { font-weight: 500; }
   .rc-group-meta {
-    color: var(--muted);
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 0.66rem;
-    font-weight: 400;
-    text-transform: none;
-    letter-spacing: 0;
+    color: var(--ink-500);
+    font: 400 11px/1 var(--font-mono);
+    text-transform: none; letter-spacing: 0;
   }
   .rc-group > .rc-row {
     display: grid;
     grid-template-columns: minmax(0, 1fr) auto auto auto;
-    gap: 8px;
-    align-items: center;
+    gap: 8px; align-items: center;
     padding: 1px 0;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+    border-bottom: 1px dashed var(--divider);
   }
   .rc-group > .rc-row:last-child { border-bottom: none; }
-  .rc-group > .rc-row:hover { background: rgba(0, 212, 255, 0.05); }
+  .rc-group > .rc-row:hover { background: rgba(200, 151, 63, 0.06); }
   /* On wide viewports, two-column the rows inside the group */
   @media (min-width: 880px) {
     .rc-group {
@@ -256,20 +212,14 @@
     .rc-group .rc-group-h { grid-column: 1 / -1; }
   }
   .rc-label {
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 0.7rem;
-    font-weight: 500;
-    color: var(--ink-soft);
+    font-family: var(--font-mono);
+    font-size: 11px; font-weight: 500;
+    color: var(--ink-700);
     margin: 0;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
     line-height: 1.1;
   }
-  .rc-label .rc-db {
-    color: var(--accent);
-    font-weight: 700;
-  }
+  .rc-label .rc-db { color: var(--brass-600); font-weight: 600; }
   .rc-flip {
     display: flex;
     gap: 0;
@@ -317,32 +267,19 @@
     line-height: 1;
   }
   .rc-cols {
-    color: var(--ink-soft);
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 0.66rem;
-    font-weight: 600;
-    white-space: nowrap;
-    width: 4.5em;
-    text-align: right;
+    color: var(--ink-600);
+    font: 500 10px/1 var(--font-mono);
+    white-space: nowrap; width: 4.5em; text-align: right;
   }
-  .rc-cols-unit {
-    color: var(--muted);
-    font-weight: 400;
-  }
+  .rc-cols-unit { color: var(--ink-500); font-weight: 400; }
   .rc-updated {
-    color: var(--muted);
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 0.6rem;
-    letter-spacing: 0;
-    white-space: nowrap;
-    width: 4em;
-    text-align: right;
+    color: var(--ink-500);
+    font: 400 10px/1 var(--font-mono);
+    white-space: nowrap; width: 4em; text-align: right;
   }
   .rc-skipped {
-    margin-top: 8px;
-    color: var(--muted);
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 0.7rem;
+    margin-top: 12px; color: var(--ink-500);
+    font: 400 11px/1.4 var(--font-mono); font-style: italic;
   }
   @media (max-width: 600px) {
     .rc-section { padding: 6px 10px; }
@@ -360,7 +297,6 @@
 <header class="qb-topbar">
   <a class="qb-brand" href="index.html" aria-label="TogetherBOOK — home">
     <img class="qb-brand-logo" src="togetherbook-logo.png" alt="TogetherBOOK">
-    <span class="qb-brand-sub">a storybook of Central Services</span>
   </a>
   <nav class="qb-nav">
     <a class="qb-nav-link" href="index.html">Helpers</a>
@@ -373,7 +309,6 @@
     <a class="qb-nav-link is-active" href="database.html">Schema</a>
     <a class="qb-nav-link" href="stats.html">Stats</a>
   </nav>
-  <div class="qb-folio">Vol. I &nbsp;·&nbsp; mmxxvi</div>
 </header>
 <section class="rc-section" id="row-counts" aria-labelledby="rc-heading">
   <h2 id="rc-heading">Live row counts</h2>
@@ -395,15 +330,15 @@
     startOnLoad: false,
     theme: 'base',
     themeVariables: {
-      darkMode: true,
-      background: '#0e1438',
-      primaryColor: '#161e4d',
-      primaryTextColor: '#e6f1ff',
-      primaryBorderColor: '#00d4ff',
-      lineColor: '#67e8ff',
-      secondaryColor: '#1a2148',
-      tertiaryColor: '#28315c',
-      fontFamily: 'Inter, system-ui, sans-serif',
+      darkMode: false,
+      background: '#FDFBF4',
+      primaryColor: '#FBF6E9',
+      primaryTextColor: '#11192E',
+      primaryBorderColor: '#C8973F',
+      lineColor: '#A47829',
+      secondaryColor: '#F5ECD4',
+      tertiaryColor: '#ECDFB6',
+      fontFamily: '"Newsreader", "Iowan Old Style", Georgia, serif',
       fontSize: '14px'
     },
     flowchart: { curve: 'basis', useMaxWidth: true },
