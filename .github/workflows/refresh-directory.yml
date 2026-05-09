@@ -1,0 +1,98 @@
+name: Refresh Directory
+
+# Pulls the live Google Workspace user list for letme.com and commits
+# staff.json back to main so directory.html stays current.
+#
+# Same hourly + guard + retry-on-rebase pattern as the other refresh-*
+# workflows, but in practice the Directory API is cheap (a few hundred
+# quota units / day) so the guard mostly just keeps the commit history
+# clean — only one of the 18 daily firings actually ends up writing.
+
+on:
+  schedule:
+    - cron: '0 6-23 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: refresh-directory
+  cancel-in-progress: false
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Skip if already up to date
+        id: guard
+        run: |
+          set -euo pipefail
+          EXPECTED=$(date -u +%Y-%m-%d)
+          if [ -f staff.json ]; then
+            CURRENT=$(python3 -c "import json; print(json.load(open('staff.json')).get('snapshot_date',''))")
+          else
+            CURRENT=""
+          fi
+          echo "expected_snapshot_date=$EXPECTED  current_snapshot_date=$CURRENT"
+          if [ "$CURRENT" = "$EXPECTED" ]; then
+            echo "Snapshot already taken for $EXPECTED — skipping."
+            echo "skip=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "skip=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Set up Python
+        if: steps.guard.outputs.skip != 'true'
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install Python deps
+        if: steps.guard.outputs.skip != 'true'
+        run: pip install --quiet 'google-api-python-client>=2.100' 'google-auth>=2.30'
+
+      - name: Scan
+        if: steps.guard.outputs.skip != 'true'
+        env:
+          # Optional — only set once IT delivers the service-account JSON key.
+          # When absent, scan_directory.py exits with an error in this step
+          # and the rest of the job (commit + push) skips, so the workflow
+          # is a no-op until the secret arrives.
+          WORKSPACE_SERVICE_ACCOUNT_JSON: ${{ secrets.WORKSPACE_SERVICE_ACCOUNT_JSON }}
+          WORKSPACE_DELEGATE_USER:        ${{ secrets.WORKSPACE_DELEGATE_USER }}
+          WORKSPACE_DOMAIN:               letme.com
+        run: python scripts/scan_directory.py
+
+      - name: Commit if staff.json changed
+        if: steps.guard.outputs.skip != 'true'
+        run: |
+          set -euo pipefail
+          git add staff.json
+          if git diff --cached --quiet -- staff.json; then
+            echo "no changes — nothing to commit"
+            exit 0
+          fi
+          git config user.name  "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          N=$(python -c "import json; d=json.load(open('staff.json')); print(d['totals']['users'])")
+          DATE=$(python -c "import json; d=json.load(open('staff.json')); print(d.get('snapshot_date',''))")
+          git commit -m "Refresh directory: ${N} users on ${DATE}"
+
+          for attempt in 1 2 3; do
+            if git push; then
+              break
+            fi
+            if [ "$attempt" -eq 3 ]; then
+              echo "::error::Push failed after 3 attempts"
+              exit 1
+            fi
+            echo "Push rejected (concurrent commit); rebasing and retrying (attempt $attempt)…"
+            git fetch origin main
+            git rebase origin/main
+          done

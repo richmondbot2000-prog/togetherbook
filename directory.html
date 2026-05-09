@@ -1,0 +1,379 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>BOOK — Directory</title>
+<link rel="icon" type="image/png" href="site-icon.png">
+<link rel="apple-touch-icon" href="site-icon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&family=Orbitron:wght@500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+<style>
+  .dir-section { max-width: 1080px; margin: 0 auto; padding: 56px 32px 120px; }
+  @media (max-width: 800px) { .dir-section { padding: 12px 6px 80px; } }
+  .dir-section h1 {
+    font-family: var(--font-display);
+    font-size: clamp(2rem, 5vw, 3rem);
+    font-weight: 800;
+    letter-spacing: 0.02em;
+    text-transform: uppercase;
+    margin: 0 0 12px;
+    color: var(--ink);
+  }
+  .dir-section .lead { color: var(--ink-soft); font-size: 1.05rem; margin: 0 0 4px; }
+  .dir-meta {
+    color: var(--muted);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.78rem;
+    margin: 0 0 28px;
+  }
+
+  /* Search + filter bar */
+  .dir-controls {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    margin: 0 0 24px;
+  }
+  .dir-search {
+    width: 100%;
+    background: var(--bg-soft);
+    border: 1px solid var(--border);
+    color: var(--ink);
+    font: 500 1rem 'Inter', sans-serif;
+    padding: 12px 16px;
+    border-radius: 10px;
+    transition: border-color 0.15s, box-shadow 0.15s;
+  }
+  .dir-search:focus {
+    outline: none;
+    border-color: var(--accent);
+    box-shadow: 0 0 12px rgba(0, 212, 255, 0.18);
+  }
+  .dir-search::placeholder { color: var(--muted); }
+
+  .dir-filter-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    align-items: center;
+  }
+  .dir-filter-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.66rem;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--muted);
+    margin-right: 6px;
+  }
+  .dir-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: var(--bg-soft);
+    border: 1px solid var(--border);
+    color: var(--ink-soft);
+    padding: 6px 12px;
+    border-radius: 999px;
+    font-size: 0.82rem;
+    font-weight: 500;
+    cursor: pointer;
+    user-select: none;
+    transition: background 0.15s, color 0.15s, border-color 0.15s, box-shadow 0.15s;
+  }
+  .dir-pill:hover { color: var(--ink); border-color: var(--accent); }
+  .dir-pill.active {
+    background: var(--accent-soft);
+    border-color: var(--accent);
+    color: var(--accent-ink);
+    box-shadow: 0 0 12px rgba(0, 212, 255, 0.25);
+  }
+  .dir-pill .dir-pill-count {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.7rem;
+    color: var(--muted);
+  }
+  .dir-pill.active .dir-pill-count { color: var(--accent-ink); }
+
+  /* Grid */
+  .dir-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    gap: 14px;
+  }
+  .dir-card {
+    background: linear-gradient(160deg, var(--bg-soft) 0%, var(--bg-soft-2) 100%);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 18px 16px;
+    text-align: center;
+    transition: border-color 0.15s, box-shadow 0.15s, transform 0.15s;
+    text-decoration: none;
+    color: inherit;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+  }
+  .dir-card:hover {
+    border-color: var(--accent);
+    box-shadow: var(--shadow-glow-cyan, 0 0 18px rgba(0, 212, 255, 0.18));
+    transform: translateY(-1px);
+    text-decoration: none;
+  }
+  .dir-photo {
+    width: 96px; height: 96px;
+    border-radius: 50%;
+    object-fit: cover;
+    background: linear-gradient(135deg, #2a3470 0%, #4a5aaa 100%);
+    border: 1.5px solid rgba(0, 212, 255, 0.35);
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.3);
+    margin-bottom: 6px;
+  }
+  /* Initials fallback when there's no photo */
+  .dir-photo-placeholder {
+    width: 96px; height: 96px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #2a3470 0%, #4a5aaa 100%);
+    border: 1.5px solid rgba(0, 212, 255, 0.35);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: var(--font-display);
+    font-size: 1.6rem;
+    font-weight: 700;
+    color: var(--ink);
+    margin-bottom: 6px;
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.3);
+  }
+  .dir-name {
+    font-weight: 700;
+    font-size: 1rem;
+    line-height: 1.25;
+    color: var(--ink);
+  }
+  .dir-title {
+    font-size: 0.84rem;
+    color: var(--ink-soft);
+    line-height: 1.35;
+  }
+  .dir-department {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.66rem;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--accent-ink);
+    background: rgba(0, 212, 255, 0.08);
+    border: 1px solid rgba(0, 212, 255, 0.3);
+    padding: 2px 8px;
+    border-radius: 4px;
+    margin-top: 4px;
+  }
+  .dir-email {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.7rem;
+    color: var(--muted);
+    word-break: break-all;
+    margin-top: 2px;
+  }
+
+  .dir-empty {
+    background: var(--bg-soft);
+    border: 1px dashed var(--border);
+    border-radius: 10px;
+    padding: 20px 22px;
+    color: var(--ink-soft);
+    margin: 16px 0;
+    font-size: 0.95rem;
+    text-align: center;
+  }
+</style>
+</head>
+<body>
+
+<script>
+  document.addEventListener('click', function (e) {
+    if (!document.body.classList.contains('menu-open')) return;
+    const link = e.target.closest('a');
+    if (link && e.target.closest('.sidebar')) {
+      document.body.classList.remove('menu-open');
+    }
+  }, true);
+</script>
+
+<div class="topbar">
+  <button class="menu-toggle" aria-label="Open navigation menu" id="menuToggle"
+          onclick="event.stopPropagation();document.body.classList.toggle('menu-open');">
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true" style="pointer-events:none">
+      <line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/>
+    </svg>
+  </button>
+  <a class="brand" href="index.html" aria-label="BOOK — home"><img class="brand-icon" src="site-icon.png" alt=""><img class="brand-logo" src="book-logo.png" alt="BOOK"></a>
+  <nav>
+    <a href="index.html">Home</a>
+    <a href="apis.html">APIs</a>
+    <a href="robots.html">Robots</a>
+    <a href="yesterday.html">Yesterday</a>
+    <a href="brandwatch.html">Brandwatch</a>
+    <a href="1stcontact.html">1stContact</a>
+    <a href="directory.html" class="active">Directory</a>
+    <a href="database.html">Schema</a>
+    <a href="stats.html">Stats</a>
+  </nav>
+</div>
+<div class="sidebar-backdrop" onclick="document.body.classList.remove('menu-open')"></div>
+
+<div class="layout">
+
+  <aside class="sidebar">
+    <button class="drawer-close" aria-label="Close menu"
+            onclick="document.body.classList.remove('menu-open')">✕ Close menu</button>
+
+    <h4><a href="index.html"      onclick="document.body.classList.remove('menu-open')">Home</a></h4>
+    <h4><a href="apis.html"       onclick="document.body.classList.remove('menu-open')">The 8 APIs</a></h4>
+    <h4><a href="robots.html"     onclick="document.body.classList.remove('menu-open')">The 12 Robots</a></h4>
+    <h4><a href="yesterday.html"  onclick="document.body.classList.remove('menu-open')">Yesterday's payouts</a></h4>
+    <h4><a href="brandwatch.html" onclick="document.body.classList.remove('menu-open')">Brandwatch</a></h4>
+    <h4><a href="1stcontact.html" onclick="document.body.classList.remove('menu-open')">1stContact</a></h4>
+    <h4><a href="directory.html"  onclick="document.body.classList.remove('menu-open')">Directory</a></h4>
+    <h4><a href="database.html"   onclick="document.body.classList.remove('menu-open')">Schema</a></h4>
+    <h4><a href="stats.html"      onclick="document.body.classList.remove('menu-open')">Stats</a></h4>
+  </aside>
+
+  <main>
+    <section class="dir-section">
+      <h1>Directory</h1>
+      <p class="lead">Everyone with an active <strong>@letme.com</strong> Google Workspace account.</p>
+      <p class="dir-meta" id="dirMeta">Loading…</p>
+
+      <div class="dir-controls" id="dirControls" hidden>
+        <input type="search" class="dir-search" id="dirSearch" placeholder="Search by name, title, email, or department…">
+        <div class="dir-filter-row" id="dirDeptRow">
+          <span class="dir-filter-label">Department</span>
+          <button class="dir-pill active" data-value="all">All <span class="dir-pill-count" id="dirCountAll">0</span></button>
+          <!-- department pills injected dynamically from the data -->
+        </div>
+      </div>
+
+      <div class="dir-grid" id="dirGrid"></div>
+
+      <div class="dir-empty" id="dirEmpty" hidden>
+        Directory hasn't been populated yet. Once IT delivers the Workspace
+        service-account key and it's added as the <code>WORKSPACE_SERVICE_ACCOUNT_JSON</code>
+        repo secret, the next refresh will fill this page.
+      </div>
+    </section>
+  </main>
+</div>
+
+<script>
+  let allUsers = [];
+  let activeDept = "all";
+  let searchTerm = "";
+
+  fetch("staff.json", { cache: "no-store" })
+    .then(r => r.ok ? r.json() : Promise.reject("HTTP " + r.status))
+    .then(data => {
+      allUsers = data.users || [];
+      const updated = data.updated_at ? data.updated_at.replace("T", " ").replace("Z", " UTC") : "—";
+      const totalUsers = data.totals?.users ?? allUsers.length;
+      document.getElementById("dirMeta").textContent =
+        `Updated ${updated} · ${totalUsers} active ${data.domain || "letme.com"} accounts`;
+      buildDeptPills(data.totals?.by_department || {});
+      document.getElementById("dirControls").hidden = allUsers.length === 0;
+      renderGrid();
+    })
+    .catch(err => {
+      document.getElementById("dirMeta").textContent = "Couldn't load staff.json — " + err;
+      document.getElementById("dirEmpty").hidden = false;
+    });
+
+  function buildDeptPills(byDept) {
+    const row = document.getElementById("dirDeptRow");
+    document.getElementById("dirCountAll").textContent = allUsers.length;
+    Object.entries(byDept)
+      .sort((a, b) => b[1] - a[1])
+      .forEach(([name, n]) => {
+        const btn = document.createElement("button");
+        btn.className = "dir-pill";
+        btn.dataset.value = name;
+        btn.innerHTML = `${escapeHtml(name)} <span class="dir-pill-count">${n}</span>`;
+        row.appendChild(btn);
+      });
+    document.querySelectorAll(".dir-pill").forEach(p => {
+      p.addEventListener("click", () => {
+        document.querySelectorAll(".dir-pill").forEach(b => b.classList.remove("active"));
+        p.classList.add("active");
+        activeDept = p.dataset.value;
+        renderGrid();
+      });
+    });
+    document.getElementById("dirSearch").addEventListener("input", e => {
+      searchTerm = e.target.value.trim().toLowerCase();
+      renderGrid();
+    });
+  }
+
+  function renderGrid() {
+    const grid = document.getElementById("dirGrid");
+    const empty = document.getElementById("dirEmpty");
+    const items = allUsers.filter(visible);
+    if (items.length === 0) {
+      grid.innerHTML = "";
+      empty.hidden = false;
+      empty.textContent = allUsers.length === 0
+        ? "Directory hasn't been populated yet — see hint above."
+        : "No people match the current search/filter.";
+      return;
+    }
+    empty.hidden = true;
+    grid.innerHTML = items.map(renderCard).join("");
+  }
+
+  function visible(u) {
+    if (activeDept !== "all") {
+      const dept = u.department || "(unspecified)";
+      if (dept !== activeDept) return false;
+    }
+    if (searchTerm) {
+      const haystack = (
+        (u.name || "") + " " + (u.email || "") + " " +
+        (u.title || "") + " " + (u.department || "")
+      ).toLowerCase();
+      if (!haystack.includes(searchTerm)) return false;
+    }
+    return true;
+  }
+
+  function renderCard(u) {
+    const initials = (
+      (u.given || u.name || "?").charAt(0) +
+      (u.family || "").charAt(0)
+    ).toUpperCase() || (u.email || "?").charAt(0).toUpperCase();
+
+    const photo = u.photo_url
+      ? `<img class="dir-photo" src="${escapeHtml(u.photo_url)}" alt="${escapeHtml(u.name)}" loading="lazy" referrerpolicy="no-referrer" onerror="this.outerHTML='<div class=&quot;dir-photo-placeholder&quot;>${escapeHtml(initials)}</div>'">`
+      : `<div class="dir-photo-placeholder">${escapeHtml(initials)}</div>`;
+
+    return `
+      <a class="dir-card" href="mailto:${escapeHtml(u.email)}" title="Email ${escapeHtml(u.name || u.email)}">
+        ${photo}
+        <div class="dir-name">${escapeHtml(u.name || u.email)}</div>
+        ${u.title ? `<div class="dir-title">${escapeHtml(u.title)}</div>` : ""}
+        ${u.department ? `<div class="dir-department">${escapeHtml(u.department)}</div>` : ""}
+        <div class="dir-email">${escapeHtml(u.email)}</div>
+      </a>
+    `;
+  }
+
+  function escapeHtml(s) {
+    return String(s).replace(/[&<>"']/g, c => ({
+      "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;"
+    })[c]);
+  }
+</script>
+
+</body>
+</html>
