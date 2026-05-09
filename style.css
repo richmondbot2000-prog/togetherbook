@@ -1399,7 +1399,7 @@
   @media (max-width: 800px) {
     :root { --sidebar-w: 0px; }
     .layout { grid-template-columns: 1fr; }
-    main { padding: 8px 6px 80px; }
+    main { padding: 4px 3px 80px; }
     footer { margin-left: 0; padding: 30px 24px; }
     h1 { font-size: 1.85rem; }
     .topbar nav { display: none; }
