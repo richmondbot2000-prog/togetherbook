@@ -114,7 +114,7 @@
   .topbar {
     position: sticky;
     top: 0;
-    z-index: 50;
+    z-index: 1200;
     background: rgba(6, 10, 31, 0.85);
     backdrop-filter: saturate(180%) blur(14px);
     -webkit-backdrop-filter: saturate(180%) blur(14px);
@@ -1371,12 +1371,15 @@
 
   .drawer-close { display: none; }
 
-  /* Tap-outside backdrop: always present but invisible & non-clickable until menu opens */
+  /* Tap-outside backdrop: always present but invisible & non-clickable until menu opens.
+     Covers the FULL viewport (inset: 0) so any tap outside the drawer closes it,
+     including taps that fall in the topbar's area. The topbar's z-index (1200)
+     is above the backdrop (1090) so the hamburger toggle stays clickable. */
   .sidebar-backdrop {
     position: fixed;
-    inset: 64px 0 0 0;
+    inset: 0;
     background: rgba(20, 20, 50, 0.4);
-    z-index: 55;
+    z-index: 1090;
     opacity: 0;
     pointer-events: none;
     transition: opacity 0.2s ease;
@@ -1416,7 +1419,7 @@
       box-shadow: 4px 0 24px rgba(20, 20, 50, 0.12);
       transform: translateX(-100%);
       transition: transform 0.22s cubic-bezier(.2,.85,.4,1);
-      z-index: 60;
+      z-index: 1100;
       overflow-y: auto;
       padding: 24px 22px 60px;
       visibility: hidden;
@@ -1427,6 +1430,16 @@
       visibility: visible;
       pointer-events: auto;
     }
+    /* Make the whole h4 row tappable, not just the text. Bigger touch
+       target on mobile = no missed taps. */
+    .sidebar h4 { margin: 0; padding: 0; }
+    .sidebar h4 a {
+      display: block;
+      padding: 14px 12px;
+      border-radius: 10px;
+    }
+    .sidebar h4 a:hover,
+    .sidebar h4 a:active { background: var(--bg-soft); }
     /* Big visible close button at top of drawer */
     .drawer-close {
       display: block;
