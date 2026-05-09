@@ -121,7 +121,7 @@
   align-items: center;
   justify-content: space-between;
   gap: 32px;
-  height: 240px; padding: 0 40px;
+  height: 72px; padding: 0 40px;
   position: sticky; top: 0; z-index: 1000;
   background: rgba(251, 246, 233, 0.92);
   backdrop-filter: blur(14px);
@@ -136,7 +136,7 @@
 }
 .qb-brand-logo {
   display: block;
-  height: 200px; width: auto;
+  height: 50px; width: auto;
   max-height: none;
 }
 
@@ -199,7 +199,7 @@ body.nav-open .qb-hamburger span:nth-child(3) {
 /* Backdrop behind the open mobile drawer */
 .qb-nav-backdrop {
   display: none;
-  position: fixed; inset: 240px 0 0 0; z-index: 998;
+  position: fixed; inset: 72px 0 0 0; z-index: 998;
   background: rgba(17, 25, 46, 0.32);
   opacity: 0; pointer-events: none;
   transition: opacity var(--dur-fast) var(--ease-out);
@@ -210,15 +210,15 @@ body.nav-open .qb-nav-backdrop {
 
 /* Narrow viewport — hide nav, show hamburger, drawer slides down */
 @media (max-width: 960px) {
-  .qb-topbar { height: 200px; padding: 0 24px; }
-  .qb-brand-logo { height: 168px; }
+  .qb-topbar { height: 64px; padding: 0 24px; }
+  .qb-brand-logo { height: 42px; }
   .qb-hamburger { display: block; }
 
-  .qb-nav-backdrop { inset: 200px 0 0 0; }
+  .qb-nav-backdrop { inset: 64px 0 0 0; }
 
   .qb-nav {
     position: fixed;
-    top: 200px; left: 0; right: 0;
+    top: 64px; left: 0; right: 0;
     z-index: 999;
     background: var(--paper-100);
     border-bottom: 1px solid var(--ink-300);
@@ -248,10 +248,10 @@ body.nav-open .qb-nav-backdrop {
 }
 
 @media (max-width: 480px) {
-  .qb-brand-logo { height: 132px; }
-  .qb-topbar { height: 160px; padding: 0 16px; }
-  .qb-nav { top: 160px; }
-  .qb-nav-backdrop { inset: 160px 0 0 0; }
+  .qb-brand-logo { height: 32px; }
+  .qb-topbar { height: 56px; padding: 0 16px; }
+  .qb-nav { top: 56px; }
+  .qb-nav-backdrop { inset: 56px 0 0 0; }
 }
 
 /* ── Section dividers + structure ── */
