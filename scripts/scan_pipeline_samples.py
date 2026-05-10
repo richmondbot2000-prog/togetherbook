@@ -155,22 +155,32 @@ def iso(d) -> str | None:
 
 
 def format_web_event(blob, provider) -> str:
-    """Render a WebBehaviours.WebEventObject value as a single-line label."""
+    """Render a WebBehaviours.WebEventObject value as a single-line label.
+
+    In practice this column often just holds the customer's ARef as a bare
+    string and Provider holds the page/form name (e.g. 'brdetails',
+    'gtdetails', 'apply'). When that's the case, the page name is the
+    useful part — collapse to just "Web visit: brdetails".
+    """
+    page = (provider or "").strip() or None
     if blob is None:
-        return f"Web visit ({provider})" if provider else "Web visit"
+        return f"Web visit: {page}" if page else "Web visit"
     raw = str(blob).strip()
     if not raw:
-        return f"Web visit ({provider})" if provider else "Web visit"
-    # Try to parse as JSON and pull common fields.
+        return f"Web visit: {page}" if page else "Web visit"
+
+    # If the blob is just the customer's ARef (22 hex chars) or any
+    # short opaque token, ignore it and lean on the Provider.
+    if raw.replace('"', "").isalnum() and len(raw) < 30:
+        return f"Web visit: {page}" if page else f"Web visit ({raw})"
+
+    # Try JSON. Pull a couple of useful keys if it's a dict.
     try:
         obj = json.loads(raw)
     except (ValueError, TypeError):
-        # Not JSON — clip and stringify.
-        snippet = raw[:120]
-        return f"Web: {snippet}" + (f" [{provider}]" if provider else "")
+        obj = None
     if isinstance(obj, dict):
         bits = []
-        # Most-likely useful keys, in priority order
         for key in ("event", "eventName", "EventName", "page", "pageUrl",
                     "PageUrl", "url", "Url", "path", "Path", "name", "Name",
                     "type", "action"):
@@ -181,10 +191,10 @@ def format_web_event(blob, provider) -> str:
                 break
         if bits:
             label = " · ".join(bits)
-            return f"Web: {label}" + (f" [{provider}]" if provider else "")
-    # Fallback: stringify a short summary
+            return f"Web: {label}" + (f" [{page}]" if page else "")
+    # Fallback: short raw snippet + page tag.
     snippet = raw[:120]
-    return f"Web: {snippet}" + (f" [{provider}]" if provider else "")
+    return f"Web: {snippet}" + (f" [{page}]" if page else "")
 
 
 # ─────────────────────── main ──────────────────────────────────────────
