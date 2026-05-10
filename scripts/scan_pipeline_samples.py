@@ -224,6 +224,37 @@ def main() -> None:
     es_cols = discover_columns(cur, "ESignatures")
     wb_cols = discover_columns(cur, "WebBehaviours")
 
+    # Try to load a LoanPurpose lookup so the timeline shows English instead
+    # of a numeric type id. Look for any lookup table whose name contains
+    # "purpose" / "reason" and has both an Id-like and Name-like column.
+    loan_purpose_labels: dict[int, str] = {}
+    cur.execute(
+        """
+        SELECT TABLE_NAME FROM INFORMATION_SCHEMA.TABLES
+        WHERE TABLE_SCHEMA = 'dbo'
+          AND (TABLE_NAME LIKE '%urpose%' OR TABLE_NAME LIKE '%LoanReason%')
+        """
+    )
+    purpose_tables = [r[0] for r in cur.fetchall()]
+    print(f"# Candidate loan-purpose lookup tables: {purpose_tables}", flush=True)
+    for tname in purpose_tables:
+        try:
+            tcols = discover_columns(cur, tname)
+            id_col = pick(tcols, "LoanPurposeTypeId", "LoanPurposeId", "Id", "TypeId")
+            name_col = pick(tcols, "Name", "Label", "Description", "DisplayName", "Text")
+            if not (id_col and name_col):
+                print(f"#   {tname}: missing id/name pair (cols={sorted(tcols)})", flush=True)
+                continue
+            cur.execute(f"SELECT [{id_col}], [{name_col}] FROM dbo.[{tname}]")
+            for tid, nm in cur.fetchall():
+                if tid is None: continue
+                loan_purpose_labels[int(tid)] = str(nm) if nm is not None else f"#{tid}"
+            print(f"#   {tname}: loaded {len(loan_purpose_labels)} purpose labels", flush=True)
+            if loan_purpose_labels:
+                break
+        except Exception as e:
+            print(f"#   {tname}: lookup failed: {e}", flush=True)
+
     apps_aref = pick(apps_cols, "ARef")
     apps_lender = pick(apps_cols, "LenderId")
     apps_date = pick(apps_cols, "DateCreatedUtc", "InterestingDateTimeUtc", "InterestingDateTimeUTC")
@@ -490,7 +521,12 @@ def main() -> None:
         if info["term"] is not None:
             details.append(["Term requested", f"{info['term']} months"])
         if info["purpose"] is not None:
-            details.append(["Loan purpose", str(info["purpose"])])
+            try:
+                p_id = int(info["purpose"])
+                p_label = loan_purpose_labels.get(p_id, str(info["purpose"]))
+            except (ValueError, TypeError):
+                p_label = str(info["purpose"])
+            details.append(["Loan purpose", p_label])
         interactions[aref].append({
             "kind": "application_started",
             "at": iso(info['created']),
