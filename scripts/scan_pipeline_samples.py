@@ -955,7 +955,8 @@ def main() -> None:
     msg_descr = pick(msg_cols, "Description")
     msg_body = pick(msg_cols, "MessageBody", "Body", "Content", "Message")
     msg_subject = pick(msg_cols, "MessageTitle", "Subject")
-    print(f"# Messages chosen: aref={msg_aref} dt={msg_dt} ct={msg_ctype} body={msg_body} subj={msg_subject} descr={msg_descr}", flush=True)
+    msg_campaign = pick(msg_cols, "CampaignName", "Campaign")
+    print(f"# Messages chosen: aref={msg_aref} dt={msg_dt} ct={msg_ctype} body={msg_body} subj={msg_subject} descr={msg_descr} campaign={msg_campaign}", flush=True)
     if msg_aref and msg_dt:
         for chunk in chunked(family_arefs, 1500):
             ph = ",".join(["?"] * len(chunk))
@@ -963,16 +964,17 @@ def main() -> None:
             descr_sql = f", [{msg_descr}]" if msg_descr else ", NULL"
             ctype_sql = f", [{msg_ctype}]" if msg_ctype else ", NULL"
             subj_sql = f", [{msg_subject}]" if msg_subject else ", NULL"
+            camp_sql = f", [{msg_campaign}]" if msg_campaign else ", NULL"
             cur.execute(
                 f"""
-                SELECT [{msg_aref}], [{msg_dt}]{body_sql}{descr_sql}{ctype_sql}{subj_sql}
+                SELECT [{msg_aref}], [{msg_dt}]{body_sql}{descr_sql}{ctype_sql}{subj_sql}{camp_sql}
                 FROM dbo.Messages
                 WHERE [{msg_aref}] IN ({ph})
                   AND [{msg_dt}] IS NOT NULL
                 """,
                 chunk,
             )
-            for aref, dt, body, descr, ctype, subj in cur.fetchall():
+            for aref, dt, body, descr, ctype, subj, campaign in cur.fetchall():
                 ctype_str = (ctype or "").strip()
                 descr_int = int(descr) if descr is not None and str(descr).strip() != "" else None
                 # Description enum: 0/1/2 = inbound (SMS/Email/Call), 3+ = outbound
@@ -987,13 +989,19 @@ def main() -> None:
                     "channel": channel,
                     "client_type": ctype_str or None,
                 }
+                campaign_str = (campaign or "").strip() if campaign else ""
                 if is_robot:
-                    msg["label"] = f"Message from {ctype_str}Bot"
+                    label = f"Message from {ctype_str}Bot"
+                    if campaign_str:
+                        label += f" — {campaign_str}"
+                    msg["label"] = label
                     msg["redacted"] = True
                 else:
                     body_text = (body or "").strip() if body else ""
                     if subj:
                         body_text = f"[{subj}] {body_text}".strip()
+                    if campaign_str:
+                        body_text = f"({campaign_str}) {body_text}".strip()
                     if not body_text:
                         body_text = "(empty body)"
                     if len(body_text) > 4000:
