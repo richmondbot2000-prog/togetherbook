@@ -34,6 +34,7 @@ import datetime
 import json
 import os
 import random
+import re
 import sys
 from collections import defaultdict
 from pathlib import Path
@@ -152,6 +153,39 @@ def iso(d) -> str | None:
     if hasattr(d, "isoformat"):
         return d.isoformat()
     return str(d)
+
+
+# Token expansions for the message-factory campaign suffixes:
+#   (B)→BRW (G)→GT  (S)→SMS  (E)→Email  (D0..D30)→DSIT0..30
+# Anything we don't recognise is passed through verbatim. Bracketing is
+# stripped — "INVITE GT (B)(S)(D1)(CST)" becomes "INVITE GT BRW SMS DSIT1 CST".
+def expand_campaign_tokens(name: str | None) -> tuple[str, str | None]:
+    """Return (expanded_name, derived_channel) where derived_channel is
+    'SMS', 'Email' or None depending on campaign code."""
+    if not name:
+        return "", None
+    channel: str | None = None
+
+    def replace_one(m):
+        nonlocal channel
+        tok = m.group(1).strip()
+        u = tok.upper()
+        if u == "B":  return "BRW"
+        if u == "G":  return "GT"
+        if u == "S":
+            channel = "SMS"
+            return "SMS"
+        if u == "E":
+            channel = "Email"
+            return "Email"
+        m2 = re.fullmatch(r"D(\d{1,2})", u)
+        if m2:
+            return f"DSIT{m2.group(1)}"
+        return tok
+
+    expanded = re.sub(r"\(([^)]+)\)", lambda m: " " + replace_one(m), name)
+    expanded = re.sub(r"\s+", " ", expanded).strip()
+    return expanded, channel
 
 
 def format_web_event(blob, provider) -> str:
@@ -990,18 +1024,26 @@ def main() -> None:
                     "client_type": ctype_str or None,
                 }
                 campaign_str = (campaign or "").strip() if campaign else ""
+                campaign_clean, derived_channel = expand_campaign_tokens(campaign_str)
+                # Channel hint: prefer the inbound enum, then the (S)/(E) tag
+                # that the campaign suffix decoded into.
+                if not is_inbound and derived_channel:
+                    msg["channel"] = derived_channel
+                    msg["channel_kind"] = derived_channel
+                elif is_inbound:
+                    msg["channel_kind"] = {0: "SMS", 1: "Email", 2: "Call"}.get(descr_int)
                 if is_robot:
                     label = f"Message from {ctype_str}Bot"
-                    if campaign_str:
-                        label += f" — {campaign_str}"
+                    if campaign_clean:
+                        label += f" — {campaign_clean}"
                     msg["label"] = label
                     msg["redacted"] = True
                 else:
                     body_text = (body or "").strip() if body else ""
                     if subj:
                         body_text = f"[{subj}] {body_text}".strip()
-                    if campaign_str:
-                        body_text = f"({campaign_str}) {body_text}".strip()
+                    if campaign_clean:
+                        body_text = f"({campaign_clean}) {body_text}".strip()
                     if not body_text:
                         body_text = "(empty body)"
                     if len(body_text) > 4000:
