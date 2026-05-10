@@ -1,0 +1,371 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>TogetherBOOK — Top Ups</title>
+<link rel="icon" type="image/png" href="site-icon.png">
+<link rel="apple-touch-icon" href="site-icon.png">
+<link rel="stylesheet" href="quiet-tokens.css?v=1778405863">
+<link rel="stylesheet" href="quiet.css?v=1778405863">
+<link rel="stylesheet" href="quiet-extras.css?v=1778405863">
+<style>
+  .tu-section { max-width: 1080px; margin: 0 auto; padding: 24px 0 48px; }
+  @media (max-width: 800px) { .tu-section { padding: 2px 0 32px; } }
+  .tu-section h1 {
+    font: 400 56px/1.05 var(--font-display);
+    color: var(--ink-900);
+    letter-spacing: -0.018em;
+    margin: 8px 0 12px;
+    text-wrap: balance;
+  }
+  .tu-section .lead {
+    font: 400 17px/1.55 var(--font-display);
+    color: var(--ink-700);
+    margin: 0 0 6px; max-width: 720px;
+    text-wrap: pretty;
+  }
+  .tu-section .lead em { color: var(--red-500); font-style: italic; }
+  .tu-meta {
+    color: var(--ink-500);
+    font: 500 11px/1 var(--font-mono);
+    letter-spacing: 0.04em; margin: 8px 0 28px;
+  }
+
+  /* The chart sits on a paper plate with a thin brass inner border */
+  .tu-chart-wrap {
+    position: relative;
+    background: var(--paper-50);
+    border: 1px solid var(--paper-300);
+    padding: 28px 24px 18px;
+    margin: 0 0 14px;
+  }
+  .tu-chart-wrap::before {
+    content: ""; position: absolute; inset: 4px;
+    border: 1px solid var(--brass-300); opacity: 0.4; pointer-events: none;
+  }
+  .tu-chart-title {
+    font: italic 400 15px/1 var(--font-display);
+    color: var(--red-500); letter-spacing: 0.02em;
+    display: flex; align-items: center; gap: 14px;
+    margin: 0 0 8px;
+  }
+  .tu-chart-title::before {
+    content: ""; flex: 0 0 36px; height: 1px; background: var(--brass-300);
+  }
+  .tu-chart-sub {
+    font: 400 14px/1.5 var(--font-display);
+    color: var(--ink-700);
+    margin: 0 0 16px;
+  }
+
+  /* Legend */
+  .tu-legend {
+    display: flex; flex-wrap: wrap; gap: 18px;
+    margin: 0 0 14px;
+    font: 400 13px/1 var(--font-display);
+    color: var(--ink-700);
+  }
+  .tu-legend-item { display: inline-flex; align-items: center; gap: 8px; }
+  .tu-legend-swatch {
+    display: inline-block; width: 14px; height: 14px;
+    border: 1px solid var(--ink-700);
+  }
+  .tu-legend-swatch.bar { background: var(--ink-300); border-color: var(--ink-500); }
+  .tu-legend-swatch.line {
+    height: 2px; border: none; background: var(--red-500); width: 22px;
+    position: relative;
+  }
+  .tu-legend-swatch.line::after {
+    content: ""; position: absolute; left: 50%; top: 50%;
+    width: 6px; height: 6px;
+    background: var(--red-500); border: 1.5px solid var(--paper-50);
+    border-radius: 50%; transform: translate(-50%, -50%);
+  }
+
+  /* The SVG itself */
+  .tu-chart-svg { display: block; width: 100%; height: auto; max-height: 480px; }
+  .tu-axis-label, .tu-axis-tick {
+    font: 500 10px/1 var(--font-mono);
+    fill: var(--ink-500);
+    letter-spacing: 0.04em;
+  }
+  .tu-axis-label { font-size: 11px; fill: var(--ink-700); font-style: italic;
+                   font-family: var(--font-display); font-weight: 400; }
+  .tu-x-label { font: 500 10px/1 var(--font-mono); fill: var(--ink-600); }
+  .tu-x-label-current { fill: var(--red-500); font-weight: 700; }
+
+  .tu-bar { fill: var(--ink-300); stroke: var(--ink-500); stroke-width: 0.5; }
+  .tu-bar:hover { fill: var(--brass-300); }
+  .tu-line { fill: none; stroke: var(--red-500); stroke-width: 2; }
+  .tu-dot {
+    fill: var(--red-500); stroke: var(--paper-50); stroke-width: 1.5;
+  }
+  .tu-grid { stroke: var(--ink-300); stroke-width: 0.5; opacity: 0.4; stroke-dasharray: 2 3; }
+  .tu-axis { stroke: var(--ink-700); stroke-width: 1; }
+
+  .tu-tooltip-bg { fill: var(--ink-900); opacity: 0.95; }
+  .tu-tooltip-text { fill: var(--paper-50); font: 500 11px/1.4 var(--font-mono); }
+
+  /* Tabular monthly breakdown for screen-readers / cmd-F */
+  .tu-table-wrap {
+    background: var(--paper-50);
+    border: 1px solid var(--paper-300);
+    padding: 12px 14px;
+    margin: 24px 0 8px;
+    position: relative;
+    overflow-x: auto;
+  }
+  .tu-table-wrap::before {
+    content: ""; position: absolute; inset: 4px;
+    border: 1px solid var(--brass-300); opacity: 0.35; pointer-events: none;
+  }
+  table.tu-table {
+    width: 100%; border-collapse: collapse; font-size: 13px;
+    position: relative;
+  }
+  table.tu-table th, table.tu-table td {
+    padding: 6px 10px; border-bottom: 1px dashed var(--divider);
+    text-align: right; vertical-align: middle;
+  }
+  table.tu-table th:first-child, table.tu-table td:first-child {
+    text-align: left;
+    font-family: var(--font-display);
+    font-style: italic;
+    color: var(--ink-900);
+    font-size: 13px;
+  }
+  table.tu-table th {
+    font-family: var(--font-body);
+    font-size: 10px; font-weight: 600; color: var(--ink-500);
+    text-transform: uppercase; letter-spacing: 0.16em;
+    border-bottom: 1px solid var(--ink-300);
+    white-space: nowrap;
+  }
+  table.tu-table tr:last-child td { border-bottom: none; }
+  table.tu-table td.num {
+    font: 500 12px/1 var(--font-mono);
+    color: var(--ink-900);
+  }
+  table.tu-table td.pct {
+    font: 500 12px/1 var(--font-mono);
+    color: var(--brass-600);
+  }
+  table.tu-table tbody tr:hover { background: rgba(200, 151, 63, 0.06); }
+
+  .tu-empty {
+    background: var(--paper-100);
+    border: 1px dashed var(--ink-300);
+    padding: 24px 22px;
+    text-align: center;
+    font: italic 400 15px/1.5 var(--font-display);
+    color: var(--ink-500);
+  }
+</style>
+</head>
+<body>
+
+<header class="qb-topbar">
+  <a class="qb-brand" href="index.html" aria-label="TogetherBOOK — home">
+    <img class="qb-brand-logo" src="togetherbook-logo.png?v=1778405863" alt="TogetherBOOK">
+  </a>
+  <button class="qb-hamburger" aria-label="Toggle navigation menu" aria-expanded="false"
+          onclick="document.body.classList.toggle('nav-open');this.setAttribute('aria-expanded',document.body.classList.contains('nav-open'))">
+    <span></span><span></span><span></span>
+  </button>
+  <nav class="qb-nav">
+    <a class="qb-nav-link" href="index.html">About our systems</a>
+    <a class="qb-nav-link" href="yesterday.html">Yesterday</a>
+    <a class="qb-nav-link" href="brandwatch.html">Brandwatch</a>
+    <a class="qb-nav-link" href="1stcontact.html">1stContact</a>
+    <a class="qb-nav-link" href="directory.html">Directory</a>
+    <a class="qb-nav-link is-active" href="topups.html">TopUps</a>
+    <a class="qb-nav-link" href="database.html">Schema</a>
+    <a class="qb-nav-link" href="stats.html">Code</a>
+  </nav>
+</header>
+<div class="qb-nav-backdrop" onclick="document.body.classList.remove('nav-open')"></div>
+
+<main class="qb-page">
+  <section class="tu-section">
+    <h1>Top Ups</h1>
+    <p class="lead">A <strong>top-up</strong> is a brand-new loan that pays off the customer's existing live loan and gives them more cash on top. A live loan becomes <em>top-up eligible</em> (TueStatus = true) when its balance, arrears history, and age all clear the lender's TUE thresholds.</p>
+    <p class="tu-meta" id="tuMeta">Loading…</p>
+
+    <div class="tu-chart-wrap">
+      <h2 class="tu-chart-title">Monthly counts, last 24 months</h2>
+      <p class="tu-chart-sub">Each bar is the number of distinct loans that were live in that month. The line tracks how many of those loans were <em>top-up eligible</em> at any point that month.</p>
+      <div class="tu-legend">
+        <span class="tu-legend-item"><span class="tu-legend-swatch bar"></span>Live loans</span>
+        <span class="tu-legend-item"><span class="tu-legend-swatch line"></span>Top-up eligible</span>
+      </div>
+      <div id="tuChart"></div>
+    </div>
+
+    <div class="tu-table-wrap">
+      <table class="tu-table" id="tuTable" aria-label="Monthly counts">
+        <thead><tr>
+          <th>Month</th>
+          <th>Live loans</th>
+          <th>Top-up eligible</th>
+          <th>Eligible %</th>
+        </tr></thead>
+        <tbody></tbody>
+      </table>
+    </div>
+  </section>
+</main>
+
+<script>
+  fetch("topups.json", { cache: "no-store" })
+    .then(r => r.ok ? r.json() : Promise.reject("topups.json HTTP " + r.status))
+    .then(render)
+    .catch(err => {
+      const chart = document.getElementById("tuChart");
+      chart.innerHTML = `<div class="tu-empty">No data yet. The refresh-topups workflow will populate <code>topups.json</code> on its next run. (${err})</div>`;
+      document.getElementById("tuMeta").textContent = "topups.json not loaded — " + err;
+    });
+
+  function render(d) {
+    const series = d.series || [];
+    const updated = (d.snapshot_at || "").replace("T", " ").slice(0, 19) + " UTC";
+    document.getElementById("tuMeta").textContent =
+      `${d.window_months} months · source ${d.source_table} (${d.timestamp_column}) · updated ${updated}`;
+    drawChart(series);
+    drawTable(series);
+  }
+
+  function drawChart(series) {
+    if (!series.length) return;
+    const W = 1040, H = 420;
+    const PAD = { top: 20, right: 56, bottom: 56, left: 60 };
+    const innerW = W - PAD.left - PAD.right;
+    const innerH = H - PAD.top - PAD.bottom;
+
+    const maxLive = Math.max(...series.map(s => s.live_loans), 1);
+    const maxTue = Math.max(...series.map(s => s.tue_eligible), 1);
+    // shared y-axis: rounded up to a nice number
+    const yMax = niceCeil(Math.max(maxLive, 1));
+    const yScale = v => PAD.top + innerH - (v / yMax) * innerH;
+    const xStep = innerW / series.length;
+    const xScale = (i, midpoint = false) => PAD.left + i * xStep + (midpoint ? xStep / 2 : 0);
+
+    // Y-axis ticks (5 evenly spaced)
+    const yTicks = 5;
+    const tickValues = [];
+    for (let i = 0; i <= yTicks; i++) tickValues.push(Math.round(yMax * i / yTicks));
+
+    const todayMonth = new Date().toISOString().slice(0, 7);
+
+    const svg = [];
+    svg.push(`<svg class="tu-chart-svg" viewBox="0 0 ${W} ${H}" preserveAspectRatio="xMidYMid meet" role="img" aria-label="Monthly live-loan and top-up-eligible counts over the last 24 months">`);
+
+    // Gridlines + y-axis ticks
+    tickValues.forEach(v => {
+      const y = yScale(v);
+      svg.push(`<line class="tu-grid" x1="${PAD.left}" x2="${W - PAD.right}" y1="${y}" y2="${y}"/>`);
+      svg.push(`<text class="tu-axis-tick" x="${PAD.left - 8}" y="${y + 3}" text-anchor="end">${formatNumber(v)}</text>`);
+    });
+
+    // Bars (live loans)
+    const barW = Math.max(xStep * 0.62, 4);
+    series.forEach((s, i) => {
+      const cx = xScale(i, true);
+      const x = cx - barW / 2;
+      const y = yScale(s.live_loans);
+      const h = (PAD.top + innerH) - y;
+      svg.push(`<rect class="tu-bar" x="${x.toFixed(1)}" y="${y.toFixed(1)}" width="${barW.toFixed(1)}" height="${h.toFixed(1)}"><title>${escapeHtml(s.month)}: ${formatNumber(s.live_loans)} live loans</title></rect>`);
+    });
+
+    // Line (TUE eligible)
+    const linePts = series.map((s, i) => `${xScale(i, true).toFixed(1)},${yScale(s.tue_eligible).toFixed(1)}`).join(" ");
+    svg.push(`<polyline class="tu-line" points="${linePts}"/>`);
+
+    // Dots on the line
+    series.forEach((s, i) => {
+      const cx = xScale(i, true);
+      const cy = yScale(s.tue_eligible);
+      svg.push(`<circle class="tu-dot" cx="${cx.toFixed(1)}" cy="${cy.toFixed(1)}" r="3.5"><title>${escapeHtml(s.month)}: ${formatNumber(s.tue_eligible)} top-up eligible</title></circle>`);
+    });
+
+    // X-axis labels (every Nth month so labels don't overlap; current month highlighted)
+    const labelEvery = series.length > 18 ? 3 : 2;
+    series.forEach((s, i) => {
+      if (i % labelEvery !== 0 && i !== series.length - 1) return;
+      const cx = xScale(i, true);
+      const isCurrent = s.month === todayMonth;
+      svg.push(`<text class="tu-x-label ${isCurrent ? "tu-x-label-current" : ""}" x="${cx.toFixed(1)}" y="${(PAD.top + innerH + 16).toFixed(1)}" text-anchor="middle">${shortMonth(s.month)}</text>`);
+    });
+
+    // Axis lines
+    svg.push(`<line class="tu-axis" x1="${PAD.left}" x2="${W - PAD.right}" y1="${PAD.top + innerH}" y2="${PAD.top + innerH}"/>`);
+    svg.push(`<line class="tu-axis" x1="${PAD.left}" x2="${PAD.left}" y1="${PAD.top}" y2="${PAD.top + innerH}"/>`);
+
+    // Y-axis title
+    svg.push(`<text class="tu-axis-label" transform="translate(${PAD.left - 44} ${PAD.top + innerH / 2}) rotate(-90)" text-anchor="middle">distinct loans</text>`);
+
+    svg.push(`</svg>`);
+    document.getElementById("tuChart").innerHTML = svg.join("");
+  }
+
+  function drawTable(series) {
+    const tbody = document.querySelector("#tuTable tbody");
+    if (!series.length) { tbody.innerHTML = ""; return; }
+    // Render newest first so the most recent months are at the top of the table
+    const rows = [...series].reverse().map(s => {
+      const pct = s.live_loans > 0 ? ((s.tue_eligible / s.live_loans) * 100) : 0;
+      return `<tr>
+        <td>${escapeHtml(longMonth(s.month))}</td>
+        <td class="num">${formatNumber(s.live_loans)}</td>
+        <td class="num">${formatNumber(s.tue_eligible)}</td>
+        <td class="pct">${pct.toFixed(1)}%</td>
+      </tr>`;
+    }).join("");
+    tbody.innerHTML = rows;
+  }
+
+  function niceCeil(v) {
+    if (v <= 10) return 10;
+    const exp = Math.pow(10, Math.floor(Math.log10(v)));
+    const rounded = Math.ceil(v / exp) * exp;
+    // Halve the step if v is well below: e.g. 12000 → 20000 not 100000
+    if (rounded / 2 >= v) return rounded / 2;
+    return rounded;
+  }
+
+  function formatNumber(n) {
+    if (n == null) return "—";
+    return n.toLocaleString("en-US");
+  }
+
+  function shortMonth(ym) {
+    const [y, m] = ym.split("-").map(n => parseInt(n, 10));
+    const months = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+    const mShort = months[m - 1] || "?";
+    return m === 1 ? `${mShort} '${String(y).slice(-2)}` : mShort;
+  }
+
+  function longMonth(ym) {
+    const [y, m] = ym.split("-").map(n => parseInt(n, 10));
+    const months = ["January","February","March","April","May","June","July","August","September","October","November","December"];
+    return `${months[m - 1] || "?"} ${y}`;
+  }
+
+  function escapeHtml(s) {
+    return String(s).replace(/[&<>"']/g, c => ({
+      "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"
+    })[c]);
+  }
+</script>
+
+<script>
+  document.addEventListener('keydown', e => {
+    if (e.key === 'Escape') document.body.classList.remove('nav-open');
+  });
+  document.querySelectorAll('.qb-nav-link').forEach(a =>
+    a.addEventListener('click', () => document.body.classList.remove('nav-open'))
+  );
+</script>
+
+</body>
+</html>

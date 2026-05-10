@@ -1,0 +1,101 @@
+name: Refresh top-ups
+
+# Runs scripts/scan_topups.py against the Fabric warehouse to count
+# live loans + top-up-eligible loans per month over the last 24 months.
+# Output: topups.json. Same hourly + guard pattern as the other refresh
+# workflows. Heavier than most (Loan_History is ~197M rows) so the
+# CTE filter on the timestamp column is load-bearing — the query
+# walks ~24 months of data, not the whole table.
+
+on:
+  schedule:
+    - cron: '30 6-23 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: refresh-topups
+  cancel-in-progress: false
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Skip if already up to date
+        id: guard
+        run: |
+          set -euo pipefail
+          EXPECTED=$(date -u +%Y-%m-%d)
+          if [ -f topups.json ]; then
+            CURRENT=$(python3 -c "import json; print(json.load(open('topups.json')).get('snapshot_date',''))")
+          else
+            CURRENT=""
+          fi
+          echo "expected=$EXPECTED  current=$CURRENT"
+          if [ "$CURRENT" = "$EXPECTED" ] && [ "${GITHUB_EVENT_NAME:-}" != "workflow_dispatch" ]; then
+            echo "Snapshot already taken for $EXPECTED — skipping (scheduled run)."
+            echo "skip=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "skip=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Install Microsoft ODBC Driver 18
+        if: steps.guard.outputs.skip != 'true'
+        run: |
+          set -euo pipefail
+          source /etc/os-release
+          curl -fsSL "https://packages.microsoft.com/config/ubuntu/${VERSION_ID}/packages-microsoft-prod.deb" -o /tmp/packages-microsoft-prod.deb
+          sudo dpkg -i /tmp/packages-microsoft-prod.deb
+          sudo apt-get update
+          sudo ACCEPT_EULA=Y apt-get install -y msodbcsql18 unixodbc-dev
+
+      - name: Set up Python
+        if: steps.guard.outputs.skip != 'true'
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install Python deps
+        if: steps.guard.outputs.skip != 'true'
+        run: pip install --quiet pyodbc==5.*
+
+      - name: Scan top-ups
+        if: steps.guard.outputs.skip != 'true'
+        env:
+          FABRIC_SQL_ENDPOINT: d76gbn5gtayeppltcrsxsvkluq-ruqkpz7fkwpelmnjh4kbg2lqpi.datawarehouse.fabric.microsoft.com
+          FABRIC_TENANT_ID:    b760fc1f-98a6-4730-bd73-146579554ba4
+          FABRIC_CLIENT_ID:    b8fb2709-6e42-4a1e-91e6-8a3807a9884d
+          FABRIC_CLIENT_SECRET: ${{ secrets.FABRIC_CLIENT_SECRET }}
+        run: python scripts/scan_topups.py
+
+      - name: Commit if topups.json changed
+        if: steps.guard.outputs.skip != 'true'
+        run: |
+          set -euo pipefail
+          git config user.name  "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add topups.json
+          if git diff --cached --quiet -- topups.json; then
+            echo "no changes — nothing to commit"
+            exit 0
+          fi
+          MONTHS=$(python -c "import json; print(len(json.load(open('topups.json'))['series']))")
+          git commit -m "Refresh top-ups: ${MONTHS} months of TUE-eligible vs live-loan counts"
+          for attempt in 1 2 3; do
+            if git push; then
+              break
+            fi
+            if [ "$attempt" -eq 3 ]; then
+              echo "::error::Push failed after 3 attempts"
+              exit 1
+            fi
+            git fetch origin main
+            git rebase origin/main
+          done
