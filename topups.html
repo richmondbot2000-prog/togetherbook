@@ -6,9 +6,9 @@
 <title>TogetherBOOK — Top Ups</title>
 <link rel="icon" type="image/png" href="site-icon.png">
 <link rel="apple-touch-icon" href="site-icon.png">
-<link rel="stylesheet" href="quiet-tokens.css?v=1778409788">
-<link rel="stylesheet" href="quiet.css?v=1778409788">
-<link rel="stylesheet" href="quiet-extras.css?v=1778409788">
+<link rel="stylesheet" href="quiet-tokens.css?v=1778429525">
+<link rel="stylesheet" href="quiet.css?v=1778429525">
+<link rel="stylesheet" href="quiet-extras.css?v=1778429525">
 <style>
   .tu-section { max-width: 1080px; margin: 0 auto; padding: 24px 0 48px; }
   @media (max-width: 800px) { .tu-section { padding: 2px 0 32px; } }
@@ -35,6 +35,37 @@
     color: var(--ink-500);
     font: 500 11px/1 var(--font-mono);
     letter-spacing: 0.04em; margin: 8px 0 28px;
+  }
+  .tu-refresh {
+    display: inline-flex; flex-wrap: wrap; align-items: baseline;
+    gap: 10px;
+    padding: 8px 14px;
+    background: var(--paper-50);
+    border: 1px solid var(--paper-300);
+    margin: 12px 0 4px;
+    position: relative;
+  }
+  .tu-refresh::before {
+    content: ""; position: absolute; inset: 3px;
+    border: 1px solid var(--brass-300); opacity: 0.4; pointer-events: none;
+  }
+  .tu-refresh-label {
+    font: 500 10px/1 var(--font-body);
+    text-transform: uppercase;
+    letter-spacing: 0.18em;
+    color: var(--ink-500);
+  }
+  .tu-refresh-stamp {
+    font: italic 500 16px/1.2 var(--font-display);
+    color: var(--ink-900);
+  }
+  .tu-refresh-stamp.is-stale {
+    color: var(--red-500);
+  }
+  .tu-refresh-note {
+    font: italic 400 12px/1.4 var(--font-display);
+    color: var(--ink-500);
+    margin-left: auto;
   }
 
   /* The chart sits on a paper plate with a thin brass inner border */
@@ -174,7 +205,7 @@
 
 <header class="qb-topbar">
   <a class="qb-brand" href="index.html" aria-label="TogetherBOOK — home">
-    <img class="qb-brand-logo" src="togetherbook-logo.png?v=1778409788" alt="TogetherBOOK">
+    <img class="qb-brand-logo" src="togetherbook-logo.png?v=1778429525" alt="TogetherBOOK">
   </a>
   <button class="qb-hamburger" aria-label="Toggle navigation menu" aria-expanded="false"
           onclick="document.body.classList.toggle('nav-open');this.setAttribute('aria-expanded',document.body.classList.contains('nav-open'))">
@@ -199,6 +230,11 @@
     <p class="lead">A <strong>top-up</strong> is a brand-new loan that pays off the customer's existing live loan and gives them more cash on top. A live loan becomes <em>top-up eligible</em> (TueStatus = true) when its balance, arrears history, and age all clear the lender's TUE thresholds.</p>
     <p class="lead"><strong>Scope:</strong> US loans under the <em id="tuScope">Transform Credit (LenderId 6, USA)</em> brand only.</p>
     <p class="lead" id="tuThresholds" hidden>Loading thresholds…</p>
+    <div class="tu-refresh" id="tuRefresh" hidden>
+      <span class="tu-refresh-label">Last refreshed</span>
+      <span class="tu-refresh-stamp" id="tuRefreshStamp">—</span>
+      <span class="tu-refresh-note">auto-refreshes daily from the warehouse</span>
+    </div>
     <p class="tu-meta" id="tuMeta">Loading…</p>
 
     <div class="tu-chart-wrap">
@@ -244,10 +280,26 @@
     if (d.lender_label) document.getElementById("tuScope").textContent = d.lender_label;
     if (d.live_filter) document.getElementById("tuLiveFilter").textContent = d.live_filter;
     renderThresholds(d.lender_thresholds);
+    renderRefreshBadge(d);
     document.getElementById("tuMeta").textContent =
       `${d.window_months} months · source ${d.source_table} (${d.timestamp_column}) · updated ${updated}`;
     drawChart(series);
     drawTable(series);
+  }
+
+  function renderRefreshBadge(d) {
+    const wrap = document.getElementById("tuRefresh");
+    const stamp = document.getElementById("tuRefreshStamp");
+    if (!d.snapshot_at) { wrap.hidden = true; return; }
+    const dt = new Date(d.snapshot_at);
+    const datePart = dt.toLocaleDateString("en-GB", { day: "numeric", month: "long", year: "numeric" });
+    const timePart = dt.toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit", timeZone: "UTC" });
+    stamp.textContent = `${datePart} at ${timePart} UTC`;
+    // Mark stale if snapshot is more than 36 hours old (allows a missed
+    // overnight run without false alarms).
+    const ageHours = (Date.now() - dt.getTime()) / 36e5;
+    stamp.classList.toggle("is-stale", ageHours > 36);
+    wrap.hidden = false;
   }
 
   function renderThresholds(t) {
