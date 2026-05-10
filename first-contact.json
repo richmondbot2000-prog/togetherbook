@@ -1,50 +1,46 @@
 {
   "schema_version": 1,
-  "updated_at": "2026-05-09T06:28:18.272378Z",
-  "snapshot_date": "2026-05-09",
+  "updated_at": "2026-05-10T10:44:14.951859Z",
+  "snapshot_date": "2026-05-10",
   "window_months": 3,
   "totals": {
-    "items": 146,
+    "items": 143,
     "by_lender": {
-      "Together Loans / TransformCredit": 146
+      "Together Loans / TransformCredit": 143
     },
     "by_role": {
-      "BRW": 142,
-      "GT": 4
+      "BRW": 140,
+      "GT": 3
     }
   },
   "word_cloud": [
     [
       "payment",
-      108
+      106
     ],
     [
       "loan",
-      86
+      85
     ],
     [
       "together",
-      75
+      72
     ],
     [
       "loans",
-      71
+      68
     ],
     [
       "account",
-      69
+      62
     ],
     [
       "statement",
-      36
+      35
     ],
     [
       "credit",
       32
-    ],
-    [
-      "information",
-      21
     ],
     [
       "transform",
@@ -63,19 +59,19 @@
       18
     ],
     [
-      "number",
-      18
-    ],
-    [
       "ach",
       17
     ],
     [
-      "made",
+      "information",
       17
     ],
     [
-      "date",
+      "number",
+      17
+    ],
+    [
+      "made",
       16
     ],
     [
@@ -83,11 +79,11 @@
       15
     ],
     [
-      "email",
-      15
+      "required",
+      14
     ],
     [
-      "required",
+      "email",
       14
     ],
     [
@@ -96,10 +92,6 @@
     ],
     [
       "get",
-      14
-    ],
-    [
-      "update",
       14
     ],
     [
@@ -115,7 +107,11 @@
       13
     ],
     [
-      "payments",
+      "date",
+      13
+    ],
+    [
+      "update",
       13
     ],
     [
@@ -127,12 +123,8 @@
       12
     ],
     [
-      "mail",
+      "payments",
       12
-    ],
-    [
-      "like",
-      11
     ],
     [
       "time",
@@ -147,6 +139,10 @@
       11
     ],
     [
+      "mail",
+      11
+    ],
+    [
       "office",
       11
     ],
@@ -156,6 +152,10 @@
     ],
     [
       "call",
+      10
+    ],
+    [
+      "like",
       10
     ],
     [
@@ -175,10 +175,6 @@
       10
     ],
     [
-      "intended",
-      10
-    ],
-    [
       "money",
       9
     ],
@@ -195,14 +191,6 @@
       9
     ],
     [
-      "message",
-      9
-    ],
-    [
-      "reply",
-      9
-    ],
-    [
       "method",
       9
     ],
@@ -211,11 +199,11 @@
       8
     ],
     [
-      "day",
+      "next",
       8
     ],
     [
-      "next",
+      "message",
       8
     ],
     [
@@ -227,8 +215,16 @@
       8
     ],
     [
+      "reply",
+      8
+    ],
+    [
       "morning",
       8
+    ],
+    [
+      "correct",
+      7
     ],
     [
       "much",
@@ -267,11 +263,11 @@
       7
     ],
     [
-      "charge",
+      "day",
       7
     ],
     [
-      "correct",
+      "charge",
       7
     ],
     [
@@ -287,11 +283,11 @@
       7
     ],
     [
-      "debit",
+      "intended",
       7
     ],
     [
-      "address",
+      "debit",
       7
     ],
     [
@@ -315,31 +311,11 @@
       6
     ],
     [
-      "communication",
-      6
-    ],
-    [
-      "someone",
-      6
-    ],
-    [
-      "contact",
-      6
-    ],
-    [
-      "use",
-      6
-    ],
-    [
       "automatic",
       6
     ],
     [
-      "attachments",
-      6
-    ],
-    [
-      "recipient",
+      "address",
       6
     ],
     [
@@ -360,6 +336,10 @@
     ],
     [
       "want",
+      5
+    ],
+    [
+      "someone",
       5
     ],
     [
@@ -399,6 +379,10 @@
       5
     ],
     [
+      "attachments",
+      5
+    ],
+    [
       "transfer",
       5
     ],
@@ -435,14 +419,6 @@
       4
     ],
     [
-      "reference",
-      4
-    ],
-    [
-      "full",
-      4
-    ],
-    [
       "principal",
       4
     ],
@@ -464,6 +440,14 @@
     ],
     [
       "sincerely",
+      4
+    ],
+    [
+      "communication",
+      4
+    ],
+    [
+      "contact",
       4
     ],
     [
@@ -491,15 +475,11 @@
       4
     ],
     [
-      "agent",
-      4
-    ],
-    [
-      "direct",
-      4
-    ],
-    [
       "coming",
+      4
+    ],
+    [
+      "use",
       4
     ],
     [
@@ -527,15 +507,11 @@
       4
     ],
     [
-      "confirm",
-      4
-    ],
-    [
       "process",
       4
     ],
     [
-      "including",
+      "recipient",
       4
     ],
     [
@@ -563,11 +539,19 @@
       3
     ],
     [
+      "reference",
+      3
+    ],
+    [
       "concern",
       3
     ],
     [
       "returned",
+      3
+    ],
+    [
+      "full",
       3
     ],
     [
@@ -613,9 +597,34 @@
     [
       "active",
       3
+    ],
+    [
+      "saying",
+      3
+    ],
+    [
+      "company",
+      3
+    ],
+    [
+      "collections",
+      3
+    ],
+    [
+      "several",
+      3
     ]
   ],
   "items": [
+    {
+      "received_utc": "2026-05-10T02:47:40",
+      "received_date": "2026-05-10",
+      "days_after_payout": 31,
+      "role": "BRW",
+      "lender_name": "Together Loans / TransformCredit",
+      "subject": "Your Together Loans Loan : ****",
+      "body": "Yes, it is correct."
+    },
     {
       "received_utc": "2026-05-09T01:23:38",
       "received_date": "2026-05-09",
@@ -1445,15 +1454,6 @@
       "body": "I very much appreciate your response to the situation. Without a doubt the funds will be available at my credit union on Friday and available to you to secure the first payment. Had you not set a scheduled payment, my original intent was to make the payment on this coming Friday given my wages received. I hope this address each of our concerns, and with in a short bring the matter to a successful close. Respectfully and in appreciation of your offer, **** **** Yahoo Mail: Search, Organize, Conquer"
     },
     {
-      "received_utc": "2026-03-31T21:57:38",
-      "received_date": "2026-03-31",
-      "days_after_payout": 50,
-      "role": "BRW",
-      "lender_name": "Together Loans / TransformCredit",
-      "subject": "**** - Your Together Loans Statement",
-      "body": "Hello, **** passed away on February 24, 2026. There are no assets in her estate. Please update your records accordingly and direct any further correspondence to the estate. Also, please confirm that you have noted her passing and that no further payment requests will be directed to her. Thank you. Brian **** Metre626-482-7781"
-    },
-    {
       "received_utc": "2026-03-29T19:53:46",
       "received_date": "2026-03-29",
       "days_after_payout": 27,
@@ -1625,15 +1625,6 @@
       "body": "Please call me I tried you on the weekend i think you have a wrong ACH **** **** Annuity Specialist Lucha Vision Direct:**** Finance & Insurance solutions center ****, suite 206i Alameda, CA 94502 Office;****"
     },
     {
-      "received_utc": "2026-03-23T11:34:38",
-      "received_date": "2026-03-23",
-      "days_after_payout": 42,
-      "role": "BRW",
-      "lender_name": "Together Loans / TransformCredit",
-      "subject": "Your Together Loans Loan : ****",
-      "body": "Please contact me"
-    },
-    {
       "received_utc": "2026-03-20T23:50:35",
       "received_date": "2026-03-20",
       "days_after_payout": 21,
@@ -1688,15 +1679,6 @@
       "body": "Hi there- Can I give my card number by phone or is the website secure for credit cards? I sometimes don't feel safe with all the hackers and scamming. You are richer today if...you have laughed, given or forgiven. **** R. ****"
     },
     {
-      "received_utc": "2026-03-18T18:17:57",
-      "received_date": "2026-03-18",
-      "days_after_payout": 37,
-      "role": "GT",
-      "lender_name": "Together Loans / TransformCredit",
-      "subject": "****, **** ****",
-      "body": "Hi, It looks like you've contacted us from an email address that is not registered to any application or account on our system. It could be that we have out of date information for you, that your details have been removed or that you're contacting us about someone else's account. Please reply to this message with the following information, to help us locate the correct account: - The account holder's full name and date of birth ****, **** **** - The account reference number NONE PROVIDED - Any other contact details registered to the account ACCOUNT OPENED 2/7/2026 Once we've found it, we can assist you with any questions. Thanks, Jade@Together Loans **** **** | Factual Data P: Client Success: **** | **** [****] This e-mail communication (including any attachments) contains information from CBC Companies or its affiliates that is confidential and privileged. The information contained herein is intended only for the use of the addressee(s) named above. If you are not the intended recipient (or the agent responsible to deliver it to the intended recipient), you are hereby notified that any dissemination, distribution, use, or copying of this communication is strictly prohibited. If yo"
-    },
-    {
       "received_utc": "2026-03-18T14:42:16",
       "received_date": "2026-03-18",
       "days_after_payout": 36,
@@ -1749,15 +1731,6 @@
       "lender_name": "Together Loans / TransformCredit",
       "subject": "Action Required: **** Bounced Loan Payout",
       "body": ""
-    },
-    {
-      "received_utc": "2026-03-11T12:50:12",
-      "received_date": "2026-03-11",
-      "days_after_payout": 30,
-      "role": "BRW",
-      "lender_name": "Together Loans / TransformCredit",
-      "subject": "Your Together Loans Loan : ****",
-      "body": "Once the payment is made, I will adjust the date to match up with my paychecks to where it’s not falling on a payday but the day after so there can be no issues with collecting the payments"
     },
     {
       "received_utc": "2026-03-10T15:25:14",
