@@ -71,6 +71,34 @@ def conn_str() -> str:
     )
 
 
+def discover_lender_table(cur) -> str | None:
+    """Find a table in this DB that has both LoanbookId AND LenderId columns,
+    so we can JOIN against it to filter Loan_History to a single lender. We
+    prefer the smallest such table to keep the join cheap."""
+    cur.execute("""
+        SELECT TABLE_NAME
+        FROM INFORMATION_SCHEMA.COLUMNS
+        WHERE COLUMN_NAME IN ('LoanbookId', 'LenderId')
+        GROUP BY TABLE_NAME
+        HAVING COUNT(DISTINCT COLUMN_NAME) = 2
+    """)
+    candidates = [r[0] for r in cur.fetchall()]
+    if not candidates:
+        return None
+    # Prefer smaller tables — quicker to scan in the inner CTE.
+    sized = []
+    for t in candidates:
+        try:
+            cur.execute(f"SELECT COUNT_BIG(*) FROM [{TABLE_SCHEMA}].[{t}]")
+            sized.append((cur.fetchone()[0], t))
+        except Exception:
+            sized.append((10**18, t))
+    sized.sort()
+    chosen = sized[0][1]
+    print(f"# lender-mapping table: {chosen}  (candidates ranked by size: {[(t, n) for n, t in sized]})", flush=True)
+    return chosen
+
+
 def discover_timestamp_column(cur) -> str:
     """Find the best timestamp column on Loan_History via INFORMATION_SCHEMA."""
     placeholders = ",".join(["?"] * len(TS_DATA_TYPES))
@@ -111,14 +139,18 @@ def main() -> None:
     cur = c.cursor()
     ts = discover_timestamp_column(cur)
 
-    # `LenderId` is on `LoanAtInception` (one row per loan), not `Loan_History`.
-    # We pre-filter LoanbookIds in a CTE, then aggregate snapshots — keeps
-    # the join cheap on the 197M-row source.
+    # `LenderId` lives on whichever loan-state table happens to have it. We
+    # auto-discover the right table rather than hard-coding (it varies by
+    # warehouse vintage). We pre-filter LoanbookIds in a CTE then aggregate
+    # snapshots — keeps the join cheap on the 197M-row source.
     if LENDER_ID is not None:
+        lender_table = discover_lender_table(cur)
+        if not lender_table:
+            sys.exit(f"error: no table in {DATABASE}.{TABLE_SCHEMA}.* has both LoanbookId AND LenderId columns")
         q = f"""
             WITH lender_loans AS (
-                SELECT LoanbookId
-                FROM [{TABLE_SCHEMA}].[LoanAtInception]
+                SELECT DISTINCT LoanbookId
+                FROM [{TABLE_SCHEMA}].[{lender_table}]
                 WHERE LenderId = ?
             ),
             per_loan_month AS (
