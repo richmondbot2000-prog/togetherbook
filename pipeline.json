@@ -1,5 +1,5 @@
 {
-  "snapshot_at": "2026-05-10T17:11:00.749213+00:00",
+  "snapshot_at": "2026-05-10T17:24:24.030939+00:00",
   "snapshot_date": "2026-05-10",
   "lender_id": 6,
   "lender_label": "Transform Credit (LenderId 6, USA)",
@@ -14,24 +14,122 @@
       "15": 567,
       "1": 864694,
       "26": 110249,
+      "30": 572642,
       "4": 3203693,
       "3": 1472716,
-      "30": 572642,
       "-1": 7784411,
       "5": 6,
       "16": 227105,
-      "20": 1558276,
       "22": 54683,
       "12": 19748,
       "2": 17560694,
       "27": 1,
-      "21": 4879540
-    }
+      "21": 4879540,
+      "20": 1558276
+    },
+    "by_result_label": [
+      {
+        "type_id": 2,
+        "label": "Already claimed",
+        "count": 17560694,
+        "is_purchased": false
+      },
+      {
+        "type_id": -1,
+        "label": "Source excluded",
+        "count": 7784411,
+        "is_purchased": false
+      },
+      {
+        "type_id": 21,
+        "label": "Rejected with counteroffer",
+        "count": 4879540,
+        "is_purchased": false
+      },
+      {
+        "type_id": 4,
+        "label": "Throttled",
+        "count": 3203693,
+        "is_purchased": false
+      },
+      {
+        "type_id": 20,
+        "label": "Rejected for lead score",
+        "count": 1558276,
+        "is_purchased": false
+      },
+      {
+        "type_id": 3,
+        "label": "Duplicate",
+        "count": 1472716,
+        "is_purchased": false
+      },
+      {
+        "type_id": 1,
+        "label": "Accepted (purchased)",
+        "count": 864694,
+        "is_purchased": true
+      },
+      {
+        "type_id": 30,
+        "label": "Pre-check passed",
+        "count": 572642,
+        "is_purchased": false
+      },
+      {
+        "type_id": 18,
+        "label": "Seen too frequently",
+        "count": 242969,
+        "is_purchased": false
+      },
+      {
+        "type_id": 16,
+        "label": "Blacklisted",
+        "count": 227105,
+        "is_purchased": false
+      },
+      {
+        "type_id": 26,
+        "label": "Invalid pay type",
+        "count": 110249,
+        "is_purchased": false
+      },
+      {
+        "type_id": 22,
+        "label": "Counteroffer rejected",
+        "count": 54683,
+        "is_purchased": false
+      },
+      {
+        "type_id": 12,
+        "label": "No valid product",
+        "count": 19748,
+        "is_purchased": false
+      },
+      {
+        "type_id": 15,
+        "label": "Invalid state",
+        "count": 567,
+        "is_purchased": false
+      },
+      {
+        "type_id": 5,
+        "label": "Invalid campaign",
+        "count": 6,
+        "is_purchased": false
+      },
+      {
+        "type_id": 27,
+        "label": "Invalid bank account type",
+        "count": 1,
+        "is_purchased": false
+      }
+    ]
   },
   "apps": {
-    "purchased_path": 592112,
-    "direct_path": 52913,
-    "total": 645025
+    "purchased_path": 592054,
+    "direct_path": 52907,
+    "total": 644961
   },
   "stages": [
     {
@@ -52,13 +150,13 @@
     {
       "key": "direct_apps",
       "label": "Direct applications",
-      "count": 52913,
+      "count": 52907,
       "kind": "entry"
     },
     {
       "key": "apps_started",
       "label": "Application started",
-      "count": 645025,
+      "count": 644961,
       "kind": "convergence",
       "feeds_from": [
         "leads_purchased",
@@ -69,45 +167,45 @@
     {
       "key": "apply1",
       "label": "Apply1 complete (Page 1)",
-      "count": 435621,
+      "count": 435573,
       "kind": "stage",
       "from": "apps_started",
       "drop_label": "Abandoned before page 1",
-      "drop_count": 209404,
-      "purchased": 408565,
-      "direct": 27056
+      "drop_count": 209388,
+      "purchased": 408522,
+      "direct": 27051
     },
     {
       "key": "invite_gt",
       "label": "Invite guarantor (BRW signed)",
-      "count": 324406,
+      "count": 324372,
       "kind": "stage",
       "from": "apply1",
       "drop_label": "Dropped before BRW signed",
-      "drop_count": 111215,
-      "purchased": 304916,
-      "direct": 19490
+      "drop_count": 111201,
+      "purchased": 304885,
+      "direct": 19487
     },
     {
       "key": "gt_accepted",
       "label": "Guarantor accepted (passed checks)",
-      "count": 99133,
+      "count": 99114,
       "kind": "stage",
       "from": "invite_gt",
       "drop_label": "No accepted guarantor",
-      "drop_count": 225273,
-      "purchased": 90625,
-      "direct": 8508
+      "drop_count": 225258,
+      "purchased": 90608,
+      "direct": 8506
     },
     {
       "key": "vc_ready",
       "label": "VC ready",
-      "count": 3396,
+      "count": 3395,
       "kind": "stage",
       "from": "gt_accepted",
       "drop_label": "No VC reached",
-      "drop_count": 95737,
-      "purchased": 3049,
+      "drop_count": 95719,
+      "purchased": 3048,
       "direct": 347
     },
     {
@@ -117,7 +215,7 @@
       "kind": "stage",
       "from": "vc_ready",
       "drop_label": "VC ready but not paid out",
-      "drop_count": 945,
+      "drop_count": 944,
       "purchased": 1890,
       "direct": 561
     }
