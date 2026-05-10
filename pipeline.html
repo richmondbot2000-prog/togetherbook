@@ -6,9 +6,9 @@
 <title>TogetherBOOK — Pipeline</title>
 <link rel="icon" type="image/png" href="site-icon.png">
 <link rel="apple-touch-icon" href="site-icon.png">
-<link rel="stylesheet" href="quiet-tokens.css?v=1778441556">
-<link rel="stylesheet" href="quiet.css?v=1778441556">
-<link rel="stylesheet" href="quiet-extras.css?v=1778441556">
+<link rel="stylesheet" href="quiet-tokens.css?v=1778445094">
+<link rel="stylesheet" href="quiet.css?v=1778445094">
+<link rel="stylesheet" href="quiet-extras.css?v=1778445094">
 <script src="https://cdn.jsdelivr.net/npm/d3@7.9.0/dist/d3.min.js" crossorigin="anonymous"></script>
 <script src="https://cdn.jsdelivr.net/npm/d3-sankey@0.12.3/dist/d3-sankey.min.js" crossorigin="anonymous"></script>
 <style>
@@ -296,10 +296,19 @@
     font: 400 13px/1.4 var(--font-display);
     color: var(--ink-700);
     display: grid;
-    grid-template-columns: 152px 110px 1fr;
+    grid-template-columns: 130px 96px 1fr 130px;
     gap: 4px 10px;
     align-items: baseline;
   }
+  .pl-event-aref {
+    font: 500 10px/1.3 var(--font-mono);
+    color: var(--ink-500);
+    text-align: right;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .pl-event.aref-shift .pl-event-aref { color: var(--brass-600); font-weight: 600; }
   .pl-event-when {
     font: 500 11px/1.4 var(--font-mono);
     color: var(--ink-500);
@@ -311,6 +320,8 @@
     color: var(--ink-500);
   }
   .pl-event-body { color: var(--ink-900); }
+  .pl-event.lead   { background: rgba(60, 100, 160, 0.06); }
+  .pl-event.lead .pl-event-kind { color: #3a5d8f; }
   .pl-event.app    { background: rgba(180, 145, 80, 0.08); }
   .pl-event.task   .pl-event-kind { color: var(--brass-600); }
   .pl-event.sig    .pl-event-kind { color: var(--brass-600); }
@@ -330,7 +341,7 @@
     margin-right: 6px;
   }
   .pl-event-details {
-    grid-column: 3 / -1;
+    grid-column: 3 / 5;
     margin: 4px 0 2px;
     display: grid;
     grid-template-columns: max-content 1fr;
@@ -352,7 +363,7 @@
     color: var(--ink-900);
   }
   .pl-event-cluster-list {
-    grid-column: 3 / -1;
+    grid-column: 3 / 5;
     margin: 4px 0 2px;
     padding: 4px 0 2px 16px;
     list-style: disc;
@@ -370,7 +381,7 @@
 
 <header class="qb-topbar">
   <a class="qb-brand" href="index.html" aria-label="TogetherBOOK — home">
-    <img class="qb-brand-logo" src="togetherbook-logo.png?v=1778441556" alt="TogetherBOOK">
+    <img class="qb-brand-logo" src="togetherbook-logo.png?v=1778445094" alt="TogetherBOOK">
   </a>
   <button class="qb-hamburger" aria-label="Toggle navigation menu" aria-expanded="false"
           onclick="document.body.classList.toggle('nav-open');this.setAttribute('aria-expanded',document.body.classList.contains('nav-open'))">
@@ -943,22 +954,36 @@
   }
 
   function renderCustomer(c) {
-    const events = (c.interactions || []).map(renderEvent).join("");
+    // Track ARef changes across the timeline so we can highlight when an
+    // event belongs to a different application than the previous one.
+    let lastAref = null;
+    const events = (c.interactions || []).map(ev => {
+      const arefShift = ev.aref && ev.aref !== lastAref;
+      lastAref = ev.aref || lastAref;
+      return renderEvent(ev, arefShift);
+    }).join("");
     const subtitle = c.brw_name ? ` <span style="color: var(--ink-700); font-style: italic; font-size: 13px;">${escapeHtml(c.brw_name)}</span>` : "";
+    const apps = c.application_count && c.application_count > 1
+      ? ` <span class="pl-customer-count" style="color: var(--brass-600);">· ${c.application_count} applications</span>`
+      : "";
     return `<details class="pl-customer">
       <summary>
-        <span class="pl-customer-aref">${escapeHtml(c.aref)}</span>${subtitle}
+        <span class="pl-customer-aref">${escapeHtml(c.aref)}</span>${subtitle}${apps}
         <span class="pl-customer-count">${c.interaction_count} event${c.interaction_count === 1 ? "" : "s"}</span>
       </summary>
       <ol class="pl-timeline">${events || '<li class="pl-event"><span class="pl-event-when">—</span><span class="pl-event-kind"></span><span class="pl-event-body"><em>(no recorded interactions)</em></span></li>'}</ol>
     </details>`;
   }
 
-  function renderEvent(e) {
+  function renderEvent(e, arefShift) {
     const when = formatEventTime(e.at);
     let cls, kindLabel, body;
     let extra = "";
     switch (e.kind) {
+      case "lead_presented":
+        cls = "lead"; kindLabel = "Lead"; body = escapeHtml(e.label || "Lead presented");
+        extra = renderDetails(e.details);
+        break;
       case "application_started":
         cls = "app"; kindLabel = "Application"; body = escapeHtml(e.label || "Application started");
         extra = renderDetails(e.details);
@@ -991,10 +1016,13 @@
       default:
         cls = ""; kindLabel = e.kind || ""; body = escapeHtml(e.label || "");
     }
+    if (arefShift) cls += " aref-shift";
+    const arefTag = e.aref ? `<span class="pl-event-aref" title="${escapeHtml(e.aref)}">${escapeHtml(e.aref)}</span>` : `<span></span>`;
     return `<li class="pl-event ${cls}">
       <span class="pl-event-when">${escapeHtml(when)}</span>
       <span class="pl-event-kind">${escapeHtml(kindLabel)}</span>
       <span class="pl-event-body">${body}</span>
+      ${arefTag}
       ${extra}
     </li>`;
   }

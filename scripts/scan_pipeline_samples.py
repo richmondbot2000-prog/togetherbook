@@ -252,6 +252,8 @@ def main() -> None:
                 if tid is None: continue
                 loan_purpose_labels[int(tid)] = str(nm) if nm is not None else f"#{tid}"
             print(f"#   {tname}: loaded {len(loan_purpose_labels)} purpose labels", flush=True)
+            for k in sorted(loan_purpose_labels.keys()):
+                print(f"#     {k:4d}: {loan_purpose_labels[k]!r}", flush=True)
             if loan_purpose_labels:
                 break
         except Exception as e:
@@ -455,6 +457,107 @@ def main() -> None:
                     "relation_to_brw": rel,
                 }
 
+    # ──────────── (a.5) Identity-link: find all ARefs for the same person ──
+    # Use (FirstName, Surname, DateOfBirth) on the BRW customer record.
+    # This lets us show the customer's full history across every application
+    # they've made — not just the March 2026 cohort one we sampled.
+    identity_to_primary: dict[tuple, str] = {}
+    for aref, roles in customers_by_aref.items():
+        brw = roles.get("BRW")
+        if not brw: continue
+        fn = (brw.get("first_name") or "").lower().strip()
+        sn = (brw.get("surname") or "").lower().strip()
+        dob = (brw.get("date_of_birth") or "")[:10]
+        if fn and sn and dob and len(dob) == 10:
+            identity_to_primary[(fn, sn, dob)] = aref
+
+    aref_to_primary: dict[str, str] = {a: a for a in all_sampled}
+    if identity_to_primary:
+        print(f"# identity-link: looking up related ARefs for {len(identity_to_primary)} people…", flush=True)
+        related: dict[tuple, set[str]] = defaultdict(set)
+        keys = list(identity_to_primary.keys())
+        for ck in chunked(keys, 80):
+            conditions = []
+            params = []
+            for fn, sn, dob in ck:
+                conditions.append("(LOWER([" + cust_first + "])=? AND LOWER([" + cust_sur + "])=? AND CONVERT(date, [" + cust_dob + "])=?)")
+                params.extend([fn, sn, dob])
+            sql = f"""
+                SELECT [{cust_aref}], LOWER([{cust_first}]), LOWER([{cust_sur}]),
+                       CONVERT(varchar(10), [{cust_dob}], 23)
+                FROM dbo.Customers
+                WHERE [{cust_gtref}] IS NULL
+                  AND ({" OR ".join(conditions)})
+            """
+            cur.execute(sql, params)
+            for ar, fn, sn, dob in cur.fetchall():
+                related[(fn, sn, dob)].add(ar)
+        # For each identity, point every related ARef at the sampled primary.
+        added = 0
+        for key, primary in identity_to_primary.items():
+            for ar in related.get(key, set()):
+                if ar not in aref_to_primary:
+                    aref_to_primary[ar] = primary
+                    added += 1
+        print(f"#   added {added} historical ARefs (family size now {len(aref_to_primary)})", flush=True)
+
+    family_arefs = list(aref_to_primary.keys())
+
+    # ──────────── (a.6) Pull Application + Customer for new ARefs ─────
+    new_arefs = [a for a in family_arefs if a not in aref_to_app]
+    if new_arefs:
+        print(f"# pulling Applications for {len(new_arefs)} historical ARefs…", flush=True)
+        for chunk in chunked(new_arefs, 1500):
+            ph = ",".join(["?"] * len(chunk))
+            cur.execute(
+                f"""
+                SELECT [{apps_aref}], {select_extras}
+                FROM dbo.Applications
+                WHERE [{apps_aref}] IN ({ph})
+                """,
+                chunk,
+            )
+            for row in cur.fetchall():
+                aref, status, dt, leadid, brwc, gtc, brwes, gtes, loan_amt, term, purpose = row
+                aref_to_app[aref] = {
+                    "status_id": int(status) if status is not None else None,
+                    "created": dt,
+                    "lead_id": leadid,
+                    "brw_customer_id": brwc,
+                    "gt_customer_id": gtc,
+                    "brw_esig_id": brwes,
+                    "gt_esig_id": gtes,
+                    "loan_amount": float(loan_amt) if loan_amt is not None else None,
+                    "term": int(term) if term is not None else None,
+                    "purpose": purpose,
+                }
+
+        # Customers for those new ARefs (so the BRW name etc on each app is correct)
+        if cust_aref:
+            for chunk in chunked(new_arefs, 1500):
+                ph = ",".join(["?"] * len(chunk))
+                cols_sel = ", ".join([
+                    f"[{cust_aref}]", f"[{cust_id}]", f"[{cust_gtref}]",
+                    f"[{cust_first}]"   if cust_first   else "NULL",
+                    f"[{cust_middle}]"  if cust_middle  else "NULL",
+                    f"[{cust_sur}]"     if cust_sur     else "NULL",
+                    f"[{cust_dob}]"     if cust_dob     else "NULL",
+                    f"[{cust_relation}]" if cust_relation else "NULL",
+                ])
+                cur.execute(
+                    f"SELECT {cols_sel} FROM dbo.Customers WHERE [{cust_aref}] IN ({ph})",
+                    chunk,
+                )
+                for r in cur.fetchall():
+                    aref, cid, gtref, fn, mn, sn, dob, rel = r
+                    role = "GT" if gtref is not None else "BRW"
+                    customers_by_aref.setdefault(aref, {})[role] = {
+                        "customer_id": cid,
+                        "first_name": fn, "middle_name": mn, "surname": sn,
+                        "date_of_birth": iso(dob) if dob else None,
+                        "relation_to_brw": rel,
+                    }
+
     # All BRW + GT customer ids → fetch addresses
     all_cids = [v["customer_id"] for d in customers_by_aref.values() for v in d.values()]
     addresses_by_cid: dict[int, dict] = {}
@@ -504,10 +607,23 @@ def main() -> None:
         if not c: return ""
         return " ".join(b for b in [c.get("first_name"), c.get("middle_name"), c.get("surname")] if b)
 
-    # ──────────── (b) Application started event ─────────────────────
-    for aref in all_sampled:
-        info = aref_to_app[aref]
-        if not info['created']:
+    def fmt_purpose(p):
+        if p is None: return None
+        try:
+            return loan_purpose_labels.get(int(p), str(p))
+        except (ValueError, TypeError):
+            return str(p)
+
+    def record(source_aref: str, ev: dict) -> None:
+        """Tag an event with its source ARef and bucket it under the primary."""
+        ev["aref"] = source_aref
+        primary = aref_to_primary.get(source_aref, source_aref)
+        interactions[primary].append(ev)
+
+    # ──────────── (b) Application started events for every ARef in family ───
+    for aref in family_arefs:
+        info = aref_to_app.get(aref)
+        if not info or not info.get('created'):
             continue
         details = []
         brw = customers_by_aref.get(aref, {}).get("BRW")
@@ -522,14 +638,10 @@ def main() -> None:
             details.append(["Loan amount requested", f"${info['loan_amount']:,.0f}"])
         if info["term"] is not None:
             details.append(["Term requested", f"{info['term']} months"])
-        if info["purpose"] is not None:
-            try:
-                p_id = int(info["purpose"])
-                p_label = loan_purpose_labels.get(p_id, str(info["purpose"]))
-            except (ValueError, TypeError):
-                p_label = str(info["purpose"])
+        p_label = fmt_purpose(info["purpose"])
+        if p_label:
             details.append(["Loan purpose", p_label])
-        interactions[aref].append({
+        record(aref, {
             "kind": "application_started",
             "at": iso(info['created']),
             "label": "Application started" + (f" (from purchased lead #{info['lead_id']})" if info['lead_id'] is not None else " (direct via website)"),
@@ -537,9 +649,9 @@ def main() -> None:
         })
 
     # ──────────── (c) Tasks ────────────────────────────────────────
-    print("# pulling Tasks for sampled ARefs…", flush=True)
+    print(f"# pulling Tasks for {len(family_arefs)} ARefs (incl. historical)…", flush=True)
     placeholder_in = ",".join(str(t) for t in TASK_WHITELIST.keys())
-    for chunk in chunked(all_sampled, 1500):
+    for chunk in chunked(family_arefs, 1500):
         ph = ",".join(["?"] * len(chunk))
         cur.execute(
             f"""
@@ -586,16 +698,17 @@ def main() -> None:
                     a = fmt_addr(addr)
                     if a: details.append([f"{role} address", a])
                 if role == "BRW":
-                    info = aref_to_app[aref]
-                    if info["loan_amount"] is not None:
+                    info = aref_to_app.get(aref) or {}
+                    if info.get("loan_amount") is not None:
                         details.append(["Loan amount requested", f"${info['loan_amount']:,.0f}"])
-                    if info["term"] is not None:
+                    if info.get("term") is not None:
                         details.append(["Term requested", f"{info['term']} months"])
-                    if info["purpose"] is not None:
-                        details.append(["Loan purpose", str(info["purpose"])])
+                    p_label = fmt_purpose(info.get("purpose"))
+                    if p_label:
+                        details.append(["Loan purpose", p_label])
                 if details:
                     ev["details"] = details
-            interactions[aref].append(ev)
+            record(aref, ev)
 
     # ──────────── (d) Same-minute task clustering ──────────────────
     # If a single ARef has CLUSTER_MIN_TASKS+ task events whose timestamps
@@ -624,12 +737,20 @@ def main() -> None:
             if cluster_size >= CLUSTER_MIN_TASKS:
                 cluster_evs = tasks[i:j + 1]
                 bullets = [e["label"] for e in cluster_evs]
-                kept.append({
-                    "kind": "task_cluster",
-                    "at": cluster_evs[0]["at"],
-                    "label": f"Application closed — {cluster_size} tasks finalised in bulk",
-                    "items": bullets,
-                })
+                # Cluster only collapses when all events share the same source
+                # ARef (otherwise we'd hide cross-application activity).
+                ar0 = cluster_evs[0].get("aref")
+                same_aref = all(e.get("aref") == ar0 for e in cluster_evs)
+                if same_aref:
+                    kept.append({
+                        "kind": "task_cluster",
+                        "at": cluster_evs[0]["at"],
+                        "label": f"Application closed — {cluster_size} tasks finalised in bulk",
+                        "items": bullets,
+                        "aref": ar0,
+                    })
+                else:
+                    kept.extend(cluster_evs)
             else:
                 kept.extend(tasks[i:j + 1])
             i = j + 1
@@ -646,8 +767,8 @@ def main() -> None:
         print("# pulling ESignatures via Applications join…", flush=True)
         # Build map: esig_id → (aref, role)
         esig_map: dict[int, tuple[str, str]] = {}
-        for aref in all_sampled:
-            info = aref_to_app[aref]
+        for aref in family_arefs:
+            info = aref_to_app.get(aref) or {}
             if info.get("brw_esig_id") is not None:
                 esig_map[int(info["brw_esig_id"])] = (aref, "BRW")
             if info.get("gt_esig_id") is not None:
@@ -669,7 +790,7 @@ def main() -> None:
                     pair = esig_map.get(int(esid))
                     if not pair: continue
                     aref, role = pair
-                    interactions[aref].append({
+                    record(aref, {
                         "kind": "signature",
                         "at": iso(signed),
                         "label": f"{role} signed contract" + (f" (IP {ip})" if ip else ""),
@@ -682,7 +803,7 @@ def main() -> None:
     wb_provider = pick(wb_cols, "Provider")
     print(f"# WebBehaviours chosen: aref={wb_aref} dt={wb_dt} event={wb_event} provider={wb_provider}", flush=True)
     if wb_aref and wb_dt:
-        for chunk in chunked(all_sampled, 1500):
+        for chunk in chunked(family_arefs, 1500):
             ph = ",".join(["?"] * len(chunk))
             event_sql = f", [{wb_event}]" if wb_event else ", NULL"
             prov_sql = f", [{wb_provider}]" if wb_provider else ", NULL"
@@ -696,14 +817,129 @@ def main() -> None:
                 chunk,
             )
             for aref, dt, evobj, prov in cur.fetchall():
-                # WebEventObject is typically a JSON blob — try to extract a
-                # human label like "page=/apply" or "event=apply1_submit".
                 label = format_web_event(evobj, prov)
-                interactions[aref].append({
+                record(aref, {
                     "kind": "web_visit",
                     "at": iso(dt),
                     "label": label,
                 })
+
+    # ──────────── (f.5) Lead presentations ──────────────────────────
+    # For every ARef in the family that came from a purchased lead,
+    # emit a "Lead presented" event with the lead's broker, name, address,
+    # loan amount and result. This gives the timeline a starting point
+    # before "Application started" for affiliate-sourced applications.
+    leads_cols = discover_columns(cur, "Leads")
+    print(f"# Leads cols: {sorted(leads_cols)}", flush=True)
+    leads_id = pick(leads_cols, "LeadId", "LeadID")
+    leads_aref = pick(leads_cols, "ARef", "Aref")
+    leads_dt = pick(leads_cols, "DateCreatedUtc", "DateCreatedUTC", "DateReceivedUtc", "InterestingDateTimeUtc")
+    leads_result = pick(leads_cols, "LeadResultTypeId", "LeadResultId", "ResultTypeId")
+    leads_broker = pick(leads_cols, "BrokerId")
+    leads_source = pick(leads_cols, "SourceId")
+    leads_amount = pick(leads_cols, "LoanAmountRequested", "LoanAmount", "RequestedLoanAmount")
+    leads_term = pick(leads_cols, "TermRequested", "Term")
+    leads_purpose = pick(leads_cols, "LoanPurposeTypeId", "LoanPurposeId", "LoanPurpose")
+    leads_first = pick(leads_cols, "FirstName")
+    leads_sur = pick(leads_cols, "Surname", "LastName")
+    leads_dob = pick(leads_cols, "DateOfBirth")
+    leads_addr = pick(leads_cols, "AddressBody", "AddressLine1", "Address")
+    leads_state = pick(leads_cols, "State")
+    leads_post = pick(leads_cols, "Postcode", "PostCode", "Zip", "ZipCode")
+    print(f"# Leads chosen: id={leads_id} aref={leads_aref} dt={leads_dt} result={leads_result} broker={leads_broker}", flush=True)
+
+    # Try to resolve LeadResultTypeId → English from a lookup table
+    lead_result_labels: dict[int, str] = {}
+    cur.execute(
+        """
+        SELECT TABLE_NAME FROM INFORMATION_SCHEMA.TABLES
+        WHERE TABLE_SCHEMA = 'dbo' AND TABLE_NAME LIKE '%LeadResult%'
+        """
+    )
+    for tname in [r[0] for r in cur.fetchall()]:
+        try:
+            tcols = discover_columns(cur, tname)
+            id_col = pick(tcols, "LeadResultTypeId", "LeadResultId", "Id", "TypeId")
+            name_col = pick(tcols, "LeadResultDescription", "Description", "Name", "Label", "DisplayName")
+            if not (id_col and name_col):
+                continue
+            cur.execute(f"SELECT [{id_col}], [{name_col}] FROM dbo.[{tname}]")
+            for tid, nm in cur.fetchall():
+                if tid is None: continue
+                lead_result_labels[int(tid)] = str(nm) if nm is not None else f"#{tid}"
+            print(f"#   {tname}: loaded {len(lead_result_labels)} lead-result labels", flush=True)
+            if lead_result_labels:
+                break
+        except Exception as e:
+            print(f"#   {tname}: lookup failed: {e}", flush=True)
+
+    if leads_id and leads_dt and (leads_aref or True):
+        # Two paths: (1) join by Lead.ARef (post-purchase), (2) join by
+        # Application.LeadId (we have these LeadIds in aref_to_app).
+        lead_ids_to_aref: dict[int, str] = {}
+        for aref in family_arefs:
+            info = aref_to_app.get(aref) or {}
+            if info.get("lead_id") is not None:
+                lead_ids_to_aref[int(info["lead_id"])] = aref
+        if lead_ids_to_aref:
+            print(f"# pulling Leads for {len(lead_ids_to_aref)} LeadIds…", flush=True)
+            sel_cols = ", ".join([
+                f"[{leads_id}]",
+                f"[{leads_dt}]",
+                f"[{leads_result}]" if leads_result else "NULL",
+                f"[{leads_broker}]" if leads_broker else "NULL",
+                f"[{leads_source}]" if leads_source else "NULL",
+                f"[{leads_amount}]" if leads_amount else "NULL",
+                f"[{leads_term}]"   if leads_term   else "NULL",
+                f"[{leads_purpose}]" if leads_purpose else "NULL",
+                f"[{leads_first}]"  if leads_first  else "NULL",
+                f"[{leads_sur}]"    if leads_sur    else "NULL",
+                f"[{leads_dob}]"    if leads_dob    else "NULL",
+                f"[{leads_addr}]"   if leads_addr   else "NULL",
+                f"[{leads_state}]"  if leads_state  else "NULL",
+                f"[{leads_post}]"   if leads_post   else "NULL",
+            ])
+            for chunk in chunked(list(lead_ids_to_aref.keys()), 1500):
+                ph = ",".join(["?"] * len(chunk))
+                cur.execute(
+                    f"SELECT {sel_cols} FROM dbo.Leads WHERE [{leads_id}] IN ({ph})",
+                    chunk,
+                )
+                for row in cur.fetchall():
+                    lid, dt, rtype, broker, source, amt, term, purpose, fn, sn, dob, addr, state, post = row
+                    aref = lead_ids_to_aref.get(int(lid))
+                    if not aref: continue
+                    details = []
+                    name = " ".join(b for b in [fn, sn] if b)
+                    if name: details.append(["Lead name", name])
+                    if dob:
+                        details.append(["Lead DOB", iso(dob)[:10] if dob else ""])
+                    addr_bits = [addr, state, post]
+                    addr_str = ", ".join(b for b in addr_bits if b)
+                    if addr_str: details.append(["Lead address", addr_str])
+                    if amt is not None:
+                        details.append(["Lead loan amount", f"${float(amt):,.0f}"])
+                    if term is not None:
+                        details.append(["Lead term", f"{int(term)} months"])
+                    p_label = fmt_purpose(purpose)
+                    if p_label:
+                        details.append(["Lead purpose", p_label])
+                    if broker is not None:
+                        details.append(["Broker", str(broker)])
+                    if source is not None:
+                        details.append(["Source", str(source)])
+                    if rtype is not None:
+                        try:
+                            r_label = lead_result_labels.get(int(rtype), f"Result code {int(rtype)}")
+                        except (ValueError, TypeError):
+                            r_label = str(rtype)
+                        details.append(["Lead result", r_label])
+                    record(aref, {
+                        "kind": "lead_presented",
+                        "at": iso(dt),
+                        "label": f"Lead #{lid} presented by broker",
+                        "details": details,
+                    })
 
     apps_conn.close()
 
@@ -721,7 +957,7 @@ def main() -> None:
     msg_subject = pick(msg_cols, "MessageTitle", "Subject")
     print(f"# Messages chosen: aref={msg_aref} dt={msg_dt} ct={msg_ctype} body={msg_body} subj={msg_subject} descr={msg_descr}", flush=True)
     if msg_aref and msg_dt:
-        for chunk in chunked(all_sampled, 1500):
+        for chunk in chunked(family_arefs, 1500):
             ph = ",".join(["?"] * len(chunk))
             body_sql = f", [{msg_body}]" if msg_body else ", NULL"
             descr_sql = f", [{msg_descr}]" if msg_descr else ", NULL"
@@ -763,12 +999,17 @@ def main() -> None:
                     if len(body_text) > 4000:
                         body_text = body_text[:4000] + " …[truncated]"
                     msg["body"] = body_text
-                interactions[aref].append(msg)
+                record(aref, msg)
     comm_conn.close()
 
     # ──────────── Sort + assemble output ───────────────────────────
     for aref, evs in interactions.items():
         evs.sort(key=lambda e: e["at"] or "")
+
+    # Build inverse: primary → list of all family ARefs
+    primary_to_family: dict[str, list[str]] = defaultdict(list)
+    for ar, primary in aref_to_primary.items():
+        primary_to_family[primary].append(ar)
 
     out_endpoints = {}
     for ep, arefs in samples.items():
@@ -776,9 +1017,12 @@ def main() -> None:
         for aref in arefs:
             cust = customers_by_aref.get(aref, {})
             brw = cust.get("BRW", {})
+            family = sorted(primary_to_family.get(aref, [aref]))
             rows.append({
                 "aref": aref,
                 "brw_name": fmt_name(brw) or None,
+                "all_arefs": family,
+                "application_count": len(family),
                 "interaction_count": len(interactions.get(aref, [])),
                 "interactions": interactions.get(aref, []),
             })
