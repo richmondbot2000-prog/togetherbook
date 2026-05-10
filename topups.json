@@ -1,5 +1,5 @@
 {
-  "snapshot_at": "2026-05-10T10:35:54.286767+00:00",
+  "snapshot_at": "2026-05-10T10:43:43.531965+00:00",
   "snapshot_date": "2026-05-10",
   "window_months": 24,
   "cutoff_month": "2024-06-01",
@@ -7,6 +7,7 @@
   "timestamp_column": "DateTimeUTC",
   "lender_id": 6,
   "lender_label": "Transform Credit (LenderId 6, USA)",
+  "live_filter": "(none \u2014 DIA / CurrentBalance columns not present on Loan_History)",
   "lender_thresholds": {
     "primary": {
       "max_balance": 7249.0,
@@ -328,14 +329,14 @@
         "loan_count": 267
       },
       {
-        "max_balance": 4449.0,
-        "arrears_position": 184.0,
+        "max_balance": 7249.0,
+        "arrears_position": 290.0,
         "days_old": 365,
         "loan_count": 259
       },
       {
-        "max_balance": 7249.0,
-        "arrears_position": 290.0,
+        "max_balance": 4449.0,
+        "arrears_position": 184.0,
         "days_old": 365,
         "loan_count": 259
       },
@@ -443,13 +444,13 @@
       },
       {
         "max_balance": 7249.0,
-        "arrears_position": 244.0,
+        "arrears_position": 317.0,
         "days_old": 365,
         "loan_count": 178
       },
       {
         "max_balance": 7249.0,
-        "arrears_position": 317.0,
+        "arrears_position": 244.0,
         "days_old": 365,
         "loan_count": 178
       },
@@ -2408,8 +2409,8 @@
   },
   "totals": {
     "live_loans_loan_months": 1282653,
-    "live_primary_loan_months": 1282653,
-    "live_topup_loan_months": 0,
+    "live_primary_loan_months": 1219226,
+    "live_topup_loan_months": 63427,
     "tue_eligible_loan_months": 182600
   },
   "series": [
@@ -2478,106 +2479,106 @@
     },
     {
       "month": "2025-03",
-      "live_primary": 42040,
-      "live_topup": 0,
+      "live_primary": 41599,
+      "live_topup": 441,
       "live_loans": 42040,
       "tue_eligible": 9276
     },
     {
       "month": "2025-04",
-      "live_primary": 44968,
-      "live_topup": 0,
+      "live_primary": 43781,
+      "live_topup": 1187,
       "live_loans": 44968,
       "tue_eligible": 8981
     },
     {
       "month": "2025-05",
-      "live_primary": 48330,
-      "live_topup": 0,
+      "live_primary": 46586,
+      "live_topup": 1744,
       "live_loans": 48330,
       "tue_eligible": 9015
     },
     {
       "month": "2025-06",
-      "live_primary": 51809,
-      "live_topup": 0,
+      "live_primary": 49596,
+      "live_topup": 2213,
       "live_loans": 51809,
       "tue_eligible": 9341
     },
     {
       "month": "2025-07",
-      "live_primary": 56185,
-      "live_topup": 0,
+      "live_primary": 53501,
+      "live_topup": 2684,
       "live_loans": 56185,
       "tue_eligible": 9735
     },
     {
       "month": "2025-08",
-      "live_primary": 60128,
-      "live_topup": 0,
+      "live_primary": 57052,
+      "live_topup": 3076,
       "live_loans": 60128,
       "tue_eligible": 10145
     },
     {
       "month": "2025-09",
-      "live_primary": 63968,
-      "live_topup": 0,
+      "live_primary": 60456,
+      "live_topup": 3512,
       "live_loans": 63968,
       "tue_eligible": 10824
     },
     {
       "month": "2025-10",
-      "live_primary": 68084,
-      "live_topup": 0,
+      "live_primary": 63997,
+      "live_topup": 4087,
       "live_loans": 68084,
       "tue_eligible": 11746
     },
     {
       "month": "2025-11",
-      "live_primary": 71910,
-      "live_topup": 0,
+      "live_primary": 67234,
+      "live_topup": 4676,
       "live_loans": 71910,
       "tue_eligible": 12486
     },
     {
       "month": "2025-12",
-      "live_primary": 76262,
-      "live_topup": 0,
+      "live_primary": 70854,
+      "live_topup": 5408,
       "live_loans": 76262,
       "tue_eligible": 13370
     },
     {
       "month": "2026-01",
-      "live_primary": 79374,
-      "live_topup": 0,
+      "live_primary": 73405,
+      "live_topup": 5969,
       "live_loans": 79374,
       "tue_eligible": 13877
     },
     {
       "month": "2026-02",
-      "live_primary": 81676,
-      "live_topup": 0,
+      "live_primary": 75344,
+      "live_topup": 6332,
       "live_loans": 81676,
       "tue_eligible": 14897
     },
     {
       "month": "2026-03",
-      "live_primary": 84208,
-      "live_topup": 0,
+      "live_primary": 77326,
+      "live_topup": 6882,
       "live_loans": 84208,
       "tue_eligible": 15780
     },
     {
       "month": "2026-04",
-      "live_primary": 87063,
-      "live_topup": 0,
+      "live_primary": 79551,
+      "live_topup": 7512,
       "live_loans": 87063,
       "tue_eligible": 16768
     },
     {
       "month": "2026-05",
-      "live_primary": 88095,
-      "live_topup": 0,
+      "live_primary": 80391,
+      "live_topup": 7704,
       "live_loans": 88095,
       "tue_eligible": 16359
     }
