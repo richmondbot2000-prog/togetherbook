@@ -181,41 +181,25 @@ def main() -> None:
     print(f"#   apps purchased={apps_purchased:,}  direct={apps_direct:,}", flush=True)
 
     # ─────────────────────────────────────────────────────────────────
-    # Q3: Per-application progression for purchased-lead apps.
-    #     Pull per-LeadID set of LeadOutcomeTypeIDs that ever fired,
-    #     limited to apps in our March cohort.
+    # Q3: Per-application stage reach via Tasks — uniform across BOTH
+    #     entry paths so the funnel is consistently measured.
+    #     Stages:
+    #       Apply1     = Task 41 GtRef=null completed
+    #       BRW signed = Task 48 GtRef=null completed (= Invite GT)
+    #       GT passed  = Task 54 GtRef!=null completed (= GT accepted)
+    #       VC done    = Task 62 OR 146 GtRef!=null completed (= VC ready)
     # ─────────────────────────────────────────────────────────────────
-    print("# Q3: lead-outcome stage reach for purchased-lead apps…", flush=True)
+    print("# Q3: task-completion stage reach for ALL March cohort apps…", flush=True)
     q = f"""
         WITH cohort AS (
-            SELECT [{apps_leadid_col}] AS LeadID
+            SELECT [{apps_aref_col}] AS ARef,
+                   CASE WHEN [{apps_leadid_col}] IS NULL THEN 'direct' ELSE 'purchased' END AS entry_path
             FROM dbo.Applications
             WHERE [{apps_date_col}] >= ? AND [{apps_date_col}] < ?
               AND [{apps_lender_col}] = ?
-              AND [{apps_leadid_col}] IS NOT NULL
-        )
-        SELECT lo.[{lo_type_col}] AS outcome_type, COUNT(DISTINCT lo.[{lo_lead_col}]) AS n
-        FROM dbo.LeadOutcomes lo
-        INNER JOIN cohort c ON c.LeadID = lo.[{lo_lead_col}]
-        GROUP BY lo.[{lo_type_col}]
-    """
-    cur.execute(q, [month_start, month_end, LENDER_ID])
-    purchased_reach = {int(r[0]): int(r[1]) for r in cur.fetchall()}
-    print(f"#   purchased-cohort outcome counts: {purchased_reach}", flush=True)
-
-    # ─────────────────────────────────────────────────────────────────
-    # Q4: Per-application progression for direct apps via Tasks.
-    # ─────────────────────────────────────────────────────────────────
-    print("# Q4: task-completion stage reach for direct apps…", flush=True)
-    q = f"""
-        WITH cohort AS (
-            SELECT [{apps_aref_col}] AS ARef
-            FROM dbo.Applications
-            WHERE [{apps_date_col}] >= ? AND [{apps_date_col}] < ?
-              AND [{apps_lender_col}] = ?
-              AND [{apps_leadid_col}] IS NULL
         )
         SELECT
+            c.entry_path,
             t.[{tasks_type_col}] AS task_type,
             CASE WHEN t.[{tasks_gtref_col}] IS NULL THEN 'BRW' ELSE 'GT' END AS who,
             COUNT(DISTINCT c.ARef) AS n
@@ -223,65 +207,35 @@ def main() -> None:
         INNER JOIN cohort c ON c.ARef = t.[{tasks_aref_col}]
         WHERE t.[{tasks_done_col}] IS NOT NULL
           AND t.[{tasks_type_col}] IN (41, 48, 54, 62, 146)
-        GROUP BY t.[{tasks_type_col}], CASE WHEN t.[{tasks_gtref_col}] IS NULL THEN 'BRW' ELSE 'GT' END
+        GROUP BY c.entry_path, t.[{tasks_type_col}],
+                 CASE WHEN t.[{tasks_gtref_col}] IS NULL THEN 'BRW' ELSE 'GT' END
     """
     cur.execute(q, [month_start, month_end, LENDER_ID])
-    direct_task_reach = {(int(r[0]), r[1]): int(r[2]) for r in cur.fetchall()}
-    print(f"#   direct-cohort task counts: {direct_task_reach}", flush=True)
-
-    apps_conn.close()
+    task_reach = {(r[0], int(r[1]), r[2]): int(r[3]) for r in cur.fetchall()}
+    print(f"#   task counts: {task_reach}", flush=True)
 
     # ─────────────────────────────────────────────────────────────────
-    # Q5: Paid-out detection for direct apps via LoanAtInception in
-    #     the Loanbook reporting DB.
+    # Q4: Paid-out — uniform via ApplicationStatusTypeId = 5 (LiveLoan)
+    #     on the Applications table, current-state. This avoids the
+    #     LoanAtInception join (which uses LoanBookID, not ARef) and
+    #     gives a like-for-like measure across both cohorts.
     # ─────────────────────────────────────────────────────────────────
-    print("# Q5: paid-out detection for direct apps via LoanAtInception…", flush=True)
-    apps_conn = pyodbc.connect(conn_str("ReportingApplications"), timeout=20)
-    apps_conn.timeout = QUERY_TIMEOUT
-    cur = apps_conn.cursor()
-    cur.execute(
-        f"""
-        SELECT [{apps_aref_col}]
+    print("# Q4: paid-out via ApplicationStatusTypeId = 5 (LiveLoan)…", flush=True)
+    q = f"""
+        SELECT
+            CASE WHEN [{apps_leadid_col}] IS NULL THEN 'direct' ELSE 'purchased' END AS entry_path,
+            COUNT(*) AS n
         FROM dbo.Applications
         WHERE [{apps_date_col}] >= ? AND [{apps_date_col}] < ?
           AND [{apps_lender_col}] = ?
-          AND [{apps_leadid_col}] IS NULL
-        """,
-        [month_start, month_end, LENDER_ID],
-    )
-    direct_arefs = [r[0] for r in cur.fetchall()]
-    apps_conn.close()
-    print(f"#   direct cohort ARefs: {len(direct_arefs):,}", flush=True)
+          AND ApplicationStatusTypeId = 5
+        GROUP BY CASE WHEN [{apps_leadid_col}] IS NULL THEN 'direct' ELSE 'purchased' END
+    """
+    cur.execute(q, [month_start, month_end, LENDER_ID])
+    paid_by_path = {r[0]: int(r[1]) for r in cur.fetchall()}
+    print(f"#   paid-out by path: {paid_by_path}", flush=True)
 
-    paid_out_direct = 0
-    if direct_arefs:
-        lb_conn = pyodbc.connect(conn_str("ReportingLoanbook"), timeout=20)
-        lb_conn.timeout = QUERY_TIMEOUT
-        cur = lb_conn.cursor()
-        # Discover the join column on LoanAtInception. Likely 'ARef' or 'aref'
-        # but neither is guaranteed on this warehouse.
-        lai_cols = discover_columns(cur, "LoanAtInception")
-        print(f"#   LoanAtInception cols: {sorted(lai_cols)}", flush=True)
-        aref_col_lai = pick(lai_cols, "ARef", "Aref", "aref")
-        if not aref_col_lai:
-            print(f"#   no ARef-shaped column on LoanAtInception; skipping paid-out detection", flush=True)
-        else:
-            # Process in chunks to stay under the ~2100 parameter cap.
-            chunk = 1500
-            for i in range(0, len(direct_arefs), chunk):
-                block = direct_arefs[i:i + chunk]
-                placeholders = ",".join(["?"] * len(block))
-                cur.execute(
-                    f"""
-                    SELECT COUNT(DISTINCT [{aref_col_lai}])
-                    FROM dbo.LoanAtInception
-                    WHERE [{aref_col_lai}] IN ({placeholders}) AND LenderId = ?
-                    """,
-                    [*block, LENDER_ID],
-                )
-                paid_out_direct += int(cur.fetchone()[0] or 0)
-        lb_conn.close()
-    print(f"#   paid-out direct: {paid_out_direct:,}", flush=True)
+    apps_conn.close()
 
     # ─────────────────────────────────────────────────────────────────
     # Materialise stage counts.
@@ -293,19 +247,17 @@ def main() -> None:
     # Each shared stage has a count that's the SUM of purchased-cohort + direct-cohort.
     # ─────────────────────────────────────────────────────────────────
 
-    # Purchased-cohort stage reaches (a customer counts at all earlier stages
-    # too, because "reached LeadOutcome 6" implies they passed 1, 4, 5).
-    pur_apply1   = purchased_reach.get(1, 0)
-    pur_invite   = purchased_reach.get(4, 0)
-    pur_accepted = purchased_reach.get(5, 0)
-    pur_vcready  = purchased_reach.get(6, 0)
-    pur_paid     = purchased_reach.get(8, 0)
+    pur_apply1   = task_reach.get(('purchased', 41, 'BRW'), 0)
+    pur_invite   = task_reach.get(('purchased', 48, 'BRW'), 0)
+    pur_accepted = task_reach.get(('purchased', 54, 'GT'),  0)
+    pur_vcready  = task_reach.get(('purchased', 62, 'GT'),  0) + task_reach.get(('purchased', 146, 'GT'), 0)
+    pur_paid     = paid_by_path.get('purchased', 0)
 
-    dir_apply1   = direct_task_reach.get((41, 'BRW'), 0)
-    dir_invite   = direct_task_reach.get((48, 'BRW'), 0)
-    dir_accepted = direct_task_reach.get((54, 'GT'),  0)
-    dir_vcready  = direct_task_reach.get((62, 'GT'),  0) + direct_task_reach.get((146, 'GT'), 0)
-    dir_paid     = paid_out_direct
+    dir_apply1   = task_reach.get(('direct',    41, 'BRW'), 0)
+    dir_invite   = task_reach.get(('direct',    48, 'BRW'), 0)
+    dir_accepted = task_reach.get(('direct',    54, 'GT'),  0)
+    dir_vcready  = task_reach.get(('direct',    62, 'GT'),  0) + task_reach.get(('direct', 146, 'GT'), 0)
+    dir_paid     = paid_by_path.get('direct', 0)
 
     apps_started_total = apps_purchased + apps_direct
     apply1_total       = pur_apply1   + dir_apply1
