@@ -6,9 +6,9 @@
 <title>TogetherBOOK — Pipeline</title>
 <link rel="icon" type="image/png" href="site-icon.png">
 <link rel="apple-touch-icon" href="site-icon.png">
-<link rel="stylesheet" href="quiet-tokens.css?v=1778433557">
-<link rel="stylesheet" href="quiet.css?v=1778433557">
-<link rel="stylesheet" href="quiet-extras.css?v=1778433557">
+<link rel="stylesheet" href="quiet-tokens.css?v=1778433838">
+<link rel="stylesheet" href="quiet.css?v=1778433838">
+<link rel="stylesheet" href="quiet-extras.css?v=1778433838">
 <style>
   .pl-section { max-width: 1200px; margin: 0 auto; padding: 24px 0 48px; }
   @media (max-width: 800px) { .pl-section { padding: 2px 0 32px; } }
@@ -151,6 +151,44 @@
     color: var(--brass-600);
   }
 
+  .pl-reject-bar {
+    display: flex;
+    width: 100%;
+    height: 36px;
+    border: 1px solid var(--ink-300);
+    margin: 0 0 12px;
+    overflow: hidden;
+  }
+  .pl-reject-bar .seg {
+    height: 100%;
+    border-right: 1px solid rgba(255,255,255,0.5);
+    display: flex; align-items: center; justify-content: center;
+    overflow: hidden;
+    font: 500 11px/1 var(--font-mono);
+    color: var(--paper-50);
+    cursor: default;
+    transition: opacity 0.15s;
+  }
+  .pl-reject-bar .seg:hover { opacity: 0.85; }
+  .pl-reject-bar .seg:last-child { border-right: none; }
+  .pl-reject-bar .seg.purchased { background: var(--sage-500); }
+  .pl-reject-bar .seg.dedupe    { background: var(--ink-500); }
+  .pl-reject-bar .seg.throttle  { background: var(--ink-700); }
+  .pl-reject-bar .seg.score     { background: var(--brass-500); }
+  .pl-reject-bar .seg.invalid   { background: var(--red-500); }
+  .pl-reject-bar .seg.other     { background: var(--ink-300); color: var(--ink-900); }
+
+  .pl-reject-legend {
+    display: flex; flex-wrap: wrap; gap: 14px;
+    margin: 8px 0 16px;
+    font: 400 12px/1.4 var(--font-display);
+    color: var(--ink-700);
+  }
+  .pl-reject-legend-swatch {
+    display: inline-block; width: 10px; height: 10px; margin-right: 4px;
+    vertical-align: middle;
+  }
+
   .pl-empty {
     background: var(--paper-100);
     border: 1px dashed var(--ink-300);
@@ -165,7 +203,7 @@
 
 <header class="qb-topbar">
   <a class="qb-brand" href="index.html" aria-label="TogetherBOOK — home">
-    <img class="qb-brand-logo" src="togetherbook-logo.png?v=1778433557" alt="TogetherBOOK">
+    <img class="qb-brand-logo" src="togetherbook-logo.png?v=1778433838" alt="TogetherBOOK">
   </a>
   <button class="qb-hamburger" aria-label="Toggle navigation menu" aria-expanded="false"
           onclick="document.body.classList.toggle('nav-open');this.setAttribute('aria-expanded',document.body.classList.contains('nav-open'))">
@@ -204,6 +242,22 @@
       <div id="plCanvas"></div>
     </div>
 
+    <div class="pl-canvas-wrap" id="plRejectWrap" hidden>
+      <h2 class="pl-canvas-title">What happened to all the leads</h2>
+      <p class="pl-section-sub" id="plRejectSub" style="font: 400 14px/1.5 var(--font-display); color: var(--ink-700); margin: 0 0 14px;">
+        Every lead presented to us in March, broken down by what we did with it.
+      </p>
+      <div id="plRejectBar"></div>
+      <table class="pl-table" id="plRejectTable" aria-label="Lead result breakdown">
+        <thead><tr>
+          <th>Outcome</th>
+          <th>Count</th>
+          <th>% of presented</th>
+        </tr></thead>
+        <tbody></tbody>
+      </table>
+    </div>
+
     <div class="pl-table-wrap">
       <table class="pl-table" id="plTable" aria-label="Pipeline stage breakdown">
         <thead><tr>
@@ -236,6 +290,81 @@
     renderRefresh(d);
     drawSankey(d);
     drawTable(d);
+    drawRejectionBreakdown(d);
+  }
+
+  // Group lead-result codes into a small set of categories so the bar
+  // doesn't have 20 tiny invisible slices.
+  function categoriseResult(typeId) {
+    if (typeId === 1) return "purchased";
+    if (typeId === 30) return "purchased"; // pre-check passed → effectively bought
+    if ([2, 3, -1, 18].includes(typeId)) return "dedupe";  // already-claimed / dup / source-excluded / seen-too-frequently
+    if ([4].includes(typeId)) return "throttle";
+    if ([20, 17, 21, 22].includes(typeId)) return "score"; // scorecard / counteroffer rejections
+    if ([5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 23, 24, 25, 26, 27].includes(typeId)) return "invalid";
+    return "other";
+  }
+  const CATEGORY_LABELS = {
+    purchased: "Purchased",
+    dedupe:    "Already-claimed / duplicate / source-excluded",
+    throttle:  "Throttled",
+    score:     "Failed scorecard / rejected with counteroffer",
+    invalid:   "Invalid input or ineligible",
+    other:     "Other / unclassified",
+  };
+  const CATEGORY_ORDER = ["purchased", "dedupe", "throttle", "score", "invalid", "other"];
+
+  function drawRejectionBreakdown(d) {
+    const wrap = document.getElementById("plRejectWrap");
+    const breakdown = d.leads && d.leads.by_result_label;
+    if (!breakdown || !breakdown.length) { wrap.hidden = true; return; }
+    wrap.hidden = false;
+
+    const presented = d.leads.presented || 0;
+    if (!presented) return;
+
+    // Aggregate by category
+    const byCat = {};
+    for (const r of breakdown) {
+      const cat = categoriseResult(r.type_id);
+      byCat[cat] = (byCat[cat] || 0) + r.count;
+    }
+
+    // Stacked bar
+    const barEl = document.getElementById("plRejectBar");
+    const segs = CATEGORY_ORDER.filter(c => byCat[c] > 0).map(c => {
+      const pct = (byCat[c] / presented) * 100;
+      return `<span class="seg ${c}" style="width: ${pct.toFixed(2)}%" title="${escapeHtml(CATEGORY_LABELS[c])}: ${formatNumber(byCat[c])} (${pct.toFixed(1)}%)">${pct >= 5 ? pct.toFixed(0) + "%" : ""}</span>`;
+    }).join("");
+    barEl.innerHTML = `
+      <div class="pl-reject-bar">${segs}</div>
+      <div class="pl-reject-legend">
+        ${CATEGORY_ORDER.filter(c => byCat[c] > 0).map(c => `
+          <span><span class="pl-reject-legend-swatch" style="background: var(${cssVarForCategory(c)});"></span>${escapeHtml(CATEGORY_LABELS[c])} <strong>${formatNumber(byCat[c])}</strong></span>
+        `).join("")}
+      </div>`;
+
+    // Detailed table — every result type, sorted by count desc
+    const tbody = document.querySelector("#plRejectTable tbody");
+    tbody.innerHTML = breakdown.map(r => {
+      const pct = (r.count / presented) * 100;
+      return `<tr>
+        <td>${escapeHtml(r.label)} <span style="color: var(--ink-500); font-style: italic; font-size: 11px;">(code ${r.type_id})</span></td>
+        <td class="num">${formatNumber(r.count)}</td>
+        <td class="pct">${pct.toFixed(2)}%</td>
+      </tr>`;
+    }).join("");
+  }
+
+  function cssVarForCategory(c) {
+    return {
+      purchased: "--sage-500",
+      dedupe:    "--ink-500",
+      throttle:  "--ink-700",
+      score:     "--brass-500",
+      invalid:   "--red-500",
+      other:     "--ink-300",
+    }[c] || "--ink-300";
   }
 
   function renderRefresh(d) {

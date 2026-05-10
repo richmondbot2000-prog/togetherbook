@@ -48,6 +48,41 @@ import pyodbc
 LENDER_ID = 6
 LENDER_LABEL = "Transform Credit (LenderId 6, USA)"
 
+# Per the wiki's LeadResultTypeId enum on Applications.Leads.
+LEAD_RESULT_LABELS = {
+    -1: "Source excluded",
+    1:  "Accepted (purchased)",
+    2:  "Already claimed",
+    3:  "Duplicate",
+    4:  "Throttled",
+    5:  "Invalid campaign",
+    6:  "Invalid email address",
+    7:  "Invalid phone number",
+    8:  "Invalid name",
+    9:  "Invalid loan purpose",
+    10: "Invalid language",
+    11: "No national / government ID",
+    12: "No valid product",
+    13: "Existing loan",
+    14: "Ineligible for credit-builder",
+    15: "Invalid state",
+    16: "Blacklisted",
+    17: "Premium scorecard failed",
+    18: "Seen too frequently",
+    19: "Settled loan",
+    20: "Rejected for lead score",
+    21: "Rejected with counteroffer",
+    22: "Counteroffer rejected",
+    23: "Bank account not validated",
+    24: "Invalid employment type",
+    25: "Invalid pay frequency",
+    26: "Invalid pay type",
+    27: "Invalid bank account type",
+    30: "Pre-check passed",
+    98: "Unclaimed (CPC steal)",
+    99: "Discarded",
+}
+
 # Window — March of the current calendar year. Fixed (not rolling) to match
 # the user's brief "applications made in March".
 WINDOW_YEAR = 2026
@@ -278,6 +313,15 @@ def main() -> None:
             "purchased": leads_purchased,
             "rejected":  leads_rejected,
             "by_result_type": leads_by_result,
+            "by_result_label": [
+                {
+                    "type_id": tid,
+                    "label":   LEAD_RESULT_LABELS.get(tid, f"Unknown ({tid})"),
+                    "count":   n,
+                    "is_purchased": tid == 1,
+                }
+                for tid, n in sorted(leads_by_result.items(), key=lambda kv: -kv[1])
+            ],
         },
         "apps": {
             "purchased_path": apps_purchased,
