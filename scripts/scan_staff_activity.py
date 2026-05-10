@@ -138,6 +138,7 @@ def short_tenant(domain: str) -> str:
         "fianceo.com": "fianceo",
         "tandolan.dk": "tandolan",
         "tandolaina.fi": "tandolan",
+        "tando.dk": "tandolan",
     }.get(domain, domain.split(".")[0])
 
 
