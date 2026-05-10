@@ -1356,15 +1356,33 @@ def main() -> None:
         t = mask_surname_in_text(t, surnames)
         return t
 
+    US_STATES = {
+        "AL","AK","AZ","AR","CA","CO","CT","DE","FL","GA","HI","ID","IL","IN",
+        "IA","KS","KY","LA","ME","MD","MA","MI","MN","MS","MO","MT","NE","NV",
+        "NH","NJ","NM","NY","NC","ND","OH","OK","OR","PA","RI","SC","SD","TN",
+        "TX","UT","VT","VA","WA","WV","WI","WY","DC","PR","GU","VI","AS","MP",
+    }
+
+    def keep_only_state(addr_str: str) -> str:
+        """Extract the 2-letter US state code from an address; mask everything else."""
+        if not addr_str: return "******"
+        for tok in re.split(r"[,\s]+", addr_str):
+            t = tok.strip().upper()
+            if t in US_STATES:
+                return t
+        return "******"
+
     def redact_detail_pair(k, v, surnames):
         """Mask the value of a details [key, value] pair appropriately."""
         if v is None: return [k, v]
         sv = str(v)
-        if "name" in k.lower() and "campaign" not in k.lower():
+        kl = k.lower()
+        if "name" in kl and "campaign" not in kl:
             return [k, mask_full_name_string(sv)]
-        if "address" in k.lower():
-            # Strip phones from addresses (rare) but keep street.
-            return [k, mask_phones_in_text(sv)]
+        if "dob" in kl or "birth" in kl:
+            return [k, "****-**-**"]
+        if "address" in kl:
+            return [k, keep_only_state(sv)]
         # Default: apply text redaction (ARef + phone + surname).
         return [k, redact_text(sv, surnames)]
 
