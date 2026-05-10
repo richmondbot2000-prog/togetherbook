@@ -258,20 +258,28 @@ def main() -> None:
         lb_conn = pyodbc.connect(conn_str("ReportingLoanbook"), timeout=20)
         lb_conn.timeout = QUERY_TIMEOUT
         cur = lb_conn.cursor()
-        # Process in chunks to stay under the ~2100 parameter cap.
-        chunk = 1500
-        for i in range(0, len(direct_arefs), chunk):
-            block = direct_arefs[i:i + chunk]
-            placeholders = ",".join(["?"] * len(block))
-            cur.execute(
-                f"""
-                SELECT COUNT(DISTINCT ARef)
-                FROM dbo.LoanAtInception
-                WHERE ARef IN ({placeholders}) AND LenderId = ?
-                """,
-                [*block, LENDER_ID],
-            )
-            paid_out_direct += int(cur.fetchone()[0] or 0)
+        # Discover the join column on LoanAtInception. Likely 'ARef' or 'aref'
+        # but neither is guaranteed on this warehouse.
+        lai_cols = discover_columns(cur, "LoanAtInception")
+        print(f"#   LoanAtInception cols: {sorted(lai_cols)}", flush=True)
+        aref_col_lai = pick(lai_cols, "ARef", "Aref", "aref")
+        if not aref_col_lai:
+            print(f"#   no ARef-shaped column on LoanAtInception; skipping paid-out detection", flush=True)
+        else:
+            # Process in chunks to stay under the ~2100 parameter cap.
+            chunk = 1500
+            for i in range(0, len(direct_arefs), chunk):
+                block = direct_arefs[i:i + chunk]
+                placeholders = ",".join(["?"] * len(block))
+                cur.execute(
+                    f"""
+                    SELECT COUNT(DISTINCT [{aref_col_lai}])
+                    FROM dbo.LoanAtInception
+                    WHERE [{aref_col_lai}] IN ({placeholders}) AND LenderId = ?
+                    """,
+                    [*block, LENDER_ID],
+                )
+                paid_out_direct += int(cur.fetchone()[0] or 0)
         lb_conn.close()
     print(f"#   paid-out direct: {paid_out_direct:,}", flush=True)
 
