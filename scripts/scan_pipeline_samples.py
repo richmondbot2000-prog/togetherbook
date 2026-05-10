@@ -154,6 +154,39 @@ def iso(d) -> str | None:
     return str(d)
 
 
+def format_web_event(blob, provider) -> str:
+    """Render a WebBehaviours.WebEventObject value as a single-line label."""
+    if blob is None:
+        return f"Web visit ({provider})" if provider else "Web visit"
+    raw = str(blob).strip()
+    if not raw:
+        return f"Web visit ({provider})" if provider else "Web visit"
+    # Try to parse as JSON and pull common fields.
+    try:
+        obj = json.loads(raw)
+    except (ValueError, TypeError):
+        # Not JSON — clip and stringify.
+        snippet = raw[:120]
+        return f"Web: {snippet}" + (f" [{provider}]" if provider else "")
+    if isinstance(obj, dict):
+        bits = []
+        # Most-likely useful keys, in priority order
+        for key in ("event", "eventName", "EventName", "page", "pageUrl",
+                    "PageUrl", "url", "Url", "path", "Path", "name", "Name",
+                    "type", "action"):
+            v = obj.get(key)
+            if v and str(v) not in bits:
+                bits.append(str(v))
+            if len(bits) >= 3:
+                break
+        if bits:
+            label = " · ".join(bits)
+            return f"Web: {label}" + (f" [{provider}]" if provider else "")
+    # Fallback: stringify a short summary
+    snippet = raw[:120]
+    return f"Web: {snippet}" + (f" [{provider}]" if provider else "")
+
+
 # ─────────────────────── main ──────────────────────────────────────────
 
 def main() -> None:
@@ -597,39 +630,31 @@ def main() -> None:
     # ──────────── (f) WebBehaviours ────────────────────────────────
     wb_aref = pick(wb_cols, "ARef", "Aref")
     wb_dt = pick(wb_cols, "DateCreatedUtc", "DateTimeUtc", "DateTimeUTC")
-    # The Brokers/WebBehaviours column names vary. Pick anything that looks
-    # like a URL/path/page or behaviour-type column heuristically.
-    def _heuristic_pick(cols, keywords):
-        for c in sorted(cols):
-            cl = c.lower()
-            if any(k in cl for k in keywords):
-                return c
-        return None
-    wb_url = pick(wb_cols, "Url", "Page", "PageUrl", "Path", "PageName", "PagePath", "Location") \
-             or _heuristic_pick(wb_cols, ["url", "page", "path", "location", "uri", "form"])
-    wb_action = pick(wb_cols, "Action", "EventType", "Behaviour", "BehaviourType", "Event") \
-                or _heuristic_pick(wb_cols, ["action", "behav", "event", "type", "name", "kind"])
-    print(f"# WebBehaviours chosen: aref={wb_aref} dt={wb_dt} url={wb_url} action={wb_action}", flush=True)
+    wb_event = pick(wb_cols, "WebEventObject", "EventObject", "EventBody", "Body")
+    wb_provider = pick(wb_cols, "Provider")
+    print(f"# WebBehaviours chosen: aref={wb_aref} dt={wb_dt} event={wb_event} provider={wb_provider}", flush=True)
     if wb_aref and wb_dt:
         for chunk in chunked(all_sampled, 1500):
             ph = ",".join(["?"] * len(chunk))
-            url_sql = f", [{wb_url}]" if wb_url else ", NULL"
-            act_sql = f", [{wb_action}]" if wb_action else ", NULL"
+            event_sql = f", [{wb_event}]" if wb_event else ", NULL"
+            prov_sql = f", [{wb_provider}]" if wb_provider else ", NULL"
             cur.execute(
                 f"""
-                SELECT [{wb_aref}], [{wb_dt}]{url_sql}{act_sql}
+                SELECT [{wb_aref}], [{wb_dt}]{event_sql}{prov_sql}
                 FROM dbo.WebBehaviours
                 WHERE [{wb_aref}] IN ({ph})
                   AND [{wb_dt}] IS NOT NULL
                 """,
                 chunk,
             )
-            for aref, dt, url, act in cur.fetchall():
-                bits = [b for b in [act, url] if b]
+            for aref, dt, evobj, prov in cur.fetchall():
+                # WebEventObject is typically a JSON blob — try to extract a
+                # human label like "page=/apply" or "event=apply1_submit".
+                label = format_web_event(evobj, prov)
                 interactions[aref].append({
                     "kind": "web_visit",
                     "at": iso(dt),
-                    "label": "Web: " + " · ".join(str(b) for b in bits) if bits else "Web visit",
+                    "label": label,
                 })
 
     apps_conn.close()
