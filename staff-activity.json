@@ -1,15 +1,15 @@
 {
-  "snapshot_at": "2026-05-10T07:32:49.144291+00:00",
+  "snapshot_at": "2026-05-10T08:45:44.044819+00:00",
   "snapshot_date": "2026-05-10",
   "window_days": 60,
-  "cutoff_utc": "2026-03-11T07:32:49.144291+00:00",
+  "cutoff_utc": "2026-03-11T08:45:44.044819+00:00",
   "active_count": 18,
   "external_count": 140,
   "active_users": [
     {
       "email": "james.webster@letme.co.uk",
-      "writes_60d": 93782,
-      "last_active_utc": "2026-05-10T06:36:14.524984",
+      "writes_60d": 93778,
+      "last_active_utc": "2026-05-10T08:29:15.708043",
       "tenants": [
         "rapida",
         "transform"
@@ -19,7 +19,7 @@
     },
     {
       "email": "sophia.ugwunne@letme.com",
-      "writes_60d": 3710,
+      "writes_60d": 3709,
       "last_active_utc": "2026-05-08T22:48:38.911614",
       "tenants": [
         "transform"
@@ -39,7 +39,7 @@
     },
     {
       "email": "mourad.malki@clearloans.com.au",
-      "writes_60d": 1119,
+      "writes_60d": 1116,
       "last_active_utc": "2026-05-09T20:20:07.869537",
       "tenants": [
         "transform"
@@ -79,7 +79,7 @@
     },
     {
       "email": "clementia.dsouza@letme.com",
-      "writes_60d": 184,
+      "writes_60d": 180,
       "last_active_utc": "2026-05-07T06:41:08.522773",
       "tenants": [
         "transform"
@@ -129,7 +129,7 @@
     },
     {
       "email": "adnan.turken@letme.co.uk",
-      "writes_60d": 291,
+      "writes_60d": 288,
       "last_active_utc": "2026-05-07T05:06:44.887821",
       "tenants": [
         "rgroup"
@@ -192,8 +192,8 @@
   "external_users": [
     {
       "username": "jack.bassilious@transformcredit.com",
-      "writes_60d": 459714,
-      "last_active_utc": "2026-05-10T07:21:42.085362",
+      "writes_60d": 459718,
+      "last_active_utc": "2026-05-10T08:29:15.703280",
       "tenants": [
         "transform"
       ],
@@ -282,7 +282,7 @@
     },
     {
       "username": "ceera.gillette@transformcredit.com",
-      "writes_60d": 8417,
+      "writes_60d": 8415,
       "last_active_utc": "2026-05-10T02:11:58.398558",
       "tenants": [
         "transform"
@@ -342,7 +342,7 @@
     },
     {
       "username": "bryony.leach@transformcredit.com",
-      "writes_60d": 7712,
+      "writes_60d": 7707,
       "last_active_utc": "2026-05-09T12:34:17.613566",
       "tenants": [
         "transform"
@@ -352,7 +352,7 @@
     },
     {
       "username": "chelsea.concini@togetherloans.com",
-      "writes_60d": 7376,
+      "writes_60d": 7360,
       "last_active_utc": "2026-05-09T11:59:38.252085",
       "tenants": [
         "transform"
@@ -372,7 +372,7 @@
     },
     {
       "username": "eden.oxley@transformcredit.com",
-      "writes_60d": 6905,
+      "writes_60d": 6895,
       "last_active_utc": "2026-05-08T19:16:28.773881",
       "tenants": [
         "transform"
@@ -412,7 +412,7 @@
     },
     {
       "username": "aerona.sheikh@transformcredit.com",
-      "writes_60d": 5559,
+      "writes_60d": 5558,
       "last_active_utc": "2026-05-08T17:39:00.785203",
       "tenants": [
         "transform"
@@ -562,7 +562,7 @@
     },
     {
       "username": "berginie.botero@transformcredit.com",
-      "writes_60d": 3077,
+      "writes_60d": 3052,
       "last_active_utc": "2026-05-08T16:12:29.942154",
       "tenants": [
         "transform"
@@ -582,7 +582,7 @@
     },
     {
       "username": "saoirse-brooke.polywka@transformcredit.com",
-      "writes_60d": 2676,
+      "writes_60d": 2675,
       "last_active_utc": "2026-05-08T16:51:27.066433",
       "tenants": [
         "transform"
@@ -622,7 +622,7 @@
     },
     {
       "username": "thomas.holloway@transformcredit.com",
-      "writes_60d": 2327,
+      "writes_60d": 2326,
       "last_active_utc": "2026-05-08T14:56:41.532954",
       "tenants": [
         "transform"
@@ -652,7 +652,7 @@
     },
     {
       "username": "josh.carless@transformcredit.com",
-      "writes_60d": 2160,
+      "writes_60d": 2159,
       "last_active_utc": "2026-05-08T20:00:08.730242",
       "tenants": [
         "transform"
@@ -1022,7 +1022,7 @@
     },
     {
       "username": "matt.brunet@transformcredit.com",
-      "writes_60d": 158,
+      "writes_60d": 155,
       "last_active_utc": "2026-05-07T11:16:05.565281",
       "tenants": [
         "transform"
@@ -1472,7 +1472,7 @@
     },
     {
       "username": "karina@tandolan.se",
-      "writes_60d": 424,
+      "writes_60d": 417,
       "last_active_utc": "2026-05-07T10:41:40.049663",
       "tenants": [
         "tandolan"
@@ -1495,9 +1495,9 @@
       "writes_60d": 23,
       "last_active_utc": "2026-04-11T12:00:33.903983",
       "tenants": [
-        "tando"
+        "tandolan"
       ],
-      "primary_tenant": "tando",
+      "primary_tenant": "tandolan",
       "top_warehouse": "loanbook"
     },
     {
