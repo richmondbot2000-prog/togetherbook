@@ -29,6 +29,11 @@ DATABASE = "ReportingLoanbook"
 TABLE_SCHEMA = "dbo"
 TABLE_NAME = "Loan_History"
 
+# Filter to a single lender — Transform Credit / Together Loans (USA) per the
+# wiki's canonical lender mapping. Set to None to scan all lenders.
+LENDER_ID = 6
+LENDER_LABEL = "Transform Credit (LenderId 6, USA)"
+
 # Months back from today's first-of-month. 24 = include the 24 most recent
 # calendar months (the current month is partial).
 WINDOW_MONTHS = 24
@@ -109,6 +114,7 @@ def main() -> None:
     # One sweep, grouped by month + LoanbookId so a loan with 30 snapshots
     # in a month counts once. Then sum to per-month rows. The CTE keeps the
     # query memory-efficient on the 197M-row source.
+    lender_filter = "AND LenderId = ?" if LENDER_ID is not None else ""
     q = f"""
         WITH per_loan_month AS (
             SELECT
@@ -118,6 +124,7 @@ def main() -> None:
             FROM [{TABLE_SCHEMA}].[{TABLE_NAME}]
             WHERE [{ts}] >= ?
               AND LoanbookId IS NOT NULL
+              {lender_filter}
             GROUP BY DATEFROMPARTS(YEAR([{ts}]), MONTH([{ts}]), 1), LoanbookId
         )
         SELECT
@@ -128,8 +135,9 @@ def main() -> None:
         GROUP BY month_start
         ORDER BY month_start;
     """
-    print("# running aggregation query…", flush=True)
-    cur.execute(q, [cutoff])
+    params = [cutoff] + ([LENDER_ID] if LENDER_ID is not None else [])
+    print(f"# running aggregation query…  lender filter: {LENDER_LABEL if LENDER_ID is not None else 'NONE (all lenders)'}", flush=True)
+    cur.execute(q, params)
     rows = [(r[0], int(r[1]), int(r[2])) for r in cur.fetchall()]
     print(f"# returned {len(rows)} month rows", flush=True)
     try:
@@ -169,6 +177,8 @@ def main() -> None:
         "cutoff_month": cutoff.isoformat(),
         "source_table": f"{DATABASE}.{TABLE_SCHEMA}.{TABLE_NAME}",
         "timestamp_column": ts,
+        "lender_id": LENDER_ID,
+        "lender_label": LENDER_LABEL,
         "totals": {
             "live_loans_loan_months":   total_live,   # SUM, not distinct
             "tue_eligible_loan_months": total_tue,

@@ -6,9 +6,9 @@
 <title>TogetherBOOK — Top Ups</title>
 <link rel="icon" type="image/png" href="site-icon.png">
 <link rel="apple-touch-icon" href="site-icon.png">
-<link rel="stylesheet" href="quiet-tokens.css?v=1778405863">
-<link rel="stylesheet" href="quiet.css?v=1778405863">
-<link rel="stylesheet" href="quiet-extras.css?v=1778405863">
+<link rel="stylesheet" href="quiet-tokens.css?v=1778406738">
+<link rel="stylesheet" href="quiet.css?v=1778406738">
+<link rel="stylesheet" href="quiet-extras.css?v=1778406738">
 <style>
   .tu-section { max-width: 1080px; margin: 0 auto; padding: 24px 0 48px; }
   @media (max-width: 800px) { .tu-section { padding: 2px 0 32px; } }
@@ -167,7 +167,7 @@
 
 <header class="qb-topbar">
   <a class="qb-brand" href="index.html" aria-label="TogetherBOOK — home">
-    <img class="qb-brand-logo" src="togetherbook-logo.png?v=1778405863" alt="TogetherBOOK">
+    <img class="qb-brand-logo" src="togetherbook-logo.png?v=1778406738" alt="TogetherBOOK">
   </a>
   <button class="qb-hamburger" aria-label="Toggle navigation menu" aria-expanded="false"
           onclick="document.body.classList.toggle('nav-open');this.setAttribute('aria-expanded',document.body.classList.contains('nav-open'))">
@@ -190,11 +190,12 @@
   <section class="tu-section">
     <h1>Top Ups</h1>
     <p class="lead">A <strong>top-up</strong> is a brand-new loan that pays off the customer's existing live loan and gives them more cash on top. A live loan becomes <em>top-up eligible</em> (TueStatus = true) when its balance, arrears history, and age all clear the lender's TUE thresholds.</p>
+    <p class="lead"><strong>Scope:</strong> US loans under the <em id="tuScope">Transform Credit (LenderId 6, USA)</em> brand only.</p>
     <p class="tu-meta" id="tuMeta">Loading…</p>
 
     <div class="tu-chart-wrap">
       <h2 class="tu-chart-title">Monthly counts, last 24 months</h2>
-      <p class="tu-chart-sub">Each bar is the number of distinct loans that were live in that month. The line tracks how many of those loans were <em>top-up eligible</em> at any point that month.</p>
+      <p class="tu-chart-sub">Each bar is the number of distinct Transform Credit loans that were live in that month. The line tracks how many of those loans were <em>top-up eligible</em> at any point that month.</p>
       <div class="tu-legend">
         <span class="tu-legend-item"><span class="tu-legend-swatch bar"></span>Live loans</span>
         <span class="tu-legend-item"><span class="tu-legend-swatch line"></span>Top-up eligible</span>
@@ -229,6 +230,7 @@
   function render(d) {
     const series = d.series || [];
     const updated = (d.snapshot_at || "").replace("T", " ").slice(0, 19) + " UTC";
+    if (d.lender_label) document.getElementById("tuScope").textContent = d.lender_label;
     document.getElementById("tuMeta").textContent =
       `${d.window_months} months · source ${d.source_table} (${d.timestamp_column}) · updated ${updated}`;
     drawChart(series);
