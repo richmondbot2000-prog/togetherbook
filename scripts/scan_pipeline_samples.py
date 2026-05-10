@@ -339,7 +339,8 @@ def main() -> None:
     cust_relation = pick(customers_cols, "RelationToBrw", "RelationshipToBrw")
 
     addr_cust = pick(addresses_cols, "CustomerId")
-    addr_type = pick(addresses_cols, "AddressType")
+    addr_type = pick(addresses_cols, "Type", "AddressType")
+    addr_body = pick(addresses_cols, "AddressBody")  # warehouse single-column form
     addr_l1 = pick(addresses_cols, "AddressLine1")
     addr_l2 = pick(addresses_cols, "AddressLine2")
     addr_city = pick(addresses_cols, "City")
@@ -387,6 +388,7 @@ def main() -> None:
             ph = ",".join(["?"] * len(chunk))
             cols_sel = ", ".join([
                 f"[{addr_cust}]",
+                f"[{addr_body}]" if addr_body else "NULL",
                 f"[{addr_l1}]"   if addr_l1   else "NULL",
                 f"[{addr_l2}]"   if addr_l2   else "NULL",
                 f"[{addr_city}]" if addr_city else "NULL",
@@ -399,17 +401,27 @@ def main() -> None:
                 chunk,
             )
             for r in cur.fetchall():
-                cid, l1, l2, city, state, post, atype = r
-                # Prefer AddressType=1 (current). Otherwise keep the first we see.
+                cid, body, l1, l2, city, state, post, atype = r
+                # Prefer Type=1 (current). Otherwise keep the first we see.
                 if cid not in addresses_by_cid or atype == 1:
                     addresses_by_cid[cid] = {
+                        "body": body,
                         "line1": l1, "line2": l2, "city": city,
                         "state": state, "postcode": post,
                     }
 
     def fmt_addr(a: dict) -> str:
         if not a: return ""
-        bits = [a.get("line1"), a.get("line2"), a.get("city"), a.get("state"), a.get("postcode")]
+        # Prefer the structured columns if present; fall back to AddressBody.
+        if a.get("line1") or a.get("city"):
+            bits = [a.get("line1"), a.get("line2"), a.get("city"), a.get("state"), a.get("postcode")]
+            return ", ".join(b for b in bits if b)
+        body = (a.get("body") or "").strip()
+        if body:
+            extras = [a.get("state"), a.get("postcode")]
+            extras = [e for e in extras if e and e not in body]
+            return body + (", " + ", ".join(extras) if extras else "")
+        bits = [a.get("state"), a.get("postcode")]
         return ", ".join(b for b in bits if b)
 
     def fmt_name(c: dict) -> str:
@@ -462,7 +474,13 @@ def main() -> None:
         for aref, ttid, gtref, done, descr in cur.fetchall():
             ttid = int(ttid)
             who = "GT" if gtref is not None else "BRW"
-            label_stem = (descr or "").strip() or TASK_WHITELIST.get(ttid, f"Task #{ttid}")
+            human_label = TASK_WHITELIST.get(ttid, f"Task #{ttid}")
+            descr_str = (descr or "").strip()
+            # Tasks.Description is the bare suffix ("All", "ColumboPage" etc).
+            # Prepend the whitelist human label so the timeline reads cleanly.
+            label_stem = human_label
+            if descr_str and descr_str.lower() not in human_label.lower():
+                label_stem = f"{human_label} ({descr_str})"
             ev = {
                 "kind": "task_completed",
                 "at": iso(done),
@@ -579,8 +597,18 @@ def main() -> None:
     # ──────────── (f) WebBehaviours ────────────────────────────────
     wb_aref = pick(wb_cols, "ARef", "Aref")
     wb_dt = pick(wb_cols, "DateCreatedUtc", "DateTimeUtc", "DateTimeUTC")
-    wb_url = pick(wb_cols, "Url", "Page", "PageUrl", "Path", "PageName", "PagePath", "Location")
-    wb_action = pick(wb_cols, "Action", "EventType", "Behaviour", "BehaviourType", "Event")
+    # The Brokers/WebBehaviours column names vary. Pick anything that looks
+    # like a URL/path/page or behaviour-type column heuristically.
+    def _heuristic_pick(cols, keywords):
+        for c in sorted(cols):
+            cl = c.lower()
+            if any(k in cl for k in keywords):
+                return c
+        return None
+    wb_url = pick(wb_cols, "Url", "Page", "PageUrl", "Path", "PageName", "PagePath", "Location") \
+             or _heuristic_pick(wb_cols, ["url", "page", "path", "location", "uri", "form"])
+    wb_action = pick(wb_cols, "Action", "EventType", "Behaviour", "BehaviourType", "Event") \
+                or _heuristic_pick(wb_cols, ["action", "behav", "event", "type", "name", "kind"])
     print(f"# WebBehaviours chosen: aref={wb_aref} dt={wb_dt} url={wb_url} action={wb_action}", flush=True)
     if wb_aref and wb_dt:
         for chunk in chunked(all_sampled, 1500):
