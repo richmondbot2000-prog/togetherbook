@@ -6,9 +6,11 @@
 <title>TogetherBOOK — Pipeline</title>
 <link rel="icon" type="image/png" href="site-icon.png">
 <link rel="apple-touch-icon" href="site-icon.png">
-<link rel="stylesheet" href="quiet-tokens.css?v=1778433838">
-<link rel="stylesheet" href="quiet.css?v=1778433838">
-<link rel="stylesheet" href="quiet-extras.css?v=1778433838">
+<link rel="stylesheet" href="quiet-tokens.css?v=1778434047">
+<link rel="stylesheet" href="quiet.css?v=1778434047">
+<link rel="stylesheet" href="quiet-extras.css?v=1778434047">
+<script src="https://cdn.jsdelivr.net/npm/d3@7.9.0/dist/d3.min.js" crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/d3-sankey@0.12.3/dist/d3-sankey.min.js" crossorigin="anonymous"></script>
 <style>
   .pl-section { max-width: 1200px; margin: 0 auto; padding: 24px 0 48px; }
   @media (max-width: 800px) { .pl-section { padding: 2px 0 32px; } }
@@ -203,7 +205,7 @@
 
 <header class="qb-topbar">
   <a class="qb-brand" href="index.html" aria-label="TogetherBOOK — home">
-    <img class="qb-brand-logo" src="togetherbook-logo.png?v=1778433838" alt="TogetherBOOK">
+    <img class="qb-brand-logo" src="togetherbook-logo.png?v=1778434047" alt="TogetherBOOK">
   </a>
   <button class="qb-hamburger" aria-label="Toggle navigation menu" aria-expanded="false"
           onclick="document.body.classList.toggle('nav-open');this.setAttribute('aria-expanded',document.body.classList.contains('nav-open'))">
@@ -381,6 +383,181 @@
   }
 
   function drawSankey(d) {
+    if (!window.d3 || !window.d3.sankey) {
+      document.getElementById("plCanvas").innerHTML =
+        `<div class="pl-empty">d3 / d3-sankey didn't load — chart unavailable.</div>`;
+      return;
+    }
+
+    // Build nodes + links for d3-sankey.
+    const stages = Object.fromEntries(d.stages.map(s => [s.key, s]));
+    const breakdown = (d.leads && d.leads.by_result_label) || [];
+
+    // Categorise rejection reasons so we don't end up with 16 invisible slivers.
+    function bucket(typeId) {
+      if (typeId === 1 || typeId === 30) return null;  // these are 'purchased'
+      if ([2, 3, -1, 18].includes(typeId)) return "Already claimed / duplicate / source-excluded";
+      if (typeId === 4) return "Throttled";
+      if ([20, 17, 21, 22].includes(typeId)) return "Failed scorecard / counteroffer";
+      if ([5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 23, 24, 25, 26, 27].includes(typeId)) return "Invalid / ineligible";
+      return "Other";
+    }
+
+    // Aggregate the rejection breakdown into our four+other buckets
+    const rejectByBucket = {};
+    for (const r of breakdown) {
+      const b = bucket(r.type_id);
+      if (!b) continue;
+      rejectByBucket[b] = (rejectByBucket[b] || 0) + r.count;
+    }
+
+    // Build node + link arrays. d3-sankey identifies nodes by name string.
+    const nodes = [];
+    const links = [];
+    const seen = new Set();
+    function addNode(name, kind = "stage") {
+      if (seen.has(name)) return;
+      seen.add(name);
+      nodes.push({ name, kind });
+    }
+    function addLink(source, target, value, kind = "flow") {
+      if (value <= 0) return;
+      links.push({ source, target, value, kind });
+    }
+
+    // Lead funnel (left side)
+    addNode("Leads presented", "entry");
+    addNode("Leads purchased", "purchased");
+    addLink("Leads presented", "Leads purchased",
+            (stages.leads_purchased && stages.leads_purchased.count) || 0);
+    // Rejection buckets — biggest first
+    for (const [name, count] of Object.entries(rejectByBucket).sort((a, b) => b[1] - a[1])) {
+      addNode(name, "drop");
+      addLink("Leads presented", name, count);
+    }
+
+    // Convergence
+    addNode("Application started", "stage");
+    addLink("Leads purchased", "Application started", d.apps.purchased_path || 0);
+    addNode("Direct applications", "entry");
+    addLink("Direct applications", "Application started", d.apps.direct_path || 0);
+
+    // Application pipeline (right side) — each stage either continues or drops
+    function pipeline(fromName, toStage) {
+      addNode(toStage.label, "stage");
+      addLink(fromName, toStage.label, toStage.count);
+      if (toStage.drop_count > 0) {
+        const dropName = toStage.drop_label || `Dropped at ${toStage.label}`;
+        addNode(dropName, "drop");
+        addLink(fromName, dropName, toStage.drop_count);
+      }
+      return toStage.label;
+    }
+
+    let prev = "Application started";
+    prev = pipeline(prev, stages.apply1);
+    prev = pipeline(prev, stages.invite_gt);
+    prev = pipeline(prev, stages.gt_accepted);
+    prev = pipeline(prev, stages.vc_ready);
+    pipeline(prev, stages.paid_out);
+
+    // Convert string-keyed links to node-index links (d3-sankey expects either)
+    const indexByName = Object.fromEntries(nodes.map((n, i) => [n.name, i]));
+    const linksWithIdx = links.map(l => ({
+      source: indexByName[l.source],
+      target: indexByName[l.target],
+      value: l.value,
+      kind: l.kind,
+    }));
+
+    // Render
+    const W = 1180;
+    const H = 720;
+    const margin = { top: 14, right: 240, bottom: 14, left: 24 };
+
+    const root = document.getElementById("plCanvas");
+    root.innerHTML = "";
+    const svg = d3.select(root)
+      .append("svg")
+      .attr("class", "pl-svg")
+      .attr("viewBox", `0 0 ${W} ${H}`)
+      .attr("preserveAspectRatio", "xMidYMid meet")
+      .attr("role", "img")
+      .attr("aria-label", "Application pipeline Sankey diagram");
+
+    const sankey = d3.sankey()
+      .nodeAlign(d3.sankeyJustify)
+      .nodeWidth(14)
+      .nodePadding(14)
+      .extent([[margin.left, margin.top], [W - margin.right, H - margin.bottom]]);
+
+    const graph = sankey({
+      nodes: nodes.map(n => Object.assign({}, n)),
+      links: linksWithIdx.map(l => Object.assign({}, l)),
+    });
+
+    const colour = n => {
+      if (n.kind === "entry") return "var(--brass-500)";
+      if (n.kind === "purchased") return "var(--sage-500)";
+      if (n.kind === "drop") return "var(--red-500)";
+      return "var(--ink-700)";
+    };
+    const linkColour = l => {
+      if (l.kind === "flow" && l.target.kind === "drop") return "var(--red-500)";
+      if (l.source.kind === "entry") return "var(--brass-500)";
+      return "var(--ink-500)";
+    };
+
+    // Links
+    svg.append("g")
+      .attr("fill", "none")
+      .selectAll("path")
+      .data(graph.links)
+      .join("path")
+      .attr("d", d3.sankeyLinkHorizontal())
+      .attr("stroke", linkColour)
+      .attr("stroke-opacity", 0.32)
+      .attr("stroke-width", l => Math.max(1, l.width))
+      .append("title")
+      .text(l => `${l.source.name} → ${l.target.name}\n${formatNumber(l.value)} (${((l.value / l.source.value) * 100).toFixed(1)}% of ${l.source.name})`);
+
+    // Nodes
+    const nodeG = svg.append("g")
+      .attr("stroke", "var(--ink-700)")
+      .attr("stroke-width", 0.5)
+      .selectAll("rect")
+      .data(graph.nodes)
+      .join("rect")
+      .attr("x", n => n.x0)
+      .attr("y", n => n.y0)
+      .attr("height", n => Math.max(1, n.y1 - n.y0))
+      .attr("width", n => n.x1 - n.x0)
+      .attr("fill", colour);
+    nodeG.append("title")
+      .text(n => `${n.name}\n${formatNumber(n.value)}`);
+
+    // Labels
+    svg.append("g")
+      .selectAll("text")
+      .data(graph.nodes)
+      .join("text")
+      .attr("x", n => n.x0 < W / 2 ? n.x1 + 6 : n.x0 - 6)
+      .attr("y", n => (n.y0 + n.y1) / 2)
+      .attr("dy", "0.35em")
+      .attr("text-anchor", n => n.x0 < W / 2 ? "start" : "end")
+      .attr("class", n => n.kind === "drop" ? "pl-drop-label" : "pl-stage-label")
+      .each(function (n) {
+        const sel = d3.select(this);
+        sel.append("tspan").text(n.name);
+        sel.append("tspan")
+          .attr("x", n.x0 < W / 2 ? n.x1 + 6 : n.x0 - 6)
+          .attr("dy", "1.2em")
+          .attr("class", "pl-stage-count")
+          .text(formatNumber(n.value));
+      });
+  }
+
+  function _legacyDrawSankey(d) {
     // Vertical funnel: a stack of horizontal rows, top to bottom.
     // Each row's full width represents the cohort entering that stage.
     // The continuing portion (left) is ink-300, the dropping portion (right)
