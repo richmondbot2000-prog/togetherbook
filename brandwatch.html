@@ -9,11 +9,11 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&family=Orbitron:wght@500;600;700;800&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="style.css?v=1778438233">
-<link rel="stylesheet" href="quiet-tokens.css?v=1778438233">
-<link rel="stylesheet" href="quiet.css?v=1778438233">
-<link rel="stylesheet" href="quiet-extras.css?v=1778438233">
-<link rel="stylesheet" href="quiet-legacy.css?v=1778438233">
+<link rel="stylesheet" href="style.css?v=1778452888">
+<link rel="stylesheet" href="quiet-tokens.css?v=1778452888">
+<link rel="stylesheet" href="quiet.css?v=1778452888">
+<link rel="stylesheet" href="quiet-extras.css?v=1778452888">
+<link rel="stylesheet" href="quiet-legacy.css?v=1778452888">
 <style>
   .bw-section { max-width: 920px; margin: 0 auto; padding: 24px 0 48px; }
   @media (max-width: 800px) { .bw-section { padding: 2px 0 32px; } }
@@ -258,7 +258,7 @@
 
 <header class="qb-topbar">
   <a class="qb-brand" href="index.html" aria-label="TogetherBOOK — home">
-    <img class="qb-brand-logo" src="togetherbook-logo.png?v=1778438233" alt="TogetherBOOK">
+    <img class="qb-brand-logo" src="togetherbook-logo.png?v=1778452888" alt="TogetherBOOK">
   </a>
   <button class="qb-hamburger" aria-label="Toggle navigation menu" aria-expanded="false"
           onclick="document.body.classList.toggle('nav-open');this.setAttribute('aria-expanded',document.body.classList.contains('nav-open'))">
@@ -299,6 +299,7 @@
           <button class="bw-pill" data-filter="source" data-value="cfpb">CFPB <span class="bw-pill-count" id="filterCountCfpb">0</span></button>
           <button class="bw-pill" data-filter="source" data-value="youtube">YouTube <span class="bw-pill-count" id="filterCountYt">0</span></button>
           <button class="bw-pill" data-filter="source" data-value="google_news">News <span class="bw-pill-count" id="filterCountGn">0</span></button>
+          <button class="bw-pill" data-filter="source" data-value="telegram">Telegram <span class="bw-pill-count" id="filterCountTg">0</span></button>
         </div>
         <div class="bw-filter-row">
           <span class="bw-filter-label">Brand</span>
@@ -336,6 +337,7 @@
     cfpb:          "CFPB",
     youtube:       "YouTube",
     google_news:   "News",
+    telegram:      "Telegram",
   };
 
   const BRAND_LABELS = {
@@ -398,6 +400,7 @@
     courtlistener: { src: "https://www.google.com/s2/favicons?sz=256&domain=courtlistener.com",    alt: "CourtListener" },
     cfpb:          { src: "https://www.google.com/s2/favicons?sz=256&domain=consumerfinance.gov", alt: "CFPB" },
     youtube:       { src: "https://www.google.com/s2/favicons?sz=256&domain=youtube.com",         alt: "YouTube" },
+    telegram:      { src: "https://www.google.com/s2/favicons?sz=256&domain=telegram.org",        alt: "Telegram" },
   };
 
   // Google News articles aren't actually published by Google News — they're
@@ -510,6 +513,7 @@
     document.getElementById("filterCountCfpb").textContent   = bs.cfpb           || 0;
     document.getElementById("filterCountYt").textContent     = bs.youtube        || 0;
     document.getElementById("filterCountGn").textContent     = bs.google_news    || 0;
+    document.getElementById("filterCountTg").textContent     = bs.telegram       || 0;
     document.getElementById("filterCountAllBr").textContent  = t.all || 0;
     document.getElementById("filterCountTl").textContent     = bb.together_loans   || 0;
     document.getElementById("filterCountTc").textContent     = bb.transform_credit || 0;
@@ -558,22 +562,64 @@
     });
   }
 
-  fetch("brandwatch.json?bust=" + Date.now())
-    .then(r => r.json())
-    .then(payload => {
-      allMentions = payload.mentions || [];
-      // Belt and braces: sort desc by date in case the file is unsorted.
-      allMentions.sort((a, b) => (b.date || "").localeCompare(a.date || ""));
-      setMeta(payload);
-      setStats(payload);
-      showSourceWarnings(payload);
-      wireFilters();
-      render();
-    })
-    .catch(err => {
-      console.error("brandwatch.json fetch failed:", err);
-      document.getElementById("bwMeta").textContent = "Could not load brandwatch.json — try again in a minute.";
-    });
+  // Convert one entry from telegram-mentions.json into the shape used by
+  // the brandwatch feed so it can co-exist with the other sources.
+  function telegramToMention(tg) {
+    const matched = (tg.matched || []).map(m => (m || "").toLowerCase());
+    const isTC = matched.some(m => m.includes("transform"));
+    const isTL = matched.some(m => m.includes("together"));
+    const brand = isTC && !isTL ? "transform_credit"
+                : isTL && !isTC ? "together_loans"
+                : isTC ? "transform_credit"
+                : "together_loans";
+    const dateOnly = (tg.posted_at || "").slice(0, 10);
+    return {
+      source: "telegram",
+      url: tg.message_url,
+      title: "@" + (tg.channel || "unknown") + " on Telegram",
+      snippet: tg.excerpt || "",
+      date: dateOnly,
+      author: tg.channel ? "@" + tg.channel : null,
+      site_name: "Telegram",
+      site_domain: "t.me",
+      brand: brand,
+      matched: tg.matched || [],
+      has_media: !!tg.has_media,
+    };
+  }
+
+  Promise.all([
+    fetch("brandwatch.json?bust=" + Date.now())
+      .then(r => r.ok ? r.json() : Promise.reject("brandwatch.json HTTP " + r.status)),
+    fetch("telegram-mentions.json?bust=" + Date.now())
+      .then(r => r.ok ? r.json() : null)
+      .catch(() => null),
+  ]).then(([payload, telegram]) => {
+    allMentions = payload.mentions || [];
+    if (telegram && Array.isArray(telegram.mentions)) {
+      const tgMentions = telegram.mentions.map(telegramToMention);
+      allMentions = allMentions.concat(tgMentions);
+      // Patch totals so the filter pills get an accurate Telegram count
+      payload.totals = payload.totals || { by_source: {}, by_brand: {} };
+      payload.totals.by_source = payload.totals.by_source || {};
+      payload.totals.by_source.telegram = tgMentions.length;
+      payload.totals.all = (payload.totals.all || 0) + tgMentions.length;
+      // Bump by_brand counts too
+      payload.totals.by_brand = payload.totals.by_brand || {};
+      for (const m of tgMentions) {
+        payload.totals.by_brand[m.brand] = (payload.totals.by_brand[m.brand] || 0) + 1;
+      }
+    }
+    allMentions.sort((a, b) => (b.date || "").localeCompare(a.date || ""));
+    setMeta(payload);
+    setStats(payload);
+    showSourceWarnings(payload);
+    wireFilters();
+    render();
+  }).catch(err => {
+    console.error("brandwatch.json fetch failed:", err);
+    document.getElementById("bwMeta").textContent = "Could not load brandwatch.json — try again in a minute.";
+  });
 </script>
 
 <script>

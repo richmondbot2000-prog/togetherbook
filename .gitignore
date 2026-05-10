@@ -1,2 +1,13 @@
 book_nokia_logo_transparent.png
 tables-over-1000.txt
+
+# Telegram monitor: session file is a credential, the DB holds raw
+# (un-redacted) Telegram messages — neither belongs in the repo.
+# Only the redacted telegram-mentions.json is published.
+monitor.session
+monitor.session-journal
+*.session
+*.session-journal
+telegram-monitor.db
+telegram-monitor.db-journal
+.venv/

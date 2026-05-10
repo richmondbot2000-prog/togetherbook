@@ -1,0 +1,21 @@
+{
+  "_comment": "Watchlist for Telegram brand monitoring. Edit channels and keywords as needed. Channel names are public Telegram usernames WITHOUT the @ prefix.",
+
+  "channels": [],
+
+  "keywords": [
+    "Transform Credit",
+    "transformcredit",
+    "transformcredit.com",
+    "Together Loans",
+    "togetherloans",
+    "togetherloans.com"
+  ],
+
+  "regex_keywords": [
+    "transf[o0]rm\\s*cred[i1]t",
+    "t[o0]gether\\s*l[o0]ans",
+    "transform[\\-_\\s]?credit",
+    "together[\\-_\\s]?loans?"
+  ]
+}

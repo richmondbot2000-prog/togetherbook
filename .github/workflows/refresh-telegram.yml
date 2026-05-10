@@ -1,0 +1,114 @@
+name: Refresh telegram mentions
+
+# Runs the Telegram brand-mention monitor in backfill mode against the
+# configured public channels, then exports a public-safe JSON for the
+# Brandwatch page.
+#
+# This workflow only runs if all required secrets are present:
+#   TG_API_ID, TG_API_HASH         — from my.telegram.org
+#   TG_SESSION_B64                 — base64 of the monitor.session file
+#                                    (authenticated locally; see TELEGRAM_SETUP.md)
+# Optional:
+#   SLACK_WEBHOOK_URL              — Slack alerts on matches
+
+on:
+  schedule:
+    - cron: '40 6-23 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: refresh-telegram
+  cancel-in-progress: false
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Skip if secrets missing
+        id: guard
+        env:
+          TG_API_ID: ${{ secrets.TG_API_ID }}
+          TG_API_HASH: ${{ secrets.TG_API_HASH }}
+          TG_SESSION_B64: ${{ secrets.TG_SESSION_B64 }}
+        run: |
+          if [ -z "$TG_API_ID" ] || [ -z "$TG_API_HASH" ] || [ -z "$TG_SESSION_B64" ]; then
+            echo "secrets not yet configured — see TELEGRAM_SETUP.md"
+            echo "run=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "run=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Set up Python
+        if: steps.guard.outputs.run == 'true'
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install deps
+        if: steps.guard.outputs.run == 'true'
+        run: pip install --quiet telethon==1.* httpx
+
+      - name: Cache SQLite monitor DB
+        if: steps.guard.outputs.run == 'true'
+        uses: actions/cache@v4
+        with:
+          path: telegram-monitor.db
+          key: telegram-monitor-db-v1
+
+      - name: Restore session file
+        if: steps.guard.outputs.run == 'true'
+        env:
+          TG_SESSION_B64: ${{ secrets.TG_SESSION_B64 }}
+        run: |
+          echo "$TG_SESSION_B64" | base64 -d > monitor.session
+          chmod 600 monitor.session
+
+      - name: Run backfill (last 7 days)
+        if: steps.guard.outputs.run == 'true'
+        env:
+          TG_API_ID: ${{ secrets.TG_API_ID }}
+          TG_API_HASH: ${{ secrets.TG_API_HASH }}
+          TG_SESSION: monitor
+          MONITOR_CONFIG: telegram-watchlist.json
+          MONITOR_DB: telegram-monitor.db
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+        run: python scripts/telegram_monitor.py backfill --days 7
+
+      - name: Export public mentions JSON
+        if: steps.guard.outputs.run == 'true'
+        env:
+          MONITOR_DB: telegram-monitor.db
+          MENTIONS_JSON: telegram-mentions.json
+        run: python scripts/scan_telegram.py
+
+      - name: Commit if telegram-mentions.json changed
+        if: steps.guard.outputs.run == 'true'
+        run: |
+          set -euo pipefail
+          git config user.name  "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add telegram-mentions.json
+          if git diff --cached --quiet -- telegram-mentions.json; then
+            echo "no changes — nothing to commit"
+            exit 0
+          fi
+          COUNT=$(python -c "import json; print(json.load(open('telegram-mentions.json'))['mention_count'])")
+          git commit -m "Refresh telegram mentions (${COUNT} hits)"
+          for attempt in 1 2 3; do
+            if git push; then break; fi
+            if [ "$attempt" -eq 3 ]; then exit 1; fi
+            git fetch origin main
+            git rebase origin/main
+          done
+
+      - name: Clean up session
+        if: always()
+        run: rm -f monitor.session monitor.session-journal
