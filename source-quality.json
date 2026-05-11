@@ -1,0 +1,1514 @@
+{
+  "snapshot_at": "2026-05-11T13:51:52.960877+00:00",
+  "snapshot_date": "2026-05-11",
+  "lender_id": 6,
+  "lender_label": "Transform Credit (LenderId 6, USA)",
+  "window_days": 60,
+  "window_start": "2026-03-12",
+  "window_end": "2026-05-11",
+  "min_volume_for_ranking": 200,
+  "min_excluded_for_ranking": 200,
+  "weak_accepted": {
+    "median_paid_out_rate": 0.0015553319214113613,
+    "q1_paid_out_rate": 0.001132267352528624,
+    "qualifying_sources": 42,
+    "sources": [
+      {
+        "source_id": 536,
+        "friendly_name": "YA Solutions",
+        "applications": 181,
+        "paid_out": 0,
+        "leads_purchased": 212,
+        "qualifies": true,
+        "paid_out_rate": 0.0,
+        "rate_vs_median": 0.0,
+        "flag": "below Q1"
+      },
+      {
+        "source_id": 581,
+        "friendly_name": "IPW1 LTD",
+        "applications": 258,
+        "paid_out": 0,
+        "leads_purchased": 322,
+        "qualifies": true,
+        "paid_out_rate": 0.0,
+        "rate_vs_median": 0.0,
+        "flag": "below Q1"
+      },
+      {
+        "source_id": 234,
+        "friendly_name": "Affiliate ROI",
+        "applications": 317,
+        "paid_out": 0,
+        "leads_purchased": 422,
+        "qualifies": true,
+        "paid_out_rate": 0.0,
+        "rate_vs_median": 0.0,
+        "flag": "below Q1"
+      },
+      {
+        "source_id": 306,
+        "friendly_name": "Teapot",
+        "applications": 560,
+        "paid_out": 0,
+        "leads_purchased": 1434,
+        "qualifies": true,
+        "paid_out_rate": 0.0,
+        "rate_vs_median": 0.0,
+        "flag": "below Q1"
+      },
+      {
+        "source_id": 476,
+        "friendly_name": "Leads Market",
+        "applications": 2829,
+        "paid_out": 2,
+        "leads_purchased": 3125,
+        "qualifies": true,
+        "paid_out_rate": 0.00064,
+        "rate_vs_median": 0.4114877288824897,
+        "flag": "below Q1"
+      },
+      {
+        "source_id": 143,
+        "friendly_name": "Leadtree Global",
+        "applications": 677191,
+        "paid_out": 1068,
+        "leads_purchased": 1579572,
+        "qualifies": true,
+        "paid_out_rate": 0.000676132521974307,
+        "rate_vs_median": 0.4347191185793713,
+        "flag": "below Q1"
+      },
+      {
+        "source_id": 625,
+        "friendly_name": "TrySmartly",
+        "applications": 1390,
+        "paid_out": 1,
+        "leads_purchased": 1410,
+        "qualifies": true,
+        "paid_out_rate": 0.0007092198581560284,
+        "rate_vs_median": 0.455992607360915,
+        "flag": "below Q1"
+      },
+      {
+        "source_id": 539,
+        "friendly_name": "PROFFILIANT, LLC",
+        "applications": 8352,
+        "paid_out": 8,
+        "leads_purchased": 8657,
+        "qualifies": true,
+        "paid_out_rate": 0.0009241076585422202,
+        "rate_vs_median": 0.5941546275882085,
+        "flag": "below Q1"
+      },
+      {
+        "source_id": 488,
+        "friendly_name": "Dot 818",
+        "applications": 153834,
+        "paid_out": 203,
+        "leads_purchased": 186857,
+        "qualifies": true,
+        "paid_out_rate": 0.001086392267883997,
+        "rate_vs_median": 0.6984954484173176,
+        "flag": "below Q1"
+      },
+      {
+        "source_id": 479,
+        "friendly_name": "Discover Nimbus",
+        "applications": 29409,
+        "paid_out": 42,
+        "leads_purchased": 37206,
+        "qualifies": true,
+        "paid_out_rate": 0.001128850185453959,
+        "rate_vs_median": 0.7257937485328545,
+        "flag": "below Q1"
+      },
+      {
+        "source_id": 518,
+        "friendly_name": "Leads Gate",
+        "applications": 101251,
+        "paid_out": 152,
+        "leads_purchased": 134109,
+        "qualifies": true,
+        "paid_out_rate": 0.001133406408220179,
+        "rate_vs_median": 0.7287231700302835,
+        "flag": "below median"
+      },
+      {
+        "source_id": 607,
+        "friendly_name": "PingLogix LLC",
+        "applications": 75123,
+        "paid_out": 91,
+        "leads_purchased": 76380,
+        "qualifies": true,
+        "paid_out_rate": 0.0011914113642314743,
+        "rate_vs_median": 0.766017431925622,
+        "flag": "below median"
+      },
+      {
+        "source_id": 487,
+        "friendly_name": "Stop Go",
+        "applications": 7850,
+        "paid_out": 15,
+        "leads_purchased": 12449,
+        "qualifies": true,
+        "paid_out_rate": 0.0012049160575146598,
+        "rate_vs_median": 0.7747002687511729,
+        "flag": "below median"
+      },
+      {
+        "source_id": 188,
+        "friendly_name": "ITMedia",
+        "applications": 10920,
+        "paid_out": 16,
+        "leads_purchased": 12840,
+        "qualifies": true,
+        "paid_out_rate": 0.0012461059190031153,
+        "rate_vs_median": 0.8011832727462805,
+        "flag": "below median"
+      },
+      {
+        "source_id": 480,
+        "friendly_name": "Leap Theory 2.0",
+        "applications": 116129,
+        "paid_out": 189,
+        "leads_purchased": 145037,
+        "qualifies": true,
+        "paid_out_rate": 0.001303115756668988,
+        "rate_vs_median": 0.8378377237229827,
+        "flag": "below median"
+      },
+      {
+        "source_id": 418,
+        "friendly_name": "Acquire Interactive",
+        "applications": 32676,
+        "paid_out": 53,
+        "leads_purchased": 40610,
+        "qualifies": true,
+        "paid_out_rate": 0.001305097266683083,
+        "rate_vs_median": 0.8391117347471356,
+        "flag": "below median"
+      },
+      {
+        "source_id": 477,
+        "friendly_name": "Intimate Interactive",
+        "applications": 9222,
+        "paid_out": 17,
+        "leads_purchased": 12821,
+        "qualifies": true,
+        "paid_out_rate": 0.0013259496139146711,
+        "rate_vs_median": 0.8525187425661908,
+        "flag": "below median"
+      },
+      {
+        "source_id": 149,
+        "friendly_name": "Pingyo",
+        "applications": 43232,
+        "paid_out": 82,
+        "leads_purchased": 58945,
+        "qualifies": true,
+        "paid_out_rate": 0.001391127322079905,
+        "rate_vs_median": 0.8944247224203749,
+        "flag": "below median"
+      },
+      {
+        "source_id": 569,
+        "friendly_name": "United Credit",
+        "applications": 1382,
+        "paid_out": 2,
+        "leads_purchased": 1415,
+        "qualifies": true,
+        "paid_out_rate": 0.0014134275618374558,
+        "rate_vs_median": 0.9087626521256397,
+        "flag": "below median"
+      },
+      {
+        "source_id": 498,
+        "friendly_name": "Credit Ninja",
+        "applications": 18671,
+        "paid_out": 32,
+        "leads_purchased": 22002,
+        "qualifies": true,
+        "paid_out_rate": 0.00145441323516044,
+        "rate_vs_median": 0.935114373426256,
+        "flag": "below median"
+      },
+      {
+        "source_id": 415,
+        "friendly_name": "Round Sky",
+        "applications": 39171,
+        "paid_out": 109,
+        "leads_purchased": 70578,
+        "qualifies": true,
+        "paid_out_rate": 0.0015443906033041459,
+        "rate_vs_median": 0.9929652841579392,
+        "flag": "below median"
+      },
+      {
+        "source_id": 482,
+        "friendly_name": "Search ROI, LLC",
+        "applications": 153913,
+        "paid_out": 323,
+        "leads_purchased": 206222,
+        "qualifies": true,
+        "paid_out_rate": 0.001566273239518577,
+        "rate_vs_median": 1.007034715842061,
+        "flag": null
+      },
+      {
+        "source_id": 614,
+        "friendly_name": "TruePath Leads",
+        "applications": 41546,
+        "paid_out": 69,
+        "leads_purchased": 43383,
+        "qualifies": true,
+        "paid_out_rate": 0.0015904847520918331,
+        "rate_vs_median": 1.0226014975945281,
+        "flag": null
+      },
+      {
+        "source_id": 238,
+        "friendly_name": "Zero P",
+        "applications": 60041,
+        "paid_out": 135,
+        "leads_purchased": 84626,
+        "qualifies": true,
+        "paid_out_rate": 0.0015952544135372107,
+        "rate_vs_median": 1.0256681494003044,
+        "flag": null
+      },
+      {
+        "source_id": 619,
+        "friendly_name": "Bume International LLC",
+        "applications": 13387,
+        "paid_out": 27,
+        "leads_purchased": 14663,
+        "qualifies": true,
+        "paid_out_rate": 0.0018413694332674077,
+        "rate_vs_median": 1.1839076970763167,
+        "flag": null
+      },
+      {
+        "source_id": 620,
+        "friendly_name": "Highwinds",
+        "applications": 18308,
+        "paid_out": 36,
+        "leads_purchased": 18845,
+        "qualifies": true,
+        "paid_out_rate": 0.0019103210400636774,
+        "rate_vs_median": 1.2282401034566222,
+        "flag": null
+      },
+      {
+        "source_id": 551,
+        "friendly_name": "Fix Media, LLC",
+        "applications": 7355,
+        "paid_out": 16,
+        "leads_purchased": 8099,
+        "qualifies": true,
+        "paid_out_rate": 0.0019755525373502903,
+        "rate_vs_median": 1.2701806670036107,
+        "flag": null
+      },
+      {
+        "source_id": 473,
+        "friendly_name": "Lead Economy",
+        "applications": 15321,
+        "paid_out": 37,
+        "leads_purchased": 18686,
+        "qualifies": true,
+        "paid_out_rate": 0.001980092047522209,
+        "rate_vs_median": 1.2730993431456135,
+        "flag": null
+      },
+      {
+        "source_id": 141,
+        "friendly_name": "AvenueLink",
+        "applications": 32310,
+        "paid_out": 123,
+        "leads_purchased": 53962,
+        "qualifies": true,
+        "paid_out_rate": 0.0022793817871835736,
+        "rate_vs_median": 1.465527554475436,
+        "flag": null
+      },
+      {
+        "source_id": 177,
+        "friendly_name": "Monevo",
+        "applications": 2660,
+        "paid_out": 9,
+        "leads_purchased": 3638,
+        "qualifies": true,
+        "paid_out_rate": 0.002473886750962067,
+        "rate_vs_median": 1.5905844385404098,
+        "flag": null
+      },
+      {
+        "source_id": 483,
+        "friendly_name": "MARKET BULLET, LLC",
+        "applications": 30151,
+        "paid_out": 98,
+        "leads_purchased": 38001,
+        "qualifies": true,
+        "paid_out_rate": 0.0025788795031709694,
+        "rate_vs_median": 1.6580894840959775,
+        "flag": null
+      },
+      {
+        "source_id": 353,
+        "friendly_name": "CreditBuilder",
+        "applications": 524,
+        "paid_out": 2,
+        "leads_purchased": 694,
+        "qualifies": true,
+        "paid_out_rate": 0.002881844380403458,
+        "rate_vs_median": 1.8528806235702884,
+        "flag": null
+      },
+      {
+        "source_id": 593,
+        "friendly_name": "Dogstar Digital Corp",
+        "applications": 26973,
+        "paid_out": 84,
+        "leads_purchased": 28454,
+        "qualifies": true,
+        "paid_out_rate": 0.0029521332677303717,
+        "rate_vs_median": 1.8980728339012711,
+        "flag": null
+      },
+      {
+        "source_id": 560,
+        "friendly_name": "Money Lion",
+        "applications": 45453,
+        "paid_out": 305,
+        "leads_purchased": 67501,
+        "qualifies": true,
+        "paid_out_rate": 0.0045184515784951335,
+        "rate_vs_median": 2.9051365282819734,
+        "flag": null
+      },
+      {
+        "source_id": 541,
+        "friendly_name": "Empire Webtech Pvt. Ltd.",
+        "applications": 12716,
+        "paid_out": 89,
+        "leads_purchased": 17798,
+        "qualifies": true,
+        "paid_out_rate": 0.0050005618608832455,
+        "rate_vs_median": 3.2151091301113173,
+        "flag": null
+      },
+      {
+        "source_id": 528,
+        "friendly_name": "Bing PPC",
+        "applications": 458,
+        "paid_out": 7,
+        "leads_purchased": 1392,
+        "qualifies": true,
+        "paid_out_rate": 0.005028735632183908,
+        "rate_vs_median": 3.2332234444340737,
+        "flag": null
+      },
+      {
+        "source_id": 180,
+        "friendly_name": "LendingTree",
+        "applications": 10088,
+        "paid_out": 82,
+        "leads_purchased": 15593,
+        "qualifies": true,
+        "paid_out_rate": 0.005258769960879882,
+        "rate_vs_median": 3.3811239186217525,
+        "flag": null
+      },
+      {
+        "source_id": 170,
+        "friendly_name": "SuperMoney",
+        "applications": 513,
+        "paid_out": 3,
+        "leads_purchased": 550,
+        "qualifies": true,
+        "paid_out_rate": 0.005454545454545455,
+        "rate_vs_median": 3.506997689339401,
+        "flag": null
+      },
+      {
+        "source_id": 622,
+        "friendly_name": "Lead FollowUp",
+        "applications": 1696,
+        "paid_out": 12,
+        "leads_purchased": 1798,
+        "qualifies": true,
+        "paid_out_rate": 0.006674082313681869,
+        "rate_vs_median": 4.291098396299601,
+        "flag": null
+      },
+      {
+        "source_id": null,
+        "friendly_name": "Unknown source",
+        "applications": 9724,
+        "paid_out": 119,
+        "leads_purchased": 16356,
+        "qualifies": true,
+        "paid_out_rate": 0.007275617510393739,
+        "rate_vs_median": 4.67785519620249,
+        "flag": null
+      },
+      {
+        "source_id": 40,
+        "friendly_name": "GooglePPC",
+        "applications": 11993,
+        "paid_out": 279,
+        "leads_purchased": 16478,
+        "qualifies": true,
+        "paid_out_rate": 0.016931666464376743,
+        "rate_vs_median": 10.886207780659687,
+        "flag": null
+      },
+      {
+        "source_id": 540,
+        "friendly_name": "Refer a Friend",
+        "applications": 242,
+        "paid_out": 5,
+        "leads_purchased": 266,
+        "qualifies": true,
+        "paid_out_rate": 0.018796992481203006,
+        "rate_vs_median": 12.085518352986655,
+        "flag": null
+      }
+    ]
+  },
+  "blocked_to_reconsider": [
+    {
+      "source_id": 483,
+      "friendly_name": "MARKET BULLET, LLC",
+      "excluded_count": 2629,
+      "bounceback_leads": 1231,
+      "bounceback_arefs": 4795,
+      "bounceback_paid": 8,
+      "bounceback_rate": 0.4682388740966147,
+      "bounceback_paid_rate": 0.0016684045881126173,
+      "bounceback_paid_per_excluded": 0.0030429821224800305,
+      "by_strategy": {
+        "gov_id": 387,
+        "phone_dob": 770,
+        "email_dob": 1133
+      },
+      "top_destinations": [
+        {
+          "source_id": 488,
+          "friendly_name": "Dot 818",
+          "bounced_count": 11502
+        },
+        {
+          "source_id": 480,
+          "friendly_name": "Leap Theory 2.0",
+          "bounced_count": 5513
+        },
+        {
+          "source_id": 477,
+          "friendly_name": "Intimate Interactive",
+          "bounced_count": 2848
+        },
+        {
+          "source_id": 620,
+          "friendly_name": "Highwinds",
+          "bounced_count": 1066
+        },
+        {
+          "source_id": 614,
+          "friendly_name": "TruePath Leads",
+          "bounced_count": 1036
+        }
+      ]
+    },
+    {
+      "source_id": 476,
+      "friendly_name": "Leads Market",
+      "excluded_count": 2000,
+      "bounceback_leads": 1175,
+      "bounceback_arefs": 1190,
+      "bounceback_paid": 3,
+      "bounceback_rate": 0.5875,
+      "bounceback_paid_rate": 0.0025210084033613447,
+      "bounceback_paid_per_excluded": 0.0015,
+      "by_strategy": {
+        "gov_id": 190,
+        "phone_dob": 874,
+        "email_dob": 1119
+      },
+      "top_destinations": [
+        {
+          "source_id": 143,
+          "friendly_name": "Leadtree Global",
+          "bounced_count": 874
+        },
+        {
+          "source_id": 541,
+          "friendly_name": "Empire Webtech Pvt. Ltd.",
+          "bounced_count": 553
+        },
+        {
+          "source_id": 560,
+          "friendly_name": "Money Lion",
+          "bounced_count": 216
+        },
+        {
+          "source_id": 482,
+          "friendly_name": "Search ROI, LLC",
+          "bounced_count": 201
+        },
+        {
+          "source_id": 238,
+          "friendly_name": "Zero P",
+          "bounced_count": 165
+        }
+      ]
+    },
+    {
+      "source_id": 473,
+      "friendly_name": "Lead Economy",
+      "excluded_count": 5420,
+      "bounceback_leads": 1291,
+      "bounceback_arefs": 4829,
+      "bounceback_paid": 8,
+      "bounceback_rate": 0.23819188191881918,
+      "bounceback_paid_rate": 0.0016566576931041624,
+      "bounceback_paid_per_excluded": 0.0014760147601476014,
+      "by_strategy": {
+        "gov_id": 448,
+        "phone_dob": 932,
+        "email_dob": 1125
+      },
+      "top_destinations": [
+        {
+          "source_id": 614,
+          "friendly_name": "TruePath Leads",
+          "bounced_count": 5715
+        },
+        {
+          "source_id": 488,
+          "friendly_name": "Dot 818",
+          "bounced_count": 5546
+        },
+        {
+          "source_id": 143,
+          "friendly_name": "Leadtree Global",
+          "bounced_count": 2338
+        },
+        {
+          "source_id": 479,
+          "friendly_name": "Discover Nimbus",
+          "bounced_count": 1819
+        },
+        {
+          "source_id": 480,
+          "friendly_name": "Leap Theory 2.0",
+          "bounced_count": 1684
+        }
+      ]
+    },
+    {
+      "source_id": 480,
+      "friendly_name": "Leap Theory 2.0",
+      "excluded_count": 9259,
+      "bounceback_leads": 1123,
+      "bounceback_arefs": 4259,
+      "bounceback_paid": 8,
+      "bounceback_rate": 0.12128739604708932,
+      "bounceback_paid_rate": 0.0018783752054472881,
+      "bounceback_paid_per_excluded": 0.000864024192677395,
+      "by_strategy": {
+        "gov_id": 285,
+        "phone_dob": 621,
+        "email_dob": 1066
+      },
+      "top_destinations": [
+        {
+          "source_id": 488,
+          "friendly_name": "Dot 818",
+          "bounced_count": 3159
+        },
+        {
+          "source_id": 143,
+          "friendly_name": "Leadtree Global",
+          "bounced_count": 382
+        },
+        {
+          "source_id": 477,
+          "friendly_name": "Intimate Interactive",
+          "bounced_count": 336
+        },
+        {
+          "source_id": 483,
+          "friendly_name": "MARKET BULLET, LLC",
+          "bounced_count": 317
+        },
+        {
+          "source_id": 149,
+          "friendly_name": "Pingyo",
+          "bounced_count": 298
+        }
+      ]
+    },
+    {
+      "source_id": 607,
+      "friendly_name": "PingLogix LLC",
+      "excluded_count": 3322,
+      "bounceback_leads": 904,
+      "bounceback_arefs": 911,
+      "bounceback_paid": 2,
+      "bounceback_rate": 0.2721252257676099,
+      "bounceback_paid_rate": 0.0021953896816684962,
+      "bounceback_paid_per_excluded": 0.0006020469596628537,
+      "by_strategy": {
+        "gov_id": 84,
+        "phone_dob": 539,
+        "email_dob": 859
+      },
+      "top_destinations": [
+        {
+          "source_id": 143,
+          "friendly_name": "Leadtree Global",
+          "bounced_count": 469
+        },
+        {
+          "source_id": 480,
+          "friendly_name": "Leap Theory 2.0",
+          "bounced_count": 224
+        },
+        {
+          "source_id": 488,
+          "friendly_name": "Dot 818",
+          "bounced_count": 210
+        },
+        {
+          "source_id": 482,
+          "friendly_name": "Search ROI, LLC",
+          "bounced_count": 136
+        },
+        {
+          "source_id": 238,
+          "friendly_name": "Zero P",
+          "bounced_count": 124
+        }
+      ]
+    },
+    {
+      "source_id": 306,
+      "friendly_name": "Teapot",
+      "excluded_count": 15163,
+      "bounceback_leads": 1212,
+      "bounceback_arefs": 1221,
+      "bounceback_paid": 4,
+      "bounceback_rate": 0.07993141198971179,
+      "bounceback_paid_rate": 0.003276003276003276,
+      "bounceback_paid_per_excluded": 0.0002638000395700059,
+      "by_strategy": {
+        "gov_id": 183,
+        "phone_dob": 823,
+        "email_dob": 1148
+      },
+      "top_destinations": [
+        {
+          "source_id": 143,
+          "friendly_name": "Leadtree Global",
+          "bounced_count": 1044
+        },
+        {
+          "source_id": 488,
+          "friendly_name": "Dot 818",
+          "bounced_count": 451
+        },
+        {
+          "source_id": 238,
+          "friendly_name": "Zero P",
+          "bounced_count": 275
+        },
+        {
+          "source_id": 482,
+          "friendly_name": "Search ROI, LLC",
+          "bounced_count": 205
+        },
+        {
+          "source_id": 415,
+          "friendly_name": "Round Sky",
+          "bounced_count": 149
+        }
+      ]
+    },
+    {
+      "source_id": 620,
+      "friendly_name": "Highwinds",
+      "excluded_count": 16737,
+      "bounceback_leads": 920,
+      "bounceback_arefs": 3180,
+      "bounceback_paid": 4,
+      "bounceback_rate": 0.054968034892752586,
+      "bounceback_paid_rate": 0.0012578616352201257,
+      "bounceback_paid_per_excluded": 0.00023899145605544601,
+      "by_strategy": {
+        "gov_id": 353,
+        "phone_dob": 594,
+        "email_dob": 801
+      },
+      "top_destinations": [
+        {
+          "source_id": 488,
+          "friendly_name": "Dot 818",
+          "bounced_count": 2926
+        },
+        {
+          "source_id": 480,
+          "friendly_name": "Leap Theory 2.0",
+          "bounced_count": 1684
+        },
+        {
+          "source_id": 477,
+          "friendly_name": "Intimate Interactive",
+          "bounced_count": 867
+        },
+        {
+          "source_id": 483,
+          "friendly_name": "MARKET BULLET, LLC",
+          "bounced_count": 604
+        },
+        {
+          "source_id": 143,
+          "friendly_name": "Leadtree Global",
+          "bounced_count": 585
+        }
+      ]
+    },
+    {
+      "source_id": 479,
+      "friendly_name": "Discover Nimbus",
+      "excluded_count": 86069,
+      "bounceback_leads": 1162,
+      "bounceback_arefs": 3884,
+      "bounceback_paid": 9,
+      "bounceback_rate": 0.013500795873078576,
+      "bounceback_paid_rate": 0.002317198764160659,
+      "bounceback_paid_per_excluded": 0.00010456726579837107,
+      "by_strategy": {
+        "gov_id": 375,
+        "phone_dob": 764,
+        "email_dob": 1099
+      },
+      "top_destinations": [
+        {
+          "source_id": 488,
+          "friendly_name": "Dot 818",
+          "bounced_count": 1511
+        },
+        {
+          "source_id": 143,
+          "friendly_name": "Leadtree Global",
+          "bounced_count": 918
+        },
+        {
+          "source_id": 480,
+          "friendly_name": "Leap Theory 2.0",
+          "bounced_count": 795
+        },
+        {
+          "source_id": 477,
+          "friendly_name": "Intimate Interactive",
+          "bounced_count": 311
+        },
+        {
+          "source_id": 482,
+          "friendly_name": "Search ROI, LLC",
+          "bounced_count": 279
+        }
+      ]
+    },
+    {
+      "source_id": 477,
+      "friendly_name": "Intimate Interactive",
+      "excluded_count": 138101,
+      "bounceback_leads": 1268,
+      "bounceback_arefs": 3533,
+      "bounceback_paid": 4,
+      "bounceback_rate": 0.009181685867589663,
+      "bounceback_paid_rate": 0.0011321822813472968,
+      "bounceback_paid_per_excluded": 2.896430873056676e-05,
+      "by_strategy": {
+        "gov_id": 410,
+        "phone_dob": 884,
+        "email_dob": 1082
+      },
+      "top_destinations": [
+        {
+          "source_id": 488,
+          "friendly_name": "Dot 818",
+          "bounced_count": 8953
+        },
+        {
+          "source_id": 480,
+          "friendly_name": "Leap Theory 2.0",
+          "bounced_count": 5205
+        },
+        {
+          "source_id": 483,
+          "friendly_name": "MARKET BULLET, LLC",
+          "bounced_count": 1548
+        },
+        {
+          "source_id": 620,
+          "friendly_name": "Highwinds",
+          "bounced_count": 1049
+        },
+        {
+          "source_id": 614,
+          "friendly_name": "TruePath Leads",
+          "bounced_count": 990
+        }
+      ]
+    },
+    {
+      "source_id": 141,
+      "friendly_name": "AvenueLink",
+      "excluded_count": 519787,
+      "bounceback_leads": 3716,
+      "bounceback_arefs": 6299,
+      "bounceback_paid": 11,
+      "bounceback_rate": 0.007149082220217128,
+      "bounceback_paid_rate": 0.001746308937926655,
+      "bounceback_paid_per_excluded": 2.1162514645422068e-05,
+      "by_strategy": {
+        "gov_id": 1038,
+        "phone_dob": 2120,
+        "email_dob": 3417
+      },
+      "top_destinations": [
+        {
+          "source_id": 488,
+          "friendly_name": "Dot 818",
+          "bounced_count": 6289
+        },
+        {
+          "source_id": 143,
+          "friendly_name": "Leadtree Global",
+          "bounced_count": 5035
+        },
+        {
+          "source_id": 480,
+          "friendly_name": "Leap Theory 2.0",
+          "bounced_count": 3407
+        },
+        {
+          "source_id": 477,
+          "friendly_name": "Intimate Interactive",
+          "bounced_count": 1741
+        },
+        {
+          "source_id": 483,
+          "friendly_name": "MARKET BULLET, LLC",
+          "bounced_count": 1026
+        }
+      ]
+    },
+    {
+      "source_id": 487,
+      "friendly_name": "Stop Go",
+      "excluded_count": 429504,
+      "bounceback_leads": 2383,
+      "bounceback_arefs": 1860,
+      "bounceback_paid": 5,
+      "bounceback_rate": 0.005548260318879452,
+      "bounceback_paid_rate": 0.002688172043010753,
+      "bounceback_paid_per_excluded": 1.1641335121442407e-05,
+      "by_strategy": {
+        "gov_id": 0,
+        "phone_dob": 1583,
+        "email_dob": 2292
+      },
+      "top_destinations": [
+        {
+          "source_id": 143,
+          "friendly_name": "Leadtree Global",
+          "bounced_count": 2268
+        },
+        {
+          "source_id": 488,
+          "friendly_name": "Dot 818",
+          "bounced_count": 648
+        },
+        {
+          "source_id": 482,
+          "friendly_name": "Search ROI, LLC",
+          "bounced_count": 524
+        },
+        {
+          "source_id": 560,
+          "friendly_name": "Money Lion",
+          "bounced_count": 404
+        },
+        {
+          "source_id": 238,
+          "friendly_name": "Zero P",
+          "bounced_count": 307
+        }
+      ]
+    },
+    {
+      "source_id": 238,
+      "friendly_name": "Zero P",
+      "excluded_count": 174358,
+      "bounceback_leads": 1048,
+      "bounceback_arefs": 1005,
+      "bounceback_paid": 2,
+      "bounceback_rate": 0.006010621824063134,
+      "bounceback_paid_rate": 0.001990049751243781,
+      "bounceback_paid_per_excluded": 1.1470652335998348e-05,
+      "by_strategy": {
+        "gov_id": 106,
+        "phone_dob": 707,
+        "email_dob": 974
+      },
+      "top_destinations": [
+        {
+          "source_id": 143,
+          "friendly_name": "Leadtree Global",
+          "bounced_count": 701
+        },
+        {
+          "source_id": 488,
+          "friendly_name": "Dot 818",
+          "bounced_count": 291
+        },
+        {
+          "source_id": 482,
+          "friendly_name": "Search ROI, LLC",
+          "bounced_count": 267
+        },
+        {
+          "source_id": 480,
+          "friendly_name": "Leap Theory 2.0",
+          "bounced_count": 167
+        },
+        {
+          "source_id": 607,
+          "friendly_name": "PingLogix LLC",
+          "bounced_count": 143
+        }
+      ]
+    },
+    {
+      "source_id": 188,
+      "friendly_name": "ITMedia",
+      "excluded_count": 100944,
+      "bounceback_leads": 231,
+      "bounceback_arefs": 232,
+      "bounceback_paid": 1,
+      "bounceback_rate": 0.0022883975273418925,
+      "bounceback_paid_rate": 0.004310344827586207,
+      "bounceback_paid_per_excluded": 9.906482802345855e-06,
+      "by_strategy": {
+        "gov_id": 132,
+        "phone_dob": 66,
+        "email_dob": 106
+      },
+      "top_destinations": [
+        {
+          "source_id": 238,
+          "friendly_name": "Zero P",
+          "bounced_count": 75
+        },
+        {
+          "source_id": 143,
+          "friendly_name": "Leadtree Global",
+          "bounced_count": 62
+        },
+        {
+          "source_id": 607,
+          "friendly_name": "PingLogix LLC",
+          "bounced_count": 49
+        },
+        {
+          "source_id": 488,
+          "friendly_name": "Dot 818",
+          "bounced_count": 39
+        },
+        {
+          "source_id": 418,
+          "friendly_name": "Acquire Interactive",
+          "bounced_count": 26
+        }
+      ]
+    },
+    {
+      "source_id": 488,
+      "friendly_name": "Dot 818",
+      "excluded_count": 1748924,
+      "bounceback_leads": 2068,
+      "bounceback_arefs": 5623,
+      "bounceback_paid": 10,
+      "bounceback_rate": 0.0011824413182047932,
+      "bounceback_paid_rate": 0.0017784101013693758,
+      "bounceback_paid_per_excluded": 5.7178013452843005e-06,
+      "by_strategy": {
+        "gov_id": 528,
+        "phone_dob": 1179,
+        "email_dob": 1946
+      },
+      "top_destinations": [
+        {
+          "source_id": 480,
+          "friendly_name": "Leap Theory 2.0",
+          "bounced_count": 4632
+        },
+        {
+          "source_id": 614,
+          "friendly_name": "TruePath Leads",
+          "bounced_count": 2728
+        },
+        {
+          "source_id": 477,
+          "friendly_name": "Intimate Interactive",
+          "bounced_count": 2041
+        },
+        {
+          "source_id": 483,
+          "friendly_name": "MARKET BULLET, LLC",
+          "bounced_count": 1388
+        },
+        {
+          "source_id": 143,
+          "friendly_name": "Leadtree Global",
+          "bounced_count": 1309
+        }
+      ]
+    },
+    {
+      "source_id": 619,
+      "friendly_name": "Bume International LLC",
+      "excluded_count": 2074805,
+      "bounceback_leads": 1308,
+      "bounceback_arefs": 4779,
+      "bounceback_paid": 11,
+      "bounceback_rate": 0.0006304206901371454,
+      "bounceback_paid_rate": 0.002301736765013601,
+      "bounceback_paid_per_excluded": 5.301703051612079e-06,
+      "by_strategy": {
+        "gov_id": 428,
+        "phone_dob": 849,
+        "email_dob": 1243
+      },
+      "top_destinations": [
+        {
+          "source_id": 488,
+          "friendly_name": "Dot 818",
+          "bounced_count": 3877
+        },
+        {
+          "source_id": 480,
+          "friendly_name": "Leap Theory 2.0",
+          "bounced_count": 1762
+        },
+        {
+          "source_id": 614,
+          "friendly_name": "TruePath Leads",
+          "bounced_count": 1547
+        },
+        {
+          "source_id": 143,
+          "friendly_name": "Leadtree Global",
+          "bounced_count": 1132
+        },
+        {
+          "source_id": 477,
+          "friendly_name": "Intimate Interactive",
+          "bounced_count": 867
+        }
+      ]
+    },
+    {
+      "source_id": 614,
+      "friendly_name": "TruePath Leads",
+      "excluded_count": 2387796,
+      "bounceback_leads": 2203,
+      "bounceback_arefs": 5536,
+      "bounceback_paid": 11,
+      "bounceback_rate": 0.0009226081290026452,
+      "bounceback_paid_rate": 0.001986994219653179,
+      "bounceback_paid_per_excluded": 4.606758701329595e-06,
+      "by_strategy": {
+        "gov_id": 637,
+        "phone_dob": 1484,
+        "email_dob": 2053
+      },
+      "top_destinations": [
+        {
+          "source_id": 488,
+          "friendly_name": "Dot 818",
+          "bounced_count": 6620
+        },
+        {
+          "source_id": 143,
+          "friendly_name": "Leadtree Global",
+          "bounced_count": 3684
+        },
+        {
+          "source_id": 473,
+          "friendly_name": "Lead Economy",
+          "bounced_count": 3107
+        },
+        {
+          "source_id": 479,
+          "friendly_name": "Discover Nimbus",
+          "bounced_count": 2392
+        },
+        {
+          "source_id": 480,
+          "friendly_name": "Leap Theory 2.0",
+          "bounced_count": 1880
+        }
+      ]
+    },
+    {
+      "source_id": 518,
+      "friendly_name": "Leads Gate",
+      "excluded_count": 2550981,
+      "bounceback_leads": 4149,
+      "bounceback_arefs": 2597,
+      "bounceback_paid": 7,
+      "bounceback_rate": 0.001626433125138917,
+      "bounceback_paid_rate": 0.0026954177897574125,
+      "bounceback_paid_per_excluded": 2.74404238996684e-06,
+      "by_strategy": {
+        "gov_id": 0,
+        "phone_dob": 2634,
+        "email_dob": 3901
+      },
+      "top_destinations": [
+        {
+          "source_id": 143,
+          "friendly_name": "Leadtree Global",
+          "bounced_count": 6381
+        },
+        {
+          "source_id": 488,
+          "friendly_name": "Dot 818",
+          "bounced_count": 862
+        },
+        {
+          "source_id": 141,
+          "friendly_name": "AvenueLink",
+          "bounced_count": 277
+        },
+        {
+          "source_id": 607,
+          "friendly_name": "PingLogix LLC",
+          "bounced_count": 261
+        },
+        {
+          "source_id": 482,
+          "friendly_name": "Search ROI, LLC",
+          "bounced_count": 253
+        }
+      ]
+    },
+    {
+      "source_id": 143,
+      "friendly_name": "Leadtree Global",
+      "excluded_count": 3353220,
+      "bounceback_leads": 2343,
+      "bounceback_arefs": 1934,
+      "bounceback_paid": 7,
+      "bounceback_rate": 0.0006987313686546066,
+      "bounceback_paid_rate": 0.0036194415718717684,
+      "bounceback_paid_per_excluded": 2.0875457023398405e-06,
+      "by_strategy": {
+        "gov_id": 0,
+        "phone_dob": 480,
+        "email_dob": 2283
+      },
+      "top_destinations": [
+        {
+          "source_id": 482,
+          "friendly_name": "Search ROI, LLC",
+          "bounced_count": 404
+        },
+        {
+          "source_id": 488,
+          "friendly_name": "Dot 818",
+          "bounced_count": 382
+        },
+        {
+          "source_id": 518,
+          "friendly_name": "Leads Gate",
+          "bounced_count": 331
+        },
+        {
+          "source_id": 141,
+          "friendly_name": "AvenueLink",
+          "bounced_count": 328
+        },
+        {
+          "source_id": 614,
+          "friendly_name": "TruePath Leads",
+          "bounced_count": 225
+        }
+      ]
+    },
+    {
+      "source_id": 418,
+      "friendly_name": "Acquire Interactive",
+      "excluded_count": 2321827,
+      "bounceback_leads": 2913,
+      "bounceback_arefs": 2366,
+      "bounceback_paid": 3,
+      "bounceback_rate": 0.0012546154386179505,
+      "bounceback_paid_rate": 0.001267962806424345,
+      "bounceback_paid_per_excluded": 1.2920859306055103e-06,
+      "by_strategy": {
+        "gov_id": 327,
+        "phone_dob": 1748,
+        "email_dob": 2758
+      },
+      "top_destinations": [
+        {
+          "source_id": 143,
+          "friendly_name": "Leadtree Global",
+          "bounced_count": 1444
+        },
+        {
+          "source_id": 488,
+          "friendly_name": "Dot 818",
+          "bounced_count": 733
+        },
+        {
+          "source_id": 480,
+          "friendly_name": "Leap Theory 2.0",
+          "bounced_count": 583
+        },
+        {
+          "source_id": 518,
+          "friendly_name": "Leads Gate",
+          "bounced_count": 559
+        },
+        {
+          "source_id": 482,
+          "friendly_name": "Search ROI, LLC",
+          "bounced_count": 389
+        }
+      ]
+    },
+    {
+      "source_id": 149,
+      "friendly_name": "Pingyo",
+      "excluded_count": 802750,
+      "bounceback_leads": 663,
+      "bounceback_arefs": 664,
+      "bounceback_paid": 1,
+      "bounceback_rate": 0.000825910931174089,
+      "bounceback_paid_rate": 0.0015060240963855422,
+      "bounceback_paid_per_excluded": 1.2457178449081283e-06,
+      "by_strategy": {
+        "gov_id": 250,
+        "phone_dob": 420,
+        "email_dob": 603
+      },
+      "top_destinations": [
+        {
+          "source_id": 488,
+          "friendly_name": "Dot 818",
+          "bounced_count": 400
+        },
+        {
+          "source_id": 143,
+          "friendly_name": "Leadtree Global",
+          "bounced_count": 395
+        },
+        {
+          "source_id": 480,
+          "friendly_name": "Leap Theory 2.0",
+          "bounced_count": 157
+        },
+        {
+          "source_id": 482,
+          "friendly_name": "Search ROI, LLC",
+          "bounced_count": 97
+        },
+        {
+          "source_id": 238,
+          "friendly_name": "Zero P",
+          "bounced_count": 70
+        }
+      ]
+    },
+    {
+      "source_id": 482,
+      "friendly_name": "Search ROI, LLC",
+      "excluded_count": 4167157,
+      "bounceback_leads": 3127,
+      "bounceback_arefs": 2392,
+      "bounceback_paid": 3,
+      "bounceback_rate": 0.0007503916939054612,
+      "bounceback_paid_rate": 0.001254180602006689,
+      "bounceback_paid_per_excluded": 7.19915280369806e-07,
+      "by_strategy": {
+        "gov_id": 0,
+        "phone_dob": 1920,
+        "email_dob": 2965
+      },
+      "top_destinations": [
+        {
+          "source_id": 143,
+          "friendly_name": "Leadtree Global",
+          "bounced_count": 2668
+        },
+        {
+          "source_id": 488,
+          "friendly_name": "Dot 818",
+          "bounced_count": 973
+        },
+        {
+          "source_id": 238,
+          "friendly_name": "Zero P",
+          "bounced_count": 438
+        },
+        {
+          "source_id": 480,
+          "friendly_name": "Leap Theory 2.0",
+          "bounced_count": 397
+        },
+        {
+          "source_id": 415,
+          "friendly_name": "Round Sky",
+          "bounced_count": 336
+        }
+      ]
+    },
+    {
+      "source_id": 581,
+      "friendly_name": "IPW1 LTD",
+      "excluded_count": 1914619,
+      "bounceback_leads": 2658,
+      "bounceback_arefs": 1123,
+      "bounceback_paid": 1,
+      "bounceback_rate": 0.00138826575940174,
+      "bounceback_paid_rate": 0.0008904719501335708,
+      "bounceback_paid_per_excluded": 5.222971254333107e-07,
+      "by_strategy": {
+        "gov_id": 363,
+        "phone_dob": 1686,
+        "email_dob": 2483
+      },
+      "top_destinations": [
+        {
+          "source_id": 143,
+          "friendly_name": "Leadtree Global",
+          "bounced_count": 2068
+        },
+        {
+          "source_id": 488,
+          "friendly_name": "Dot 818",
+          "bounced_count": 959
+        },
+        {
+          "source_id": 482,
+          "friendly_name": "Search ROI, LLC",
+          "bounced_count": 612
+        },
+        {
+          "source_id": 238,
+          "friendly_name": "Zero P",
+          "bounced_count": 335
+        },
+        {
+          "source_id": 607,
+          "friendly_name": "PingLogix LLC",
+          "bounced_count": 297
+        }
+      ]
+    },
+    {
+      "source_id": 415,
+      "friendly_name": "Round Sky",
+      "excluded_count": 488427,
+      "bounceback_leads": 1167,
+      "bounceback_arefs": 1094,
+      "bounceback_paid": 0,
+      "bounceback_rate": 0.002389302802670614,
+      "bounceback_paid_rate": 0.0,
+      "bounceback_paid_per_excluded": 0.0,
+      "by_strategy": {
+        "gov_id": 0,
+        "phone_dob": 730,
+        "email_dob": 1120
+      },
+      "top_destinations": [
+        {
+          "source_id": 143,
+          "friendly_name": "Leadtree Global",
+          "bounced_count": 841
+        },
+        {
+          "source_id": 488,
+          "friendly_name": "Dot 818",
+          "bounced_count": 342
+        },
+        {
+          "source_id": 482,
+          "friendly_name": "Search ROI, LLC",
+          "bounced_count": 249
+        },
+        {
+          "source_id": 480,
+          "friendly_name": "Leap Theory 2.0",
+          "bounced_count": 149
+        },
+        {
+          "source_id": 238,
+          "friendly_name": "Zero P",
+          "bounced_count": 139
+        }
+      ]
+    },
+    {
+      "source_id": 593,
+      "friendly_name": "Dogstar Digital Corp",
+      "excluded_count": 2686,
+      "bounceback_leads": 1113,
+      "bounceback_arefs": 909,
+      "bounceback_paid": 0,
+      "bounceback_rate": 0.41437081161578554,
+      "bounceback_paid_rate": 0.0,
+      "bounceback_paid_per_excluded": 0.0,
+      "by_strategy": {
+        "gov_id": 0,
+        "phone_dob": 693,
+        "email_dob": 1071
+      },
+      "top_destinations": [
+        {
+          "source_id": 143,
+          "friendly_name": "Leadtree Global",
+          "bounced_count": 1039
+        },
+        {
+          "source_id": 488,
+          "friendly_name": "Dot 818",
+          "bounced_count": 283
+        },
+        {
+          "source_id": 560,
+          "friendly_name": "Money Lion",
+          "bounced_count": 227
+        },
+        {
+          "source_id": 482,
+          "friendly_name": "Search ROI, LLC",
+          "bounced_count": 212
+        },
+        {
+          "source_id": 480,
+          "friendly_name": "Leap Theory 2.0",
+          "bounced_count": 132
+        }
+      ]
+    }
+  ]
+}
