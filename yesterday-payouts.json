@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "updated_at": "2026-05-10T23:37:43.203119Z",
+  "updated_at": "2026-05-11T16:18:01.679572Z",
   "target_date": "2026-05-08",
   "totals": {
     "borrowers": 149
@@ -1044,20 +1044,20 @@
     {
       "first_name": "Ashley",
       "state": "TX",
-      "city": "Waco",
-      "county": "McLennan",
-      "amount": 3000.0,
-      "lat": 31.5545,
-      "lng": -97.1627
-    },
-    {
-      "first_name": "Ashley",
-      "state": "TX",
       "city": "Missouri City",
       "county": "Fort Bend",
       "amount": 3500.0,
       "lat": 29.5833,
       "lng": -95.5269
+    },
+    {
+      "first_name": "Ashley",
+      "state": "TX",
+      "city": "Waco",
+      "county": "McLennan",
+      "amount": 3000.0,
+      "lat": 31.5545,
+      "lng": -97.1627
     },
     {
       "first_name": "Catherine",
@@ -1260,20 +1260,20 @@
     {
       "first_name": "William",
       "state": "TX",
-      "city": "Waco",
-      "county": "McLennan",
-      "amount": 4500.0,
-      "lat": 31.5545,
-      "lng": -97.1627
-    },
-    {
-      "first_name": "William",
-      "state": "TX",
       "city": "Cibolo",
       "county": "Guadalupe",
       "amount": 3000.0,
       "lat": 29.575,
       "lng": -98.228
+    },
+    {
+      "first_name": "William",
+      "state": "TX",
+      "city": "Waco",
+      "county": "McLennan",
+      "amount": 4500.0,
+      "lat": 31.5545,
+      "lng": -97.1627
     },
     {
       "first_name": "Gabrielle",
