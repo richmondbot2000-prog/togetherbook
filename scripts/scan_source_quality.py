@@ -47,6 +47,7 @@ import pyodbc
 LENDER_ID = int(os.environ.get("SQ_LENDER_ID", "6"))
 LENDER_LABEL = "Transform Credit (LenderId 6, USA)" if LENDER_ID == 6 else f"LenderId {LENDER_ID}"
 WINDOW_DAYS = int(os.environ.get("SQ_WINDOW_DAYS", "60"))
+MATURATION_DAYS = int(os.environ.get("SQ_MATURATION_DAYS", "30"))
 MIN_VOLUME = int(os.environ.get("SQ_MIN_VOLUME", "200"))
 MIN_EXCLUDED = int(os.environ.get("SQ_MIN_EXCLUDED", "200"))
 QUERY_TIMEOUT = 1200   # identity-match join is heavy — allow up to 20 min
@@ -91,11 +92,15 @@ def pick(cols: set[str], *candidates: str) -> str | None:
 
 def main() -> None:
     started = datetime.datetime.now(datetime.timezone.utc)
-    window_end = started
-    window_start = started - datetime.timedelta(days=WINDOW_DAYS)
+    # Shift the window 30 days back so paid_out has time to mature
+    # (typical funded loan completes within ~30 days of lead purchase).
+    # Without this lag, recent leads look worse than they are because
+    # they simply haven't had time to pay out yet.
+    window_end = started - datetime.timedelta(days=MATURATION_DAYS)
+    window_start = window_end - datetime.timedelta(days=WINDOW_DAYS)
     print(
         f"# scan_source_quality start {started.isoformat()}  "
-        f"window: {window_start.date()} → {window_end.date()} ({WINDOW_DAYS}d)  "
+        f"window: {window_start.date()} → {window_end.date()} ({WINDOW_DAYS}d, ending {MATURATION_DAYS}d ago for paid-out maturation)  "
         f"lender: {LENDER_ID}  min_volume: {MIN_VOLUME}  min_excluded: {MIN_EXCLUDED}",
         flush=True,
     )
@@ -801,6 +806,7 @@ def main() -> None:
         "window_days":   WINDOW_DAYS,
         "window_start":  window_start.date().isoformat(),
         "window_end":    window_end.date().isoformat(),
+        "maturation_days": MATURATION_DAYS,
         "min_volume_for_ranking":   MIN_VOLUME,
         "min_excluded_for_ranking": MIN_EXCLUDED,
         "weak_accepted": {

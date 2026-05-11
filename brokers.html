@@ -6,9 +6,9 @@
 <title>TogetherBOOK — Brokers</title>
 <link rel="icon" type="image/png" href="site-icon.png">
 <link rel="apple-touch-icon" href="site-icon.png">
-<link rel="stylesheet" href="quiet-tokens.css?v=1778527281">
-<link rel="stylesheet" href="quiet.css?v=1778527281">
-<link rel="stylesheet" href="quiet-extras.css?v=1778527281">
+<link rel="stylesheet" href="quiet-tokens.css?v=1778527534">
+<link rel="stylesheet" href="quiet.css?v=1778527534">
+<link rel="stylesheet" href="quiet-extras.css?v=1778527534">
 <style>
   .br-section { max-width: 1280px; margin: 0 auto; padding: 24px 0 48px; }
   @media (max-width: 800px) { .br-section { padding: 2px 0 32px; } }
@@ -466,7 +466,7 @@
 
 <header class="qb-topbar">
   <a class="qb-brand" href="index.html" aria-label="TogetherBOOK — home">
-    <img class="qb-brand-logo" src="togetherbook-logo.png?v=1778527281" alt="TogetherBOOK">
+    <img class="qb-brand-logo" src="togetherbook-logo.png?v=1778527534" alt="TogetherBOOK">
   </a>
   <button class="qb-hamburger" aria-label="Toggle navigation menu" aria-expanded="false"
           onclick="document.body.classList.toggle('nav-open');this.setAttribute('aria-expanded',document.body.classList.contains('nav-open'))">
@@ -526,13 +526,13 @@
     <div class="br-recommend-grid" id="brRecommendGrid" hidden>
       <div class="br-canvas-wrap">
         <h2 class="br-canvas-title">Sources to consider <em>blocking</em></h2>
-        <p class="br-canvas-sub">Sources we currently buy leads from where the effective <strong>cost per paid loan</strong> exceeds <strong>$600</strong> — the threshold above which we materially overpay for a funded loan via this channel. Volume-gated to <span id="brSqMinVol">200</span>+ purchased leads, 60-day window. Sources with no recorded cost (CPF/rev-share campaigns that haven't billed in the window) are excluded since "$0 per paid loan" is not a blocking signal. Sorted by cost-per-paid-loan descending.</p>
+        <p class="br-canvas-sub">Sources we currently buy leads from where the effective <strong>cost per paid loan</strong> exceeds <strong>$600</strong> — the threshold above which we materially overpay for a funded loan via this channel. Volume-gated to <span id="brSqMinVol">200</span>+ purchased leads. Window: 60 days ending 30 days ago — that lag lets purchased leads finish maturing so today's snapshot reflects real outcomes rather than under-counted recent buys. Sources with no recorded cost (CPF/rev-share campaigns that haven't billed in the window) are excluded since "$0 per paid loan" is not a blocking signal. Sorted by cost-per-paid-loan descending.</p>
         <div class="br-recommend-meta" id="brWeakMeta"></div>
         <div id="brWeakList"></div>
       </div>
       <div class="br-canvas-wrap">
         <h2 class="br-canvas-title">Blocked sources to consider <em>unblocking</em></h2>
-        <p class="br-canvas-sub">Sources we currently reject (LeadResultTypeId = -1 — <em>Source excluded</em>). For each one we identity-match its rejected leads against people we DID buy from other sources in the same 60-day window — by SSN, or by Phone+DOB, or by Email+DOB. If lots of those rejected people came back via another source and paid out, the audience is decent and the block may be costing us loans.</p>
+        <p class="br-canvas-sub">Sources we currently reject (LeadResultTypeId = -1 — <em>Source excluded</em>). For each one we identity-match its rejected leads against people we DID buy from other sources in the same window — by SSN, or by Phone+DOB, or by Email+DOB. The window is 60 days ending 30 days ago so paid-out outcomes have had time to settle. If lots of those rejected people came back via another source and paid out, the audience is decent and the block may be costing us loans.</p>
         <div class="br-recommend-meta" id="brBlockedMeta"></div>
         <div id="brBlockedList"></div>
       </div>
@@ -541,7 +541,7 @@
     <!-- ── Cheaper-clones (overpay) section ────────────────────────── -->
     <div class="br-canvas-wrap" id="brCheaperWrap" hidden style="margin-bottom: 24px;">
       <h2 class="br-canvas-title">Sources where <em>we overpay</em></h2>
-      <p class="br-canvas-sub">For every purchased lead bought at an upfront per-lead price (CPL or auction-bid models), we identity-match the same person against later purchases in the 60-day window. When a cheaper version of the same person reappears via a different campaign, the first buy was an overpay — we could have waited. Sources are ranked by total overspend in the window. Only sources with at least one cheaper-later clone appear.</p>
+      <p class="br-canvas-sub">For every purchased lead bought at an upfront per-lead price (CPL or auction-bid models), we identity-match the same person against later purchases in the window (60 days ending 30 days ago — a lag that lets outcomes mature). When a cheaper version of the same person reappears via a different campaign, the first buy was an overpay — we could have waited. Sources are ranked by total overspend in the window. Only sources with at least one cheaper-later clone appear.</p>
       <div class="br-recommend-meta" id="brCheaperMeta"></div>
       <div id="brCheaperList"></div>
     </div>
