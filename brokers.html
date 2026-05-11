@@ -6,9 +6,9 @@
 <title>TogetherBOOK — Brokers</title>
 <link rel="icon" type="image/png" href="site-icon.png">
 <link rel="apple-touch-icon" href="site-icon.png">
-<link rel="stylesheet" href="quiet-tokens.css?v=1778537382">
-<link rel="stylesheet" href="quiet.css?v=1778537382">
-<link rel="stylesheet" href="quiet-extras.css?v=1778537382">
+<link rel="stylesheet" href="quiet-tokens.css?v=1778539049">
+<link rel="stylesheet" href="quiet.css?v=1778539049">
+<link rel="stylesheet" href="quiet-extras.css?v=1778539049">
 <style>
   .br-section { max-width: 1280px; margin: 0 auto; padding: 24px 0 48px; }
   @media (max-width: 800px) { .br-section { padding: 2px 0 32px; } }
@@ -501,7 +501,7 @@
 
 <header class="qb-topbar">
   <a class="qb-brand" href="index.html" aria-label="TogetherBOOK — home">
-    <img class="qb-brand-logo" src="togetherbook-logo.png?v=1778537382" alt="TogetherBOOK">
+    <img class="qb-brand-logo" src="togetherbook-logo.png?v=1778539049" alt="TogetherBOOK">
   </a>
   <button class="qb-hamburger" aria-label="Toggle navigation menu" aria-expanded="false"
           onclick="document.body.classList.toggle('nav-open');this.setAttribute('aria-expanded',document.body.classList.contains('nav-open'))">
@@ -555,6 +555,14 @@
         <p class="br-canvas-sub">Among brokers we bought at least 1,000 leads from, ranked by the share of those leads who <strong>never even started an application</strong>. These are the leads that arrived, sat there, and never engaged — no apply page, no guarantor invite, no response. <em>Ghosts</em> are the truly bad outcome: a decline at least means the lead engaged enough to fail a real check. A broker whose leads simply vanish brings dead traffic. (The old "highest decline rate" view rewarded this — a pool of silent leads has zero declines because nothing happened. We sort by ghosts instead.)</p>
         <div id="brLeaderboardDecline"></div>
       </div>
+    </div>
+
+    <!-- ── Best-value (Broker, Source) cells — positive mirror ────── -->
+    <div class="br-canvas-wrap" id="brBestWrap" hidden style="margin-bottom: 24px;">
+      <h2 class="br-canvas-title">Best value Sources — <em>buy more here</em></h2>
+      <p class="br-canvas-sub">The mirror of "Sources to consider blocking." (Broker, Source) cells with the <strong>lowest cost per paid loan</strong> — the most efficient places we're already spending. Same volume gate (<span id="brSqMinVolBest">200</span>+ purchased leads), same 60-day matured window. If we want to grow originations at the current efficiency, these are the cells to lean into first.</p>
+      <div class="br-recommend-meta" id="brBestMeta"></div>
+      <div id="brBestList"></div>
     </div>
 
     <!-- ── Source-quality recommendations (block / unblock) ────────── -->
@@ -661,8 +669,30 @@
     if (!sq) { grid.hidden = true; return; }
     grid.hidden = false;
     document.getElementById("brSqMinVol").textContent = (sq.min_volume_for_ranking || 200).toLocaleString();
+    const bestVolEl = document.getElementById("brSqMinVolBest");
+    if (bestVolEl) bestVolEl.textContent = (sq.min_volume_for_ranking || 200).toLocaleString();
 
     const COST_PER_PAID_THRESHOLD = 600;
+
+    // ── Best value Sources — buy more here ─────────────────────────
+    const weakAll = (sq.weak_accepted && sq.weak_accepted.by_broker_source) || [];
+    const bestSources = weakAll
+      .filter(s => (s.cost_per_paid_loan || 0) > 0 && (s.paid_out || 0) > 0)
+      .sort((a, b) => (a.cost_per_paid_loan || 0) - (b.cost_per_paid_loan || 0))
+      .slice(0, 15);
+    const bestWrap = document.getElementById("brBestWrap");
+    if (bestSources.length) {
+      bestWrap.hidden = false;
+      const cheapest = bestSources[0]?.cost_per_paid_loan || 0;
+      const medianCpp = weakAll.length
+        ? (weakAll.map(s => s.cost_per_paid_loan).filter(c => c > 0).sort((a, b) => a - b)[Math.floor(weakAll.length / 2)] || 0)
+        : 0;
+      document.getElementById("brBestMeta").textContent =
+        `Top 15 of ${weakAll.length} cells · cheapest funded loan: $${formatNumber(Math.round(cheapest))} · cohort median $${formatNumber(Math.round(medianCpp))}`;
+      document.getElementById("brBestList").innerHTML = bestSources.map(renderBestBsRow).join("");
+    } else {
+      bestWrap.hidden = true;
+    }
 
     // ── Sources to consider blocking — (Broker, SourceReference1) cells ──
     const weakBs = (sq.weak_accepted && sq.weak_accepted.by_broker_source) || [];
@@ -710,6 +740,24 @@
     const broker = escapeHtml(s.broker_name || "Unknown broker");
     const sr1 = s.source_ref1 != null ? escapeHtml(String(s.source_ref1)) : "(no Source)";
     return `${broker} <span style="color:var(--ink-500); font-style: normal;"> · </span><span style="font-family:var(--font-mono); font-style: normal; font-size: 12px;">${sr1}</span>`;
+  }
+
+  function renderBestBsRow(s) {
+    const cpp = s.cost_per_paid_loan != null
+      ? `$${formatNumber(Math.round(s.cost_per_paid_loan))}`
+      : "—";
+    const cpl = s.cost_per_lead != null ? `$${s.cost_per_lead.toFixed(2)}` : "—";
+    const totalSpent = s.total_cost ? formatMoneyBig(s.total_cost) : null;
+    return `
+      <div class="br-rec-row is-good">
+        <div class="br-rec-name">
+          ${_bsTitle(s)}
+          <div class="br-rec-broker">${(s.campaigns || []).length} active campaign${(s.campaigns||[]).length === 1 ? "" : "s"}${totalSpent ? ` · ${totalSpent} spent` : ""}</div>
+        </div>
+        <div class="br-rec-metric">${cpp}<div class="br-rec-metric-sub">cost / paid loan</div></div>
+        <div class="br-rec-metric">${cpl}<div class="br-rec-metric-sub">cost / lead</div></div>
+        <div class="br-rec-sub">${pct(s.paid_out_rate, 3)} paid · ${formatNumber(s.paid_out || 0)}/${formatNumber(s.leads_purchased || 0)} purchased</div>
+      </div>`;
   }
 
   function renderWeakBsRow(s) {
