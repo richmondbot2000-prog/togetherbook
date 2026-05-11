@@ -6,9 +6,9 @@
 <title>TogetherBOOK — Brokers</title>
 <link rel="icon" type="image/png" href="site-icon.png">
 <link rel="apple-touch-icon" href="site-icon.png">
-<link rel="stylesheet" href="quiet-tokens.css?v=1778509354">
-<link rel="stylesheet" href="quiet.css?v=1778509354">
-<link rel="stylesheet" href="quiet-extras.css?v=1778509354">
+<link rel="stylesheet" href="quiet-tokens.css?v=1778509863">
+<link rel="stylesheet" href="quiet.css?v=1778509863">
+<link rel="stylesheet" href="quiet-extras.css?v=1778509863">
 <style>
   .br-section { max-width: 1280px; margin: 0 auto; padding: 24px 0 48px; }
   @media (max-width: 800px) { .br-section { padding: 2px 0 32px; } }
@@ -466,7 +466,7 @@
 
 <header class="qb-topbar">
   <a class="qb-brand" href="index.html" aria-label="TogetherBOOK — home">
-    <img class="qb-brand-logo" src="togetherbook-logo.png?v=1778509354" alt="TogetherBOOK">
+    <img class="qb-brand-logo" src="togetherbook-logo.png?v=1778509863" alt="TogetherBOOK">
   </a>
   <button class="qb-hamburger" aria-label="Toggle navigation menu" aria-expanded="false"
           onclick="document.body.classList.toggle('nav-open');this.setAttribute('aria-expanded',document.body.classList.contains('nav-open'))">
@@ -526,7 +526,7 @@
     <div class="br-recommend-grid" id="brRecommendGrid" hidden>
       <div class="br-canvas-wrap">
         <h2 class="br-canvas-title">Sources to consider <em>blocking</em></h2>
-        <p class="br-canvas-sub">Sources we currently buy leads from that are converting to paid loans materially below the median in the last 60 days. Volume-gated to <span id="brSqMinVol">200</span>+ purchased leads so a tiny pool can't dominate the list. The 60-day window catches sources whose quality has decayed recently even if their lifetime numbers still look fine.</p>
+        <p class="br-canvas-sub">Sources we currently buy leads from where the effective <strong>cost per paid loan</strong> is high — either because conversion is low, lead price is high, or both. Volume-gated to <span id="brSqMinVol">200</span>+ purchased leads. The 60-day window catches sources whose quality has decayed recently even if their lifetime numbers still look fine. Sorted by paid-out rate ascending (worst first); sources that spent budget and produced zero paid loans appear first with <em>∞</em> cost-per-paid.</p>
         <div class="br-recommend-meta" id="brWeakMeta"></div>
         <div id="brWeakList"></div>
       </div>
@@ -650,15 +650,21 @@
     const vsMedianText = s.rate_vs_median != null
       ? `${(s.rate_vs_median * 100).toFixed(0)}% of cohort median`
       : "";
+    const cppText = s.cost_per_paid_loan != null
+      ? `$${formatNumber(Math.round(s.cost_per_paid_loan))}`
+      : (s.total_cost != null
+          ? `∞ (${formatMoneyBig(s.total_cost)} spent, 0 paid)`
+          : "—");
+    const cplText = s.cost_per_lead != null ? `$${s.cost_per_lead.toFixed(2)}` : "—";
     return `
       <div class="br-rec-row is-bad">
         <div class="br-rec-name">
           ${escapeHtml(s.source_name || ("Campaign " + s.campaign_id))}${flagHtml}
           <div class="br-rec-broker">${escapeHtml(s.broker_name || "")}</div>
         </div>
-        <div class="br-rec-metric">${pct(s.paid_out_rate, 3)}<div class="br-rec-metric-sub">paid / lead</div></div>
-        <div class="br-rec-metric">${formatNumber(s.paid_out || 0)}/${formatNumber(s.leads_purchased || 0)}<div class="br-rec-metric-sub">paid / bought</div></div>
-        <div class="br-rec-sub">${escapeHtml(vsMedianText)}${s.applications ? ` · ${formatNumber(s.applications)} apps started` : ""} · campaign-id ${s.campaign_id}</div>
+        <div class="br-rec-metric">${cppText}<div class="br-rec-metric-sub">cost / paid loan</div></div>
+        <div class="br-rec-metric">${cplText}<div class="br-rec-metric-sub">cost / lead</div></div>
+        <div class="br-rec-sub">${pct(s.paid_out_rate, 3)} paid · ${formatNumber(s.paid_out || 0)}/${formatNumber(s.leads_purchased || 0)} · ${escapeHtml(vsMedianText)}${s.total_cost ? ` · ${formatMoneyBig(s.total_cost)} spent` : ""} · campaign-id ${s.campaign_id}</div>
       </div>`;
   }
 

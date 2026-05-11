@@ -117,6 +117,7 @@ def main() -> None:
     L_phone = pick(leads_cols, "PhoneNumber", "Phone")
     L_email = pick(leads_cols, "EmailAddress", "Email")
     L_dob = pick(leads_cols, "DateOfBirth")
+    L_bid = pick(leads_cols, "BidAmount", "Price", "LeadCost")
     L_gov = pick(leads_cols, "GovernmentIdNumber", "NationalIdNumber", "SSN")
     L_nat = pick(leads_cols, "NationalIdNumber")
     L_leadid = pick(leads_cols, "LeadId", "LeadID")
@@ -261,11 +262,12 @@ def main() -> None:
         slot["applications"] += apps
         slot["paid_out"]     += paid
 
-    # We also need leads_purchased per campaign (some have purchased leads
-    # that never became apps — still relevant for the rate denominator).
+    # We also need leads_purchased per campaign AND total spend (SUM of
+    # Leads.BidAmount) — same query, two aggregations.
+    bid_sql = f", SUM(CAST(l.[{L_bid}] AS FLOAT)) AS total_cost" if L_bid else ", NULL AS total_cost"
     cur.execute(
         f"""
-        SELECT l.[{L_camp}], COUNT(*) AS purchased
+        SELECT l.[{L_camp}], COUNT(*) AS purchased{bid_sql}
         FROM dbo.Leads l
         WHERE l.[{L_date}] >= ? AND l.[{L_date}] < ?
           AND l.[{L_lender}] = ?
@@ -274,23 +276,31 @@ def main() -> None:
         """,
         [window_start, window_end, LENDER_ID],
     )
-    for cid, n in cur.fetchall():
+    for cid, n, total_cost in cur.fetchall():
         cid_int = int(cid) if cid is not None else None
         slot = weak_data.setdefault(cid_int, _new_weak_slot(cid_int))
         slot["leads_purchased"] = slot.get("leads_purchased", 0) + int(n)
+        if total_cost is not None:
+            slot["total_cost"] = slot.get("total_cost", 0.0) + float(total_cost)
 
-    # Compute paid_out_rate per source and stats across the qualifying cohort
+    # Compute paid_out_rate + cost metrics per campaign and stats across
+    # the qualifying cohort.
     qualifying: list[dict] = []
     for slot in weak_data.values():
         if (slot.get("leads_purchased") or 0) < MIN_VOLUME:
             slot["qualifies"] = False
             continue
         slot["qualifies"] = True
-        # Rate = paid out / leads purchased (true end-to-end conversion)
         slot["paid_out_rate"] = (
             slot["paid_out"] / slot["leads_purchased"]
             if slot["leads_purchased"] else 0
         )
+        total_cost = slot.get("total_cost")
+        if total_cost is not None and slot["leads_purchased"]:
+            slot["cost_per_lead"] = total_cost / slot["leads_purchased"]
+            slot["cost_per_paid_loan"] = (
+                total_cost / slot["paid_out"] if slot["paid_out"] else None
+            )
         qualifying.append(slot)
 
     rates = [s["paid_out_rate"] for s in qualifying if s["paid_out_rate"] is not None]
