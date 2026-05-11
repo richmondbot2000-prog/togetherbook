@@ -358,138 +358,182 @@ def main() -> None:
             AND l_p.[{L_aref}] IS NOT NULL
     """
 
-    # Strategy 1: GovernmentIdNumber match (SSN)
-    if L_gov:
-        print(f"#   strategy 1: {L_gov} match…", flush=True)
-        sql = f"""
-            SELECT c_e.[CampaignId]  AS rej_camp,
-                   l_e.[{L_leadid}]  AS rej_lead,
-                   l_p.[{L_aref}]    AS pur_aref,
-                   c_p.[CampaignId]  AS pur_camp,
-                   a.[{A_status}]    AS app_status
-            FROM dbo.Leads l_e
-            LEFT JOIN dbo.Campaigns c_e ON c_e.[CampaignId] = l_e.[{L_camp}]
-            INNER JOIN dbo.Leads l_p
-                ON l_p.[{L_gov}] = l_e.[{L_gov}]
-            LEFT JOIN dbo.Campaigns c_p ON c_p.[CampaignId] = l_p.[{L_camp}]
-            LEFT JOIN dbo.Applications a ON a.[{A_aref}] = l_p.[{L_aref}] AND a.[{A_lender}] = ?
-            WHERE {base_join_filter}
-              AND l_e.[{L_gov}] IS NOT NULL AND l_e.[{L_gov}] <> ''
-        """
-        try:
-            cur.execute(sql, [
-                LENDER_ID,
-                window_start, window_end, LENDER_ID, EXCLUDED_RESULT_ID,
-                window_start, window_end, LENDER_ID,
-            ])
-            n = 0
-            for rej_camp, rej_lead, pur_aref, pur_camp, app_status in cur.fetchall():
-                src_e = campaign_to_source.get(int(rej_camp)) if rej_camp is not None else None
-                src_p = campaign_to_source.get(int(pur_camp)) if pur_camp is not None else None
-                if src_e == src_p and src_e is not None:
-                    continue   # same-source match doesn't count
-                slot = _ensure_b_slot(src_e)
-                slot["match_leadids"].add(rej_lead)
-                slot["match_arefs"].add(pur_aref)
-                if app_status is not None and int(app_status) == 5:
-                    slot["match_paid_arefs"].add(pur_aref)
-                slot["by_strategy"]["gov_id"] += 1
-                if src_p is not None:
-                    slot["destination_sources"][src_p] = slot["destination_sources"].get(src_p, 0) + 1
-                n += 1
-            print(f"#     gov_id matches: {n}", flush=True)
-        except pyodbc.Error as e:
-            print(f"#     gov_id strategy failed: {e}", flush=True)
+    # ─── Strategy: sample-and-match in Python ──────────────────────────
+    # The previous version did three Leads-self-joins inside SQL Server.
+    # On 60 days of leads (~75M rows) the join cardinality blew out and
+    # the run was abandoned after 35 minutes. New approach:
+    #
+    # 1) Pull a bounded sample of source-excluded leads (top N per
+    #    CampaignId, ordered by recency). Caps the rejected side at
+    #    SAMPLE_PER_CAMPAIGN × n_candidate_campaigns.
+    # 2) Pull every purchased lead in the window with paid-out status
+    #    (~3-5M rows). One streaming query.
+    # 3) Build three hash indexes in Python: by SSN, by phone+DOB, by
+    #    email+DOB. Match each sampled rejected lead against all three.
+    #
+    # Matching becomes O(N + M) rather than O(N × M). Scales for any
+    # source size by caring only about the sample, not the total
+    # rejection count.
+    SAMPLE_PER_CAMPAIGN = int(os.environ.get("SQ_SAMPLE_PER_CAMPAIGN", "1500"))
+    print(f"# Part B: sampling up to {SAMPLE_PER_CAMPAIGN} rejected leads per candidate campaign…", flush=True)
 
-    # Strategy 2: Phone + DOB
-    if L_phone and L_dob:
-        print(f"#   strategy 2: {L_phone} + {L_dob} match…", flush=True)
-        sql = f"""
-            SELECT c_e.[CampaignId]  AS rej_camp,
-                   l_e.[{L_leadid}]  AS rej_lead,
-                   l_p.[{L_aref}]    AS pur_aref,
-                   c_p.[CampaignId]  AS pur_camp,
-                   a.[{A_status}]    AS app_status
-            FROM dbo.Leads l_e
-            LEFT JOIN dbo.Campaigns c_e ON c_e.[CampaignId] = l_e.[{L_camp}]
-            INNER JOIN dbo.Leads l_p
-                ON l_p.[{L_phone}] = l_e.[{L_phone}]
-               AND l_p.[{L_dob}]   = l_e.[{L_dob}]
-            LEFT JOIN dbo.Campaigns c_p ON c_p.[CampaignId] = l_p.[{L_camp}]
-            LEFT JOIN dbo.Applications a ON a.[{A_aref}] = l_p.[{L_aref}] AND a.[{A_lender}] = ?
-            WHERE {base_join_filter}
-              AND l_e.[{L_phone}] IS NOT NULL AND l_e.[{L_phone}] <> ''
-              AND l_e.[{L_dob}] IS NOT NULL
-        """
-        try:
-            cur.execute(sql, [
-                LENDER_ID,
-                window_start, window_end, LENDER_ID, EXCLUDED_RESULT_ID,
-                window_start, window_end, LENDER_ID,
-            ])
-            n = 0
-            for rej_camp, rej_lead, pur_aref, pur_camp, app_status in cur.fetchall():
-                src_e = campaign_to_source.get(int(rej_camp)) if rej_camp is not None else None
-                src_p = campaign_to_source.get(int(pur_camp)) if pur_camp is not None else None
-                if src_e == src_p and src_e is not None:
-                    continue
-                slot = _ensure_b_slot(src_e)
-                slot["match_leadids"].add(rej_lead)
-                slot["match_arefs"].add(pur_aref)
-                if app_status is not None and int(app_status) == 5:
-                    slot["match_paid_arefs"].add(pur_aref)
-                slot["by_strategy"]["phone_dob"] += 1
-                if src_p is not None:
-                    slot["destination_sources"][src_p] = slot["destination_sources"].get(src_p, 0) + 1
-                n += 1
-            print(f"#     phone_dob matches: {n}", flush=True)
-        except pyodbc.Error as e:
-            print(f"#     phone_dob strategy failed: {e}", flush=True)
+    # Build the list of candidate CampaignIds: those whose SourceId rolls
+    # up to one of our >=MIN_EXCLUDED-excluded sources.
+    candidate_source_ids = set(candidate_sources.keys())
+    candidate_campaign_ids = list({
+        cid for cid, sid in campaign_to_source.items()
+        if sid in candidate_source_ids
+    })
+    # If 'Unknown source' (None) is itself a candidate (i.e. lots of
+    # source-excluded leads came in via campaigns we couldn't map), pick
+    # up the unmapped CampaignIds via a separate query.
+    if None in candidate_source_ids:
+        cur.execute(
+            f"""
+            SELECT DISTINCT [{L_camp}]
+            FROM dbo.Leads
+            WHERE [{L_date}] >= ? AND [{L_date}] < ?
+              AND [{L_lender}] = ?
+              AND [{L_result}] = ?
+              AND [{L_camp}] IS NOT NULL
+            """,
+            [window_start, window_end, LENDER_ID, EXCLUDED_RESULT_ID],
+        )
+        for (cid,) in cur.fetchall():
+            cid_int = int(cid)
+            if campaign_to_source.get(cid_int) is None:
+                candidate_campaign_ids.append(cid_int)
+        candidate_campaign_ids = list(set(candidate_campaign_ids))
+    print(f"#   candidate campaigns to sample: {len(candidate_campaign_ids)}", flush=True)
 
-    # Strategy 3: Email + DOB
-    if L_email and L_dob:
-        print(f"#   strategy 3: {L_email} + {L_dob} match…", flush=True)
-        sql = f"""
-            SELECT c_e.[CampaignId]  AS rej_camp,
-                   l_e.[{L_leadid}]  AS rej_lead,
-                   l_p.[{L_aref}]    AS pur_aref,
-                   c_p.[CampaignId]  AS pur_camp,
-                   a.[{A_status}]    AS app_status
-            FROM dbo.Leads l_e
-            LEFT JOIN dbo.Campaigns c_e ON c_e.[CampaignId] = l_e.[{L_camp}]
-            INNER JOIN dbo.Leads l_p
-                ON l_p.[{L_email}] = l_e.[{L_email}]
-               AND l_p.[{L_dob}]   = l_e.[{L_dob}]
-            LEFT JOIN dbo.Campaigns c_p ON c_p.[CampaignId] = l_p.[{L_camp}]
-            LEFT JOIN dbo.Applications a ON a.[{A_aref}] = l_p.[{L_aref}] AND a.[{A_lender}] = ?
-            WHERE {base_join_filter}
-              AND l_e.[{L_email}] IS NOT NULL AND l_e.[{L_email}] <> ''
-              AND l_e.[{L_dob}] IS NOT NULL
-        """
-        try:
-            cur.execute(sql, [
-                LENDER_ID,
-                window_start, window_end, LENDER_ID, EXCLUDED_RESULT_ID,
-                window_start, window_end, LENDER_ID,
-            ])
-            n = 0
-            for rej_camp, rej_lead, pur_aref, pur_camp, app_status in cur.fetchall():
-                src_e = campaign_to_source.get(int(rej_camp)) if rej_camp is not None else None
-                src_p = campaign_to_source.get(int(pur_camp)) if pur_camp is not None else None
-                if src_e == src_p and src_e is not None:
-                    continue
-                slot = _ensure_b_slot(src_e)
-                slot["match_leadids"].add(rej_lead)
-                slot["match_arefs"].add(pur_aref)
-                if app_status is not None and int(app_status) == 5:
-                    slot["match_paid_arefs"].add(pur_aref)
-                slot["by_strategy"]["email_dob"] += 1
-                if src_p is not None:
-                    slot["destination_sources"][src_p] = slot["destination_sources"].get(src_p, 0) + 1
-                n += 1
-            print(f"#     email_dob matches: {n}", flush=True)
-        except pyodbc.Error as e:
-            print(f"#     email_dob strategy failed: {e}", flush=True)
+    sampled: list[dict] = []
+    if candidate_campaign_ids and L_phone and L_dob and L_leadid:
+        # Chunk the IN-list to keep parameter count reasonable
+        CHUNK = 800
+        for i in range(0, len(candidate_campaign_ids), CHUNK):
+            chunk_ids = candidate_campaign_ids[i:i+CHUNK]
+            ph = ",".join(["?"] * len(chunk_ids))
+            cur.execute(
+                f"""
+                SELECT * FROM (
+                    SELECT l.[{L_leadid}] AS LeadId, l.[{L_camp}] AS CampaignId,
+                           l.[{L_phone}]  AS Phone,
+                           l.[{L_dob}]    AS DOB,
+                           l.[{L_email}]  AS Email,
+                           {f"l.[{L_gov}]"  if L_gov  else "NULL"} AS GovId,
+                           ROW_NUMBER() OVER (PARTITION BY l.[{L_camp}] ORDER BY l.[{L_date}] DESC) AS rn
+                    FROM dbo.Leads l
+                    WHERE l.[{L_date}] >= ? AND l.[{L_date}] < ?
+                      AND l.[{L_lender}] = ?
+                      AND l.[{L_result}] = ?
+                      AND l.[{L_camp}] IN ({ph})
+                ) ranked
+                WHERE rn <= ?
+                """,
+                [window_start, window_end, LENDER_ID, EXCLUDED_RESULT_ID, *chunk_ids, SAMPLE_PER_CAMPAIGN],
+            )
+            for lead_id, camp_id, phone, dob, email, gov_id, _rn in cur.fetchall():
+                sampled.append({
+                    "lead_id":  lead_id,
+                    "camp_id":  int(camp_id) if camp_id is not None else None,
+                    "phone":    (phone or "").strip() if phone else "",
+                    "dob":      dob,   # native date object
+                    "email":    (email or "").strip().lower() if email else "",
+                    "gov_id":   (gov_id or "").strip() if gov_id else "",
+                })
+    print(f"#   sampled rejected leads: {len(sampled):,}", flush=True)
+
+    # Pull purchased leads (~3-5M rows). Need: ARef, CampaignId,
+    # identity fields, paid_out flag.
+    purchased: list[dict] = []
+    if L_phone and L_dob and L_aref:
+        gov_sel = f"l.[{L_gov}]" if L_gov else "NULL"
+        print("# Part B: pulling purchased-side leads + paid-out status…", flush=True)
+        cur.execute(
+            f"""
+            SELECT l.[{L_aref}] AS ARef,
+                   l.[{L_camp}] AS CampaignId,
+                   l.[{L_phone}] AS Phone,
+                   l.[{L_dob}]   AS DOB,
+                   l.[{L_email}] AS Email,
+                   {gov_sel} AS GovId,
+                   MAX(CASE WHEN a.[{A_status}] = 5 THEN 1 ELSE 0 END) AS paid
+            FROM dbo.Leads l
+            INNER JOIN dbo.Applications a
+                ON a.[{A_aref}] = l.[{L_aref}] AND a.[{A_lender}] = ?
+            WHERE l.[{L_date}] >= ? AND l.[{L_date}] < ?
+              AND l.[{L_lender}] = ?
+              AND l.[{L_result}] IN ({",".join(str(x) for x in PURCHASED_RESULT_IDS)})
+              AND l.[{L_aref}] IS NOT NULL
+            GROUP BY l.[{L_aref}], l.[{L_camp}], l.[{L_phone}], l.[{L_dob}], l.[{L_email}], {gov_sel}
+            """,
+            [LENDER_ID, window_start, window_end, LENDER_ID],
+        )
+        for aref, camp_id, phone, dob, email, gov_id, paid in cur.fetchall():
+            purchased.append({
+                "aref":     aref,
+                "camp_id":  int(camp_id) if camp_id is not None else None,
+                "src_id":   campaign_to_source.get(int(camp_id)) if camp_id is not None else None,
+                "phone":    (phone or "").strip() if phone else "",
+                "dob":      dob,
+                "email":    (email or "").strip().lower() if email else "",
+                "gov_id":   (gov_id or "").strip() if gov_id else "",
+                "paid":     bool(paid),
+            })
+    print(f"#   purchased leads pulled: {len(purchased):,}", flush=True)
+
+    # Build hash indexes for fast lookup
+    by_phone_dob: dict[tuple, list] = {}
+    by_email_dob: dict[tuple, list] = {}
+    by_gov: dict[str, list] = {}
+    for p in purchased:
+        if p["phone"] and p["dob"] is not None:
+            by_phone_dob.setdefault((p["phone"], p["dob"]), []).append(p)
+        if p["email"] and p["dob"] is not None:
+            by_email_dob.setdefault((p["email"], p["dob"]), []).append(p)
+        if p["gov_id"]:
+            by_gov.setdefault(p["gov_id"], []).append(p)
+    print(f"#   indexes: phone+dob={len(by_phone_dob):,} email+dob={len(by_email_dob):,} gov_id={len(by_gov):,}", flush=True)
+
+    # Match each sampled rejected lead
+    for s in sampled:
+        src_e = campaign_to_source.get(s["camp_id"]) if s["camp_id"] is not None else None
+        matched_arefs: set = set()
+        matched_paid: set = set()
+        matched_destinations: dict[int | None, int] = {}
+        matched_strategies: set = set()
+
+        def _consume_matches(matches, strat):
+            if not matches: return
+            for p in matches:
+                if p["src_id"] == src_e and src_e is not None:
+                    continue   # same-source — doesn't count as a bounceback
+                matched_arefs.add(p["aref"])
+                if p["paid"]:
+                    matched_paid.add(p["aref"])
+                matched_destinations[p["src_id"]] = matched_destinations.get(p["src_id"], 0) + 1
+                matched_strategies.add(strat)
+
+        if s["gov_id"]:
+            _consume_matches(by_gov.get(s["gov_id"]), "gov_id")
+        if s["phone"] and s["dob"] is not None:
+            _consume_matches(by_phone_dob.get((s["phone"], s["dob"])), "phone_dob")
+        if s["email"] and s["dob"] is not None:
+            _consume_matches(by_email_dob.get((s["email"], s["dob"])), "email_dob")
+
+        if not matched_arefs:
+            continue
+        slot = _ensure_b_slot(src_e)
+        slot["match_leadids"].add(s["lead_id"])
+        slot["match_arefs"].update(matched_arefs)
+        slot["match_paid_arefs"].update(matched_paid)
+        for strat in matched_strategies:
+            slot["by_strategy"][strat] += 1
+        for d_src, n in matched_destinations.items():
+            if d_src is not None:
+                slot["destination_sources"][d_src] = slot["destination_sources"].get(d_src, 0) + n
+
+    print(f"# matched {sum(len(s['match_leadids']) for s in bounceback_per_source.values()):,} sampled rejected leads to purchased counterparts", flush=True)
 
     conn.close()
 
