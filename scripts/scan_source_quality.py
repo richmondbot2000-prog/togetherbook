@@ -178,18 +178,24 @@ def main() -> None:
                     cid = pick(ccols, "CampaignId", "CampaignID")
                     csrc = pick(ccols, "SourceId", "SourceID")
                     cnm = pick(ccols, "CampaignFriendlyName", "CampaignName", "FriendlyName", "Name")
+                    ctyp = pick(ccols, "CommissionType", "CommissionTypeId")
+                    crate = pick(ccols, "CommissionRate", "CommissionAmount", "Rate", "Price")
                     if cid and csrc:
                         sel_extra = f", [{cnm}]" if cnm else ", NULL"
+                        sel_extra += f", [{ctyp}]" if ctyp else ", NULL"
+                        sel_extra += f", [{crate}]" if crate else ", NULL"
                         cur2.execute(f"SELECT [{cid}], [{csrc}]{sel_extra} FROM dbo.Campaigns")
-                        for i, src, nm in cur2.fetchall():
+                        for i, src, nm, ct, cr in cur2.fetchall():
                             if i is None or src is None: continue
                             campaign_to_source[int(i)] = int(src)
                             campaign_meta[int(i)] = {
-                                "campaign_id": int(i),
-                                "broker_id":   int(src),
-                                "source_name": (str(nm).strip() if nm is not None else None) or f"Campaign {i}",
+                                "campaign_id":    int(i),
+                                "broker_id":      int(src),
+                                "source_name":    (str(nm).strip() if nm is not None else None) or f"Campaign {i}",
+                                "commission_type": (str(ct).strip() if ct is not None else None),
+                                "commission_rate": (float(cr) if cr is not None else None),
                             }
-                        print(f"# Campaign→Source: {len(campaign_to_source)} mappings from {database}", flush=True)
+                        print(f"# Campaign→Source: {len(campaign_to_source)} mappings from {database} (commission cols: type={ctyp}, rate={crate})", flush=True)
                         any_loaded = True
         finally:
             c2.close()
@@ -249,13 +255,16 @@ def main() -> None:
     weak_data: dict[int | None, dict] = {}
     def _new_weak_slot(cid: int | None) -> dict:
         broker_id = campaign_to_source.get(cid) if cid is not None else None
+        meta = campaign_meta.get(cid) or {} if cid is not None else {}
         return {
-            "campaign_id":   cid,
-            "source_name":   _source_name(cid),
-            "broker_id":     broker_id,
-            "broker_name":   _broker_name(broker_id),
-            "applications":  0,
-            "paid_out":      0,
+            "campaign_id":     cid,
+            "source_name":     _source_name(cid),
+            "broker_id":       broker_id,
+            "broker_name":     _broker_name(broker_id),
+            "commission_type": meta.get("commission_type"),
+            "commission_rate": meta.get("commission_rate"),
+            "applications":    0,
+            "paid_out":        0,
         }
     for cid, (apps, paid) in accepted_per_campaign.items():
         slot = weak_data.setdefault(cid, _new_weak_slot(cid))
@@ -309,6 +318,29 @@ def main() -> None:
         statistics.quantiles(rates, n=4)[0] if len(rates) >= 4 else min(rates) if rates else 0
     )
     print(f"# Qualifying sources: {len(qualifying)}  median paid_out_rate: {median_rate:.5f}  Q1: {q1_rate:.5f}", flush=True)
+
+    # ─── Commission-model diagnostic ──────────────────────────────────
+    # We don't know the semantics of CommissionType across the catalogue.
+    # Dump every unique (type, rate-band) pair seen across qualifying
+    # campaigns so the user can map them to cost formulas.
+    print("# Commission-model diagnostic across qualifying campaigns:", flush=True)
+    by_type: dict[str, list] = {}
+    for s in qualifying:
+        key = str(s.get("commission_type"))
+        by_type.setdefault(key, []).append(s)
+    for ctype, members in sorted(by_type.items(), key=lambda kv: -len(kv[1])):
+        rates_seen = sorted({m.get("commission_rate") for m in members if m.get("commission_rate") is not None})
+        rate_str = ", ".join(f"{r:g}" for r in rates_seen[:6])
+        if len(rates_seen) > 6:
+            rate_str += f", … ({len(rates_seen)} distinct)"
+        if not rates_seen:
+            rate_str = "(no rate set)"
+        sample = members[0]
+        print(
+            f"#   type={ctype!r:<20} campaigns={len(members):>3}  rates={{{rate_str}}}  "
+            f"e.g. {sample['broker_name']} / {sample['source_name']} (cid {sample['campaign_id']})",
+            flush=True,
+        )
 
     for s in qualifying:
         s["rate_vs_median"] = (s["paid_out_rate"] / median_rate) if median_rate else None
