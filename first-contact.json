@@ -1,50 +1,46 @@
 {
   "schema_version": 1,
-  "updated_at": "2026-05-10T10:44:14.951859Z",
-  "snapshot_date": "2026-05-10",
+  "updated_at": "2026-05-11T10:47:04.745624Z",
+  "snapshot_date": "2026-05-11",
   "window_months": 3,
   "totals": {
-    "items": 143,
+    "items": 135,
     "by_lender": {
-      "Together Loans / TransformCredit": 143
+      "Together Loans / TransformCredit": 135
     },
     "by_role": {
-      "BRW": 140,
-      "GT": 3
+      "BRW": 133,
+      "GT": 2
     }
   },
   "word_cloud": [
     [
       "payment",
-      106
+      101
     ],
     [
       "loan",
-      85
+      80
     ],
     [
       "together",
-      72
+      69
     ],
     [
       "loans",
-      68
+      65
     ],
     [
       "account",
-      62
+      61
     ],
     [
       "statement",
-      35
+      33
     ],
     [
       "credit",
-      32
-    ],
-    [
-      "transform",
-      21
+      29
     ],
     [
       "card",
@@ -55,15 +51,11 @@
       19
     ],
     [
-      "back",
-      18
+      "transform",
+      19
     ],
     [
       "ach",
-      17
-    ],
-    [
-      "information",
       17
     ],
     [
@@ -71,35 +63,27 @@
       17
     ],
     [
+      "information",
+      16
+    ],
+    [
       "made",
       16
+    ],
+    [
+      "back",
+      15
     ],
     [
       "unsuccessful",
       15
     ],
     [
-      "required",
-      14
-    ],
-    [
-      "email",
-      14
-    ],
-    [
-      "due",
-      14
-    ],
-    [
       "get",
       14
     ],
     [
-      "action",
-      13
-    ],
-    [
-      "bounced",
+      "required",
       13
     ],
     [
@@ -107,15 +91,15 @@
       13
     ],
     [
-      "date",
-      13
-    ],
-    [
       "update",
       13
     ],
     [
-      "payout",
+      "action",
+      12
+    ],
+    [
+      "email",
       12
     ],
     [
@@ -125,6 +109,18 @@
     [
       "payments",
       12
+    ],
+    [
+      "due",
+      12
+    ],
+    [
+      "bounced",
+      11
+    ],
+    [
+      "payout",
+      11
     ],
     [
       "time",
@@ -143,20 +139,12 @@
       11
     ],
     [
+      "date",
+      11
+    ],
+    [
       "office",
       11
-    ],
-    [
-      "change",
-      11
-    ],
-    [
-      "call",
-      10
-    ],
-    [
-      "like",
-      10
     ],
     [
       "request",
@@ -171,7 +159,7 @@
       10
     ],
     [
-      "first",
+      "change",
       10
     ],
     [
@@ -179,7 +167,11 @@
       9
     ],
     [
-      "month",
+      "call",
+      9
+    ],
+    [
+      "like",
       9
     ],
     [
@@ -191,15 +183,19 @@
       9
     ],
     [
+      "first",
+      9
+    ],
+    [
       "method",
       9
     ],
     [
-      "friday",
+      "month",
       8
     ],
     [
-      "next",
+      "friday",
       8
     ],
     [
@@ -212,10 +208,6 @@
     ],
     [
       "good",
-      8
-    ],
-    [
-      "reply",
       8
     ],
     [
@@ -271,6 +263,10 @@
       7
     ],
     [
+      "next",
+      7
+    ],
+    [
       "new",
       7
     ],
@@ -279,7 +275,7 @@
       7
     ],
     [
-      "option",
+      "reply",
       7
     ],
     [
@@ -327,10 +323,6 @@
       5
     ],
     [
-      "funds",
-      5
-    ],
-    [
       "take",
       5
     ],
@@ -339,15 +331,7 @@
       5
     ],
     [
-      "someone",
-      5
-    ],
-    [
       "changed",
-      5
-    ],
-    [
-      "schedule",
       5
     ],
     [
@@ -356,6 +340,10 @@
     ],
     [
       "procedure",
+      5
+    ],
+    [
+      "option",
       5
     ],
     [
@@ -395,6 +383,10 @@
       4
     ],
     [
+      "funds",
+      4
+    ],
+    [
       "taken",
       4
     ],
@@ -412,10 +404,6 @@
     ],
     [
       "regarding",
-      4
-    ],
-    [
-      "give",
       4
     ],
     [
@@ -447,6 +435,10 @@
       4
     ],
     [
+      "someone",
+      4
+    ],
+    [
       "contact",
       4
     ],
@@ -460,10 +452,6 @@
     ],
     [
       "understanding",
-      4
-    ],
-    [
-      "making",
       4
     ],
     [
@@ -483,11 +471,11 @@
       4
     ],
     [
-      "able",
+      "schedule",
       4
     ],
     [
-      "soon",
+      "able",
       4
     ],
     [
@@ -500,10 +488,6 @@
     ],
     [
       "scheduled",
-      4
-    ],
-    [
-      "methods",
       4
     ],
     [
@@ -523,15 +507,15 @@
       4
     ],
     [
-      "possible",
-      3
-    ],
-    [
       "yet",
       3
     ],
     [
       "send",
+      3
+    ],
+    [
+      "give",
       3
     ],
     [
@@ -607,11 +591,27 @@
       3
     ],
     [
-      "collections",
+      "making",
       3
     ],
     [
       "several",
+      3
+    ],
+    [
+      "response",
+      3
+    ],
+    [
+      "record",
+      3
+    ],
+    [
+      "direct",
+      3
+    ],
+    [
+      "say",
       3
     ]
   ],
@@ -966,24 +966,6 @@
       "lender_name": "Together Loans / TransformCredit",
       "subject": "**** - Your Transform Credit Statement",
       "body": "Why does this mention baby in the documentions?"
-    },
-    {
-      "received_utc": "2026-04-27T16:49:50",
-      "received_date": "2026-04-27",
-      "days_after_payout": 76,
-      "role": "BRW",
-      "lender_name": "Together Loans / TransformCredit",
-      "subject": "Payment Schedule Change - ****",
-      "body": "I need for someone to call me as soon as possible"
-    },
-    {
-      "received_utc": "2026-04-27T16:09:43",
-      "received_date": "2026-04-27",
-      "days_after_payout": 76,
-      "role": "GT",
-      "lender_name": "Together Loans / TransformCredit",
-      "subject": "**** GT",
-      "body": ""
     },
     {
       "received_utc": "2026-04-26T17:15:14",
@@ -1679,15 +1661,6 @@
       "body": "Hi there- Can I give my card number by phone or is the website secure for credit cards? I sometimes don't feel safe with all the hackers and scamming. You are richer today if...you have laughed, given or forgiven. **** R. ****"
     },
     {
-      "received_utc": "2026-03-18T14:42:16",
-      "received_date": "2026-03-18",
-      "days_after_payout": 36,
-      "role": "BRW",
-      "lender_name": "Together Loans / TransformCredit",
-      "subject": "Your Together Loans Loan : ****",
-      "body": "The funds have been credited back to my account as it was collected twice"
-    },
-    {
       "received_utc": "2026-03-17T15:24:50",
       "received_date": "2026-03-17",
       "days_after_payout": 28,
@@ -1742,15 +1715,6 @@
       "body": "Good morning Sir/madam, I am writing to let you know that the loan of three thousand (3000$) has been repaid back to you guys, please am looking forward to receiving an email from you guys confirming receipt of the payment of 3024$ from me paid via my Bank of America account. Thanks **** ****"
     },
     {
-      "received_utc": "2026-03-10T13:20:25",
-      "received_date": "2026-03-10",
-      "days_after_payout": 28,
-      "role": "BRW",
-      "lender_name": "Together Loans / TransformCredit",
-      "subject": "Your Together Loans Loan : ****",
-      "body": "Upon review, it looks like you have opted in to become an over payer which would mean that we would be collecting your payment on your due date of 3/12/26. We can assist you to remove this, please reply back to this email to confirm. Once the over payer option is removed, then we will be using your credit towards your payment due date instead of charging your payment methods. *Please remove the overpayer option.* Best Regards, **** **** ****"
-    },
-    {
       "received_utc": "2026-03-10T12:36:18",
       "received_date": "2026-03-10",
       "days_after_payout": 27,
@@ -1776,24 +1740,6 @@
       "lender_name": "Together Loans / TransformCredit",
       "subject": "Automatic reply: **** - Your Transform Credit Statement",
       "body": "Hello, Thank you for your email. I am currently out of the office volunteering. I will be back in the office tomorrow morning at 7:30am. If you need assistance, please contact customer service at ****. Thank you. ****************************************************************************** \"This message and any attachments are solely for the intended recipient and may contain confidential or privileged information. If you are not the intended recipient, any disclosure, copying, use or distribution of the information included in this message and any attachments is prohibited. If you have received this communication in error, please notify us by reply email, or call, and immediately and permanently delete the message and any attachments. Thank you.\" ******************************************************************************"
-    },
-    {
-      "received_utc": "2026-02-28T18:25:17",
-      "received_date": "2026-02-28",
-      "days_after_payout": 18,
-      "role": "BRW",
-      "lender_name": "Together Loans / TransformCredit",
-      "subject": "**** - Your Transform Credit Statement",
-      "body": "Thank you for this i will be making my first payment next month"
-    },
-    {
-      "received_utc": "2026-02-27T18:32:12",
-      "received_date": "2026-02-27",
-      "days_after_payout": 17,
-      "role": "BRW",
-      "lender_name": "Together Loans / TransformCredit",
-      "subject": "**** - Your Transform Credit Statement",
-      "body": "Why am I getting an email from “Collections? This loan is current"
     },
     {
       "received_utc": "2026-02-27T18:12:13",
@@ -1884,24 +1830,6 @@
       "lender_name": "Together Loans / TransformCredit",
       "subject": "**** ****/ **** ****",
       "body": "**** **** is the loan holder Birth Day 5/25/1960 Email **** Cosigner **** ****"
-    },
-    {
-      "received_utc": "2026-02-13T15:26:14",
-      "received_date": "2026-02-13",
-      "days_after_payout": 3,
-      "role": "BRW",
-      "lender_name": "Together Loans / TransformCredit",
-      "subject": "Action Required: **** Bounced Loan Payout",
-      "body": "The information provided was verified by the agent I spoke with. Please give further clarification on why it bounced back. Thank you, ****"
-    },
-    {
-      "received_utc": "2026-02-12T20:56:41",
-      "received_date": "2026-02-12",
-      "days_after_payout": 2,
-      "role": "BRW",
-      "lender_name": "Together Loans / TransformCredit",
-      "subject": "Your Together Loans Loan : ****",
-      "body": "Thank you for the clarification. **** ****"
     }
   ]
 }
