@@ -294,10 +294,19 @@ def main() -> None:
 
     # Compute paid_out_rate + cost metrics per campaign and stats across
     # the qualifying cohort.
+    # CommissionType '3' is CPC (cost-per-click PPC spend) — not a broker
+    # lead, so exclude those campaigns from the source-quality scorecard.
+    CPC_COMMISSION_TYPE = "3"
     qualifying: list[dict] = []
+    excluded_cpc = 0
     for slot in weak_data.values():
         if (slot.get("leads_purchased") or 0) < MIN_VOLUME:
             slot["qualifies"] = False
+            continue
+        if str(slot.get("commission_type")) == CPC_COMMISSION_TYPE:
+            slot["qualifies"] = False
+            slot["excluded_reason"] = "cpc_ppc_not_a_broker"
+            excluded_cpc += 1
             continue
         slot["qualifies"] = True
         slot["paid_out_rate"] = (
@@ -318,6 +327,7 @@ def main() -> None:
         statistics.quantiles(rates, n=4)[0] if len(rates) >= 4 else min(rates) if rates else 0
     )
     print(f"# Qualifying sources: {len(qualifying)}  median paid_out_rate: {median_rate:.5f}  Q1: {q1_rate:.5f}", flush=True)
+    print(f"# Excluded {excluded_cpc} CPC/PPC campaigns (CommissionType=3) — not broker leads", flush=True)
 
     # ─── Commission-model diagnostic ──────────────────────────────────
     # We don't know the semantics of CommissionType across the catalogue.
