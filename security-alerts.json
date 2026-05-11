@@ -1,0 +1,7 @@
+{
+  "snapshot_at": null,
+  "snapshot_date": null,
+  "hibp": { "breach_count": 0, "affected_accounts": 0, "breaches": [] },
+  "lookalikes": { "active_count": 0, "domains": [] },
+  "ct_certificates": { "count": 0, "recent": [] }
+}

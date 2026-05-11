@@ -1,0 +1,15 @@
+{
+  "_comment": "domains feed into DNSTwist for permutation generation. ct_keywords feed into crt.sh CT log searches — use the brand-name root (without TLD) so you catch any TLD variant. Keep ct_keywords distinctive enough to avoid false positives.",
+
+  "domains": [
+    "transformcredit.com",
+    "togetherloans.com"
+  ],
+
+  "ct_keywords": [
+    "transformcredit",
+    "togetherloans",
+    "transform-credit",
+    "together-loans"
+  ]
+}

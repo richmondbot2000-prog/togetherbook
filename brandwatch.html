@@ -9,11 +9,11 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&family=Orbitron:wght@500;600;700;800&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="style.css?v=1778452888">
-<link rel="stylesheet" href="quiet-tokens.css?v=1778452888">
-<link rel="stylesheet" href="quiet.css?v=1778452888">
-<link rel="stylesheet" href="quiet-extras.css?v=1778452888">
-<link rel="stylesheet" href="quiet-legacy.css?v=1778452888">
+<link rel="stylesheet" href="style.css?v=1778490558">
+<link rel="stylesheet" href="quiet-tokens.css?v=1778490558">
+<link rel="stylesheet" href="quiet.css?v=1778490558">
+<link rel="stylesheet" href="quiet-extras.css?v=1778490558">
+<link rel="stylesheet" href="quiet-legacy.css?v=1778490558">
 <style>
   .bw-section { max-width: 920px; margin: 0 auto; padding: 24px 0 48px; }
   @media (max-width: 800px) { .bw-section { padding: 2px 0 32px; } }
@@ -240,6 +240,79 @@
     border-color: rgba(255, 57, 168, 0.3);
   }
 
+  /* SECURITY BAND (HIBP + lookalikes + CT) */
+  .bw-security {
+    background: linear-gradient(160deg, rgba(255, 80, 80, 0.05) 0%, rgba(0, 0, 0, 0.15) 100%);
+    border: 1px solid rgba(255, 80, 80, 0.35);
+    border-radius: 12px;
+    padding: 16px 20px;
+    margin: 0 0 18px;
+  }
+  .bw-sec-tiles {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+    gap: 10px;
+    margin: 0 0 14px;
+  }
+  .bw-sec-tile {
+    background: rgba(255,255,255,0.04);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 10px 12px;
+  }
+  .bw-sec-tile-label {
+    font: 600 10px/1.2 'JetBrains Mono', monospace;
+    text-transform: uppercase; letter-spacing: 0.12em;
+    color: var(--muted);
+    margin-bottom: 4px;
+  }
+  .bw-sec-tile-value {
+    font: 700 22px/1.05 'Orbitron', sans-serif;
+    color: #ff5050;
+  }
+  .bw-sec-tile-sub {
+    font: italic 400 11px/1.3 var(--font-display);
+    color: var(--ink-soft);
+    margin-top: 2px;
+  }
+  .bw-sec-h3 {
+    font: 600 13px/1.2 var(--font-display);
+    color: var(--ink);
+    margin: 12px 0 6px;
+  }
+  .bw-sec-list { list-style: none; padding: 0; margin: 0 0 10px; }
+  .bw-sec-list li {
+    padding: 6px 0;
+    border-bottom: 1px dashed var(--border);
+    font: 400 13px/1.4 var(--font-display);
+    color: var(--ink-soft);
+  }
+  .bw-sec-list li:last-child { border-bottom: none; }
+  .bw-sec-list a { color: var(--ink); text-decoration: none; }
+  .bw-sec-list a:hover { color: var(--accent-ink); }
+  .bw-sec-meta {
+    margin-left: 8px;
+    font: 500 11px/1.4 'JetBrains Mono', monospace;
+    color: var(--muted);
+  }
+  .bw-sec-sub {
+    font: 400 11px/1.3 var(--font-display);
+    color: var(--muted);
+    margin-top: 2px;
+  }
+  .bw-sec-flag {
+    display: inline-block;
+    font: 600 9px/1.2 'JetBrains Mono', monospace;
+    text-transform: uppercase; letter-spacing: 0.1em;
+    margin-left: 8px;
+    padding: 2px 6px;
+    border-radius: 4px;
+  }
+  .bw-sec-flag.sensitive {
+    background: rgba(255, 80, 80, 0.2);
+    color: #ff8080;
+  }
+
   /* EMPTY / WARNING STATES */
   .bw-empty, .bw-source-warning {
     background: var(--bg-soft);
@@ -258,7 +331,7 @@
 
 <header class="qb-topbar">
   <a class="qb-brand" href="index.html" aria-label="TogetherBOOK — home">
-    <img class="qb-brand-logo" src="togetherbook-logo.png?v=1778452888" alt="TogetherBOOK">
+    <img class="qb-brand-logo" src="togetherbook-logo.png?v=1778490558" alt="TogetherBOOK">
   </a>
   <button class="qb-hamburger" aria-label="Toggle navigation menu" aria-expanded="false"
           onclick="document.body.classList.toggle('nav-open');this.setAttribute('aria-expanded',document.body.classList.contains('nav-open'))">
@@ -286,6 +359,8 @@
 
       <div id="bwSourceWarnings"></div>
 
+      <div class="bw-security" id="bwSecurity" hidden></div>
+
       <div class="bw-filters" id="bwFilters" hidden>
         <div class="bw-filter-row">
           <span class="bw-filter-label">Source</span>
@@ -301,6 +376,7 @@
           <button class="bw-pill" data-filter="source" data-value="youtube">YouTube <span class="bw-pill-count" id="filterCountYt">0</span></button>
           <button class="bw-pill" data-filter="source" data-value="google_news">News <span class="bw-pill-count" id="filterCountGn">0</span></button>
           <button class="bw-pill" data-filter="source" data-value="telegram">Telegram <span class="bw-pill-count" id="filterCountTg">0</span></button>
+          <button class="bw-pill" data-filter="source" data-value="discord">Discord <span class="bw-pill-count" id="filterCountDc">0</span></button>
         </div>
         <div class="bw-filter-row">
           <span class="bw-filter-label">Brand</span>
@@ -339,6 +415,7 @@
     youtube:       "YouTube",
     google_news:   "News",
     telegram:      "Telegram",
+    discord:       "Discord",
   };
 
   const BRAND_LABELS = {
@@ -402,6 +479,7 @@
     cfpb:          { src: "https://www.google.com/s2/favicons?sz=256&domain=consumerfinance.gov", alt: "CFPB" },
     youtube:       { src: "https://www.google.com/s2/favicons?sz=256&domain=youtube.com",         alt: "YouTube" },
     telegram:      { src: "https://www.google.com/s2/favicons?sz=256&domain=telegram.org",        alt: "Telegram" },
+    discord:       { src: "https://www.google.com/s2/favicons?sz=256&domain=discord.com",         alt: "Discord" },
   };
 
   // Google News articles aren't actually published by Google News — they're
@@ -515,6 +593,7 @@
     document.getElementById("filterCountYt").textContent     = bs.youtube        || 0;
     document.getElementById("filterCountGn").textContent     = bs.google_news    || 0;
     document.getElementById("filterCountTg").textContent     = bs.telegram       || 0;
+    document.getElementById("filterCountDc").textContent     = bs.discord        || 0;
     document.getElementById("filterCountAllBr").textContent  = t.all || 0;
     document.getElementById("filterCountTl").textContent     = bb.together_loans   || 0;
     document.getElementById("filterCountTc").textContent     = bb.transform_credit || 0;
@@ -563,29 +642,36 @@
     });
   }
 
-  // Convert one entry from telegram-mentions.json into the shape used by
-  // the brandwatch feed so it can co-exist with the other sources.
-  function telegramToMention(tg) {
-    const matched = (tg.matched || []).map(m => (m || "").toLowerCase());
-    const isTC = matched.some(m => m.includes("transform"));
-    const isTL = matched.some(m => m.includes("together"));
-    const brand = isTC && !isTL ? "transform_credit"
-                : isTL && !isTC ? "together_loans"
-                : isTC ? "transform_credit"
-                : "together_loans";
-    const dateOnly = (tg.posted_at || "").slice(0, 10);
+  // Infer brand tag from matched keywords (used by telegram + discord).
+  function inferBrand(matched) {
+    const m = (matched || []).map(s => (s || "").toLowerCase());
+    const isTC = m.some(s => s.includes("transform"));
+    const isTL = m.some(s => s.includes("together"));
+    if (isTC && !isTL) return "transform_credit";
+    if (isTL && !isTC) return "together_loans";
+    return isTC ? "transform_credit" : "together_loans";
+  }
+
+  // Convert one entry from telegram-mentions.json / discord-mentions.json
+  // into the shape used by the brandwatch feed.
+  function chatToMention(row, source, label) {
+    const dateOnly = (row.posted_at || "").slice(0, 10);
+    const channelLabel = row.channel || "unknown";
+    const title = source === "telegram"
+      ? "@" + channelLabel + " on Telegram"
+      : channelLabel + " on Discord";
     return {
-      source: "telegram",
-      url: tg.message_url,
-      title: "@" + (tg.channel || "unknown") + " on Telegram",
-      snippet: tg.excerpt || "",
+      source: source,
+      url: row.message_url || row.channel_url,
+      title: title,
+      snippet: row.excerpt || "",
       date: dateOnly,
-      author: tg.channel ? "@" + tg.channel : null,
-      site_name: "Telegram",
-      site_domain: "t.me",
-      brand: brand,
-      matched: tg.matched || [],
-      has_media: !!tg.has_media,
+      author: channelLabel,
+      site_name: label,
+      site_domain: source === "telegram" ? "t.me" : "discord.com",
+      brand: inferBrand(row.matched),
+      matched: row.matched || [],
+      has_media: !!row.has_media,
     };
   }
 
@@ -595,32 +681,116 @@
     fetch("telegram-mentions.json?bust=" + Date.now())
       .then(r => r.ok ? r.json() : null)
       .catch(() => null),
-  ]).then(([payload, telegram]) => {
+    fetch("discord-mentions.json?bust=" + Date.now())
+      .then(r => r.ok ? r.json() : null)
+      .catch(() => null),
+    fetch("security-alerts.json?bust=" + Date.now())
+      .then(r => r.ok ? r.json() : null)
+      .catch(() => null),
+  ]).then(([payload, telegram, discord, security]) => {
     allMentions = payload.mentions || [];
-    if (telegram && Array.isArray(telegram.mentions)) {
-      const tgMentions = telegram.mentions.map(telegramToMention);
-      allMentions = allMentions.concat(tgMentions);
-      // Patch totals so the filter pills get an accurate Telegram count
+
+    function mergeMessages(rows, source, label) {
+      if (!rows || !Array.isArray(rows.mentions) || !rows.mentions.length) return;
+      const converted = rows.mentions.map(r => chatToMention(r, source, label));
+      allMentions = allMentions.concat(converted);
       payload.totals = payload.totals || { by_source: {}, by_brand: {} };
       payload.totals.by_source = payload.totals.by_source || {};
-      payload.totals.by_source.telegram = tgMentions.length;
-      payload.totals.all = (payload.totals.all || 0) + tgMentions.length;
-      // Bump by_brand counts too
+      payload.totals.by_source[source] = converted.length;
+      payload.totals.all = (payload.totals.all || 0) + converted.length;
       payload.totals.by_brand = payload.totals.by_brand || {};
-      for (const m of tgMentions) {
+      for (const m of converted) {
         payload.totals.by_brand[m.brand] = (payload.totals.by_brand[m.brand] || 0) + 1;
       }
     }
+    mergeMessages(telegram, "telegram", "Telegram");
+    mergeMessages(discord,  "discord",  "Discord");
+
     allMentions.sort((a, b) => (b.date || "").localeCompare(a.date || ""));
     setMeta(payload);
     setStats(payload);
     showSourceWarnings(payload);
     wireFilters();
     render();
+    renderSecurity(security);
   }).catch(err => {
     console.error("brandwatch.json fetch failed:", err);
     document.getElementById("bwMeta").textContent = "Could not load brandwatch.json — try again in a minute.";
   });
+
+  // ── Security alerts band (HIBP + lookalike + CT) ──────────────────
+  function renderSecurity(s) {
+    const host = document.getElementById("bwSecurity");
+    if (!host) return;
+    if (!s) { host.hidden = true; return; }
+    const hibpCount = s.hibp && s.hibp.breach_count || 0;
+    const affected  = s.hibp && s.hibp.affected_accounts || 0;
+    const lookCount = s.lookalikes && s.lookalikes.active_count || 0;
+    const ctCount   = s.ct_certificates && s.ct_certificates.count || 0;
+    if (!(hibpCount || lookCount || ctCount)) {
+      host.hidden = true;
+      return;
+    }
+    host.hidden = false;
+    // KPI tiles
+    const tiles = `
+      <div class="bw-sec-tile">
+        <div class="bw-sec-tile-label">HIBP breaches</div>
+        <div class="bw-sec-tile-value">${hibpCount.toLocaleString()}</div>
+        <div class="bw-sec-tile-sub">${affected.toLocaleString()} affected accounts</div>
+      </div>
+      <div class="bw-sec-tile">
+        <div class="bw-sec-tile-label">Active lookalikes</div>
+        <div class="bw-sec-tile-value">${lookCount.toLocaleString()}</div>
+        <div class="bw-sec-tile-sub">DNSTwist permutations resolving</div>
+      </div>
+      <div class="bw-sec-tile">
+        <div class="bw-sec-tile-label">CT log matches</div>
+        <div class="bw-sec-tile-value">${ctCount.toLocaleString()}</div>
+        <div class="bw-sec-tile-sub">certificates issued for brand keywords</div>
+      </div>
+    `;
+    let breaches = "";
+    if ((s.hibp.breaches || []).length) {
+      breaches = `<h3 class="bw-sec-h3">HIBP breaches</h3><ul class="bw-sec-list">`
+        + s.hibp.breaches.slice(0, 10).map(b => {
+          const sens = b.is_sensitive ? '<span class="bw-sec-flag sensitive">sensitive</span>' : "";
+          const cls = (b.data_classes || []).slice(0, 4).join(", ");
+          return `<li>
+            <a href="${escapeHtml(b.url)}" target="_blank" rel="noopener noreferrer"><strong>${escapeHtml(b.breach_name)}</strong></a>
+            <span class="bw-sec-meta">${escapeHtml(b.domain)} · ${b.affected_accounts.toLocaleString()} affected · ${escapeHtml(b.breach_date || "—")}</span>
+            ${sens}
+            ${cls ? `<div class="bw-sec-sub">${escapeHtml(cls)}</div>` : ""}
+          </li>`;
+        }).join("")
+        + `</ul>`;
+    }
+    let lookalikes = "";
+    if ((s.lookalikes.domains || []).length) {
+      lookalikes = `<h3 class="bw-sec-h3">Active lookalike domains</h3><ul class="bw-sec-list">`
+        + s.lookalikes.domains.slice(0, 10).map(d => `<li>
+            <a href="${escapeHtml(d.urlscan)}" target="_blank" rel="noopener noreferrer"><strong>${escapeHtml(d.candidate)}</strong></a>
+            <span class="bw-sec-meta">vs ${escapeHtml(d.brand)} · ${escapeHtml(d.permutation_type || "—")}</span>
+            ${d.resolves_to ? `<div class="bw-sec-sub">resolves to ${escapeHtml(d.resolves_to)}</div>` : ""}
+          </li>`).join("")
+        + `</ul>`;
+    }
+    let certs = "";
+    if ((s.ct_certificates.recent || []).length) {
+      certs = `<h3 class="bw-sec-h3">Recent CT certificates</h3><ul class="bw-sec-list">`
+        + s.ct_certificates.recent.slice(0, 10).map(c => `<li>
+            <a href="${escapeHtml(c.url)}" target="_blank" rel="noopener noreferrer"><strong>${escapeHtml(c.common_name || "—")}</strong></a>
+            <span class="bw-sec-meta">issuer ${escapeHtml(c.issuer || "—")} · ${escapeHtml(c.not_before || "")}</span>
+          </li>`).join("")
+        + `</ul>`;
+    }
+    host.innerHTML = `
+      <div class="bw-sec-tiles">${tiles}</div>
+      ${breaches}
+      ${lookalikes}
+      ${certs}
+    `;
+  }
 </script>
 
 <script>

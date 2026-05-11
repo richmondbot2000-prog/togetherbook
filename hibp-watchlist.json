@@ -1,0 +1,8 @@
+{
+  "_comment": "Domains MUST be verified at https://haveibeenpwned.com/DomainSearch before HIBP returns data. Verification is free (DNS TXT record or file upload). The API itself requires a paid subscription — get a key at https://haveibeenpwned.com/API/Key.",
+
+  "domains": [
+    "transformcredit.com",
+    "togetherloans.com"
+  ]
+}

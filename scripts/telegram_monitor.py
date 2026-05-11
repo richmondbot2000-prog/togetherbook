@@ -64,7 +64,7 @@ API_ID = int(_required("TG_API_ID"))
 API_HASH = _required("TG_API_HASH")
 SESSION_NAME = os.environ.get("TG_SESSION", "monitor")
 SLACK_WEBHOOK = os.environ.get("SLACK_WEBHOOK_URL")
-DB_PATH = Path(os.environ.get("MONITOR_DB", "telegram-monitor.db"))
+DB_PATH = Path(os.environ.get("MONITOR_DB", "monitor.db"))
 CONFIG_PATH = Path(os.environ.get("MONITOR_CONFIG", "telegram-watchlist.json"))
 BACKFILL_DAYS = int(os.environ.get("BACKFILL_DAYS", "30"))
 
@@ -108,27 +108,36 @@ def find_matches(text: str, patterns: Iterable[re.Pattern]) -> list[str]:
 SCHEMA = """
 CREATE TABLE IF NOT EXISTS messages (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
+    source TEXT NOT NULL DEFAULT 'telegram',
     channel TEXT NOT NULL,
     channel_id INTEGER,
     message_id INTEGER NOT NULL,
     posted_at TEXT NOT NULL,
     collected_at TEXT NOT NULL,
     sender_id INTEGER,
+    sender_name TEXT,
     text TEXT,
     matched_terms TEXT,
     has_media INTEGER DEFAULT 0,
     raw_link TEXT,
-    UNIQUE(channel, message_id)
+    UNIQUE(source, channel, message_id)
 );
 CREATE INDEX IF NOT EXISTS idx_messages_posted_at ON messages(posted_at);
-CREATE INDEX IF NOT EXISTS idx_messages_channel ON messages(channel);
-CREATE INDEX IF NOT EXISTS idx_messages_matched ON messages(matched_terms);
+CREATE INDEX IF NOT EXISTS idx_messages_channel  ON messages(channel);
+CREATE INDEX IF NOT EXISTS idx_messages_matched  ON messages(matched_terms);
+CREATE INDEX IF NOT EXISTS idx_messages_source   ON messages(source);
 """
 
 
 def init_db(path: Path) -> sqlite3.Connection:
     conn = sqlite3.connect(path)
     conn.executescript(SCHEMA)
+    # Migrate older databases that lack the source / sender_name columns.
+    cols = {r[1] for r in conn.execute("PRAGMA table_info(messages)").fetchall()}
+    if "source" not in cols:
+        conn.execute("ALTER TABLE messages ADD COLUMN source TEXT DEFAULT 'telegram'")
+    if "sender_name" not in cols:
+        conn.execute("ALTER TABLE messages ADD COLUMN sender_name TEXT")
     conn.commit()
     return conn
 
@@ -148,9 +157,9 @@ def store_message(
             conn.execute(
                 """
                 INSERT INTO messages
-                (channel, channel_id, message_id, posted_at, collected_at,
+                (source, channel, channel_id, message_id, posted_at, collected_at,
                  sender_id, text, matched_terms, has_media, raw_link)
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                VALUES ('telegram', ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
                 """,
                 (
                     channel,

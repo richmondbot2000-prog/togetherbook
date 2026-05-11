@@ -25,8 +25,9 @@ import sqlite3
 import sys
 from pathlib import Path
 
-DB_PATH = Path(os.environ.get("MONITOR_DB", "telegram-monitor.db"))
+DB_PATH = Path(os.environ.get("MONITOR_DB", "monitor.db"))
 OUTPUT_PATH = Path(os.environ.get("MENTIONS_JSON", "telegram-mentions.json"))
+DISCORD_OUTPUT_PATH = Path(os.environ.get("DISCORD_JSON", "discord-mentions.json"))
 EXCERPT_CHARS = 500
 MAX_MENTIONS = 1000  # safety cap; newest first
 
@@ -66,34 +67,53 @@ def redact(text: str) -> str:
     return out
 
 
-def main() -> None:
-    started = datetime.datetime.now(datetime.timezone.utc)
-    if not DB_PATH.exists():
-        print(f"# {DB_PATH} not found — writing empty mentions file", flush=True)
-        OUTPUT_PATH.write_text(json.dumps({
-            "snapshot_at": started.isoformat(),
-            "snapshot_date": started.date().isoformat(),
-            "mention_count": 0,
-            "channel_count": 0,
-            "mentions": [],
-        }, indent=2))
-        return
+def empty_payload(started):
+    return {
+        "snapshot_at": started.isoformat(),
+        "snapshot_date": started.date().isoformat(),
+        "mention_count": 0,
+        "channel_count": 0,
+        "channels": [],
+        "mentions": [],
+    }
 
-    conn = sqlite3.connect(DB_PATH)
+
+def extract_source(conn: sqlite3.Connection, source: str, channel_url_fn) -> dict:
+    """Pull matched messages for a specific source ('telegram' or 'discord')."""
     cur = conn.cursor()
-    cur.execute(
-        """
-        SELECT channel, channel_id, message_id, posted_at, sender_id,
-               text, matched_terms, has_media, raw_link
-        FROM messages
-        WHERE matched_terms IS NOT NULL
-          AND matched_terms <> '[]'
-        ORDER BY posted_at DESC
-        LIMIT ?
-        """,
-        [MAX_MENTIONS],
-    )
-    rows = cur.fetchall()
+    # Older monitor.db rows may not have a source column yet — try the
+    # filtered query first, fall back to all rows treated as telegram.
+    try:
+        cur.execute(
+            """
+            SELECT channel, channel_id, message_id, posted_at, sender_id,
+                   text, matched_terms, has_media, raw_link
+            FROM messages
+            WHERE source = ?
+              AND matched_terms IS NOT NULL
+              AND matched_terms <> '[]'
+            ORDER BY posted_at DESC
+            LIMIT ?
+            """,
+            [source, MAX_MENTIONS],
+        )
+        rows = cur.fetchall()
+    except sqlite3.OperationalError:
+        if source != "telegram":
+            return {"rows": [], "channels_seen": set()}
+        cur.execute(
+            """
+            SELECT channel, channel_id, message_id, posted_at, sender_id,
+                   text, matched_terms, has_media, raw_link
+            FROM messages
+            WHERE matched_terms IS NOT NULL
+              AND matched_terms <> '[]'
+            ORDER BY posted_at DESC
+            LIMIT ?
+            """,
+            [MAX_MENTIONS],
+        )
+        rows = cur.fetchall()
 
     mentions = []
     channels_seen: set[str] = set()
@@ -106,19 +126,22 @@ def main() -> None:
         redacted = redact(excerpt)
         if redacted and len(text or "") > EXCERPT_CHARS:
             redacted += "…"
-        mentions.append({
+        m = {
             "channel": channel,
-            "channel_url": f"https://t.me/{channel}",
-            "message_url": raw_link or f"https://t.me/{channel}/{message_id}",
+            "channel_url": channel_url_fn(channel),
+            "message_url": raw_link,
             "posted_at": posted_at,
             "matched": sorted(set(terms)),
             "has_media": bool(has_media),
             "excerpt": redacted,
-        })
+        }
+        mentions.append(m)
         if channel:
             channels_seen.add(channel)
+    return {"mentions": mentions, "channels_seen": channels_seen}
 
-    # Channel-level summary (counts per channel, newest hit per channel).
+
+def assemble_output(started, source: str, mentions: list[dict], channels_seen: set[str]) -> dict:
     by_channel: dict[str, dict] = {}
     for m in mentions:
         ch = m["channel"] or "?"
@@ -126,21 +149,49 @@ def main() -> None:
         slot["count"] += 1
         if not slot["latest_at"] or (m["posted_at"] and m["posted_at"] > slot["latest_at"]):
             slot["latest_at"] = m["posted_at"]
-
-    output = {
+    return {
         "snapshot_at": started.isoformat(),
         "snapshot_date": started.date().isoformat(),
+        "source": source,
         "mention_count": len(mentions),
         "channel_count": len(channels_seen),
         "channels": sorted(by_channel.values(), key=lambda c: -c["count"]),
         "mentions": mentions,
     }
-    OUTPUT_PATH.write_text(json.dumps(output, indent=2, default=str))
+
+
+def main() -> None:
+    started = datetime.datetime.now(datetime.timezone.utc)
+    if not DB_PATH.exists():
+        print(f"# {DB_PATH} not found — writing empty mentions files", flush=True)
+        OUTPUT_PATH.write_text(json.dumps(empty_payload(started), indent=2))
+        DISCORD_OUTPUT_PATH.write_text(json.dumps(empty_payload(started), indent=2))
+        return
+
+    conn = sqlite3.connect(DB_PATH)
+
+    tg = extract_source(conn, "telegram", lambda ch: f"https://t.me/{ch}")
+    OUTPUT_PATH.write_text(json.dumps(
+        assemble_output(started, "telegram", tg["mentions"], tg["channels_seen"]),
+        indent=2, default=str,
+    ))
     print(
         f"# wrote {OUTPUT_PATH} ({OUTPUT_PATH.stat().st_size:,} bytes); "
-        f"{len(mentions):,} mentions across {len(channels_seen)} channels",
+        f"{len(tg['mentions']):,} Telegram mentions across {len(tg['channels_seen'])} channels",
         flush=True,
     )
+
+    dc = extract_source(conn, "discord", lambda ch: None)
+    DISCORD_OUTPUT_PATH.write_text(json.dumps(
+        assemble_output(started, "discord", dc["mentions"], dc["channels_seen"]),
+        indent=2, default=str,
+    ))
+    print(
+        f"# wrote {DISCORD_OUTPUT_PATH} ({DISCORD_OUTPUT_PATH.stat().st_size:,} bytes); "
+        f"{len(dc['mentions']):,} Discord mentions across {len(dc['channels_seen'])} channels",
+        flush=True,
+    )
+
     conn.close()
 
 

@@ -1,0 +1,23 @@
+{
+  "_comment": "Discord watchlist. channel_ids and guild_ids are Discord snowflake IDs (Settings → Advanced → Developer Mode, right-click → Copy ID). guild_ids monitors every text channel in that server you can read; channel_ids monitors specific channels only.",
+
+  "channel_ids": [],
+
+  "guild_ids": [],
+
+  "keywords": [
+    "Transform Credit",
+    "transformcredit",
+    "transformcredit.com",
+    "Together Loans",
+    "togetherloans",
+    "togetherloans.com"
+  ],
+
+  "regex_keywords": [
+    "transf[o0]rm\\s*cred[i1]t",
+    "t[o0]gether\\s*l[o0]ans",
+    "transform[\\-_\\s]?credit",
+    "together[\\-_\\s]?loans?"
+  ]
+}

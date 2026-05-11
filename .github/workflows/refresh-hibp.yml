@@ -1,0 +1,93 @@
+name: Refresh HIBP breaches
+
+# Queries Have I Been Pwned's domain-search API for breached accounts on
+# the configured owned domains, stores results in the shared SQLite DB,
+# and exports security-alerts.json.
+#
+# Skipped unless HIBP_API_KEY secret is set. Domains must also be verified
+# at https://haveibeenpwned.com/DomainSearch (free, but separate step).
+
+on:
+  schedule:
+    - cron: '20 */6 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: refresh-hibp
+  cancel-in-progress: false
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Skip if secret missing
+        id: guard
+        env:
+          HIBP_API_KEY: ${{ secrets.HIBP_API_KEY }}
+        run: |
+          if [ -z "$HIBP_API_KEY" ]; then
+            echo "HIBP_API_KEY not yet configured — see MONITORING_SETUP.md"
+            echo "run=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "run=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Set up Python
+        if: steps.guard.outputs.run == 'true'
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install deps
+        if: steps.guard.outputs.run == 'true'
+        run: pip install --quiet httpx
+
+      - name: Cache monitor.db
+        if: steps.guard.outputs.run == 'true'
+        uses: actions/cache@v4
+        with:
+          path: monitor.db
+          key: monitor-db-v1
+
+      - name: Run HIBP sync
+        if: steps.guard.outputs.run == 'true'
+        env:
+          HIBP_API_KEY: ${{ secrets.HIBP_API_KEY }}
+          HIBP_CONFIG: hibp-watchlist.json
+          MONITOR_DB: monitor.db
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+        run: python scripts/hibp_monitor.py
+
+      - name: Export security JSON
+        if: steps.guard.outputs.run == 'true'
+        env:
+          MONITOR_DB: monitor.db
+        run: python scripts/scan_security.py
+
+      - name: Commit if security-alerts.json changed
+        if: steps.guard.outputs.run == 'true'
+        run: |
+          set -euo pipefail
+          git config user.name  "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add security-alerts.json
+          if git diff --cached --quiet; then
+            echo "no changes — nothing to commit"
+            exit 0
+          fi
+          BREACHES=$(python -c "import json; print(json.load(open('security-alerts.json'))['hibp']['breach_count'])")
+          git commit -m "Refresh HIBP: ${BREACHES} breaches"
+          for attempt in 1 2 3; do
+            if git push; then break; fi
+            if [ "$attempt" -eq 3 ]; then exit 1; fi
+            git fetch origin main
+            git rebase origin/main
+          done

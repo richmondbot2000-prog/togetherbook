@@ -1,13 +1,15 @@
 book_nokia_logo_transparent.png
 tables-over-1000.txt
 
-# Telegram monitor: session file is a credential, the DB holds raw
-# (un-redacted) Telegram messages — neither belongs in the repo.
-# Only the redacted telegram-mentions.json is published.
+# Brand-monitor stack: session files are credentials, the shared SQLite DB
+# holds raw (un-redacted) messages + breach details + lookalike domains.
+# Only the redacted *.json snapshots ever get committed.
 monitor.session
 monitor.session-journal
 *.session
 *.session-journal
+monitor.db
+monitor.db-journal
 telegram-monitor.db
 telegram-monitor.db-journal
 .venv/

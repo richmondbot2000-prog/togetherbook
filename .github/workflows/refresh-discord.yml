@@ -1,0 +1,94 @@
+name: Refresh discord mentions
+
+# Runs the Discord brand-mention monitor in backfill mode against the
+# configured public channels/guilds, exports a public-safe JSON for the
+# Brandwatch page.
+#
+# Skipped unless DISCORD_TOKEN secret is set. Discord doesn't have a
+# session-file dance like Telegram — the token is enough.
+
+on:
+  schedule:
+    - cron: '45 6-23 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: refresh-discord
+  cancel-in-progress: false
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Skip if secret missing
+        id: guard
+        env:
+          DISCORD_TOKEN: ${{ secrets.DISCORD_TOKEN }}
+        run: |
+          if [ -z "$DISCORD_TOKEN" ]; then
+            echo "DISCORD_TOKEN not yet configured — see MONITORING_SETUP.md"
+            echo "run=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "run=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Set up Python
+        if: steps.guard.outputs.run == 'true'
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install deps
+        if: steps.guard.outputs.run == 'true'
+        run: pip install --quiet 'discord.py==2.*' httpx
+
+      - name: Cache monitor.db
+        if: steps.guard.outputs.run == 'true'
+        uses: actions/cache@v4
+        with:
+          path: monitor.db
+          key: monitor-db-v1
+
+      - name: Run backfill (last 7 days)
+        if: steps.guard.outputs.run == 'true'
+        env:
+          DISCORD_TOKEN: ${{ secrets.DISCORD_TOKEN }}
+          DISCORD_IS_BOT: ${{ vars.DISCORD_IS_BOT || 'false' }}
+          DISCORD_CONFIG: discord-watchlist.json
+          MONITOR_DB: monitor.db
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+        run: python scripts/discord_monitor.py backfill --days 7
+
+      - name: Export public mentions JSON
+        if: steps.guard.outputs.run == 'true'
+        env:
+          MONITOR_DB: monitor.db
+        run: python scripts/scan_telegram.py
+
+      - name: Commit if discord-mentions.json changed
+        if: steps.guard.outputs.run == 'true'
+        run: |
+          set -euo pipefail
+          git config user.name  "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add discord-mentions.json telegram-mentions.json
+          if git diff --cached --quiet; then
+            echo "no changes — nothing to commit"
+            exit 0
+          fi
+          COUNT=$(python -c "import json; print(json.load(open('discord-mentions.json'))['mention_count'])")
+          git commit -m "Refresh discord mentions (${COUNT} hits)"
+          for attempt in 1 2 3; do
+            if git push; then break; fi
+            if [ "$attempt" -eq 3 ]; then exit 1; fi
+            git fetch origin main
+            git rebase origin/main
+          done

@@ -60,8 +60,8 @@ jobs:
         if: steps.guard.outputs.run == 'true'
         uses: actions/cache@v4
         with:
-          path: telegram-monitor.db
-          key: telegram-monitor-db-v1
+          path: monitor.db
+          key: monitor-db-v1
 
       - name: Restore session file
         if: steps.guard.outputs.run == 'true'
@@ -78,15 +78,14 @@ jobs:
           TG_API_HASH: ${{ secrets.TG_API_HASH }}
           TG_SESSION: monitor
           MONITOR_CONFIG: telegram-watchlist.json
-          MONITOR_DB: telegram-monitor.db
+          MONITOR_DB: monitor.db
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
         run: python scripts/telegram_monitor.py backfill --days 7
 
       - name: Export public mentions JSON
         if: steps.guard.outputs.run == 'true'
         env:
-          MONITOR_DB: telegram-monitor.db
-          MENTIONS_JSON: telegram-mentions.json
+          MONITOR_DB: monitor.db
         run: python scripts/scan_telegram.py
 
       - name: Commit if telegram-mentions.json changed

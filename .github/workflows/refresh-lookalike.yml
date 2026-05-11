@@ -1,0 +1,98 @@
+name: Refresh lookalike domains + CT certs
+
+# Runs DNSTwist over the configured brand domains and queries crt.sh for
+# certificates matching brand keywords. Stores findings in the shared
+# SQLite DB and re-exports security-alerts.json.
+#
+# No secret required to actually run (DNSTwist hits public DNS, crt.sh is
+# public). Guarded by 'lookalike-watchlist.json' existence so it's still a
+# no-op until the user actually wants it.
+
+on:
+  schedule:
+    - cron: '0 5 * * *'   # daily at 05:00 UTC
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: refresh-lookalike
+  cancel-in-progress: false
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Skip if config missing or empty
+        id: guard
+        run: |
+          set -euo pipefail
+          if [ ! -f lookalike-watchlist.json ]; then
+            echo "lookalike-watchlist.json missing — skip"
+            echo "run=false" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          DOMAINS=$(python3 -c "import json; print(len(json.load(open('lookalike-watchlist.json')).get('domains', [])))")
+          if [ "$DOMAINS" -eq 0 ]; then
+            echo "no domains configured — skip"
+            echo "run=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "run=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Set up Python
+        if: steps.guard.outputs.run == 'true'
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install deps
+        if: steps.guard.outputs.run == 'true'
+        run: pip install --quiet dnstwist tldextract httpx
+
+      - name: Cache monitor.db
+        if: steps.guard.outputs.run == 'true'
+        uses: actions/cache@v4
+        with:
+          path: monitor.db
+          key: monitor-db-v1
+
+      - name: Run lookalike sync
+        if: steps.guard.outputs.run == 'true'
+        env:
+          LOOKALIKE_CONFIG: lookalike-watchlist.json
+          MONITOR_DB: monitor.db
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+        run: python scripts/lookalike_monitor.py
+
+      - name: Export security JSON
+        if: steps.guard.outputs.run == 'true'
+        env:
+          MONITOR_DB: monitor.db
+        run: python scripts/scan_security.py
+
+      - name: Commit if security-alerts.json changed
+        if: steps.guard.outputs.run == 'true'
+        run: |
+          set -euo pipefail
+          git config user.name  "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add security-alerts.json
+          if git diff --cached --quiet; then
+            echo "no changes — nothing to commit"
+            exit 0
+          fi
+          ACTIVE=$(python -c "import json; print(json.load(open('security-alerts.json'))['lookalikes']['active_count'])")
+          git commit -m "Refresh lookalikes: ${ACTIVE} active"
+          for attempt in 1 2 3; do
+            if git push; then break; fi
+            if [ "$attempt" -eq 3 ]; then exit 1; fi
+            git fetch origin main
+            git rebase origin/main
+          done
