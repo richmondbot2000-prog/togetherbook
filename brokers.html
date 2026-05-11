@@ -6,9 +6,9 @@
 <title>TogetherBOOK — Brokers</title>
 <link rel="icon" type="image/png" href="site-icon.png">
 <link rel="apple-touch-icon" href="site-icon.png">
-<link rel="stylesheet" href="quiet-tokens.css?v=1778488594">
-<link rel="stylesheet" href="quiet.css?v=1778488594">
-<link rel="stylesheet" href="quiet-extras.css?v=1778488594">
+<link rel="stylesheet" href="quiet-tokens.css?v=1778488904">
+<link rel="stylesheet" href="quiet.css?v=1778488904">
+<link rel="stylesheet" href="quiet-extras.css?v=1778488904">
 <style>
   .br-section { max-width: 1280px; margin: 0 auto; padding: 24px 0 48px; }
   @media (max-width: 800px) { .br-section { padding: 2px 0 32px; } }
@@ -377,7 +377,7 @@
 
 <header class="qb-topbar">
   <a class="qb-brand" href="index.html" aria-label="TogetherBOOK — home">
-    <img class="qb-brand-logo" src="togetherbook-logo.png?v=1778488594" alt="TogetherBOOK">
+    <img class="qb-brand-logo" src="togetherbook-logo.png?v=1778488904" alt="TogetherBOOK">
   </a>
   <button class="qb-hamburger" aria-label="Toggle navigation menu" aria-expanded="false"
           onclick="document.body.classList.toggle('nav-open');this.setAttribute('aria-expanded',document.body.classList.contains('nav-open'))">
@@ -603,9 +603,17 @@
     });
   }
 
+  function normaliseUrl(u) {
+    if (!u) return null;
+    const s = String(u).trim();
+    if (!s) return null;
+    if (/^https?:\/\//i.test(s)) return s;
+    return "https://" + s.replace(/^\/+/, "");
+  }
   function renderRow(r) {
-    const nameHtml = r.website_url
-      ? `<a class="br-name" href="${escapeHtml(r.website_url)}" target="_blank" rel="noopener noreferrer" onclick="event.stopPropagation()" style="color: var(--brass-600); text-decoration: none;">${escapeHtml(r.friendly_name || "Source " + r.source_id)} ↗</a>`
+    const url = normaliseUrl(r.website_url);
+    const nameHtml = url
+      ? `<a class="br-name" href="${escapeHtml(url)}" target="_blank" rel="noopener noreferrer" onclick="event.stopPropagation()" style="color: var(--brass-600); text-decoration: none;">${escapeHtml(r.friendly_name || "Source " + r.source_id)} ↗</a>`
       : `<div class="br-name">${escapeHtml(r.friendly_name || "Source " + r.source_id)}</div>`;
     const cellsHtml = [
       `<td>${nameHtml}`
