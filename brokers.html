@@ -6,9 +6,9 @@
 <title>TogetherBOOK — Brokers</title>
 <link rel="icon" type="image/png" href="site-icon.png">
 <link rel="apple-touch-icon" href="site-icon.png">
-<link rel="stylesheet" href="quiet-tokens.css?v=1778487681">
-<link rel="stylesheet" href="quiet.css?v=1778487681">
-<link rel="stylesheet" href="quiet-extras.css?v=1778487681">
+<link rel="stylesheet" href="quiet-tokens.css?v=1778487953">
+<link rel="stylesheet" href="quiet.css?v=1778487953">
+<link rel="stylesheet" href="quiet-extras.css?v=1778487953">
 <style>
   .br-section { max-width: 1280px; margin: 0 auto; padding: 24px 0 48px; }
   @media (max-width: 800px) { .br-section { padding: 2px 0 32px; } }
@@ -187,24 +187,29 @@
   td.pct.weak { color: var(--ink-500); }
 
   /* ── Per-row mini funnel chart ───────────────────────────────────── */
+  /* Width 140px, segments are absolute (overlapping bars stacked from
+     left). Lighter behind, darker in front — gives the look of a single
+     funnel with shrinking stages. */
   .br-funnel {
-    display: flex; height: 18px; min-width: 200px;
-    border: 1px solid var(--paper-300);
-    background: var(--paper-100);
     position: relative;
+    height: 14px;
+    width: 160px;
+    background: var(--paper-300);
+    border: 1px solid var(--paper-300);
+    overflow: hidden;
   }
   .br-funnel-seg {
-    height: 100%;
-    border-right: 1px solid var(--paper-50);
+    position: absolute;
+    left: 0; top: 0; bottom: 0;
     transition: opacity 0.15s;
   }
-  .br-funnel-seg:last-child { border-right: none; }
-  .br-funnel-seg.presented  { background: var(--brass-500); }
-  .br-funnel-seg.purchased  { background: var(--sage-500); }
-  .br-funnel-seg.applied    { background: var(--ink-700); }
-  .br-funnel-seg.apply1     { background: var(--ink-500); }
-  .br-funnel-seg.brw_signed { background: var(--ink-300); }
-  .br-funnel-seg.paid_out   { background: var(--brass-600); }
+  .br-funnel-seg.purchased  { background: var(--sage-500);  opacity: 0.85; }
+  .br-funnel-seg.applied    { background: var(--sage-700, var(--sage-500)); opacity: 1; }
+  .br-funnel-seg.apply1     { background: var(--brass-500); opacity: 1; }
+  .br-funnel-seg.brw_signed { background: var(--brass-600); opacity: 1; }
+  .br-funnel-seg.paid_out   { background: var(--red-500);   opacity: 1; min-width: 2px; }
+  table.br-table th.no-sort { cursor: default; }
+  table.br-table th.no-sort::after { content: ""; }
 
   /* ── Row expander ─────────────────────────────────────────────────── */
   table.br-table tr.br-row { cursor: pointer; }
@@ -266,6 +271,75 @@
     margin-left: 8px;
   }
 
+  /* ── Top-10 leaderboard ──────────────────────────────────────────── */
+  .br-leaderboard-wrap {
+    position: relative;
+    background: var(--paper-50);
+    border: 1px solid var(--paper-300);
+    padding: 16px 18px 18px;
+    margin: 0 0 22px;
+  }
+  .br-leaderboard-wrap::before {
+    content: ""; position: absolute; inset: 4px;
+    border: 1px solid var(--brass-300); opacity: 0.4; pointer-events: none;
+  }
+  .br-canvas-title {
+    font: italic 400 15px/1 var(--font-display);
+    color: var(--red-500); letter-spacing: 0.02em;
+    display: flex; align-items: center; gap: 14px;
+    margin: 0 0 8px;
+  }
+  .br-canvas-title::before {
+    content: ""; flex: 0 0 36px; height: 1px; background: var(--brass-300);
+  }
+  .br-canvas-sub {
+    font: 400 13px/1.5 var(--font-display);
+    color: var(--ink-700);
+    margin: 0 0 14px; max-width: 720px;
+  }
+  .br-leader {
+    display: grid;
+    grid-template-columns: 180px 1fr 80px 60px;
+    gap: 12px;
+    align-items: center;
+    padding: 6px 0;
+    border-bottom: 1px dashed var(--divider);
+    font: 400 12px/1.3 var(--font-display);
+  }
+  .br-leader:last-child { border-bottom: none; }
+  .br-leader-name {
+    font: italic 500 13px/1.2 var(--font-display);
+    color: var(--ink-900);
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  }
+  .br-leader-bar {
+    position: relative;
+    height: 18px;
+    background: var(--paper-100);
+    border: 1px solid var(--paper-300);
+  }
+  .br-leader-bar-fill {
+    position: absolute; left: 0; top: 0; bottom: 0;
+    background: var(--brass-300);
+  }
+  .br-leader-bar-seg {
+    position: absolute; top: 0; bottom: 0;
+  }
+  .br-leader-bar-seg.purchased  { background: var(--sage-500); opacity: 0.95; }
+  .br-leader-bar-seg.apply1     { background: var(--brass-500); }
+  .br-leader-bar-seg.brw_signed { background: var(--brass-600); }
+  .br-leader-bar-seg.paid_out   { background: var(--red-500);   min-width: 2px; }
+  .br-leader-count {
+    font: 500 13px/1.3 var(--font-mono);
+    color: var(--ink-900);
+    text-align: right;
+  }
+  .br-leader-paid {
+    font: 500 11px/1.3 var(--font-mono);
+    color: var(--red-500);
+    text-align: right;
+  }
+
   .br-empty {
     background: var(--paper-100);
     border: 1px dashed var(--ink-300);
@@ -280,7 +354,7 @@
 
 <header class="qb-topbar">
   <a class="qb-brand" href="index.html" aria-label="TogetherBOOK — home">
-    <img class="qb-brand-logo" src="togetherbook-logo.png?v=1778487681" alt="TogetherBOOK">
+    <img class="qb-brand-logo" src="togetherbook-logo.png?v=1778487953" alt="TogetherBOOK">
   </a>
   <button class="qb-hamburger" aria-label="Toggle navigation menu" aria-expanded="false"
           onclick="document.body.classList.toggle('nav-open');this.setAttribute('aria-expanded',document.body.classList.contains('nav-open'))">
@@ -317,6 +391,12 @@
 
     <div class="br-kpis" id="brKpis"></div>
 
+    <div class="br-leaderboard-wrap">
+      <h2 class="br-canvas-title">Top 10 brokers by lead volume</h2>
+      <p class="br-canvas-sub">Each bar shows leads presented (full width = the leader); the coloured strip inside scales each broker's downstream stages against their own leads.</p>
+      <div id="brLeaderboard"></div>
+    </div>
+
     <div class="br-filters">
       <span class="br-filter-label">Search</span>
       <input id="brSearch" type="search" placeholder="Broker name or CampaignId…" autocomplete="off">
@@ -329,7 +409,9 @@
       <table class="br-table" id="brTable" aria-label="Broker scorecard">
         <thead><tr>
           <th data-col="friendly_name">Broker</th>
+          <th class="no-sort">Funnel</th>
           <th data-col="leads_presented" class="is-sort">Leads in</th>
+          <th data-col="volume_share">% of all</th>
           <th data-col="leads_purchased">Purchased</th>
           <th data-col="purchase_rate">% bought</th>
           <th data-col="applications">Apps</th>
@@ -362,7 +444,15 @@
   // ─── Fetch ────────────────────────────────────────────────────────────
   fetch("brokers.json", { cache: "no-store" })
     .then(r => r.ok ? r.json() : Promise.reject("brokers.json HTTP " + r.status))
-    .then(d => { DATA = d; render(); renderRefresh(d); renderMeta(d); renderKpis(d); })
+    .then(d => {
+      DATA = d;
+      // Pre-compute volume_share per source (% of all presented).
+      const totalLeads = (d.totals && d.totals.leads_presented) || 0;
+      for (const r of (d.sources || [])) {
+        r.volume_share = totalLeads ? (r.leads_presented / totalLeads) : null;
+      }
+      render(); renderRefresh(d); renderMeta(d); renderKpis(d); renderLeaderboard(d);
+    })
     .catch(err => {
       document.getElementById("brMeta").textContent = "brokers.json not loaded — " + err;
     });
@@ -404,6 +494,36 @@
         <div class="br-kpi-sub">${escapeHtml(k.sub)}</div>
       </div>
     `).join("");
+  }
+
+  function renderLeaderboard(d) {
+    const wrap = document.getElementById("brLeaderboard");
+    const top10 = (d.sources || []).slice(0, 10);
+    if (!top10.length) { wrap.innerHTML = ""; return; }
+    const maxLeads = top10[0].leads_presented || 1;
+    wrap.innerHTML = top10.map(r => {
+      const widthLeadsPct = (r.leads_presented / maxLeads) * 100;
+      // Within that bar, render downstream stages proportional to this
+      // broker's own leads — so each segment width is
+      // (stage / leads_presented) * fullBarWidth = (stage / maxLeads) * 100.
+      const seg = (count, cls) => {
+        const w = (count / maxLeads) * 100;
+        return `<span class="br-leader-bar-seg ${cls}" style="left:0;width:${w.toFixed(4)}%" title="${cls.replace('_',' ')}: ${formatNumber(count)}"></span>`;
+      };
+      return `
+        <div class="br-leader" title="${escapeHtml(r.friendly_name || "Source " + r.source_id)}">
+          <div class="br-leader-name">${escapeHtml(r.friendly_name || "Source " + r.source_id)}</div>
+          <div class="br-leader-bar">
+            <div class="br-leader-bar-fill" style="width:${widthLeadsPct.toFixed(3)}%"></div>
+            ${seg(r.leads_purchased || 0, "purchased")}
+            ${seg(r.apply1          || 0, "apply1")}
+            ${seg(r.brw_signed      || 0, "brw_signed")}
+            ${seg(r.paid_out        || 0, "paid_out")}
+          </div>
+          <div class="br-leader-count">${formatBig(r.leads_presented || 0)}</div>
+          <div class="br-leader-paid">${formatNumber(r.paid_out || 0)} paid</div>
+        </div>`;
+    }).join("");
   }
 
   // ─── Sort & filter ─────────────────────────────────────────────────────
@@ -453,7 +573,9 @@
       `<td><div class="br-name">${escapeHtml(r.friendly_name || `Source ${r.source_id}`)}</div>`
         + (r.company_name ? `<div class="br-sub">${escapeHtml(r.company_name)}</div>` : "")
         + `</td>`,
+      `<td>${miniFunnel(r)}</td>`,
       numCell(r.leads_presented),
+      pctCell(r.volume_share),
       numCell(r.leads_purchased),
       pctCell(r.purchase_rate),
       numCell(r.applications),
@@ -469,9 +591,35 @@
     const expanded = (EXPANDED === r.source_id);
     let detailRow = "";
     if (expanded) {
-      detailRow = `<tr class="br-detail-row"><td colspan="13">${renderDetail(r)}</td></tr>`;
+      detailRow = `<tr class="br-detail-row"><td colspan="15">${renderDetail(r)}</td></tr>`;
     }
     return `<tr class="br-row" data-sid="${r.source_id == null ? "" : r.source_id}">${cellsHtml}</tr>${detailRow}`;
+  }
+
+  // Render a compact horizontal funnel showing this broker's stage
+  // proportions out of their own presented count. Each stage segment is
+  // sized as (count / leads_presented), so a wide blue strip means
+  // "good purchase rate for this broker", and the orange paid-out tail
+  // is usually a thin sliver at the far right.
+  function miniFunnel(r) {
+    const top = r.leads_presented || 0;
+    if (!top) return "—";
+    // Each segment is its absolute share of "leads presented". They
+    // stack from the left as overlapping bars (largest behind, smallest
+    // in front), producing a single funnel that shrinks visually.
+    const segs = [
+      { cls: "purchased",  v: r.leads_purchased || 0 },
+      { cls: "applied",    v: r.applications    || 0 },
+      { cls: "apply1",     v: r.apply1          || 0 },
+      { cls: "brw_signed", v: r.brw_signed      || 0 },
+      { cls: "paid_out",   v: r.paid_out        || 0 },
+    ];
+    const stripes = segs.map(s => {
+      const pct = top > 0 ? (s.v / top) * 100 : 0;
+      const tooltip = `${s.cls.replace("_", " ")}: ${formatNumber(s.v)} (${pct.toFixed(3)}% of presented)`;
+      return `<span class="br-funnel-seg ${s.cls}" style="width:${pct.toFixed(3)}%" title="${escapeHtml(tooltip)}"></span>`;
+    }).join("");
+    return `<div class="br-funnel" title="${formatNumber(top)} presented">${stripes}</div>`;
   }
 
   function renderDetail(r) {
