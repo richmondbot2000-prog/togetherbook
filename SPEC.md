@@ -61,12 +61,14 @@ The site is a flat set of HTML files. **No router, no SPA, no build step.** Each
 | **1stContact** | `/1stcontact.html` | First inbound email per US borrower / GT after payout, 3-month window, redacted PII; word cloud at top | `first-contact.json` |
 | **Directory** | `/directory.html` | All 61 letme.* Workspace users + 140 warehouse-only operators who write into the platform but aren't in Workspace; sorted by primary tenant (transform → rgroup-cluster → other → inactive); filterable by tenant + department | `staff.json` + `staff-activity.json` |
 | **TopUps** | `/topups.html` | 24-month chart of distinct Transform Credit (LenderId 6) live loans split Primary / Top-Up, with a TUE-eligible-count line overlay; "last refreshed" badge | `topups.json` |
+| **Pipeline** | `/pipeline.html` | March-cohort application-pipeline analysis with two d3-sankey diagrams (Lead funnel + Application progression), per-stage drop-off table, and click-to-expand sampled customer timelines per dead-end endpoint. All PII masked server-side. | `pipeline.json` + `pipeline-samples.json` |
+| **Brokers** | `/brokers.html` | Per-affiliate-source 90-day scorecard. KPI band, top-10 leaderboard chart, sortable table with inline mini-funnel + volume share + lead→paid ratio + funded $. Click row to see stage-by-stage detail and top rejection reasons. | `brokers.json` |
 | **Schema** | `/database.html` | Full DB schema (renders `database.md` via marked.js + mermaid theme), plus per-table row counts as flipboards | `row-counts.json` + `database.md` |
 | **Code** | `/stats.html` | Codebase size dashboard (Solari split-flap digits) + by-language and by-repo tables | inline manual snapshot (live refresh pending Azure access) |
 | _(unlinked)_ | `/apis.html` | Per-helper detail page — kept for any deep-link bookmarks; not in nav | inline |
 | _(unlinked)_ | `/robots.html` | Per-robot list page — kept for any deep-link bookmarks; not in nav | inline |
 
-**Topbar nav (every page):** `About our systems · Yesterday · Brandwatch · 1stContact · Directory · TopUps · Schema · Code`. Plus a hamburger drawer ≤960px viewport.
+**Topbar nav (every page):** `About our systems · Yesterday · Brandwatch · 1stContact · Directory · TopUps · Pipeline · Brokers · Schema · Code`. Plus a hamburger drawer ≤960px viewport.
 
 ---
 
@@ -118,8 +120,12 @@ All refresh workflows live in `.github/workflows/refresh-*.yml`. They share a co
 | `refresh-directory.yml` | hourly :00 | `staff.json` | Google Workspace Admin SDK | `WORKSPACE_SERVICE_ACCOUNT_JSON`, `WORKSPACE_DELEGATE_USER` |
 | `refresh-staff-activity.yml` | hourly :15 | `staff-activity.json` | Fabric warehouse | `FABRIC_*` secrets |
 | `refresh-topups.yml` | hourly :30 | `topups.json` | Fabric warehouse | `FABRIC_*` secrets |
+| `refresh-brokers.yml` | hourly :35 | `brokers.json` | Fabric warehouse (`Leads` × `Brokers.Campaigns` × `Brokers.Sources`) | `FABRIC_*` secrets |
+| `refresh-pipeline.yml` | hourly :45 | `pipeline.json` | Fabric warehouse | `FABRIC_*` secrets |
+| `refresh-pipeline-samples.yml` | hourly :50 | `pipeline-samples.json` | Fabric warehouse (PII-masked output) | `FABRIC_*` secrets |
+| `refresh-telegram.yml` | hourly :40 | `telegram-mentions.json` | Public Telegram channels via Telethon | `TG_API_ID`, `TG_API_HASH`, `TG_SESSION_B64` (dormant until set) |
 
-Schedules are deliberately staggered (`:00`, `:15`, `:30`) so simultaneous warehouse-heavy queries don't pile up.
+Schedules are deliberately staggered (`:00`, `:15`, `:30`, `:35`, `:40`, `:45`, `:50`) so simultaneous warehouse-heavy queries don't pile up.
 
 ### 5.1 Cron schedules explained
 
@@ -160,6 +166,10 @@ Each refresh workflow runs one Python script under `scripts/`. They all read env
 | `scan_directory.py` | Workspace Directory API `users.list` with `customer='my_customer'` | `staff.json` | Auth via service account `directory-reader@letme-directory.iam.gserviceaccount.com` impersonating `james.benamor@letme.co.uk`; covers all alias domains |
 | `scan_staff_activity.py` | `ClientUsername` columns across 7 reporting DBs in a 60-day window | `staff-activity.json` | Strict `local-part@<known-domain>` matching against `staff.json` to attribute writes; emits `external_users` for unmatched email-shaped usernames; outputs `primary_tenant` for sort ordering |
 | `scan_topups.py` | `Loanbook.Loan_History` (~197M rows) JOINed to `Loan` (LenderId) and `LoanAtInception` (TopUpAmountAtInception) | `topups.json` | One CTE-grouped query per month over 24 months; live filter: DIA<90 + balance>$10; classifies primary vs top-up; pulls TUE thresholds for the lender |
+| `scan_pipeline.py` | `Applications` (March cohort) × `Leads` × `Tasks` | `pipeline.json` | Lead-result enum aggregated for the Sankey funnel; strict-stage definitions per TaskTypeId + GtRef; produces the data for the two-Sankey diagram on the Pipeline page |
+| `scan_pipeline_samples.py` | Same tables + `Customers` + `Addresses` + `ESignatures` + `WebBehaviours` + `Communications.Messages` + `Brokers.Sources` + `Brokers.Campaigns` + `LoanPurposes` + `LeadResultTypes` + `TaskTypes` + `BrokerStatuses` | `pipeline-samples.json` | Per dead-end endpoint: 25 random ARefs with full interaction timeline. Identity-links by (FirstName, Surname, DOB) so the timeline spans every application the same person made. All PII masked server-side: ARefs to last-5, surnames to ******, DOB to ****-**-**, addresses to state only, plus email / phone / SSN / card-number redaction in message bodies. |
+| `scan_brokers.py` | `Leads` × `Brokers.Campaigns` × `Brokers.Sources` × `Applications` × `Tasks` × `BrokerStatuses` | `brokers.json` | Server-side CTE aggregation over 90-day window — never pulls multi-million-row Leads to the runner. Per source: 7-stage funnel + average loan + paid-out $ + top-3 rejection reasons. Tunable via `BROKER_WINDOW_DAYS` / `BROKER_LENDER_ID` env vars. |
+| `scan_telegram.py` + `telegram_monitor.py` | Public Telegram channels via Telethon (read-only on a dedicated account) → local SQLite → public-safe JSON | `telegram-mentions.json` | Match list configurable via `telegram-watchlist.json`. Excerpts go through email / phone / SSN / card / ARef-shape redaction before being written. Workflow dormant until the user runs the local auth dance and uploads `TG_SESSION_B64`. |
 
 Common patterns:
 - **Schema discovery via `INFORMATION_SCHEMA.COLUMNS`** rather than hardcoded column names — the warehouse has multiple vintages and column names drift (`TUEMaxBalance` vs `TUE_MaxBalance`).
