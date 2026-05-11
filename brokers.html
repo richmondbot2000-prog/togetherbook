@@ -6,9 +6,9 @@
 <title>TogetherBOOK — Brokers</title>
 <link rel="icon" type="image/png" href="site-icon.png">
 <link rel="apple-touch-icon" href="site-icon.png">
-<link rel="stylesheet" href="quiet-tokens.css?v=1778505569">
-<link rel="stylesheet" href="quiet.css?v=1778505569">
-<link rel="stylesheet" href="quiet-extras.css?v=1778505569">
+<link rel="stylesheet" href="quiet-tokens.css?v=1778508954">
+<link rel="stylesheet" href="quiet.css?v=1778508954">
+<link rel="stylesheet" href="quiet-extras.css?v=1778508954">
 <style>
   .br-section { max-width: 1280px; margin: 0 auto; padding: 24px 0 48px; }
   @media (max-width: 800px) { .br-section { padding: 2px 0 32px; } }
@@ -324,6 +324,12 @@
     color: var(--ink-900);
     overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
   }
+  .br-rec-broker {
+    font: 400 11px/1.3 var(--font-display);
+    color: var(--ink-500);
+    margin-top: 1px;
+    overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+  }
   .br-rec-sub {
     grid-column: 1 / -1;
     font: 400 11px/1.35 var(--font-display);
@@ -460,7 +466,7 @@
 
 <header class="qb-topbar">
   <a class="qb-brand" href="index.html" aria-label="TogetherBOOK — home">
-    <img class="qb-brand-logo" src="togetherbook-logo.png?v=1778505569" alt="TogetherBOOK">
+    <img class="qb-brand-logo" src="togetherbook-logo.png?v=1778508954" alt="TogetherBOOK">
   </a>
   <button class="qb-hamburger" aria-label="Toggle navigation menu" aria-expanded="false"
           onclick="document.body.classList.toggle('nav-open');this.setAttribute('aria-expanded',document.body.classList.contains('nav-open'))">
@@ -646,24 +652,33 @@
       : "";
     return `
       <div class="br-rec-row is-bad">
-        <div class="br-rec-name">${escapeHtml(s.friendly_name || ("Source " + s.source_id))}${flagHtml}</div>
+        <div class="br-rec-name">
+          ${escapeHtml(s.source_name || ("Campaign " + s.campaign_id))}${flagHtml}
+          <div class="br-rec-broker">${escapeHtml(s.broker_name || "")}</div>
+        </div>
         <div class="br-rec-metric">${pct(s.paid_out_rate, 3)}<div class="br-rec-metric-sub">paid / lead</div></div>
         <div class="br-rec-metric">${formatNumber(s.paid_out || 0)}/${formatNumber(s.leads_purchased || 0)}<div class="br-rec-metric-sub">paid / bought</div></div>
-        <div class="br-rec-sub">${escapeHtml(vsMedianText)}${s.applications ? ` · ${formatNumber(s.applications)} apps started` : ""}</div>
+        <div class="br-rec-sub">${escapeHtml(vsMedianText)}${s.applications ? ` · ${formatNumber(s.applications)} apps started` : ""} · campaign-id ${s.campaign_id}</div>
       </div>`;
   }
 
   function renderBlockedRow(b) {
     const destText = (b.top_destinations || []).slice(0, 3)
-      .map(d => `${escapeHtml(d.friendly_name)} (${formatNumber(d.bounced_count)})`)
+      .map(d => {
+        const lbl = d.source_name + (d.broker_name ? ` · ${d.broker_name}` : "");
+        return `${escapeHtml(lbl)} (${formatNumber(d.bounced_count)})`;
+      })
       .join(" · ");
     const paidPerExcluded = b.bounceback_paid_per_excluded || 0;
     return `
       <div class="br-rec-row ${paidPerExcluded > 0.001 ? 'is-good' : ''}">
-        <div class="br-rec-name">${escapeHtml(b.friendly_name || ("Source " + b.source_id))}</div>
+        <div class="br-rec-name">
+          ${escapeHtml(b.source_name || ("Campaign " + b.campaign_id))}
+          <div class="br-rec-broker">${escapeHtml(b.broker_name || "")}</div>
+        </div>
         <div class="br-rec-metric">${formatNumber(b.bounceback_paid || 0)}<div class="br-rec-metric-sub">paid via others</div></div>
         <div class="br-rec-metric">${pct(b.bounceback_rate, 1)}<div class="br-rec-metric-sub">bounced back</div></div>
-        <div class="br-rec-sub">${formatNumber(b.excluded_count)} excluded · ${formatNumber(b.bounceback_arefs || 0)} bought elsewhere${destText ? ` · top destinations: ${destText}` : ""}</div>
+        <div class="br-rec-sub">${formatNumber(b.excluded_count)} excluded · ${formatNumber(b.bounceback_arefs || 0)} bought via other sources${destText ? ` · top destinations: ${destText}` : ""} · campaign-id ${b.campaign_id}</div>
       </div>`;
   }
 

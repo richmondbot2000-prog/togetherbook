@@ -133,8 +133,14 @@ def main() -> None:
     )
 
     # ─── Brokers.Sources + Campaigns lookups ──────────────────────────
-    sources: dict[int, dict] = {}
-    campaign_to_source: dict[int, int] = {}
+    # In the database, `Sources` rows are companies (we call them brokers
+    # in the user-facing terminology), and `Campaigns` rows are the
+    # granular per-source-code level beneath each broker — which is what
+    # the user calls "sources". This scanner reports at the Campaign
+    # level (the user's source), with the parent broker on each row.
+    sources: dict[int, dict] = {}         # broker_id (DB SourceId) → {friendly_name}
+    campaign_to_source: dict[int, int] = {}   # campaign_id → broker_id
+    campaign_meta: dict[int, dict] = {}   # campaign_id → {campaign_id, broker_id, source_name}
 
     def load_brokers_from(database: str) -> bool:
         any_loaded = False
@@ -170,11 +176,18 @@ def main() -> None:
                 if "MessageType" not in ccols:
                     cid = pick(ccols, "CampaignId", "CampaignID")
                     csrc = pick(ccols, "SourceId", "SourceID")
+                    cnm = pick(ccols, "CampaignFriendlyName", "CampaignName", "FriendlyName", "Name")
                     if cid and csrc:
-                        cur2.execute(f"SELECT [{cid}], [{csrc}] FROM dbo.Campaigns")
-                        for i, src in cur2.fetchall():
+                        sel_extra = f", [{cnm}]" if cnm else ", NULL"
+                        cur2.execute(f"SELECT [{cid}], [{csrc}]{sel_extra} FROM dbo.Campaigns")
+                        for i, src, nm in cur2.fetchall():
                             if i is None or src is None: continue
                             campaign_to_source[int(i)] = int(src)
+                            campaign_meta[int(i)] = {
+                                "campaign_id": int(i),
+                                "broker_id":   int(src),
+                                "source_name": (str(nm).strip() if nm is not None else None) or f"Campaign {i}",
+                            }
                         print(f"# Campaign→Source: {len(campaign_to_source)} mappings from {database}", flush=True)
                         any_loaded = True
         finally:
@@ -186,11 +199,18 @@ def main() -> None:
         if sources and campaign_to_source:
             break
 
-    # ─── Part A: weak-accepted source ranking ─────────────────────────
-    # Pull per-campaign-id purchased + paid_out counts in window, then roll
-    # up to source. Reuses the same CTE pattern as scan_brokers.py but
-    # narrower (we only need purchased + paid).
-    print("# Part A: per-source purchase + paid_out counts", flush=True)
+    def _broker_name(bid: int | None) -> str:
+        if bid is None: return "Unknown broker"
+        return (sources.get(bid) or {}).get("friendly_name") or f"Broker {bid}"
+
+    def _source_name(cid: int | None) -> str:
+        if cid is None: return "Unknown source"
+        return (campaign_meta.get(cid) or {}).get("source_name") or f"Campaign {cid}"
+
+    # ─── Part A: weak-accepted SOURCE ranking ─────────────────────────
+    # The user's terminology: a source = one of our CampaignId rows, sitting
+    # beneath a broker. Aggregation is per CampaignId.
+    print("# Part A: per-source (CampaignId) purchase + paid_out counts", flush=True)
     cur.execute(
         f"""
         WITH purchased AS (
@@ -224,21 +244,25 @@ def main() -> None:
     }
     print(f"#   campaigns with purchased apps: {len(accepted_per_campaign):,}", flush=True)
 
-    # Per-source rollup
+    # Per-CAMPAIGN (user's "source") aggregation
     weak_data: dict[int | None, dict] = {}
+    def _new_weak_slot(cid: int | None) -> dict:
+        broker_id = campaign_to_source.get(cid) if cid is not None else None
+        return {
+            "campaign_id":   cid,
+            "source_name":   _source_name(cid),
+            "broker_id":     broker_id,
+            "broker_name":   _broker_name(broker_id),
+            "applications":  0,
+            "paid_out":      0,
+        }
     for cid, (apps, paid) in accepted_per_campaign.items():
-        sid = campaign_to_source.get(cid) if cid is not None else None
-        slot = weak_data.setdefault(sid, {
-            "source_id": sid,
-            "friendly_name": (sources.get(sid) or {}).get("friendly_name") if sid is not None else "Unknown source",
-            "applications": 0,
-            "paid_out": 0,
-        })
+        slot = weak_data.setdefault(cid, _new_weak_slot(cid))
         slot["applications"] += apps
         slot["paid_out"]     += paid
 
-    # We also need leads_purchased per source (some sources have purchased
-    # leads that never became apps — those are still relevant). Quick query.
+    # We also need leads_purchased per campaign (some have purchased leads
+    # that never became apps — still relevant for the rate denominator).
     cur.execute(
         f"""
         SELECT l.[{L_camp}], COUNT(*) AS purchased
@@ -252,13 +276,7 @@ def main() -> None:
     )
     for cid, n in cur.fetchall():
         cid_int = int(cid) if cid is not None else None
-        sid = campaign_to_source.get(cid_int) if cid_int is not None else None
-        slot = weak_data.setdefault(sid, {
-            "source_id": sid,
-            "friendly_name": (sources.get(sid) or {}).get("friendly_name") if sid is not None else "Unknown source",
-            "applications": 0,
-            "paid_out": 0,
-        })
+        slot = weak_data.setdefault(cid_int, _new_weak_slot(cid_int))
         slot["leads_purchased"] = slot.get("leads_purchased", 0) + int(n)
 
     # Compute paid_out_rate per source and stats across the qualifying cohort
@@ -296,9 +314,8 @@ def main() -> None:
     qualifying.sort(key=lambda s: s.get("paid_out_rate") or 0)
 
     # ─── Part B: bounceback analysis of source-excluded leads ─────────
-    # First: per-campaign source-excluded counts so we know which sources
-    # have meaningful blocked volume.
-    print("# Part B: per-source source-excluded counts", flush=True)
+    # Aggregate per CampaignId (the user's "source").
+    print("# Part B: per-campaign source-excluded counts", flush=True)
     cur.execute(
         f"""
         SELECT l.[{L_camp}], COUNT(*) AS excluded
@@ -310,15 +327,17 @@ def main() -> None:
         """,
         [window_start, window_end, LENDER_ID, EXCLUDED_RESULT_ID],
     )
-    excluded_per_source: dict[int | None, int] = {}
+    excluded_per_campaign: dict[int | None, int] = {}
     for cid, n in cur.fetchall():
         cid_int = int(cid) if cid is not None else None
-        sid = campaign_to_source.get(cid_int) if cid_int is not None else None
-        excluded_per_source[sid] = excluded_per_source.get(sid, 0) + int(n)
-    print(f"#   sources with any excluded leads: {len(excluded_per_source):,}", flush=True)
-    print(f"#   total excluded leads: {sum(excluded_per_source.values()):,}", flush=True)
-    candidate_sources = {sid: n for sid, n in excluded_per_source.items() if n >= MIN_EXCLUDED}
-    print(f"#   sources with >= {MIN_EXCLUDED} excluded: {len(candidate_sources):,}", flush=True)
+        excluded_per_campaign[cid_int] = excluded_per_campaign.get(cid_int, 0) + int(n)
+    print(f"#   campaigns with any excluded leads: {len(excluded_per_campaign):,}", flush=True)
+    print(f"#   total excluded leads: {sum(excluded_per_campaign.values()):,}", flush=True)
+    candidate_campaigns = {cid: n for cid, n in excluded_per_campaign.items() if n >= MIN_EXCLUDED}
+    print(f"#   campaigns with >= {MIN_EXCLUDED} excluded: {len(candidate_campaigns):,}", flush=True)
+    # Back-compat with later code which references candidate_sources
+    candidate_sources = candidate_campaigns
+    excluded_per_source = excluded_per_campaign
 
     # Now the heavy join. We do three separate joins (one per identity
     # strategy) and union the results — SQL Server's optimiser handles
@@ -329,19 +348,21 @@ def main() -> None:
 
     bounceback_per_source: dict[int | None, dict] = {}
 
-    def _ensure_b_slot(sid):
-        if sid not in bounceback_per_source:
-            bounceback_per_source[sid] = {
-                "source_id": sid,
-                "friendly_name": (sources.get(sid) or {}).get("friendly_name") if sid is not None else "Unknown source",
-                "excluded_count": excluded_per_source.get(sid, 0),
-                "match_leadids":  set(),    # excluded LeadIds that matched
-                "match_arefs":    set(),    # purchased ARefs that match was found in
-                "match_paid_arefs": set(),  # subset of match_arefs that paid out
-                "by_strategy":    {"gov_id": 0, "phone_dob": 0, "email_dob": 0},
-                "destination_sources": {},  # other source id → bounceback count
+    def _ensure_b_slot(cid):   # keyed on CampaignId (user's "source")
+        if cid not in bounceback_per_source:
+            bounceback_per_source[cid] = {
+                "campaign_id":     cid,
+                "source_name":     _source_name(cid),
+                "broker_id":       campaign_to_source.get(cid) if cid is not None else None,
+                "broker_name":     _broker_name(campaign_to_source.get(cid) if cid is not None else None),
+                "excluded_count":  excluded_per_campaign.get(cid, 0),
+                "match_leadids":   set(),
+                "match_arefs":     set(),
+                "match_paid_arefs": set(),
+                "by_strategy":     {"gov_id": 0, "phone_dob": 0, "email_dob": 0},
+                "destination_campaigns": {},   # other campaign_id → bounceback count
             }
-        return bounceback_per_source[sid]
+        return bounceback_per_source[cid]
 
     # Each join: pick the rejected leads from sources with ≥MIN_EXCLUDED
     # excluded count (via Campaigns join) and match against PURCHASED leads
@@ -495,9 +516,12 @@ def main() -> None:
             by_gov.setdefault(p["gov_id"], []).append(p)
     print(f"#   indexes: phone+dob={len(by_phone_dob):,} email+dob={len(by_email_dob):,} gov_id={len(by_gov):,}", flush=True)
 
-    # Match each sampled rejected lead
+    # Match each sampled rejected lead. "Same source" = same CampaignId
+    # (the user's source granularity). A bounceback within the same
+    # broker but a different source still counts — it's still a sign
+    # the audience is decent.
     for s in sampled:
-        src_e = campaign_to_source.get(s["camp_id"]) if s["camp_id"] is not None else None
+        rej_camp = s["camp_id"]
         matched_arefs: set = set()
         matched_paid: set = set()
         matched_destinations: dict[int | None, int] = {}
@@ -506,12 +530,12 @@ def main() -> None:
         def _consume_matches(matches, strat):
             if not matches: return
             for p in matches:
-                if p["src_id"] == src_e and src_e is not None:
-                    continue   # same-source — doesn't count as a bounceback
+                if p["camp_id"] == rej_camp and rej_camp is not None:
+                    continue   # same source (same CampaignId) — not a bounceback
                 matched_arefs.add(p["aref"])
                 if p["paid"]:
                     matched_paid.add(p["aref"])
-                matched_destinations[p["src_id"]] = matched_destinations.get(p["src_id"], 0) + 1
+                matched_destinations[p["camp_id"]] = matched_destinations.get(p["camp_id"], 0) + 1
                 matched_strategies.add(strat)
 
         if s["gov_id"]:
@@ -523,15 +547,15 @@ def main() -> None:
 
         if not matched_arefs:
             continue
-        slot = _ensure_b_slot(src_e)
+        slot = _ensure_b_slot(rej_camp)
         slot["match_leadids"].add(s["lead_id"])
         slot["match_arefs"].update(matched_arefs)
         slot["match_paid_arefs"].update(matched_paid)
         for strat in matched_strategies:
             slot["by_strategy"][strat] += 1
-        for d_src, n in matched_destinations.items():
-            if d_src is not None:
-                slot["destination_sources"][d_src] = slot["destination_sources"].get(d_src, 0) + n
+        for d_camp, n in matched_destinations.items():
+            if d_camp is not None:
+                slot["destination_campaigns"][d_camp] = slot["destination_campaigns"].get(d_camp, 0) + n
 
     print(f"# matched {sum(len(s['match_leadids']) for s in bounceback_per_source.values()):,} sampled rejected leads to purchased counterparts", flush=True)
 
@@ -539,26 +563,30 @@ def main() -> None:
 
     # ─── Finalise Part B output ───────────────────────────────────────
     blocked_rows = []
-    for sid, slot in bounceback_per_source.items():
+    for cid, slot in bounceback_per_source.items():
         excluded = slot["excluded_count"]
         if excluded < MIN_EXCLUDED:
             continue
         bounce_n = len(slot["match_leadids"])
         bounce_ar = len(slot["match_arefs"])
         paid_n = len(slot["match_paid_arefs"])
-        # Top 5 destination sources by where the excluded people went
-        dest_rows = sorted(slot["destination_sources"].items(), key=lambda kv: -kv[1])[:5]
+        # Top 5 destination CAMPAIGNS (the user's "sources") that recaptured these people
+        dest_rows = sorted(slot["destination_campaigns"].items(), key=lambda kv: -kv[1])[:5]
         top_destinations = [
             {
-                "source_id": s,
-                "friendly_name": (sources.get(s) or {}).get("friendly_name") if s is not None else f"Source {s}",
+                "campaign_id": d_cid,
+                "source_name": _source_name(d_cid),
+                "broker_id":   campaign_to_source.get(d_cid) if d_cid is not None else None,
+                "broker_name": _broker_name(campaign_to_source.get(d_cid) if d_cid is not None else None),
                 "bounced_count": n,
             }
-            for s, n in dest_rows
+            for d_cid, n in dest_rows
         ]
         blocked_rows.append({
-            "source_id":            slot["source_id"],
-            "friendly_name":        slot["friendly_name"],
+            "campaign_id":          slot["campaign_id"],
+            "source_name":          slot["source_name"],
+            "broker_id":            slot["broker_id"],
+            "broker_name":          slot["broker_name"],
             "excluded_count":       excluded,
             "bounceback_leads":     bounce_n,
             "bounceback_arefs":     bounce_ar,
