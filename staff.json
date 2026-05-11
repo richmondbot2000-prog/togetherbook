@@ -1,15 +1,43 @@
 {
-  "schema_version": 1,
-  "updated_at": "2026-05-10T10:43:39.955749Z",
-  "snapshot_date": "2026-05-10",
+  "schema_version": 2,
+  "updated_at": "2026-05-11T13:00:46.889107Z",
+  "snapshot_date": "2026-05-11",
   "domain": "letme.co.uk",
+  "tenants": [
+    {
+      "name": "letme.co.uk",
+      "domain": "letme.co.uk",
+      "delegate": "james.benamor@letme.co.uk",
+      "users": 61,
+      "suspended_hidden": 4,
+      "error": null
+    },
+    {
+      "name": "rgroup.co.uk",
+      "domain": "rgroup.co.uk",
+      "delegate": "ben.gardner@rgroup.co.uk",
+      "users": 0,
+      "suspended_hidden": 0,
+      "error": "<HttpError 403 when requesting https://admin.googleapis.com/admin/directory/v1/users?customer=my_customer&maxResults=500&orderBy=email&projection=full&viewType=admin_view&alt=json returned \"Not Author"
+    }
+  ],
   "totals": {
     "users": 61,
     "suspended_hidden": 4,
     "by_department": {
       "(unspecified)": 61
+    },
+    "by_tenant": {
+      "letme.co.uk": 61
     }
   },
+  "fetch_errors": [
+    {
+      "tenant": "rgroup.co.uk",
+      "domain": "rgroup.co.uk",
+      "error": "<HttpError 403 when requesting https://admin.googleapis.com/admin/directory/v1/users?customer=my_customer&maxResults=500&orderBy=email&projection=full&viewType=admin_view&alt=json returned \"Not Authorized to access this resource/api\". Details: \"[{'message': 'Not Authorized to access this resource/ap"
+    }
+  ],
   "users": [
     {
       "email": "azure@letme.com",
@@ -20,7 +48,11 @@
       "department": "",
       "photo_url": "",
       "suspended": false,
-      "admin": false
+      "admin": false,
+      "tenant": "letme.co.uk",
+      "tenants": [
+        "letme.co.uk"
+      ]
     },
     {
       "email": "leticia.alexandre@letme.com",
@@ -31,7 +63,11 @@
       "department": "",
       "photo_url": "https://lh3.googleusercontent.com/a-/ALV-UjUdOpVbvfmtl7pCOOZNck3_3_-9HuBOrNX3rmNLQD_CmacUqdWP=s96-c",
       "suspended": false,
-      "admin": false
+      "admin": false,
+      "tenant": "letme.co.uk",
+      "tenants": [
+        "letme.co.uk"
+      ]
     },
     {
       "email": "autobots@rapida.bg",
@@ -42,7 +78,11 @@
       "department": "",
       "photo_url": "",
       "suspended": false,
-      "admin": false
+      "admin": false,
+      "tenant": "letme.co.uk",
+      "tenants": [
+        "letme.co.uk"
+      ]
     },
     {
       "email": "autobots@clearloans.com.au",
@@ -53,7 +93,11 @@
       "department": "",
       "photo_url": "",
       "suspended": false,
-      "admin": false
+      "admin": false,
+      "tenant": "letme.co.uk",
+      "tenants": [
+        "letme.co.uk"
+      ]
     },
     {
       "email": "lmautomessagingarchive@letme.com",
@@ -64,7 +108,11 @@
       "department": "",
       "photo_url": "",
       "suspended": false,
-      "admin": false
+      "admin": false,
+      "tenant": "letme.co.uk",
+      "tenants": [
+        "letme.co.uk"
+      ]
     },
     {
       "email": "kyle.barrett@letme.com",
@@ -75,7 +123,11 @@
       "department": "",
       "photo_url": "",
       "suspended": false,
-      "admin": false
+      "admin": false,
+      "tenant": "letme.co.uk",
+      "tenants": [
+        "letme.co.uk"
+      ]
     },
     {
       "email": "daniel.bartlett@letme.com",
@@ -86,7 +138,11 @@
       "department": "",
       "photo_url": "",
       "suspended": false,
-      "admin": false
+      "admin": false,
+      "tenant": "letme.co.uk",
+      "tenants": [
+        "letme.co.uk"
+      ]
     },
     {
       "email": "james.benamor@letme.com",
@@ -97,7 +153,11 @@
       "department": "",
       "photo_url": "https://lh3.googleusercontent.com/a/ACg8ocLBKolneK43dqPG956vMwdslyMLyiXQe1901SPGTCXB4YnCIJ0=s96-c",
       "suspended": false,
-      "admin": true
+      "admin": true,
+      "tenant": "letme.co.uk",
+      "tenants": [
+        "letme.co.uk"
+      ]
     },
     {
       "email": "lucas.benamor@letme.co.uk",
@@ -108,7 +168,11 @@
       "department": "",
       "photo_url": "",
       "suspended": false,
-      "admin": false
+      "admin": false,
+      "tenant": "letme.co.uk",
+      "tenants": [
+        "letme.co.uk"
+      ]
     },
     {
       "email": "tarek.benamor@letme.com",
@@ -119,7 +183,11 @@
       "department": "",
       "photo_url": "",
       "suspended": false,
-      "admin": false
+      "admin": false,
+      "tenant": "letme.co.uk",
+      "tenants": [
+        "letme.co.uk"
+      ]
     },
     {
       "email": "zara.benamor@letme.com",
@@ -130,7 +198,11 @@
       "department": "",
       "photo_url": "https://lh3.googleusercontent.com/a-/ALV-UjUbqFgqRfXPlHglsTjGqMUztmtAY-p1Mum81O16lkADE2PQrNtx=s96-c",
       "suspended": false,
-      "admin": false
+      "admin": false,
+      "tenant": "letme.co.uk",
+      "tenants": [
+        "letme.co.uk"
+      ]
     },
     {
       "email": "dan.bennett@clearloans.com.au",
@@ -141,7 +213,11 @@
       "department": "",
       "photo_url": "",
       "suspended": false,
-      "admin": false
+      "admin": false,
+      "tenant": "letme.co.uk",
+      "tenants": [
+        "letme.co.uk"
+      ]
     },
     {
       "email": "kelly.black@letme.com",
@@ -152,7 +228,11 @@
       "department": "",
       "photo_url": "",
       "suspended": false,
-      "admin": true
+      "admin": true,
+      "tenant": "letme.co.uk",
+      "tenants": [
+        "letme.co.uk"
+      ]
     },
     {
       "email": "david.byatt@letme.com",
@@ -163,7 +243,11 @@
       "department": "",
       "photo_url": "",
       "suspended": false,
-      "admin": false
+      "admin": false,
+      "tenant": "letme.co.uk",
+      "tenants": [
+        "letme.co.uk"
+      ]
     },
     {
       "email": "joshua.carless@letme.co.uk",
@@ -174,7 +258,11 @@
       "department": "",
       "photo_url": "",
       "suspended": false,
-      "admin": false
+      "admin": false,
+      "tenant": "letme.co.uk",
+      "tenants": [
+        "letme.co.uk"
+      ]
     },
     {
       "email": "laura.chadbourne@letme.co.uk",
@@ -185,7 +273,11 @@
       "department": "",
       "photo_url": "",
       "suspended": false,
-      "admin": false
+      "admin": false,
+      "tenant": "letme.co.uk",
+      "tenants": [
+        "letme.co.uk"
+      ]
     },
     {
       "email": "amber.cole@letme.com",
@@ -196,7 +288,11 @@
       "department": "",
       "photo_url": "",
       "suspended": false,
-      "admin": true
+      "admin": true,
+      "tenant": "letme.co.uk",
+      "tenants": [
+        "letme.co.uk"
+      ]
     },
     {
       "email": "joshua.cole@letme.com",
@@ -207,7 +303,11 @@
       "department": "",
       "photo_url": "",
       "suspended": false,
-      "admin": false
+      "admin": false,
+      "tenant": "letme.co.uk",
+      "tenants": [
+        "letme.co.uk"
+      ]
     },
     {
       "email": "clementia.dsouza@letme.com",
@@ -218,7 +318,11 @@
       "department": "",
       "photo_url": "https://lh3.googleusercontent.com/a-/ALV-UjXCCDp1HiD2Pwalgh4_m8xmYKhVFu-oCloKjxiTBm4MRkLKUEg=s96-c",
       "suspended": false,
-      "admin": false
+      "admin": false,
+      "tenant": "letme.co.uk",
+      "tenants": [
+        "letme.co.uk"
+      ]
     },
     {
       "email": "max.dynowski@letme.co.uk",
@@ -229,7 +333,11 @@
       "department": "",
       "photo_url": "",
       "suspended": false,
-      "admin": false
+      "admin": false,
+      "tenant": "letme.co.uk",
+      "tenants": [
+        "letme.co.uk"
+      ]
     },
     {
       "email": "raveeha.ejaz@letme.com",
@@ -240,7 +348,11 @@
       "department": "",
       "photo_url": "",
       "suspended": false,
-      "admin": false
+      "admin": false,
+      "tenant": "letme.co.uk",
+      "tenants": [
+        "letme.co.uk"
+      ]
     },
     {
       "email": "candidate.email@letme.co.uk",
@@ -251,7 +363,11 @@
       "department": "",
       "photo_url": "",
       "suspended": false,
-      "admin": false
+      "admin": false,
+      "tenant": "letme.co.uk",
+      "tenants": [
+        "letme.co.uk"
+      ]
     },
     {
       "email": "historic@letme.co.uk",
@@ -262,7 +378,11 @@
       "department": "",
       "photo_url": "",
       "suspended": false,
-      "admin": false
+      "admin": false,
+      "tenant": "letme.co.uk",
+      "tenants": [
+        "letme.co.uk"
+      ]
     },
     {
       "email": "joseph.foard@letme.com",
@@ -273,7 +393,11 @@
       "department": "",
       "photo_url": "",
       "suspended": false,
-      "admin": true
+      "admin": true,
+      "tenant": "letme.co.uk",
+      "tenants": [
+        "letme.co.uk"
+      ]
     },
     {
       "email": "julian.foster@letme.co.uk",
@@ -284,7 +408,11 @@
       "department": "",
       "photo_url": "https://lh3.googleusercontent.com/a-/ALV-UjXj-cvyuvjGosE6zCXJMb9EfSEiOv1XdWxn_YbFqTwhHH2Z-jw=s96-c",
       "suspended": false,
-      "admin": false
+      "admin": false,
+      "tenant": "letme.co.uk",
+      "tenants": [
+        "letme.co.uk"
+      ]
     },
     {
       "email": "ben.gardner@letme.com",
@@ -295,7 +423,11 @@
       "department": "",
       "photo_url": "https://lh3.googleusercontent.com/a-/ALV-UjWY88TEkkdW_i2ZWGmnCmYQh-l3y4wn71H3LAx3mAxYQz6jxmEH=s96-c",
       "suspended": false,
-      "admin": false
+      "admin": false,
+      "tenant": "letme.co.uk",
+      "tenants": [
+        "letme.co.uk"
+      ]
     },
     {
       "email": "brogan.hackley@letme.com",
@@ -306,7 +438,11 @@
       "department": "",
       "photo_url": "",
       "suspended": false,
-      "admin": false
+      "admin": false,
+      "tenant": "letme.co.uk",
+      "tenants": [
+        "letme.co.uk"
+      ]
     },
     {
       "email": "edward.heaney@letme.com",
@@ -317,7 +453,11 @@
       "department": "",
       "photo_url": "",
       "suspended": false,
-      "admin": false
+      "admin": false,
+      "tenant": "letme.co.uk",
+      "tenants": [
+        "letme.co.uk"
+      ]
     },
     {
       "email": "victor.igbaifua@letme.com",
@@ -328,7 +468,11 @@
       "department": "",
       "photo_url": "",
       "suspended": false,
-      "admin": true
+      "admin": true,
+      "tenant": "letme.co.uk",
+      "tenants": [
+        "letme.co.uk"
+      ]
     },
     {
       "email": "katarzyna.jiddou@letme.com",
@@ -339,7 +483,11 @@
       "department": "",
       "photo_url": "",
       "suspended": false,
-      "admin": false
+      "admin": false,
+      "tenant": "letme.co.uk",
+      "tenants": [
+        "letme.co.uk"
+      ]
     },
     {
       "email": "kamran.kamaei@letme.com",
@@ -350,7 +498,11 @@
       "department": "",
       "photo_url": "https://lh3.googleusercontent.com/a-/ALV-UjX9aeoH_xQ0EbsxpcPZPdRljnoOj3g65e12EwJMR4v8SCfL8Aw=s96-c",
       "suspended": false,
-      "admin": false
+      "admin": false,
+      "tenant": "letme.co.uk",
+      "tenants": [
+        "letme.co.uk"
+      ]
     },
     {
       "email": "dorota.kazmierczyk@letme.com",
@@ -361,7 +513,11 @@
       "department": "",
       "photo_url": "",
       "suspended": false,
-      "admin": false
+      "admin": false,
+      "tenant": "letme.co.uk",
+      "tenants": [
+        "letme.co.uk"
+      ]
     },
     {
       "email": "morgan.smith@letme.com",
@@ -372,7 +528,11 @@
       "department": "",
       "photo_url": "https://lh3.googleusercontent.com/a-/ALV-UjV8OQomsiOYz2Ofc3ZdR-WjkDoY403_Fw4uc_UQkwI-7h_wkjg=s96-c",
       "suspended": false,
-      "admin": true
+      "admin": true,
+      "tenant": "letme.co.uk",
+      "tenants": [
+        "letme.co.uk"
+      ]
     },
     {
       "email": "igor.kravcov@letme.com",
@@ -383,7 +543,11 @@
       "department": "",
       "photo_url": "https://lh3.googleusercontent.com/a-/ALV-UjXhODrZkvTuRyEukJNy2IxNlLM7FxS1ecDeadZ-n-79Z0rLEj8=s96-c",
       "suspended": false,
-      "admin": true
+      "admin": true,
+      "tenant": "letme.co.uk",
+      "tenants": [
+        "letme.co.uk"
+      ]
     },
     {
       "email": "finance@letme.com",
@@ -394,7 +558,11 @@
       "department": "",
       "photo_url": "",
       "suspended": false,
-      "admin": false
+      "admin": false,
+      "tenant": "letme.co.uk",
+      "tenants": [
+        "letme.co.uk"
+      ]
     },
     {
       "email": "customer.letters@letme.co.uk",
@@ -405,7 +573,11 @@
       "department": "",
       "photo_url": "",
       "suspended": false,
-      "admin": false
+      "admin": false,
+      "tenant": "letme.co.uk",
+      "tenants": [
+        "letme.co.uk"
+      ]
     },
     {
       "email": "cyrus.leung@letme.com",
@@ -416,7 +588,11 @@
       "department": "",
       "photo_url": "",
       "suspended": false,
-      "admin": false
+      "admin": false,
+      "tenant": "letme.co.uk",
+      "tenants": [
+        "letme.co.uk"
+      ]
     },
     {
       "email": "cherry.liu@letme.com",
@@ -427,7 +603,11 @@
       "department": "",
       "photo_url": "",
       "suspended": false,
-      "admin": false
+      "admin": false,
+      "tenant": "letme.co.uk",
+      "tenants": [
+        "letme.co.uk"
+      ]
     },
     {
       "email": "mourad.malki@clearloans.com.au",
@@ -438,7 +618,11 @@
       "department": "",
       "photo_url": "",
       "suspended": false,
-      "admin": false
+      "admin": false,
+      "tenant": "letme.co.uk",
+      "tenants": [
+        "letme.co.uk"
+      ]
     },
     {
       "email": "mourad.malki@letme.com",
@@ -449,7 +633,11 @@
       "department": "",
       "photo_url": "",
       "suspended": false,
-      "admin": false
+      "admin": false,
+      "tenant": "letme.co.uk",
+      "tenants": [
+        "letme.co.uk"
+      ]
     },
     {
       "email": "office@letme.com",
@@ -460,7 +648,11 @@
       "department": "",
       "photo_url": "",
       "suspended": false,
-      "admin": false
+      "admin": false,
+      "tenant": "letme.co.uk",
+      "tenants": [
+        "letme.co.uk"
+      ]
     },
     {
       "email": "phil.oneill@letme.co.uk",
@@ -471,7 +663,11 @@
       "department": "",
       "photo_url": "",
       "suspended": false,
-      "admin": false
+      "admin": false,
+      "tenant": "letme.co.uk",
+      "tenants": [
+        "letme.co.uk"
+      ]
     },
     {
       "email": "skanpoczta@rapidamoney.pl",
@@ -482,7 +678,11 @@
       "department": "",
       "photo_url": "",
       "suspended": false,
-      "admin": false
+      "admin": false,
+      "tenant": "letme.co.uk",
+      "tenants": [
+        "letme.co.uk"
+      ]
     },
     {
       "email": "printer@letme.co.uk",
@@ -493,7 +693,11 @@
       "department": "",
       "photo_url": "",
       "suspended": false,
-      "admin": false
+      "admin": false,
+      "tenant": "letme.co.uk",
+      "tenants": [
+        "letme.co.uk"
+      ]
     },
     {
       "email": "mark.prior@letme.co.uk",
@@ -504,7 +708,11 @@
       "department": "",
       "photo_url": "",
       "suspended": false,
-      "admin": false
+      "admin": false,
+      "tenant": "letme.co.uk",
+      "tenants": [
+        "letme.co.uk"
+      ]
     },
     {
       "email": "mike.pursey@letme.com",
@@ -515,7 +723,11 @@
       "department": "",
       "photo_url": "",
       "suspended": false,
-      "admin": false
+      "admin": false,
+      "tenant": "letme.co.uk",
+      "tenants": [
+        "letme.co.uk"
+      ]
     },
     {
       "email": "autobots@rapidamoney.pl",
@@ -526,7 +738,11 @@
       "department": "",
       "photo_url": "",
       "suspended": false,
-      "admin": false
+      "admin": false,
+      "tenant": "letme.co.uk",
+      "tenants": [
+        "letme.co.uk"
+      ]
     },
     {
       "email": "reservation@letme.com",
@@ -537,7 +753,11 @@
       "department": "",
       "photo_url": "",
       "suspended": false,
-      "admin": false
+      "admin": false,
+      "tenant": "letme.co.uk",
+      "tenants": [
+        "letme.co.uk"
+      ]
     },
     {
       "email": "dan.sanders@letme.com",
@@ -548,7 +768,11 @@
       "department": "",
       "photo_url": "",
       "suspended": false,
-      "admin": false
+      "admin": false,
+      "tenant": "letme.co.uk",
+      "tenants": [
+        "letme.co.uk"
+      ]
     },
     {
       "email": "nikolay.savov@rapida.bg",
@@ -559,7 +783,11 @@
       "department": "",
       "photo_url": "",
       "suspended": false,
-      "admin": false
+      "admin": false,
+      "tenant": "letme.co.uk",
+      "tenants": [
+        "letme.co.uk"
+      ]
     },
     {
       "email": "tomasz.schwertner@letme.com",
@@ -570,7 +798,11 @@
       "department": "",
       "photo_url": "",
       "suspended": false,
-      "admin": false
+      "admin": false,
+      "tenant": "letme.co.uk",
+      "tenants": [
+        "letme.co.uk"
+      ]
     },
     {
       "email": "tom.slaughter@letme.com",
@@ -581,7 +813,11 @@
       "department": "",
       "photo_url": "",
       "suspended": false,
-      "admin": false
+      "admin": false,
+      "tenant": "letme.co.uk",
+      "tenants": [
+        "letme.co.uk"
+      ]
     },
     {
       "email": "jamie.stevens@letme.com",
@@ -592,7 +828,11 @@
       "department": "",
       "photo_url": "",
       "suspended": false,
-      "admin": false
+      "admin": false,
+      "tenant": "letme.co.uk",
+      "tenants": [
+        "letme.co.uk"
+      ]
     },
     {
       "email": "lucian.teodoroiu@letme.co.uk",
@@ -603,7 +843,11 @@
       "department": "",
       "photo_url": "",
       "suspended": false,
-      "admin": false
+      "admin": false,
+      "tenant": "letme.co.uk",
+      "tenants": [
+        "letme.co.uk"
+      ]
     },
     {
       "email": "adnan.turken@letme.co.uk",
@@ -614,7 +858,11 @@
       "department": "",
       "photo_url": "",
       "suspended": false,
-      "admin": false
+      "admin": false,
+      "tenant": "letme.co.uk",
+      "tenants": [
+        "letme.co.uk"
+      ]
     },
     {
       "email": "sophia.ugwunne@letme.com",
@@ -625,7 +873,11 @@
       "department": "",
       "photo_url": "",
       "suspended": false,
-      "admin": false
+      "admin": false,
+      "tenant": "letme.co.uk",
+      "tenants": [
+        "letme.co.uk"
+      ]
     },
     {
       "email": "esther.uwadione@letme.com",
@@ -636,7 +888,11 @@
       "department": "",
       "photo_url": "https://lh3.googleusercontent.com/a-/ALV-UjX8WFa91gM8QeEu82S4ocfdPpOw6Y0gi773zjM6CcLe5yrtuKc=s96-c",
       "suspended": false,
-      "admin": false
+      "admin": false,
+      "tenant": "letme.co.uk",
+      "tenants": [
+        "letme.co.uk"
+      ]
     },
     {
       "email": "james.webster@letme.co.uk",
@@ -647,7 +903,11 @@
       "department": "",
       "photo_url": "https://lh3.googleusercontent.com/a-/ALV-UjVwpY_O3pVJecQJHEwr7YwaK1z9lL4aFHA-cp0lAORYB4MQ3kw=s96-c",
       "suspended": false,
-      "admin": false
+      "admin": false,
+      "tenant": "letme.co.uk",
+      "tenants": [
+        "letme.co.uk"
+      ]
     },
     {
       "email": "matthew.wood@letme.co.uk",
@@ -658,7 +918,11 @@
       "department": "",
       "photo_url": "",
       "suspended": false,
-      "admin": false
+      "admin": false,
+      "tenant": "letme.co.uk",
+      "tenants": [
+        "letme.co.uk"
+      ]
     },
     {
       "email": "natasha.wright@letme.co.uk",
@@ -669,7 +933,11 @@
       "department": "",
       "photo_url": "",
       "suspended": false,
-      "admin": true
+      "admin": true,
+      "tenant": "letme.co.uk",
+      "tenants": [
+        "letme.co.uk"
+      ]
     },
     {
       "email": "ekrem.yurtman@letme.com",
@@ -680,7 +948,11 @@
       "department": "",
       "photo_url": "",
       "suspended": false,
-      "admin": false
+      "admin": false,
+      "tenant": "letme.co.uk",
+      "tenants": [
+        "letme.co.uk"
+      ]
     }
   ]
 }
