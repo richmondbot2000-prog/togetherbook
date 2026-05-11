@@ -557,9 +557,15 @@ def main() -> None:
             camp["has_cost"]   = True
 
     # Derive cell-level rates + filter on MIN_VOLUME at the (broker, sr1)
-    # level.
+    # level. Drop cells where source_ref1 is missing — those rows are
+    # not actionable ("re-enable Broker X's no-Source code" makes no
+    # sense) and they confuse the page.
     bs_qualifying: list[dict] = []
+    dropped_unsourced = 0
     for key, slot in broker_sr1_raw.items():
+        if key[1] is None:
+            dropped_unsourced += 1
+            continue
         lp = slot["leads_purchased"]
         if lp < MIN_VOLUME:
             continue
@@ -576,7 +582,11 @@ def main() -> None:
         slot["campaigns"] = sorted(slot.pop("_campaigns").values(), key=lambda c: -(c.get("leads_purchased") or 0))
         bs_qualifying.append(slot)
     bs_qualifying.sort(key=lambda s: -(s.get("cost_per_paid_loan") or 0))
-    print(f"# (Broker, SR1) cells: {len(broker_sr1_raw):,} total; {len(bs_qualifying)} pass MIN_VOLUME={MIN_VOLUME}", flush=True)
+    print(
+        f"# (Broker, SR1) cells: {len(broker_sr1_raw):,} total; "
+        f"{dropped_unsourced} dropped as no-Source; {len(bs_qualifying)} pass MIN_VOLUME={MIN_VOLUME}",
+        flush=True,
+    )
 
     # ─── Commission-model diagnostic ──────────────────────────────────
     # We don't know the semantics of CommissionType across the catalogue.
@@ -907,7 +917,11 @@ def main() -> None:
 
     # ─── Finalise Part B output (keyed on broker, SR1) ────────────────
     blocked_rows = []
+    blocked_dropped_unsourced = 0
     for (broker_id, sr1), slot in bounceback_per_bs.items():
+        if sr1 is None:
+            blocked_dropped_unsourced += 1
+            continue
         excluded = slot["excluded_count"]
         if excluded < MIN_EXCLUDED:
             continue
@@ -940,6 +954,7 @@ def main() -> None:
         })
 
     blocked_rows.sort(key=lambda r: -(r.get("bounceback_paid") or 0))
+    print(f"# Blocked (Broker, SR1) cells: {len(blocked_rows)} kept ({blocked_dropped_unsourced} dropped as no-Source)", flush=True)
 
     # ─── Part C: duplicate-pricing analysis ───────────────────────────
     # Question this answers: "Same person bought expensive via campaign X
@@ -1021,7 +1036,11 @@ def main() -> None:
         slot["_wait_list"].append(wait_days)
 
     cheaper_rows = []
+    cheaper_dropped_unsourced = 0
     for key, slot in clone_stats.items():
+        if key[1] is None:
+            cheaper_dropped_unsourced += 1
+            continue
         sav = slot.pop("_savings_list")
         wait = slot.pop("_wait_list")
         n = len(sav)
@@ -1045,7 +1064,9 @@ def main() -> None:
     print(
         f"#   scanned {scanned:,} upfront-paid leads; cheaper-later clone on "
         f"{sum(r['leads_with_cheaper_later'] for r in cheaper_rows):,} leads across "
-        f"{len(cheaper_rows)} (broker, SR1) cells; total overspend: ${overspend_total:,.0f}",
+        f"{len(cheaper_rows)} (broker, SR1) cells "
+        f"({cheaper_dropped_unsourced} no-Source cells dropped); "
+        f"total overspend: ${overspend_total:,.0f}",
         flush=True,
     )
 
