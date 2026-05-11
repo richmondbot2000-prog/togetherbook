@@ -1,0 +1,454 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>TogetherBOOK — Declines</title>
+<link rel="icon" type="image/png" href="site-icon.png">
+<link rel="apple-touch-icon" href="site-icon.png">
+<link rel="stylesheet" href="quiet-tokens.css?v=1778494200">
+<link rel="stylesheet" href="quiet.css?v=1778494200">
+<link rel="stylesheet" href="quiet-extras.css?v=1778494200">
+<style>
+  .dc-section { max-width: 1240px; margin: 0 auto; padding: 24px 0 48px; }
+  @media (max-width: 800px) { .dc-section { padding: 2px 0 32px; } }
+  .dc-section h1 {
+    font: 400 56px/1.05 var(--font-display);
+    color: var(--ink-900);
+    letter-spacing: -0.018em;
+    margin: 8px 0 12px;
+  }
+  .dc-section .lead {
+    font: 400 17px/1.55 var(--font-display);
+    color: var(--ink-700);
+    margin: 0 0 6px; max-width: 820px;
+  }
+  .dc-section .lead em { color: var(--red-500); font-style: italic; }
+  .dc-meta {
+    color: var(--ink-500);
+    font: 500 11px/1 var(--font-mono);
+    letter-spacing: 0.04em; margin: 12px 0 24px;
+  }
+  .dc-refresh {
+    display: inline-flex; flex-wrap: wrap; align-items: baseline;
+    gap: 10px; padding: 8px 14px;
+    background: var(--paper-50);
+    border: 1px solid var(--paper-300);
+    margin: 12px 0 24px;
+    position: relative;
+  }
+  .dc-refresh::before {
+    content: ""; position: absolute; inset: 3px;
+    border: 1px solid var(--brass-300); opacity: 0.4; pointer-events: none;
+  }
+  .dc-refresh-label {
+    font: 500 10px/1 var(--font-body);
+    text-transform: uppercase; letter-spacing: 0.18em;
+    color: var(--ink-500);
+  }
+  .dc-refresh-stamp {
+    font: italic 500 16px/1.2 var(--font-display);
+    color: var(--ink-900);
+  }
+  .dc-refresh-stamp.is-stale { color: var(--red-500); }
+  .dc-refresh-note {
+    font: italic 400 12px/1.4 var(--font-display);
+    color: var(--ink-500);
+    margin-left: auto;
+  }
+
+  /* KPI band */
+  .dc-kpis {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+    gap: 12px;
+    margin: 16px 0 24px;
+  }
+  .dc-kpi {
+    position: relative;
+    background: var(--paper-50);
+    border: 1px solid var(--paper-300);
+    padding: 14px 14px 10px;
+  }
+  .dc-kpi::before {
+    content: ""; position: absolute; inset: 3px;
+    border: 1px solid var(--brass-300); opacity: 0.35; pointer-events: none;
+  }
+  .dc-kpi-label {
+    font: 500 10px/1.2 var(--font-body);
+    text-transform: uppercase; letter-spacing: 0.14em;
+    color: var(--ink-500); margin: 0 0 4px;
+  }
+  .dc-kpi-value {
+    font: 500 22px/1.05 var(--font-mono);
+    color: var(--ink-900);
+  }
+  .dc-kpi-sub {
+    font: italic 400 11px/1.3 var(--font-display);
+    color: var(--ink-500); margin-top: 2px;
+  }
+
+  /* Section card (lead rejections / each flag type) */
+  .dc-card {
+    position: relative;
+    background: var(--paper-50);
+    border: 1px solid var(--paper-300);
+    padding: 18px 22px 22px;
+    margin: 0 0 18px;
+  }
+  .dc-card::before {
+    content: ""; position: absolute; inset: 4px;
+    border: 1px solid var(--brass-300); opacity: 0.4; pointer-events: none;
+  }
+  .dc-card-title {
+    font: italic 400 15px/1 var(--font-display);
+    color: var(--red-500);
+    letter-spacing: 0.02em;
+    display: flex; align-items: center; gap: 14px;
+    margin: 0 0 6px;
+  }
+  .dc-card-title::before {
+    content: ""; flex: 0 0 36px; height: 1px; background: var(--brass-300);
+  }
+  .dc-card-sub {
+    font: 400 13px/1.5 var(--font-display);
+    color: var(--ink-700);
+    margin: 0 0 14px; max-width: 720px;
+  }
+  .dc-card-total {
+    font: 500 14px/1 var(--font-mono);
+    color: var(--brass-600);
+    margin-left: auto;
+  }
+
+  /* Reason bars */
+  .dc-reasons {
+    display: flex; flex-direction: column;
+    gap: 6px;
+  }
+  .dc-reason-row {
+    display: grid;
+    grid-template-columns: 1fr 80px 1fr 70px;
+    gap: 10px;
+    align-items: center;
+    font: 400 13px/1.4 var(--font-display);
+  }
+  .dc-reason-label {
+    color: var(--ink-900);
+    overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+  }
+  .dc-reason-count {
+    font: 500 13px/1.4 var(--font-mono);
+    color: var(--ink-900);
+    text-align: right;
+  }
+  .dc-reason-track {
+    background: var(--paper-100);
+    height: 14px;
+    border: 1px solid var(--paper-300);
+    position: relative;
+  }
+  .dc-reason-fill {
+    height: 100%;
+    background: var(--red-500);
+    opacity: 0.7;
+  }
+  .dc-reason-pct {
+    font: 500 11px/1.4 var(--font-mono);
+    color: var(--brass-600);
+    text-align: right;
+  }
+  /* Lighter colour for non-decline rejection bars */
+  .dc-card.is-leads .dc-reason-fill { background: var(--brass-500); opacity: 0.85; }
+
+  /* Trend SVG (mini area chart) */
+  .dc-trend-wrap {
+    margin: 14px 0 0;
+    padding: 12px 14px 8px;
+    background: var(--paper-100);
+    border: 1px solid var(--paper-300);
+  }
+  .dc-trend-title {
+    font: 500 10px/1.2 var(--font-body);
+    text-transform: uppercase; letter-spacing: 0.14em;
+    color: var(--ink-500);
+    margin: 0 0 4px;
+  }
+  .dc-trend-svg { display: block; width: 100%; height: 80px; }
+
+  /* Two-column layout for flag type cards on wider screens */
+  .dc-flag-grid {
+    display: grid;
+    gap: 18px;
+  }
+  @media (min-width: 1100px) {
+    .dc-flag-grid { grid-template-columns: 1fr 1fr; }
+  }
+  .dc-clients {
+    margin-top: 12px;
+    display: flex; flex-wrap: wrap; gap: 6px;
+  }
+  .dc-client-chip {
+    font: 500 10px/1.4 var(--font-mono);
+    color: var(--ink-700);
+    background: var(--paper-100);
+    border: 1px solid var(--paper-300);
+    padding: 2px 7px;
+    border-radius: 3px;
+  }
+  .dc-client-chip strong { color: var(--ink-900); font-weight: 600; }
+
+  .dc-empty {
+    background: var(--paper-100);
+    border: 1px dashed var(--ink-300);
+    padding: 24px 22px;
+    text-align: center;
+    font: italic 400 15px/1.5 var(--font-display);
+    color: var(--ink-500);
+  }
+</style>
+</head>
+<body>
+
+<header class="qb-topbar">
+  <a class="qb-brand" href="index.html" aria-label="TogetherBOOK — home">
+    <img class="qb-brand-logo" src="togetherbook-logo.png?v=1778494200" alt="TogetherBOOK">
+  </a>
+  <button class="qb-hamburger" aria-label="Toggle navigation menu" aria-expanded="false"
+          onclick="document.body.classList.toggle('nav-open');this.setAttribute('aria-expanded',document.body.classList.contains('nav-open'))">
+    <span></span><span></span><span></span>
+  </button>
+  <nav class="qb-nav">
+    <a class="qb-nav-link" href="index.html">About our systems</a>
+    <a class="qb-nav-link" href="yesterday.html">Yesterday</a>
+    <a class="qb-nav-link" href="brandwatch.html">Brandwatch</a>
+    <a class="qb-nav-link" href="1stcontact.html">1stContact</a>
+    <a class="qb-nav-link" href="directory.html">Directory</a>
+    <a class="qb-nav-link" href="topups.html">TopUps</a>
+    <a class="qb-nav-link" href="pipeline.html">Pipeline</a>
+    <a class="qb-nav-link" href="brokers.html">Brokers</a>
+    <a class="qb-nav-link is-active" href="declines.html">Declines</a>
+    <a class="qb-nav-link" href="database.html">Schema</a>
+    <a class="qb-nav-link" href="stats.html">Code</a>
+  </nav>
+</header>
+<div class="qb-nav-backdrop" onclick="document.body.classList.remove('nav-open')"></div>
+
+<main class="qb-page">
+  <section class="dc-section">
+    <h1>Declines</h1>
+    <p class="lead">The companion to <a href="pipeline.html">Pipeline</a>. Pipeline shows <em>where</em> customers drop in the funnel; this page shows <em>why</em>. Rolling 90-day window across Transform Credit.</p>
+    <p class="lead">Two streams: <strong>lead rejections</strong> at the affiliate-pricing stage (by <code>LeadResultTypeId</code>) and <strong>application-stage declines</strong> we flagged ourselves (by <code>FlagTypeId</code> + free-text Reason).</p>
+
+    <div class="dc-refresh" id="dcRefresh" hidden>
+      <span class="dc-refresh-label">Last refreshed</span>
+      <span class="dc-refresh-stamp" id="dcRefreshStamp">—</span>
+      <span class="dc-refresh-note">auto-refreshes hourly from the warehouse</span>
+    </div>
+
+    <p class="dc-meta" id="dcMeta">Loading…</p>
+
+    <div class="dc-kpis" id="dcKpis"></div>
+
+    <!-- Lead rejections section -->
+    <div class="dc-card is-leads">
+      <h2 class="dc-card-title">
+        Lead rejections
+        <span class="dc-card-total" id="dcLeadTotal"></span>
+      </h2>
+      <p class="dc-card-sub">Every lead that came in but we didn't buy. The biggest categories are usually <em>Already claimed</em> (the broker tried to sell us a lead we'd already rejected) and <em>Throttled</em> (our daily cap was full). High <em>Failed scorecard</em> bars usually mean the affiliate is sending us low-quality traffic.</p>
+      <div class="dc-reasons" id="dcLeadReasons"></div>
+    </div>
+
+    <!-- Application-stage flag declines section -->
+    <h2 style="font: italic 400 26px/1.2 var(--font-display); color: var(--ink-900); margin: 28px 0 10px;">Application-stage declines</h2>
+    <p class="lead" style="margin-bottom: 18px;">Every Flag added to an application with type <em>Decline</em>, <em>DNL</em>, <em>Cancelled</em> or <em>FraudRisk</em>. Each card breaks down the top free-text Reasons our team typed in.</p>
+
+    <div class="dc-flag-grid" id="dcFlagGrid"></div>
+
+    <div class="dc-empty" id="dcEmpty" hidden>No decline data yet. The refresh-declines workflow will populate this page on its next run.</div>
+  </section>
+</main>
+
+<script>
+  fetch("declines.json", { cache: "no-store" })
+    .then(r => r.ok ? r.json() : Promise.reject("declines.json HTTP " + r.status))
+    .then(render)
+    .catch(err => {
+      document.getElementById("dcMeta").textContent = "declines.json not loaded — " + err;
+      document.getElementById("dcEmpty").hidden = false;
+    });
+
+  function render(d) {
+    document.getElementById("dcMeta").textContent =
+      `${d.lender_label} · ${d.window_start} → ${d.window_end} (${d.window_days} days) · ` +
+      `${(d.leads.presented || 0).toLocaleString()} leads presented · ` +
+      `${(d.leads.rejected || 0).toLocaleString()} leads rejected · ` +
+      `${(d.flag_declines.total || 0).toLocaleString()} application declines`;
+
+    renderRefresh(d);
+    renderKpis(d);
+    renderLeads(d.leads);
+    renderFlagDeclines(d.flag_declines);
+  }
+
+  function renderRefresh(d) {
+    const wrap = document.getElementById("dcRefresh");
+    if (!d.snapshot_at) { wrap.hidden = true; return; }
+    const dt = new Date(d.snapshot_at);
+    const datePart = dt.toLocaleDateString("en-GB", { day: "numeric", month: "long", year: "numeric" });
+    const timePart = dt.toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit", timeZone: "UTC" });
+    document.getElementById("dcRefreshStamp").textContent = `${datePart} at ${timePart} UTC`;
+    const ageHours = (Date.now() - dt.getTime()) / 36e5;
+    document.getElementById("dcRefreshStamp").classList.toggle("is-stale", ageHours > 36);
+    wrap.hidden = false;
+  }
+
+  function renderKpis(d) {
+    const leadRej = d.leads.rejected || 0;
+    const leadPres = d.leads.presented || 0;
+    const flagTotal = d.flag_declines.total || 0;
+    const topFlag = (d.flag_declines.types || [])[0];
+    const purchasedRate = leadPres ? (d.leads.purchased / leadPres) : 0;
+    const kpis = [
+      { label: "Leads presented",       value: formatBig(leadPres),  sub: `${d.window_days}-day window` },
+      { label: "Lead-reject rate",      value: pctText(leadRej, leadPres), sub: `${formatBig(leadRej)} rejected` },
+      { label: "Lead-buy rate",         value: pct(purchasedRate),         sub: `${formatBig(d.leads.purchased || 0)} bought` },
+      { label: "App declines",          value: formatBig(flagTotal),       sub: `Flag types 2 / 3 / 4 / 6` },
+      { label: "Biggest decline type",  value: topFlag ? topFlag.label : "—",
+        sub: topFlag ? `${formatNumber(topFlag.total)} this window` : "" },
+    ];
+    document.getElementById("dcKpis").innerHTML = kpis.map(k => `
+      <div class="dc-kpi">
+        <div class="dc-kpi-label">${escapeHtml(k.label)}</div>
+        <div class="dc-kpi-value">${escapeHtml(k.value)}</div>
+        <div class="dc-kpi-sub">${escapeHtml(k.sub)}</div>
+      </div>
+    `).join("");
+  }
+
+  function renderLeads(leads) {
+    const total = leads.rejected || 1;
+    const results = (leads.results || []).slice(0, 12);
+    const max = results.length ? results[0].count : 1;
+    document.getElementById("dcLeadTotal").textContent =
+      `${formatNumber(leads.rejected || 0)} rejected (of ${formatNumber(leads.presented || 0)})`;
+    document.getElementById("dcLeadReasons").innerHTML = results.map(r => {
+      const widthPct = (r.count / max) * 100;
+      const share = (r.count / total) * 100;
+      return `
+        <div class="dc-reason-row">
+          <span class="dc-reason-label" title="${escapeHtml(r.label)} (code ${r.result_type_id})">${escapeHtml(r.label)}</span>
+          <span class="dc-reason-count">${formatNumber(r.count)}</span>
+          <span class="dc-reason-track"><span class="dc-reason-fill" style="width:${widthPct.toFixed(2)}%"></span></span>
+          <span class="dc-reason-pct">${share.toFixed(1)}%</span>
+        </div>`;
+    }).join("");
+  }
+
+  function renderFlagDeclines(fd) {
+    const types = fd.types || [];
+    if (!types.length) {
+      document.getElementById("dcEmpty").hidden = false;
+      return;
+    }
+    document.getElementById("dcFlagGrid").innerHTML = types.map(renderFlagCard).join("");
+  }
+
+  function renderFlagCard(t) {
+    const top = (t.top_reasons || []).slice(0, 12);
+    const max = top.length ? top[0].count : 1;
+    const total = t.total || 1;
+    const rows = top.map(r => {
+      const widthPct = (r.count / max) * 100;
+      const share = (r.count / total) * 100;
+      return `
+        <div class="dc-reason-row">
+          <span class="dc-reason-label" title="${escapeHtml(r.reason)}">${escapeHtml(r.reason)}</span>
+          <span class="dc-reason-count">${formatNumber(r.count)}</span>
+          <span class="dc-reason-track"><span class="dc-reason-fill" style="width:${widthPct.toFixed(2)}%"></span></span>
+          <span class="dc-reason-pct">${share.toFixed(1)}%</span>
+        </div>`;
+    }).join("");
+    const clients = (t.by_client || []).slice(0, 6).map(c =>
+      `<span class="dc-client-chip"><strong>${escapeHtml(c.client)}</strong> · ${formatNumber(c.count)}</span>`
+    ).join("");
+    const trendSvg = renderTrend(t.daily || []);
+    return `
+      <div class="dc-card">
+        <h2 class="dc-card-title">${escapeHtml(t.label)} <span class="dc-card-total">${formatNumber(t.total)} declines</span></h2>
+        <p class="dc-card-sub">Top free-text reasons in <code>Flags.Reason</code> for <code>FlagTypeId=${t.flag_type_id}</code>.</p>
+        <div class="dc-reasons">${rows}</div>
+        ${clients ? `<div class="dc-clients">${clients}</div>` : ""}
+        ${trendSvg}
+      </div>
+    `;
+  }
+
+  function renderTrend(daily) {
+    if (!daily.length) return "";
+    const W = 600, H = 80, PAD_L = 24, PAD_R = 8, PAD_T = 4, PAD_B = 14;
+    const xs = daily.map(d => d.date);
+    const ys = daily.map(d => d.count);
+    const maxY = Math.max(1, ...ys);
+    const innerW = W - PAD_L - PAD_R;
+    const innerH = H - PAD_T - PAD_B;
+    const xStep = daily.length > 1 ? innerW / (daily.length - 1) : 0;
+    const pts = ys.map((v, i) => {
+      const x = PAD_L + i * xStep;
+      const y = PAD_T + innerH - (v / maxY) * innerH;
+      return `${x.toFixed(1)},${y.toFixed(1)}`;
+    });
+    const linePath = "M" + pts.join(" L");
+    const areaPath = linePath +
+      ` L${(PAD_L + innerW).toFixed(1)},${(PAD_T + innerH).toFixed(1)}` +
+      ` L${PAD_L.toFixed(1)},${(PAD_T + innerH).toFixed(1)} Z`;
+    const firstDate = xs[0], lastDate = xs[xs.length - 1];
+    return `
+      <div class="dc-trend-wrap">
+        <div class="dc-trend-title">Daily count — ${escapeHtml(firstDate)} → ${escapeHtml(lastDate)} · peak ${formatNumber(maxY)}</div>
+        <svg class="dc-trend-svg" viewBox="0 0 ${W} ${H}" preserveAspectRatio="none">
+          <path d="${areaPath}" fill="var(--red-500)" fill-opacity="0.18" />
+          <path d="${linePath}" fill="none" stroke="var(--red-500)" stroke-width="1.2" />
+        </svg>
+      </div>
+    `;
+  }
+
+  function pct(v, dp = 1) {
+    if (v == null) return "—";
+    return (v * 100).toFixed(dp) + "%";
+  }
+  function pctText(num, denom) {
+    if (!denom) return "—";
+    return ((num / denom) * 100).toFixed(1) + "%";
+  }
+  function formatNumber(n) {
+    if (n == null) return "—";
+    return Number(n).toLocaleString("en-US");
+  }
+  function formatBig(n) {
+    if (n == null) return "—";
+    if (n >= 1e9) return (n / 1e9).toFixed(2) + "B";
+    if (n >= 1e6) return (n / 1e6).toFixed(2) + "M";
+    if (n >= 1e3) return (n / 1e3).toFixed(1) + "k";
+    return formatNumber(n);
+  }
+  function escapeHtml(s) {
+    return String(s == null ? "" : s).replace(/[&<>"']/g, c => ({
+      "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"
+    })[c]);
+  }
+</script>
+
+<script>
+  document.addEventListener('keydown', e => {
+    if (e.key === 'Escape') document.body.classList.remove('nav-open');
+  });
+  document.querySelectorAll('.qb-nav-link').forEach(a =>
+    a.addEventListener('click', () => document.body.classList.remove('nav-open'))
+  );
+</script>
+
+</body>
+</html>

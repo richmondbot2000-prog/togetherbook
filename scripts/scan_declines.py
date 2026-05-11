@@ -146,15 +146,21 @@ def main() -> None:
     # ─── Discover columns ─────────────────────────────────────────────
     flags_cols = discover_columns(cur, "Flags")
     leads_cols = discover_columns(cur, "Leads")
+    apps_cols = discover_columns(cur, "Applications")
+
+    print(f"# Flags ALL cols: {sorted(flags_cols)}", flush=True)
 
     f_aref = pick(flags_cols, "ARef")
     f_type = pick(flags_cols, "FlagTypeId")
-    f_reason = pick(flags_cols, "Reason")
+    f_reason = pick(flags_cols, "Reason", "Description", "Note", "Comment")
     f_added = pick(flags_cols, "DateAddedUtc", "DateAddedUTC", "DateCreatedUtc")
     f_removed = pick(flags_cols, "DateRemovedUtc", "DateRemovedUTC")
     f_lender = pick(flags_cols, "LenderId")
     f_client = pick(flags_cols, "ClientType")
     f_user = pick(flags_cols, "ClientUsername", "ClientUserName")
+
+    apps_aref = pick(apps_cols, "ARef")
+    apps_lender = pick(apps_cols, "LenderId")
 
     leads_lender = pick(leads_cols, "LenderId")
     leads_date = pick(leads_cols, "DateReceivedUtc", "DateCreatedUtc")
@@ -170,28 +176,55 @@ def main() -> None:
         flush=True,
     )
 
-    if not (f_type and f_added and f_lender):
-        print("# Flags table missing required columns; skipping flag-decline section.", flush=True)
-        f_aref = f_type = f_reason = f_added = f_lender = None
+    # The warehouse Flags table doesn't always carry LenderId — fall back to
+    # joining through Applications on ARef so we can still filter to our
+    # lender of interest.
+    if not (f_type and f_added):
+        print("# Flags table missing required columns (type/added); skipping flag-decline section.", flush=True)
+        f_aref = f_type = f_reason = f_added = None
 
     # ─── Q1: Flag-based declines ───────────────────────────────────────
     flag_buckets: dict[int, dict] = {}   # flag_type_id → {reasons: Counter, daily: Counter, total: int}
-    if f_type and f_added and f_lender:
+    if f_type and f_added:
         decline_ids = ",".join(str(t) for t in DECLINE_FLAG_TYPE_IDS)
         sel_extra = ", ".join([
-            f"[{f_reason}]"  if f_reason  else "NULL",
-            f"[{f_client}]"  if f_client  else "NULL",
-            f"[{f_user}]"    if f_user    else "NULL",
+            f"f.[{f_reason}]"  if f_reason  else "NULL",
+            f"f.[{f_client}]"  if f_client  else "NULL",
+            f"f.[{f_user}]"    if f_user    else "NULL",
         ])
-        sql = f"""
-            SELECT [{f_type}], CAST([{f_added}] AS date) AS d, {sel_extra}
-            FROM dbo.Flags
-            WHERE [{f_added}] >= ? AND [{f_added}] < ?
-              AND [{f_lender}] = ?
-              AND [{f_type}] IN ({decline_ids})
-        """
+        # Lender filter: prefer the Flags row's own LenderId; fall back to
+        # joining through Applications on ARef if Flags doesn't carry it.
+        if f_lender:
+            sql = f"""
+                SELECT f.[{f_type}], CAST(f.[{f_added}] AS date) AS d, {sel_extra}
+                FROM dbo.Flags f
+                WHERE f.[{f_added}] >= ? AND f.[{f_added}] < ?
+                  AND f.[{f_lender}] = ?
+                  AND f.[{f_type}] IN ({decline_ids})
+            """
+            params = [window_start, window_end, LENDER_ID]
+        elif f_aref and apps_aref and apps_lender:
+            print(f"# Flags.LenderId not present — joining through Applications.{apps_lender}", flush=True)
+            sql = f"""
+                SELECT f.[{f_type}], CAST(f.[{f_added}] AS date) AS d, {sel_extra}
+                FROM dbo.Flags f
+                INNER JOIN dbo.Applications a ON a.[{apps_aref}] = f.[{f_aref}]
+                WHERE f.[{f_added}] >= ? AND f.[{f_added}] < ?
+                  AND a.[{apps_lender}] = ?
+                  AND f.[{f_type}] IN ({decline_ids})
+            """
+            params = [window_start, window_end, LENDER_ID]
+        else:
+            print("# Cannot filter Flags by lender — pulling all rows for FlagTypeIds in window", flush=True)
+            sql = f"""
+                SELECT f.[{f_type}], CAST(f.[{f_added}] AS date) AS d, {sel_extra}
+                FROM dbo.Flags f
+                WHERE f.[{f_added}] >= ? AND f.[{f_added}] < ?
+                  AND f.[{f_type}] IN ({decline_ids})
+            """
+            params = [window_start, window_end]
         print("# Q1: pulling decline flags…", flush=True)
-        cur.execute(sql, [window_start, window_end, LENDER_ID])
+        cur.execute(sql, params)
 
         per_user_counter: Counter = Counter()  # ClientUsername → flag count (top
                                                 # decliners)
