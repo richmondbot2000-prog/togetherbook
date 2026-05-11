@@ -6,9 +6,9 @@
 <title>TogetherBOOK — Brokers</title>
 <link rel="icon" type="image/png" href="site-icon.png">
 <link rel="apple-touch-icon" href="site-icon.png">
-<link rel="stylesheet" href="quiet-tokens.css?v=1778502897">
-<link rel="stylesheet" href="quiet.css?v=1778502897">
-<link rel="stylesheet" href="quiet-extras.css?v=1778502897">
+<link rel="stylesheet" href="quiet-tokens.css?v=1778503198">
+<link rel="stylesheet" href="quiet.css?v=1778503198">
+<link rel="stylesheet" href="quiet-extras.css?v=1778503198">
 <style>
   .br-section { max-width: 1280px; margin: 0 auto; padding: 24px 0 48px; }
   @media (max-width: 800px) { .br-section { padding: 2px 0 32px; } }
@@ -385,7 +385,7 @@
 
 <header class="qb-topbar">
   <a class="qb-brand" href="index.html" aria-label="TogetherBOOK — home">
-    <img class="qb-brand-logo" src="togetherbook-logo.png?v=1778502897" alt="TogetherBOOK">
+    <img class="qb-brand-logo" src="togetherbook-logo.png?v=1778503198" alt="TogetherBOOK">
   </a>
   <button class="qb-hamburger" aria-label="Toggle navigation menu" aria-expanded="false"
           onclick="document.body.classList.toggle('nav-open');this.setAttribute('aria-expanded',document.body.classList.contains('nav-open'))">
@@ -433,6 +433,11 @@
         <h2 class="br-canvas-title">Top 10 by paid-out loans</h2>
         <p class="br-canvas-sub">Same brokers re-ranked by how many of their leads actually became funded loans. Different list — the volume leader rarely is the conversion leader.</p>
         <div id="brLeaderboardPaid"></div>
+      </div>
+      <div class="br-leaderboard-wrap" style="grid-column: 1 / -1;">
+        <h2 class="br-canvas-title">Worst quality — highest post-purchase decline %</h2>
+        <p class="br-canvas-sub">Among brokers we bought at least 1,000 leads from in the window, ranked by the share of those purchased leads that later got a kill-flag (Decline / DNL / Cancelled / FraudRisk). High rates here usually mean low-quality traffic — the lead looks plausible enough to bid on, but fails the credit / bank / phone check downstream.</p>
+        <div id="brLeaderboardDecline"></div>
       </div>
     </div>
 
@@ -558,6 +563,43 @@
       byPaid.length
         ? renderLeaderRows(byPaid, "paid_out", byPaid[0].paid_out || 1)
         : '<p style="color: var(--ink-500); font-style: italic;">No paid-out loans in this window.</p>';
+
+    // Worst-quality top 10 — highest decline rate, filtered to brokers we
+    // bought ≥1,000 leads from so we don't surface noise from tiny pools.
+    const VOL_THRESHOLD = 1000;
+    const byDecline = sources
+      .filter(r => (r.leads_purchased || 0) >= VOL_THRESHOLD && (r.flag_decline_rate || 0) > 0)
+      .sort((a, b) => (b.flag_decline_rate || 0) - (a.flag_decline_rate || 0))
+      .slice(0, 10);
+    const declineHost = document.getElementById("brLeaderboardDecline");
+    if (!declineHost) return;
+    declineHost.innerHTML = byDecline.length
+      ? renderDeclineLeaderRows(byDecline, byDecline[0].flag_decline_rate || 0)
+      : '<p style="color: var(--ink-500); font-style: italic;">No post-purchase decline data in this window.</p>';
+  }
+
+  function renderDeclineLeaderRows(rows, maxRate) {
+    return rows.map(r => {
+      const rate = r.flag_decline_rate || 0;
+      const widthPct = (rate / maxRate) * 100;
+      const topReason = (r.top_decline_reasons && r.top_decline_reasons[0]) || null;
+      const topReasonHtml = topReason
+        ? `<span style="font: italic 400 11px/1.3 var(--font-display); color: var(--ink-500);">top: ${escapeHtml(topReason.reason)}</span>`
+        : "";
+      return `
+        <div class="br-leader" title="${escapeHtml(r.friendly_name || "Source " + r.source_id)}">
+          <div class="br-leader-name">${escapeHtml(r.friendly_name || "Source " + r.source_id)}</div>
+          <div class="br-leader-bar">
+            <div class="br-leader-bar-fill" style="width:${widthPct.toFixed(3)}%; background: var(--red-500); opacity: 0.85;"></div>
+          </div>
+          <div class="br-leader-count">${(rate * 100).toFixed(1)}%</div>
+          <div class="br-leader-paid" style="color: var(--ink-500);">${formatNumber(r.flag_declines || 0)} of ${formatBig(r.leads_purchased || 0)}</div>
+        </div>
+        <div class="br-leader" style="grid-template-columns: 180px 1fr; padding: 0 0 6px; border-bottom: 1px dashed var(--divider);">
+          <div></div>
+          <div>${topReasonHtml}</div>
+        </div>`;
+    }).join("");
   }
 
   function renderLeaderRows(rows, scaleKey, maxVal) {
