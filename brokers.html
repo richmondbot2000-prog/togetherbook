@@ -6,9 +6,9 @@
 <title>TogetherBOOK — Brokers</title>
 <link rel="icon" type="image/png" href="site-icon.png">
 <link rel="apple-touch-icon" href="site-icon.png">
-<link rel="stylesheet" href="quiet-tokens.css?v=1778539151">
-<link rel="stylesheet" href="quiet.css?v=1778539151">
-<link rel="stylesheet" href="quiet-extras.css?v=1778539151">
+<link rel="stylesheet" href="quiet-tokens.css?v=1778539287">
+<link rel="stylesheet" href="quiet.css?v=1778539287">
+<link rel="stylesheet" href="quiet-extras.css?v=1778539287">
 <style>
   .br-section { max-width: 1280px; margin: 0 auto; padding: 24px 0 48px; }
   @media (max-width: 800px) { .br-section { padding: 2px 0 32px; } }
@@ -501,7 +501,7 @@
 
 <header class="qb-topbar">
   <a class="qb-brand" href="index.html" aria-label="TogetherBOOK — home">
-    <img class="qb-brand-logo" src="togetherbook-logo.png?v=1778539151" alt="TogetherBOOK">
+    <img class="qb-brand-logo" src="togetherbook-logo.png?v=1778539287" alt="TogetherBOOK">
   </a>
   <button class="qb-hamburger" aria-label="Toggle navigation menu" aria-expanded="false"
           onclick="document.body.classList.toggle('nav-open');this.setAttribute('aria-expanded',document.body.classList.contains('nav-open'))">
@@ -555,6 +555,13 @@
         <p class="br-canvas-sub">Among brokers we bought at least 1,000 leads from, ranked by the share of those leads who <strong>never even started an application</strong>. These are the leads that arrived, sat there, and never engaged — no apply page, no guarantor invite, no response. <em>Ghosts</em> are the truly bad outcome: a decline at least means the lead engaged enough to fail a real check. A broker whose leads simply vanish brings dead traffic. (The old "highest decline rate" view rewarded this — a pool of silent leads has zero declines because nothing happened. We sort by ghosts instead.)</p>
         <div id="brLeaderboardDecline"></div>
       </div>
+    </div>
+
+    <!-- ── Source-quality block intro + freshness ────────────────── -->
+    <div id="brSqIntro" hidden style="margin: 24px 0 8px;">
+      <h2 class="br-canvas-title">Source-quality analysis</h2>
+      <p class="br-canvas-sub">All four sections below are derived from <code>source-quality.json</code> — a daily heavy-join analysis that aggregates leads by <strong>(Broker, SourceReference1)</strong> cell over a <strong>60-day window ending 30 days ago</strong> (the 30-day lag gives paid-out outcomes time to settle). For each section: what it tells you, and what action it implies.</p>
+      <div class="br-recommend-meta" id="brSqFreshness"></div>
     </div>
 
     <!-- ── Best-value (Broker, Source) cells — positive mirror ────── -->
@@ -676,6 +683,19 @@
     document.getElementById("brSqMinVol").textContent = (sq.min_volume_for_ranking || 200).toLocaleString();
     const bestVolEl = document.getElementById("brSqMinVolBest");
     if (bestVolEl) bestVolEl.textContent = (sq.min_volume_for_ranking || 200).toLocaleString();
+
+    // Source-quality intro + freshness indicator
+    const intro = document.getElementById("brSqIntro");
+    if (intro) intro.hidden = false;
+    const fresh = document.getElementById("brSqFreshness");
+    if (fresh && sq.snapshot_at) {
+      const sqDt = new Date(sq.snapshot_at);
+      const ageHours = (Date.now() - sqDt.getTime()) / 36e5;
+      const stale = ageHours > 36;
+      const dateText = sqDt.toLocaleDateString("en-GB", { day: "numeric", month: "long", year: "numeric" });
+      const timeText = sqDt.toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit", timeZone: "UTC" });
+      fresh.innerHTML = `Analysis run ${dateText} at ${timeText} UTC · window ${sq.window_start} → ${sq.window_end} (${sq.window_days}d ending ${sq.maturation_days}d ago) · bounceback cap ${sq.bounceback_window_days}d${stale ? ' · <span style="color:var(--red-500);font-weight:600">STALE — daily run may have failed</span>' : ''}`;
+    }
 
     const COST_PER_PAID_THRESHOLD = 600;
 
