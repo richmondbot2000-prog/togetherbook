@@ -125,6 +125,7 @@ def main() -> None:
     A_aref = pick(apps_cols, "ARef")
     A_lender = pick(apps_cols, "LenderId")
     A_status = pick(apps_cols, "ApplicationStatusTypeId", "ApplicationStatusId")
+    A_loan = pick(apps_cols, "LoanAmount", "LoanAmountRequested")
 
     print(
         f"# Leads cols: aref={L_aref} lender={L_lender} date={L_date} "
@@ -218,6 +219,7 @@ def main() -> None:
     # The user's terminology: a source = one of our CampaignId rows, sitting
     # beneath a broker. Aggregation is per CampaignId.
     print("# Part A: per-source (CampaignId) purchase + paid_out counts", flush=True)
+    loan_sel = f"MAX(CAST(a.[{A_loan}] AS FLOAT))" if A_loan else "NULL"
     cur.execute(
         f"""
         WITH purchased AS (
@@ -232,22 +234,26 @@ def main() -> None:
         with_status AS (
             SELECT p.CampaignId,
                    p.ARef,
-                   MAX(CASE WHEN a.[{A_status}] = 5 THEN 1 ELSE 0 END) AS paid
+                   MAX(CASE WHEN a.[{A_status}] = 5 THEN 1 ELSE 0 END) AS paid,
+                   {loan_sel} AS loan_amount
             FROM purchased p
             INNER JOIN dbo.Applications a ON a.[{A_aref}] = p.ARef AND a.[{A_lender}] = ?
             GROUP BY p.CampaignId, p.ARef
         )
         SELECT CampaignId,
-               COUNT(*) AS apps,
-               SUM(paid) AS paid_out
+               COUNT(*)                                        AS apps,
+               SUM(paid)                                       AS paid_out,
+               SUM(CASE WHEN paid = 1 THEN loan_amount END)    AS paid_loan_total
         FROM with_status
         GROUP BY CampaignId
         """,
         [window_start, window_end, LENDER_ID, LENDER_ID],
     )
     accepted_per_campaign = {
-        (int(cid) if cid is not None else None): (int(apps), int(paid or 0))
-        for cid, apps, paid in cur.fetchall()
+        (int(cid) if cid is not None else None): (
+            int(apps), int(paid or 0), float(loan_total or 0.0)
+        )
+        for cid, apps, paid, loan_total in cur.fetchall()
     }
     print(f"#   campaigns with purchased apps: {len(accepted_per_campaign):,}", flush=True)
 
@@ -266,14 +272,16 @@ def main() -> None:
             "applications":    0,
             "paid_out":        0,
         }
-    for cid, (apps, paid) in accepted_per_campaign.items():
+    for cid, (apps, paid, loan_total) in accepted_per_campaign.items():
         slot = weak_data.setdefault(cid, _new_weak_slot(cid))
-        slot["applications"] += apps
-        slot["paid_out"]     += paid
+        slot["applications"]    += apps
+        slot["paid_out"]        += paid
+        slot["paid_loan_total"]  = slot.get("paid_loan_total", 0.0) + (loan_total or 0.0)
 
-    # We also need leads_purchased per campaign AND total spend (SUM of
-    # Leads.BidAmount) — same query, two aggregations.
-    bid_sql = f", SUM(CAST(l.[{L_bid}] AS FLOAT)) AS total_cost" if L_bid else ", NULL AS total_cost"
+    # We also need leads_purchased per campaign AND total auction spend
+    # (SUM of Leads.BidAmount) — only meaningful for bid-auction
+    # commission types but pull regardless.
+    bid_sql = f", SUM(CAST(l.[{L_bid}] AS FLOAT)) AS bid_total" if L_bid else ", NULL AS bid_total"
     cur.execute(
         f"""
         SELECT l.[{L_camp}], COUNT(*) AS purchased{bid_sql}
@@ -285,18 +293,49 @@ def main() -> None:
         """,
         [window_start, window_end, LENDER_ID],
     )
-    for cid, n, total_cost in cur.fetchall():
+    for cid, n, bid_total in cur.fetchall():
         cid_int = int(cid) if cid is not None else None
         slot = weak_data.setdefault(cid_int, _new_weak_slot(cid_int))
         slot["leads_purchased"] = slot.get("leads_purchased", 0) + int(n)
-        if total_cost is not None:
-            slot["total_cost"] = slot.get("total_cost", 0.0) + float(total_cost)
+        if bid_total is not None:
+            slot["bid_total"] = slot.get("bid_total", 0.0) + float(bid_total)
 
     # Compute paid_out_rate + cost metrics per campaign and stats across
     # the qualifying cohort.
     # CommissionType '3' is CPC (cost-per-click PPC spend) — not a broker
     # lead, so exclude those campaigns from the source-quality scorecard.
     CPC_COMMISSION_TYPE = "3"
+
+    def _campaign_cost(slot: dict) -> tuple[float | None, str]:
+        """
+        Return (total_cost, model_label) based on the campaign's
+        CommissionType. None means we have no defensible cost figure.
+
+          1 = CPF   → rate × paid_out (cost per funded loan)
+          2 = CPL   → rate × leads_purchased (flat per-lead price)
+          4 = BID   → sum of Leads.BidAmount; fall back to
+                       rate × leads_purchased if bid was never set
+          5 = REV   → rate × sum(paid-out loan amount) (revenue share)
+        Anything else (incl. None) → no cost.
+        """
+        ct = str(slot.get("commission_type"))
+        rate = slot.get("commission_rate") or 0
+        purchased = slot.get("leads_purchased") or 0
+        paid = slot.get("paid_out") or 0
+        bid_total = slot.get("bid_total")
+        paid_loan_total = slot.get("paid_loan_total") or 0.0
+        if ct == "1":
+            return (rate * paid, "cpf")
+        if ct == "2":
+            return (rate * purchased, "cpl")
+        if ct == "4":
+            if bid_total is not None and bid_total > 0:
+                return (bid_total, "bid")
+            return (rate * purchased, "bid_floor")
+        if ct == "5":
+            return (rate * paid_loan_total, "rev_share")
+        return (None, "unknown")
+
     qualifying: list[dict] = []
     excluded_cpc = 0
     for slot in weak_data.values():
@@ -313,9 +352,12 @@ def main() -> None:
             slot["paid_out"] / slot["leads_purchased"]
             if slot["leads_purchased"] else 0
         )
-        total_cost = slot.get("total_cost")
-        if total_cost is not None and slot["leads_purchased"]:
-            slot["cost_per_lead"] = total_cost / slot["leads_purchased"]
+        total_cost, model = _campaign_cost(slot)
+        slot["cost_model"] = model
+        if total_cost is not None:
+            slot["total_cost"] = total_cost
+            if slot["leads_purchased"]:
+                slot["cost_per_lead"] = total_cost / slot["leads_purchased"]
             slot["cost_per_paid_loan"] = (
                 total_cost / slot["paid_out"] if slot["paid_out"] else None
             )
