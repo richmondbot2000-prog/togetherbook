@@ -6,9 +6,9 @@
 <title>TogetherBOOK — Brokers</title>
 <link rel="icon" type="image/png" href="site-icon.png">
 <link rel="apple-touch-icon" href="site-icon.png">
-<link rel="stylesheet" href="quiet-tokens.css?v=1778509863">
-<link rel="stylesheet" href="quiet.css?v=1778509863">
-<link rel="stylesheet" href="quiet-extras.css?v=1778509863">
+<link rel="stylesheet" href="quiet-tokens.css?v=1778525603">
+<link rel="stylesheet" href="quiet.css?v=1778525603">
+<link rel="stylesheet" href="quiet-extras.css?v=1778525603">
 <style>
   .br-section { max-width: 1280px; margin: 0 auto; padding: 24px 0 48px; }
   @media (max-width: 800px) { .br-section { padding: 2px 0 32px; } }
@@ -466,7 +466,7 @@
 
 <header class="qb-topbar">
   <a class="qb-brand" href="index.html" aria-label="TogetherBOOK — home">
-    <img class="qb-brand-logo" src="togetherbook-logo.png?v=1778509863" alt="TogetherBOOK">
+    <img class="qb-brand-logo" src="togetherbook-logo.png?v=1778525603" alt="TogetherBOOK">
   </a>
   <button class="qb-hamburger" aria-label="Toggle navigation menu" aria-expanded="false"
           onclick="document.body.classList.toggle('nav-open');this.setAttribute('aria-expanded',document.body.classList.contains('nav-open'))">
@@ -536,6 +536,14 @@
         <div class="br-recommend-meta" id="brBlockedMeta"></div>
         <div id="brBlockedList"></div>
       </div>
+    </div>
+
+    <!-- ── Cheaper-clones (overpay) section ────────────────────────── -->
+    <div class="br-canvas-wrap" id="brCheaperWrap" hidden style="margin-bottom: 24px;">
+      <h2 class="br-canvas-title">Sources where <em>we overpay</em></h2>
+      <p class="br-canvas-sub">For every purchased lead bought at an upfront per-lead price (CPL or auction-bid models), we identity-match the same person against later purchases in the 60-day window. When a cheaper version of the same person reappears via a different campaign, the first buy was an overpay — we could have waited. Sources are ranked by total overspend in the window. Only sources with at least one cheaper-later clone appear.</p>
+      <div class="br-recommend-meta" id="brCheaperMeta"></div>
+      <div id="brCheaperList"></div>
     </div>
 
     <div class="br-filters">
@@ -642,6 +650,22 @@
     document.getElementById("brBlockedList").innerHTML = unblockCandidates.length
       ? unblockCandidates.map(renderBlockedRow).join("")
       : '<div class="br-rec-empty">No blocked sources met the volume threshold for analysis.</div>';
+
+    // ── Cheaper clones (overpay) ────────────────────────────────────
+    const cc = sq.cheaper_clones || {};
+    const ccRows = (cc.campaigns || []).slice(0, 15);
+    const ccWrap = document.getElementById("brCheaperWrap");
+    if (ccRows.length) {
+      ccWrap.hidden = false;
+      const totalOverspend = cc.total_overspend || 0;
+      const leadsAffected = cc.leads_with_cheaper || 0;
+      document.getElementById("brCheaperMeta").textContent =
+        `${(cc.campaigns || []).length} campaigns flagged · ${leadsAffected.toLocaleString()} leads had a cheaper later clone · $${Math.round(totalOverspend).toLocaleString()} total 60-day overspend`;
+      document.getElementById("brCheaperList").innerHTML =
+        ccRows.map(renderCheaperRow).join("");
+    } else {
+      ccWrap.hidden = true;
+    }
   }
 
   function renderWeakRow(s) {
@@ -665,6 +689,23 @@
         <div class="br-rec-metric">${cppText}<div class="br-rec-metric-sub">cost / paid loan</div></div>
         <div class="br-rec-metric">${cplText}<div class="br-rec-metric-sub">cost / lead</div></div>
         <div class="br-rec-sub">${pct(s.paid_out_rate, 3)} paid · ${formatNumber(s.paid_out || 0)}/${formatNumber(s.leads_purchased || 0)} · ${escapeHtml(vsMedianText)}${s.total_cost ? ` · ${formatMoneyBig(s.total_cost)} spent` : ""} · campaign-id ${s.campaign_id}</div>
+      </div>`;
+  }
+
+  function renderCheaperRow(c) {
+    const total = c.total_savings_if_waited || 0;
+    const avg = c.avg_savings_per_lead || 0;
+    const wait = c.median_wait_days || 0;
+    const rate = c.cheaper_clone_rate || 0;
+    return `
+      <div class="br-rec-row is-bad">
+        <div class="br-rec-name">
+          ${escapeHtml(c.source_name || ("Campaign " + c.campaign_id))}
+          <div class="br-rec-broker">${escapeHtml(c.broker_name || "")}</div>
+        </div>
+        <div class="br-rec-metric">$${Math.round(total).toLocaleString()}<div class="br-rec-metric-sub">overspend (60d)</div></div>
+        <div class="br-rec-metric">$${avg.toFixed(2)}<div class="br-rec-metric-sub">avg / overpaid lead</div></div>
+        <div class="br-rec-sub">${formatNumber(c.leads_with_cheaper_later || 0)}/${formatNumber(c.leads_purchased || 0)} leads (${pct(rate, 2)}) re-appeared cheaper · median wait ${wait} days · campaign-id ${c.campaign_id}</div>
       </div>`;
   }
 
