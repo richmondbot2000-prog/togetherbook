@@ -177,16 +177,22 @@ def main() -> None:
                 scomp = pick(cols, "CompanyName")
                 susr = pick(cols, "Username")
                 slender = pick(cols, "LenderId")
+                sweb = pick(cols, "CompanyWebsiteUrl", "WebsiteUrl", "Website")
+                sphone = pick(cols, "PhoneNumber", "Phone")
+                semail = pick(cols, "EmailAddress", "Email")
                 if sid and snm:
                     sel_extra = ", ".join([
                         f"[{scomp}]" if scomp else "NULL",
                         f"[{susr}]" if susr else "NULL",
                         f"[{slender}]" if slender else "NULL",
+                        f"[{sweb}]" if sweb else "NULL",
+                        f"[{sphone}]" if sphone else "NULL",
+                        f"[{semail}]" if semail else "NULL",
                     ])
                     cur.execute(
                         f"SELECT [{sid}], [{snm}], {sel_extra} FROM dbo.Sources"
                     )
-                    for i, n, comp, usr, lid in cur.fetchall():
+                    for i, n, comp, usr, lid, web, phone, email in cur.fetchall():
                         if i is None: continue
                         # Filter to LenderId if we have it
                         if lid is not None and slender and int(lid) != LENDER_ID:
@@ -197,6 +203,9 @@ def main() -> None:
                             "company_name": (str(comp).strip() if comp is not None else None) or None,
                             "username": (str(usr).strip() if usr is not None else None) or None,
                             "lender_id": int(lid) if lid is not None else None,
+                            "website_url": (str(web).strip() if web is not None else None) or None,
+                            "phone": (str(phone).strip() if phone is not None else None) or None,
+                            "email": (str(email).strip() if email is not None else None) or None,
                         }
                     print(f"# Sources from {database}: {len(sources)} (lender {LENDER_ID})", flush=True)
                     global_loaded = True
@@ -250,13 +259,14 @@ def main() -> None:
         print("# WARNING: no Campaign→Source mapping loaded — sources won't aggregate", flush=True)
 
     # ─── Q1: per-campaign lead totals in the window ─────────────────
-    print("# Q1: per-campaign lead presented + purchased counts", flush=True)
+    print("# Q1: per-campaign lead presented + purchased + last-seen", flush=True)
     apps_cur.execute(
         f"""
         SELECT [{leads_camp}],
                COUNT(*) AS presented,
                SUM(CASE WHEN [{leads_result}] IN ({",".join(str(x) for x in PURCHASED_RESULT_IDS)})
-                        THEN 1 ELSE 0 END) AS purchased
+                        THEN 1 ELSE 0 END) AS purchased,
+               MAX([{leads_date}]) AS last_lead_at
         FROM dbo.Leads
         WHERE [{leads_date}] >= ? AND [{leads_date}] < ?
           AND [{leads_lender}] = ?
@@ -265,11 +275,12 @@ def main() -> None:
         [window_start, window_end, LENDER_ID],
     )
     leads_per_campaign = {}
-    for camp_id, presented, purchased in apps_cur.fetchall():
+    for camp_id, presented, purchased, last_lead in apps_cur.fetchall():
         camp_id_int = int(camp_id) if camp_id is not None else None
         leads_per_campaign[camp_id_int] = {
             "presented": int(presented or 0),
             "purchased": int(purchased or 0),
+            "last_lead_at": last_lead.isoformat() if last_lead and hasattr(last_lead, "isoformat") else (str(last_lead) if last_lead else None),
         }
     print(
         f"#   campaigns with leads: {len(leads_per_campaign):,}  "
@@ -373,6 +384,9 @@ def main() -> None:
                 "friendly_name":  (meta or {}).get("friendly_name") if meta else (f"Source {sid}" if sid is not None else "Unknown source"),
                 "company_name":   (meta or {}).get("company_name") if meta else None,
                 "username":       (meta or {}).get("username") if meta else None,
+                "website_url":    (meta or {}).get("website_url") if meta else None,
+                "phone":          (meta or {}).get("phone") if meta else None,
+                "email":          (meta or {}).get("email") if meta else None,
                 "campaign_ids":   [],
                 "leads_presented": 0,
                 "leads_purchased": 0,
@@ -386,6 +400,7 @@ def main() -> None:
                 "avg_loan_amount_sum":  0.0,  # weighted by apps count → averaged at end
                 "avg_loan_amount_n":    0,
                 "rejection_counts": {},   # result_id → count
+                "last_lead_at":    None,
             }
         return sources_data[sid]
 
@@ -396,6 +411,9 @@ def main() -> None:
         slot["leads_purchased"] += leads["purchased"]
         if cid is not None and cid not in slot["campaign_ids"]:
             slot["campaign_ids"].append(cid)
+        last = leads.get("last_lead_at")
+        if last and (slot["last_lead_at"] is None or last > slot["last_lead_at"]):
+            slot["last_lead_at"] = last
 
     for cid, stages in stages_per_campaign.items():
         sid = campaign_to_source.get(cid) if cid is not None else None

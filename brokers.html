@@ -6,9 +6,9 @@
 <title>TogetherBOOK — Brokers</title>
 <link rel="icon" type="image/png" href="site-icon.png">
 <link rel="apple-touch-icon" href="site-icon.png">
-<link rel="stylesheet" href="quiet-tokens.css?v=1778487953">
-<link rel="stylesheet" href="quiet.css?v=1778487953">
-<link rel="stylesheet" href="quiet-extras.css?v=1778487953">
+<link rel="stylesheet" href="quiet-tokens.css?v=1778488594">
+<link rel="stylesheet" href="quiet.css?v=1778488594">
+<link rel="stylesheet" href="quiet-extras.css?v=1778488594">
 <style>
   .br-section { max-width: 1280px; margin: 0 auto; padding: 24px 0 48px; }
   @media (max-width: 800px) { .br-section { padding: 2px 0 32px; } }
@@ -117,6 +117,29 @@
     outline: none; border-color: var(--brass-500);
   }
   .br-filters input[type="number"] { width: 80px; }
+  .br-pill {
+    background: var(--paper-50);
+    border: 1px solid var(--paper-300);
+    color: var(--ink-700);
+    padding: 4px 10px;
+    font: 500 11px/1.3 var(--font-body);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    cursor: pointer;
+    transition: background 0.1s, color 0.1s, border-color 0.1s;
+  }
+  .br-pill:hover { color: var(--ink-900); border-color: var(--brass-500); }
+  .br-pill.is-active {
+    background: var(--brass-500);
+    color: var(--paper-50);
+    border-color: var(--brass-500);
+  }
+  td.br-last {
+    font: 500 11px/1.3 var(--font-mono);
+    color: var(--ink-700);
+  }
+  td.br-last.dormant { color: var(--red-500); }
+  td.br-last.fresh   { color: var(--sage-700, var(--sage-500)); }
 
   /* ── Sortable table ──────────────────────────────────────────────── */
   .br-table-wrap {
@@ -354,7 +377,7 @@
 
 <header class="qb-topbar">
   <a class="qb-brand" href="index.html" aria-label="TogetherBOOK — home">
-    <img class="qb-brand-logo" src="togetherbook-logo.png?v=1778487953" alt="TogetherBOOK">
+    <img class="qb-brand-logo" src="togetherbook-logo.png?v=1778488594" alt="TogetherBOOK">
   </a>
   <button class="qb-hamburger" aria-label="Toggle navigation menu" aria-expanded="false"
           onclick="document.body.classList.toggle('nav-open');this.setAttribute('aria-expanded',document.body.classList.contains('nav-open'))">
@@ -402,6 +425,10 @@
       <input id="brSearch" type="search" placeholder="Broker name or CampaignId…" autocomplete="off">
       <span class="br-filter-label">Min leads</span>
       <input id="brMinLeads" type="number" min="0" step="100" value="100">
+      <span class="br-filter-label">Activity</span>
+      <button class="br-pill is-active" data-active="all">All</button>
+      <button class="br-pill" data-active="active">Active (≤7d)</button>
+      <button class="br-pill" data-active="dormant">Dormant (&gt;7d)</button>
       <span class="br-filter-label" style="margin-left:auto" id="brCountLabel"></span>
     </div>
 
@@ -423,6 +450,7 @@
           <th data-col="lead_to_paid_rate">Lead → paid</th>
           <th data-col="paid_out_loan_total">Funded $</th>
           <th data-col="avg_loan_amount">Avg loan</th>
+          <th data-col="last_lead_at">Last lead</th>
         </tr></thead>
         <tbody></tbody>
       </table>
@@ -439,6 +467,7 @@
   let SORT_DIR = -1;  // -1 = desc, 1 = asc
   let SEARCH   = "";
   let MIN_LEADS = 100;
+  let ACTIVE_FILTER = "all";  // "all" | "active" | "dormant"
   let EXPANDED = null; // source_id of the currently expanded row
 
   // ─── Fetch ────────────────────────────────────────────────────────────
@@ -539,6 +568,12 @@
         ].join(" ").toLowerCase();
         if (!haystack.includes(search)) return false;
       }
+      if (ACTIVE_FILTER !== "all") {
+        const d = daysSince(r.last_lead_at);
+        const isActive = d != null && d <= 7;
+        if (ACTIVE_FILTER === "active"  && !isActive) return false;
+        if (ACTIVE_FILTER === "dormant" &&  isActive) return false;
+      }
       return true;
     });
     rows.sort((a, b) => {
@@ -569,8 +604,11 @@
   }
 
   function renderRow(r) {
+    const nameHtml = r.website_url
+      ? `<a class="br-name" href="${escapeHtml(r.website_url)}" target="_blank" rel="noopener noreferrer" onclick="event.stopPropagation()" style="color: var(--brass-600); text-decoration: none;">${escapeHtml(r.friendly_name || "Source " + r.source_id)} ↗</a>`
+      : `<div class="br-name">${escapeHtml(r.friendly_name || "Source " + r.source_id)}</div>`;
     const cellsHtml = [
-      `<td><div class="br-name">${escapeHtml(r.friendly_name || `Source ${r.source_id}`)}</div>`
+      `<td>${nameHtml}`
         + (r.company_name ? `<div class="br-sub">${escapeHtml(r.company_name)}</div>` : "")
         + `</td>`,
       `<td>${miniFunnel(r)}</td>`,
@@ -587,11 +625,12 @@
       ratioCell(r.lead_to_paid_rate),
       moneyBigCell(r.paid_out_loan_total),
       moneyCell(r.avg_loan_amount),
+      lastLeadCell(r.last_lead_at),
     ].join("");
     const expanded = (EXPANDED === r.source_id);
     let detailRow = "";
     if (expanded) {
-      detailRow = `<tr class="br-detail-row"><td colspan="15">${renderDetail(r)}</td></tr>`;
+      detailRow = `<tr class="br-detail-row"><td colspan="16">${renderDetail(r)}</td></tr>`;
     }
     return `<tr class="br-row" data-sid="${r.source_id == null ? "" : r.source_id}">${cellsHtml}</tr>${detailRow}`;
   }
@@ -704,6 +743,20 @@
     if (denom > 999_999) return `<td class="pct weak">1 in ${formatBig(denom)}</td>`;
     return `<td class="pct">1 in ${formatNumber(denom)}</td>`;
   }
+  function daysSince(iso) {
+    if (!iso) return null;
+    const d = new Date(iso);
+    if (isNaN(d.getTime())) return null;
+    return Math.floor((Date.now() - d.getTime()) / 86400000);
+  }
+  function lastLeadCell(iso) {
+    if (!iso) return `<td class="br-last">—</td>`;
+    const dur = daysSince(iso);
+    if (dur == null) return `<td class="br-last">—</td>`;
+    const cls = dur <= 1 ? "fresh" : (dur > 7 ? "dormant" : "");
+    const label = dur === 0 ? "today" : dur === 1 ? "1d ago" : `${dur}d ago`;
+    return `<td class="br-last ${cls}" title="${escapeHtml(iso)}">${label}</td>`;
+  }
   function pct(v, dp = 1) {
     if (v == null) return "—";
     return (v * 100).toFixed(dp) + "%";
@@ -757,6 +810,13 @@
   document.getElementById("brMinLeads").addEventListener("input", e => {
     MIN_LEADS = parseInt(e.target.value || "0", 10) || 0;
     render();
+  });
+  document.querySelectorAll(".br-pill[data-active]").forEach(p => {
+    p.addEventListener("click", () => {
+      ACTIVE_FILTER = p.dataset.active;
+      document.querySelectorAll(".br-pill[data-active]").forEach(o => o.classList.toggle("is-active", o === p));
+      render();
+    });
   });
 
   document.addEventListener("click", e => {
