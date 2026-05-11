@@ -48,6 +48,11 @@ LENDER_ID = int(os.environ.get("SQ_LENDER_ID", "6"))
 LENDER_LABEL = "Transform Credit (LenderId 6, USA)" if LENDER_ID == 6 else f"LenderId {LENDER_ID}"
 WINDOW_DAYS = int(os.environ.get("SQ_WINDOW_DAYS", "60"))
 MATURATION_DAYS = int(os.environ.get("SQ_MATURATION_DAYS", "30"))
+# Bounceback temporal cap: a same-identity purchase only counts as a
+# bounceback if it lands STRICTLY AFTER the rejection and within this
+# many days. Catches "we blocked them, then they came back through
+# another route shortly" — not "they were already our customer".
+BOUNCEBACK_WINDOW_DAYS = int(os.environ.get("SQ_BOUNCEBACK_WINDOW_DAYS", "30"))
 MIN_VOLUME = int(os.environ.get("SQ_MIN_VOLUME", "200"))
 MIN_EXCLUDED = int(os.environ.get("SQ_MIN_EXCLUDED", "200"))
 QUERY_TIMEOUT = 1200   # identity-match join is heavy — allow up to 20 min
@@ -520,6 +525,7 @@ def main() -> None:
                            l.[{L_dob}]    AS DOB,
                            l.[{L_email}]  AS Email,
                            {f"l.[{L_gov}]"  if L_gov  else "NULL"} AS GovId,
+                           l.[{L_date}]   AS DateReceived,
                            ROW_NUMBER() OVER (PARTITION BY l.[{L_camp}] ORDER BY l.[{L_date}] DESC) AS rn
                     FROM dbo.Leads l
                     WHERE l.[{L_date}] >= ? AND l.[{L_date}] < ?
@@ -531,7 +537,7 @@ def main() -> None:
                 """,
                 [window_start, window_end, LENDER_ID, EXCLUDED_RESULT_ID, *chunk_ids, SAMPLE_PER_CAMPAIGN],
             )
-            for lead_id, camp_id, phone, dob, email, gov_id, _rn in cur.fetchall():
+            for lead_id, camp_id, phone, dob, email, gov_id, date_received, _rn in cur.fetchall():
                 sampled.append({
                     "lead_id":  lead_id,
                     "camp_id":  int(camp_id) if camp_id is not None else None,
@@ -539,6 +545,7 @@ def main() -> None:
                     "dob":      dob,   # native date object
                     "email":    (email or "").strip().lower() if email else "",
                     "gov_id":   (gov_id or "").strip() if gov_id else "",
+                    "date":     date_received,
                 })
     print(f"#   sampled rejected leads: {len(sampled):,}", flush=True)
 
@@ -601,12 +608,19 @@ def main() -> None:
             by_gov.setdefault(p["gov_id"], []).append(p)
     print(f"#   indexes: phone+dob={len(by_phone_dob):,} email+dob={len(by_email_dob):,} gov_id={len(by_gov):,}", flush=True)
 
-    # Match each sampled rejected lead. "Same source" = same CampaignId
-    # (the user's source granularity). A bounceback within the same
-    # broker but a different source still counts — it's still a sign
-    # the audience is decent.
+    # Match each sampled rejected lead. Temporal constraint: the
+    # purchase via another campaign must occur STRICTLY AFTER the
+    # rejection and within BOUNCEBACK_WINDOW_DAYS. Otherwise we'd
+    # count people we already had as our customers (purchased earlier,
+    # rejected later) as if blocking them cost us — it didn't.
+    # "Same source" = same CampaignId; bouncebacks within the same
+    # broker but a different campaign still count.
+    bounceback_delta = datetime.timedelta(days=BOUNCEBACK_WINDOW_DAYS)
     for s in sampled:
         rej_camp = s["camp_id"]
+        rej_date = s.get("date")
+        if rej_date is None:
+            continue
         matched_arefs: set = set()
         matched_paid: set = set()
         matched_destinations: dict[int | None, int] = {}
@@ -617,6 +631,18 @@ def main() -> None:
             for p in matches:
                 if p["camp_id"] == rej_camp and rej_camp is not None:
                     continue   # same source (same CampaignId) — not a bounceback
+                p_date = p.get("date")
+                if p_date is None:
+                    continue
+                # Must come AFTER the rejection — i.e. we blocked them,
+                # then they came back to us via another campaign.
+                if p_date <= rej_date:
+                    continue
+                # And within the bounceback window — anything later is
+                # an unrelated re-acquisition, not a missed-opportunity
+                # signal tied to the block.
+                if (p_date - rej_date) > bounceback_delta:
+                    continue
                 matched_arefs.add(p["aref"])
                 if p["paid"]:
                     matched_paid.add(p["aref"])
@@ -807,6 +833,7 @@ def main() -> None:
         "window_start":  window_start.date().isoformat(),
         "window_end":    window_end.date().isoformat(),
         "maturation_days": MATURATION_DAYS,
+        "bounceback_window_days": BOUNCEBACK_WINDOW_DAYS,
         "min_volume_for_ranking":   MIN_VOLUME,
         "min_excluded_for_ranking": MIN_EXCLUDED,
         "weak_accepted": {

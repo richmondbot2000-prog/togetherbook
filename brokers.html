@@ -6,9 +6,9 @@
 <title>TogetherBOOK — Brokers</title>
 <link rel="icon" type="image/png" href="site-icon.png">
 <link rel="apple-touch-icon" href="site-icon.png">
-<link rel="stylesheet" href="quiet-tokens.css?v=1778527534">
-<link rel="stylesheet" href="quiet.css?v=1778527534">
-<link rel="stylesheet" href="quiet-extras.css?v=1778527534">
+<link rel="stylesheet" href="quiet-tokens.css?v=1778528382">
+<link rel="stylesheet" href="quiet.css?v=1778528382">
+<link rel="stylesheet" href="quiet-extras.css?v=1778528382">
 <style>
   .br-section { max-width: 1280px; margin: 0 auto; padding: 24px 0 48px; }
   @media (max-width: 800px) { .br-section { padding: 2px 0 32px; } }
@@ -466,7 +466,7 @@
 
 <header class="qb-topbar">
   <a class="qb-brand" href="index.html" aria-label="TogetherBOOK — home">
-    <img class="qb-brand-logo" src="togetherbook-logo.png?v=1778527534" alt="TogetherBOOK">
+    <img class="qb-brand-logo" src="togetherbook-logo.png?v=1778528382" alt="TogetherBOOK">
   </a>
   <button class="qb-hamburger" aria-label="Toggle navigation menu" aria-expanded="false"
           onclick="document.body.classList.toggle('nav-open');this.setAttribute('aria-expanded',document.body.classList.contains('nav-open'))">
@@ -532,7 +532,7 @@
       </div>
       <div class="br-canvas-wrap">
         <h2 class="br-canvas-title">Blocked sources to consider <em>unblocking</em></h2>
-        <p class="br-canvas-sub">Sources we currently reject (LeadResultTypeId = -1 — <em>Source excluded</em>). For each one we identity-match its rejected leads against people we DID buy from other sources in the same window — by SSN, or by Phone+DOB, or by Email+DOB. The window is 60 days ending 30 days ago so paid-out outcomes have had time to settle. If lots of those rejected people came back via another source and paid out, the audience is decent and the block may be costing us loans.</p>
+        <p class="br-canvas-sub">Sources we currently reject (LeadResultTypeId = -1 — <em>Source excluded</em>). For each one we identity-match its rejected leads against subsequent purchases via other campaigns — by SSN, Phone+DOB, or Email+DOB — counting only matches that came in <strong>strictly after the rejection</strong> and within <strong>30 days</strong> of it. Earlier or unrelated purchases don't count; we already had those customers. The analysis window itself is 60 days ending 30 days ago so paid-out outcomes have time to settle. High bounceback-paid counts mean blocking is forfeiting funded loans.</p>
         <div class="br-recommend-meta" id="brBlockedMeta"></div>
         <div id="brBlockedList"></div>
       </div>
