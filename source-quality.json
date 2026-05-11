@@ -1,5 +1,5 @@
 {
-  "snapshot_at": "2026-05-11T15:44:13.415362+00:00",
+  "snapshot_at": "2026-05-11T17:31:31.960686+00:00",
   "snapshot_date": "2026-05-11",
   "lender_id": 6,
   "lender_label": "Transform Credit (LenderId 6, USA)",
@@ -9,8 +9,8 @@
   "min_volume_for_ranking": 200,
   "min_excluded_for_ranking": 200,
   "weak_accepted": {
-    "median_paid_out_rate": 0.001452300989380049,
-    "q1_paid_out_rate": 0.001066896980935567,
+    "median_paid_out_rate": 0.0014521691777092032,
+    "q1_paid_out_rate": 0.00106544901065449,
     "qualifying_sources": 59,
     "sources": [
       {
@@ -43,11 +43,11 @@
         "applications": 478,
         "paid_out": 0,
         "paid_loan_total": 0.0,
-        "leads_purchased": 1341,
+        "leads_purchased": 1340,
         "qualifies": true,
         "paid_out_rate": 0.0,
         "cost_model": "bid_floor",
-        "total_cost": 1341.0,
+        "total_cost": 1340.0,
         "cost_per_lead": 1.0,
         "cost_per_paid_loan": null,
         "rate_vs_median": 0.0,
@@ -60,17 +60,17 @@
         "broker_name": "Leadtree Global",
         "commission_type": "5",
         "commission_rate": 0.12,
-        "applications": 408696,
-        "paid_out": 454,
-        "paid_loan_total": 2150750.0,
-        "leads_purchased": 1204155,
+        "applications": 408722,
+        "paid_out": 450,
+        "paid_loan_total": 2135750.0,
+        "leads_purchased": 1203735,
         "qualifies": true,
-        "paid_out_rate": 0.0003770278743185055,
+        "paid_out_rate": 0.00037383643409886726,
         "cost_model": "rev_share",
-        "total_cost": 258090.0,
-        "cost_per_lead": 0.21433287242921384,
-        "cost_per_paid_loan": 568.4801762114538,
-        "rate_vs_median": 0.25960725571043597,
+        "total_cost": 256290.0,
+        "cost_per_lead": 0.21291231043377487,
+        "cost_per_paid_loan": 569.5333333333333,
+        "rate_vs_median": 0.2574331144313325,
         "flag": "below Q1"
       },
       {
@@ -80,17 +80,17 @@
         "broker_name": "ITMedia",
         "commission_type": "1",
         "commission_rate": 0.12,
-        "applications": 4411,
+        "applications": 4261,
         "paid_out": 2,
         "paid_loan_total": 6000.0,
-        "leads_purchased": 4655,
+        "leads_purchased": 4497,
         "qualifies": true,
-        "paid_out_rate": 0.0004296455424274973,
+        "paid_out_rate": 0.00044474093840338,
         "cost_model": "cpf",
         "total_cost": 0.24,
-        "cost_per_lead": 5.1557465091299675e-05,
+        "cost_per_lead": 5.33689126084056e-05,
         "cost_per_paid_loan": 0.12,
-        "rate_vs_median": 0.29583780880773364,
+        "rate_vs_median": 0.30625972870802753,
         "flag": "below Q1"
       },
       {
@@ -100,18 +100,18 @@
         "broker_name": "Leads Market",
         "commission_type": "4",
         "commission_rate": 25.0,
-        "applications": 1470,
+        "applications": 1468,
         "paid_out": 1,
         "paid_loan_total": 3500.0,
-        "leads_purchased": 1727,
-        "bid_total": 2595.600000000005,
+        "leads_purchased": 1726,
+        "bid_total": 2594.500000000004,
         "qualifies": true,
-        "paid_out_rate": 0.0005790387955993051,
+        "paid_out_rate": 0.0005793742757821553,
         "cost_model": "bid",
-        "total_cost": 2595.600000000005,
-        "cost_per_lead": 1.5029530978575594,
-        "cost_per_paid_loan": 2595.600000000005,
-        "rate_vs_median": 0.39870440069484653,
+        "total_cost": 2594.500000000004,
+        "cost_per_lead": 1.5031865585168043,
+        "cost_per_paid_loan": 2594.500000000004,
+        "rate_vs_median": 0.39897161066048664,
         "flag": "below Q1"
       },
       {
@@ -121,17 +121,17 @@
         "broker_name": "Pingyo",
         "commission_type": "4",
         "commission_rate": 0.6,
-        "applications": 2123,
+        "applications": 2125,
         "paid_out": 3,
         "paid_loan_total": 19500.0,
-        "leads_purchased": 4970,
+        "leads_purchased": 4972,
         "qualifies": true,
-        "paid_out_rate": 0.0006036217303822937,
+        "paid_out_rate": 0.0006033789219629927,
         "cost_model": "bid_floor",
-        "total_cost": 2982.0,
+        "total_cost": 2983.2,
         "cost_per_lead": 0.6,
-        "cost_per_paid_loan": 994.0,
-        "rate_vs_median": 0.41563128772635816,
+        "cost_per_paid_loan": 994.4,
+        "rate_vs_median": 0.41550181013676585,
         "flag": "below Q1"
       },
       {
@@ -141,17 +141,17 @@
         "broker_name": "Search ROI, LLC",
         "commission_type": "4",
         "commission_rate": 1.0,
-        "applications": 13852,
+        "applications": 13845,
         "paid_out": 19,
         "paid_loan_total": 87000.0,
-        "leads_purchased": 30828,
+        "leads_purchased": 30818,
         "qualifies": true,
-        "paid_out_rate": 0.0006163228234072921,
+        "paid_out_rate": 0.0006165228113440197,
         "cost_model": "bid_floor",
-        "total_cost": 30828.0,
+        "total_cost": 30818.0,
         "cost_per_lead": 1.0,
-        "cost_per_paid_loan": 1622.5263157894738,
-        "rate_vs_median": 0.4243767840923836,
+        "cost_per_paid_loan": 1622.0,
+        "rate_vs_median": 0.4245530209617756,
         "flag": "below Q1"
       },
       {
@@ -161,17 +161,17 @@
         "broker_name": "TrySmartly",
         "commission_type": "1",
         "commission_rate": 0.12,
-        "applications": 1400,
+        "applications": 1403,
         "paid_out": 1,
         "paid_loan_total": 3000.0,
-        "leads_purchased": 1420,
+        "leads_purchased": 1423,
         "qualifies": true,
-        "paid_out_rate": 0.0007042253521126761,
+        "paid_out_rate": 0.0007027406886858749,
         "cost_model": "cpf",
         "total_cost": 0.12,
-        "cost_per_lead": 8.450704225352113e-05,
+        "cost_per_lead": 8.432888264230498e-05,
         "cost_per_paid_loan": 0.12,
-        "rate_vs_median": 0.4849031690140846,
+        "rate_vs_median": 0.4839248067463106,
         "flag": "below Q1"
       },
       {
@@ -181,17 +181,17 @@
         "broker_name": "Leads Market",
         "commission_type": "1",
         "commission_rate": 0.1,
-        "applications": 1372,
+        "applications": 1370,
         "paid_out": 1,
         "paid_loan_total": 3000.0,
-        "leads_purchased": 1408,
+        "leads_purchased": 1405,
         "qualifies": true,
-        "paid_out_rate": 0.0007102272727272727,
+        "paid_out_rate": 0.0007117437722419929,
         "cost_model": "cpf",
         "total_cost": 0.1,
-        "cost_per_lead": 7.102272727272728e-05,
+        "cost_per_lead": 7.11743772241993e-05,
         "cost_per_paid_loan": 0.1,
-        "rate_vs_median": 0.48903586647727276,
+        "rate_vs_median": 0.49012455516014236,
         "flag": "below Q1"
       },
       {
@@ -201,7 +201,7 @@
         "broker_name": "Leads Gate",
         "commission_type": "4",
         "commission_rate": 1.1,
-        "applications": 2030,
+        "applications": 2029,
         "paid_out": 3,
         "paid_loan_total": 9000.0,
         "leads_purchased": 3997,
@@ -211,7 +211,7 @@
         "total_cost": 4396.700000000001,
         "cost_per_lead": 1.1,
         "cost_per_paid_loan": 1465.5666666666668,
-        "rate_vs_median": 0.5168094821115837,
+        "rate_vs_median": 0.5168563922942206,
         "flag": "below Q1"
       },
       {
@@ -221,17 +221,17 @@
         "broker_name": "AvenueLink",
         "commission_type": "4",
         "commission_rate": 1.0,
-        "applications": 8562,
+        "applications": 8541,
         "paid_out": 17,
         "paid_loan_total": 69250.0,
-        "leads_purchased": 21720,
+        "leads_purchased": 21684,
         "qualifies": true,
-        "paid_out_rate": 0.0007826887661141805,
+        "paid_out_rate": 0.0007839881940601365,
         "cost_model": "bid_floor",
-        "total_cost": 21720.0,
+        "total_cost": 21684.0,
         "cost_per_lead": 1.0,
-        "cost_per_paid_loan": 1277.6470588235295,
-        "rate_vs_median": 0.5389301335174954,
+        "cost_per_paid_loan": 1275.5294117647059,
+        "rate_vs_median": 0.5398738701346615,
         "flag": "below Q1"
       },
       {
@@ -241,37 +241,17 @@
         "broker_name": "PROFFILIANT, LLC",
         "commission_type": "1",
         "commission_rate": 0.12,
-        "applications": 8347,
+        "applications": 8334,
         "paid_out": 8,
         "paid_loan_total": 31500.0,
-        "leads_purchased": 8653,
+        "leads_purchased": 8641,
         "qualifies": true,
-        "paid_out_rate": 0.0009245348434069109,
+        "paid_out_rate": 0.0009258187709755816,
         "cost_model": "cpf",
         "total_cost": 0.96,
-        "cost_per_lead": 0.0001109441812088293,
+        "cost_per_lead": 0.00011109825251706978,
         "cost_per_paid_loan": 0.12,
-        "rate_vs_median": 0.6366000231133712,
-        "flag": "below Q1"
-      },
-      {
-        "campaign_id": 779,
-        "source_name": "Zero P SMS",
-        "broker_id": 238,
-        "broker_name": "Zero P",
-        "commission_type": "4",
-        "commission_rate": 2.0,
-        "applications": 1058,
-        "paid_out": 1,
-        "paid_loan_total": 4500.0,
-        "leads_purchased": 1078,
-        "qualifies": true,
-        "paid_out_rate": 0.0009276437847866419,
-        "cost_model": "bid_floor",
-        "total_cost": 2156.0,
-        "cost_per_lead": 2.0,
-        "cost_per_paid_loan": 2156.0,
-        "rate_vs_median": 0.6387407235621522,
+        "rate_vs_median": 0.6375419511630599,
         "flag": "below Q1"
       },
       {
@@ -281,17 +261,37 @@
         "broker_name": "Dot 818",
         "commission_type": "1",
         "commission_rate": 0.12,
-        "applications": 81380,
+        "applications": 81304,
         "paid_out": 82,
         "paid_loan_total": 317000.0,
-        "leads_purchased": 88385,
+        "leads_purchased": 88287,
         "qualifies": true,
-        "paid_out_rate": 0.0009277592351643379,
+        "paid_out_rate": 0.0009287890629424491,
         "cost_model": "cpf",
         "total_cost": 9.84,
-        "cost_per_lead": 0.00011133110821972053,
+        "cost_per_lead": 0.00011145468755309388,
         "cost_per_paid_loan": 0.12,
-        "rate_vs_median": 0.6388202183628444,
+        "rate_vs_median": 0.639587368468744,
+        "flag": "below Q1"
+      },
+      {
+        "campaign_id": 779,
+        "source_name": "Zero P SMS",
+        "broker_id": 238,
+        "broker_name": "Zero P",
+        "commission_type": "4",
+        "commission_rate": 2.0,
+        "applications": 1056,
+        "paid_out": 1,
+        "paid_loan_total": 4500.0,
+        "leads_purchased": 1075,
+        "qualifies": true,
+        "paid_out_rate": 0.0009302325581395349,
+        "cost_model": "bid_floor",
+        "total_cost": 2150.0,
+        "cost_per_lead": 2.0,
+        "cost_per_paid_loan": 2150.0,
+        "rate_vs_median": 0.6405813953488372,
         "flag": "below Q1"
       },
       {
@@ -301,17 +301,17 @@
         "broker_name": "Leadtree Global",
         "commission_type": "4",
         "commission_rate": 0.8,
-        "applications": 76309,
+        "applications": 76409,
         "paid_out": 84,
         "paid_loan_total": 393250.0,
-        "leads_purchased": 78733,
+        "leads_purchased": 78840,
         "qualifies": true,
-        "paid_out_rate": 0.001066896980935567,
+        "paid_out_rate": 0.00106544901065449,
         "cost_model": "bid_floor",
-        "total_cost": 62986.4,
+        "total_cost": 63072.0,
         "cost_per_lead": 0.8,
-        "cost_per_paid_loan": 749.8380952380952,
-        "rate_vs_median": 0.7346252524354464,
+        "cost_per_paid_loan": 750.8571428571429,
+        "rate_vs_median": 0.7336948249619483,
         "flag": "below median"
       },
       {
@@ -321,18 +321,18 @@
         "broker_name": "Leads Gate",
         "commission_type": "4",
         "commission_rate": 10.0,
-        "applications": 98436,
-        "paid_out": 144,
-        "paid_loan_total": 656750.0,
-        "leads_purchased": 129067,
-        "bid_total": 200342.80000001812,
+        "applications": 98375,
+        "paid_out": 143,
+        "paid_loan_total": 652250.0,
+        "leads_purchased": 128968,
+        "bid_total": 200198.80000000342,
         "qualifies": true,
-        "paid_out_rate": 0.00111569959788327,
+        "paid_out_rate": 0.0011088021834873766,
         "cost_model": "bid",
-        "total_cost": 200342.80000001812,
-        "cost_per_lead": 1.5522387597140874,
-        "cost_per_paid_loan": 1391.2694444445704,
-        "rate_vs_median": 0.7682289043674991,
+        "total_cost": 200198.80000000342,
+        "cost_per_lead": 1.5523137522486463,
+        "cost_per_paid_loan": 1399.9916083916323,
+        "rate_vs_median": 0.7635489036039947,
         "flag": "below median"
       },
       {
@@ -342,17 +342,17 @@
         "broker_name": "Acquire Interactive",
         "commission_type": "4",
         "commission_rate": 2.15,
-        "applications": 24592,
+        "applications": 24513,
         "paid_out": 34,
         "paid_loan_total": 108500.0,
-        "leads_purchased": 30352,
+        "leads_purchased": 30246,
         "qualifies": true,
-        "paid_out_rate": 0.0011201897733263046,
+        "paid_out_rate": 0.0011241155855319712,
         "cost_model": "bid_floor",
-        "total_cost": 65256.799999999996,
+        "total_cost": 65028.899999999994,
         "cost_per_lead": 2.15,
-        "cost_per_paid_loan": 1919.3176470588235,
-        "rate_vs_median": 0.7713206707959936,
+        "cost_per_paid_loan": 1912.6147058823528,
+        "rate_vs_median": 0.7740940950869536,
         "flag": "below median"
       },
       {
@@ -362,18 +362,18 @@
         "broker_name": "Discover Nimbus",
         "commission_type": "4",
         "commission_rate": 10.0,
-        "applications": 29463,
+        "applications": 29497,
         "paid_out": 42,
         "paid_loan_total": 151750.0,
-        "leads_purchased": 37282,
-        "bid_total": 46316.90000000099,
+        "leads_purchased": 37324,
+        "bid_total": 46380.5000000012,
         "qualifies": true,
-        "paid_out_rate": 0.0011265490048817123,
+        "paid_out_rate": 0.0011252813203300824,
         "cost_model": "bid",
-        "total_cost": 46316.90000000099,
-        "cost_per_lead": 1.242339466766831,
-        "cost_per_paid_loan": 1102.783333333357,
-        "rate_vs_median": 0.7756993991738641,
+        "total_cost": 46380.5000000012,
+        "cost_per_lead": 1.2426454827993034,
+        "cost_per_paid_loan": 1104.2976190476477,
+        "rate_vs_median": 0.7748968492123031,
         "flag": "below median"
       },
       {
@@ -383,18 +383,18 @@
         "broker_name": "Stop Go",
         "commission_type": "4",
         "commission_rate": 5.0,
-        "applications": 4778,
+        "applications": 4787,
         "paid_out": 11,
         "paid_loan_total": 46500.0,
-        "leads_purchased": 9327,
-        "bid_total": 7832.699999999981,
+        "leads_purchased": 9342,
+        "bid_total": 7840.699999999964,
         "qualifies": true,
-        "paid_out_rate": 0.0011793717165219256,
+        "paid_out_rate": 0.001177478056090773,
         "cost_model": "bid",
-        "total_cost": 7832.699999999981,
-        "cost_per_lead": 0.839787713091024,
-        "cost_per_paid_loan": 712.0636363636346,
-        "rate_vs_median": 0.8120711375576284,
+        "total_cost": 7840.699999999964,
+        "cost_per_lead": 0.8392956540355346,
+        "cost_per_paid_loan": 712.7909090909059,
+        "rate_vs_median": 0.8108408263755085,
         "flag": "below median"
       },
       {
@@ -404,18 +404,18 @@
         "broker_name": "TruePath Leads",
         "commission_type": "4",
         "commission_rate": 10.0,
-        "applications": 23256,
+        "applications": 23220,
         "paid_out": 29,
         "paid_loan_total": 132500.0,
-        "leads_purchased": 24559,
-        "bid_total": 35784.50000000046,
+        "leads_purchased": 24524,
+        "bid_total": 35729.0000000006,
         "qualifies": true,
-        "paid_out_rate": 0.001180829838348467,
+        "paid_out_rate": 0.0011825150872614581,
         "cost_model": "bid",
-        "total_cost": 35784.50000000046,
-        "cost_per_lead": 1.457082943116595,
-        "cost_per_paid_loan": 1233.9482758620848,
-        "rate_vs_median": 0.8130751455678163,
+        "total_cost": 35729.0000000006,
+        "cost_per_lead": 1.4568993638884602,
+        "cost_per_paid_loan": 1232.0344827586412,
+        "rate_vs_median": 0.8143094519654216,
         "flag": "below median"
       },
       {
@@ -425,18 +425,18 @@
         "broker_name": "PingLogix LLC",
         "commission_type": "4",
         "commission_rate": 10.0,
-        "applications": 75266,
+        "applications": 75370,
         "paid_out": 91,
         "paid_loan_total": 361000.0,
-        "leads_purchased": 76536,
-        "bid_total": 86476.6999999923,
+        "leads_purchased": 76644,
+        "bid_total": 86610.19999999285,
         "qualifies": true,
-        "paid_out_rate": 0.0011889829622661232,
+        "paid_out_rate": 0.001187307551797923,
         "cost_model": "bid",
-        "total_cost": 86476.6999999923,
-        "cost_per_lead": 1.1298826695932933,
-        "cost_per_paid_loan": 950.293406593322,
-        "rate_vs_median": 0.8186890809553675,
+        "total_cost": 86610.19999999285,
+        "cost_per_lead": 1.1300323573925273,
+        "cost_per_paid_loan": 951.760439560361,
+        "rate_vs_median": 0.8176096628568447,
         "flag": "below median"
       },
       {
@@ -446,17 +446,17 @@
         "broker_name": "Search ROI, LLC",
         "commission_type": "4",
         "commission_rate": 2.0,
-        "applications": 67572,
-        "paid_out": 104,
-        "paid_loan_total": 376000.0,
-        "leads_purchased": 86465,
+        "applications": 67565,
+        "paid_out": 103,
+        "paid_loan_total": 373000.0,
+        "leads_purchased": 86446,
         "qualifies": true,
-        "paid_out_rate": 0.0012027988203319262,
+        "paid_out_rate": 0.0011914952687226707,
         "cost_model": "bid_floor",
-        "total_cost": 172930.0,
+        "total_cost": 172892.0,
         "cost_per_lead": 2.0,
-        "cost_per_paid_loan": 1662.7884615384614,
-        "rate_vs_median": 0.828202162724802,
+        "cost_per_paid_loan": 1678.5631067961165,
+        "rate_vs_median": 0.8204934294241492,
         "flag": "below median"
       },
       {
@@ -466,39 +466,18 @@
         "broker_name": "Dot 818",
         "commission_type": "4",
         "commission_rate": 10.0,
-        "applications": 68782,
-        "paid_out": 116,
-        "paid_loan_total": 466000.0,
-        "leads_purchased": 94807,
-        "bid_total": 114762.99999998361,
+        "applications": 68719,
+        "paid_out": 115,
+        "paid_loan_total": 463000.0,
+        "leads_purchased": 94723,
+        "bid_total": 114695.99999998268,
         "qualifies": true,
-        "paid_out_rate": 0.0012235383463246384,
+        "paid_out_rate": 0.0012140662774616513,
         "cost_model": "bid",
-        "total_cost": 114762.99999998361,
-        "cost_per_lead": 1.2104907865451244,
-        "cost_per_paid_loan": 989.3362068964104,
-        "rate_vs_median": 0.8424826225911589,
-        "flag": "below median"
-      },
-      {
-        "campaign_id": 692,
-        "source_name": "Price Reject",
-        "broker_id": 477,
-        "broker_name": "Intimate Interactive",
-        "commission_type": "4",
-        "commission_rate": 10.0,
-        "applications": 9221,
-        "paid_out": 16,
-        "paid_loan_total": 66500.0,
-        "leads_purchased": 12827,
-        "bid_total": 21125.70000000015,
-        "qualifies": true,
-        "paid_out_rate": 0.0012473688313713262,
-        "cost_model": "bid",
-        "total_cost": 21125.70000000015,
-        "cost_per_lead": 1.6469712325563381,
-        "cost_per_paid_loan": 1320.3562500000094,
-        "rate_vs_median": 0.8588914009511188,
+        "total_cost": 114695.99999998268,
+        "cost_per_lead": 1.2108569196497438,
+        "cost_per_paid_loan": 997.3565217389798,
+        "rate_vs_median": 0.8360363903170296,
         "flag": "below median"
       },
       {
@@ -518,7 +497,28 @@
         "total_cost": 2483.1,
         "cost_per_lead": 3.1,
         "cost_per_paid_loan": 2483.1,
-        "rate_vs_median": 0.8596285892634208,
+        "rate_vs_median": 0.8597066167290887,
+        "flag": "below median"
+      },
+      {
+        "campaign_id": 692,
+        "source_name": "Price Reject",
+        "broker_id": 477,
+        "broker_name": "Intimate Interactive",
+        "commission_type": "4",
+        "commission_rate": 10.0,
+        "applications": 9209,
+        "paid_out": 16,
+        "paid_loan_total": 66500.0,
+        "leads_purchased": 12815,
+        "bid_total": 21110.700000000048,
+        "qualifies": true,
+        "paid_out_rate": 0.0012485368708544675,
+        "cost_model": "bid",
+        "total_cost": 21110.700000000048,
+        "cost_per_lead": 1.6473429574717167,
+        "cost_per_paid_loan": 1319.418750000003,
+        "rate_vs_median": 0.8597737026921577,
         "flag": "below median"
       },
       {
@@ -528,17 +528,17 @@
         "broker_name": "Stop Go",
         "commission_type": "4",
         "commission_rate": 0.5,
-        "applications": 3082,
+        "applications": 3080,
         "paid_out": 4,
         "paid_loan_total": 12000.0,
-        "leads_purchased": 3160,
+        "leads_purchased": 3158,
         "qualifies": true,
-        "paid_out_rate": 0.0012658227848101266,
+        "paid_out_rate": 0.001266624445851805,
         "cost_model": "bid_floor",
-        "total_cost": 1580.0,
+        "total_cost": 1579.0,
         "cost_per_lead": 0.5,
-        "cost_per_paid_loan": 395.0,
-        "rate_vs_median": 0.8715981012658228,
+        "cost_per_paid_loan": 394.75,
+        "rate_vs_median": 0.8722292590246992,
         "flag": "below median"
       },
       {
@@ -548,18 +548,18 @@
         "broker_name": "Leap Theory 2.0",
         "commission_type": "4",
         "commission_rate": 10.0,
-        "applications": 113112,
-        "paid_out": 181,
-        "paid_loan_total": 764750.0,
-        "leads_purchased": 140213,
-        "bid_total": 204684.40000000928,
+        "applications": 113169,
+        "paid_out": 182,
+        "paid_loan_total": 769750.0,
+        "leads_purchased": 140237,
+        "bid_total": 204679.50000000204,
         "qualifies": true,
-        "paid_out_rate": 0.0012908931411495367,
+        "paid_out_rate": 0.0012978030049131113,
         "cost_model": "bid",
-        "total_cost": 204684.40000000928,
-        "cost_per_lead": 1.4598104312724873,
-        "cost_per_paid_loan": 1130.8530386740845,
-        "rate_vs_median": 0.8888606085027779,
+        "total_cost": 204679.50000000204,
+        "cost_per_lead": 1.4595256601325046,
+        "cost_per_paid_loan": 1124.6126373626485,
+        "rate_vs_median": 0.8936995942582913,
         "flag": "below median"
       },
       {
@@ -569,18 +569,18 @@
         "broker_name": "Dot 818",
         "commission_type": "4",
         "commission_rate": 20.0,
-        "applications": 3741,
+        "applications": 3755,
         "paid_out": 5,
         "paid_loan_total": 18500.0,
-        "leads_purchased": 3792,
-        "bid_total": 4298.999999999984,
+        "leads_purchased": 3808,
+        "bid_total": 4317.29999999999,
         "qualifies": true,
-        "paid_out_rate": 0.0013185654008438818,
+        "paid_out_rate": 0.0013130252100840337,
         "cost_model": "bid",
-        "total_cost": 4298.999999999984,
-        "cost_per_lead": 1.1337025316455653,
-        "cost_per_paid_loan": 859.7999999999968,
-        "rate_vs_median": 0.9079146888185654,
+        "total_cost": 4317.29999999999,
+        "cost_per_lead": 1.1337447478991571,
+        "cost_per_paid_loan": 863.459999999998,
+        "rate_vs_median": 0.9041819852941178,
         "flag": "below median"
       },
       {
@@ -590,17 +590,17 @@
         "broker_name": "United Credit",
         "commission_type": "4",
         "commission_rate": 0.0,
-        "applications": 1381,
+        "applications": 1377,
         "paid_out": 2,
         "paid_loan_total": 13000.0,
-        "leads_purchased": 1415,
+        "leads_purchased": 1411,
         "qualifies": true,
-        "paid_out_rate": 0.0014134275618374558,
+        "paid_out_rate": 0.001417434443656981,
         "cost_model": "bid_floor",
         "total_cost": 0,
         "cost_per_lead": 0.0,
         "cost_per_paid_loan": 0.0,
-        "rate_vs_median": 0.9732332155477031,
+        "rate_vs_median": 0.9760807937632885,
         "flag": "below median"
       },
       {
@@ -610,16 +610,16 @@
         "broker_name": "Credit Ninja",
         "commission_type": "4",
         "commission_rate": 2.1,
-        "applications": 18690,
+        "applications": 18704,
         "paid_out": 32,
         "paid_loan_total": 110500.0,
-        "leads_purchased": 22034,
+        "leads_purchased": 22036,
         "qualifies": true,
-        "paid_out_rate": 0.001452300989380049,
+        "paid_out_rate": 0.0014521691777092032,
         "cost_model": "bid_floor",
-        "total_cost": 46271.4,
+        "total_cost": 46275.6,
         "cost_per_lead": 2.1,
-        "cost_per_paid_loan": 1445.98125,
+        "cost_per_paid_loan": 1446.1125,
         "rate_vs_median": 1.0,
         "flag": null
       },
@@ -630,18 +630,18 @@
         "broker_name": "Pingyo",
         "commission_type": "4",
         "commission_rate": 10.0,
-        "applications": 41179,
+        "applications": 41152,
         "paid_out": 79,
         "paid_loan_total": 318250.0,
-        "leads_purchased": 54076,
-        "bid_total": 67713.6999999985,
+        "leads_purchased": 54052,
+        "bid_total": 67669.99999999886,
         "qualifies": true,
-        "paid_out_rate": 0.001460906871810045,
+        "paid_out_rate": 0.0014615555391104863,
         "cost_model": "bid",
-        "total_cost": 67713.6999999985,
-        "cost_per_lead": 1.252195058806097,
-        "cost_per_paid_loan": 857.1354430379557,
-        "rate_vs_median": 1.0059256879207041,
+        "total_cost": 67669.99999999886,
+        "cost_per_lead": 1.251942573817784,
+        "cost_per_paid_loan": 856.5822784809983,
+        "rate_vs_median": 1.0064636831199587,
         "flag": null
       },
       {
@@ -651,18 +651,18 @@
         "broker_name": "Leadtree Global",
         "commission_type": "4",
         "commission_rate": 3.0,
-        "applications": 91256,
+        "applications": 91189,
         "paid_out": 225,
         "paid_loan_total": 978500.0,
-        "leads_purchased": 152654,
-        "bid_total": 230878.500000003,
+        "leads_purchased": 152561,
+        "bid_total": 230748.10000000166,
         "qualifies": true,
-        "paid_out_rate": 0.001473921417060804,
+        "paid_out_rate": 0.0014748199081023327,
         "cost_model": "bid",
-        "total_cost": 230878.500000003,
-        "cost_per_lead": 1.5124300706172324,
-        "cost_per_paid_loan": 1026.12666666668,
-        "rate_vs_median": 1.01488701573493,
+        "total_cost": 230748.10000000166,
+        "cost_per_lead": 1.5124972961635128,
+        "cost_per_paid_loan": 1025.5471111111185,
+        "rate_vs_median": 1.0155978592169688,
         "flag": null
       },
       {
@@ -672,18 +672,18 @@
         "broker_name": "Round Sky",
         "commission_type": "4",
         "commission_rate": 10.0,
-        "applications": 39174,
+        "applications": 39113,
         "paid_out": 109,
         "paid_loan_total": 530500.0,
-        "leads_purchased": 70619,
-        "bid_total": 121264.09999999398,
+        "leads_purchased": 70555,
+        "bid_total": 121126.09999999293,
         "qualifies": true,
-        "paid_out_rate": 0.0015434939605488609,
+        "paid_out_rate": 0.001544894054283892,
         "cost_model": "bid",
-        "total_cost": 121264.09999999398,
-        "cost_per_lead": 1.7171596879026039,
-        "cost_per_paid_loan": 1112.5146788990273,
-        "rate_vs_median": 1.062792060210425,
+        "total_cost": 121126.09999999293,
+        "cost_per_lead": 1.7167613918218827,
+        "cost_per_paid_loan": 1111.2486238531462,
+        "rate_vs_median": 1.0638526681312452,
         "flag": null
       },
       {
@@ -693,17 +693,17 @@
         "broker_name": "Leap Theory 2.0",
         "commission_type": "4",
         "commission_rate": 3.0,
-        "applications": 3208,
+        "applications": 3181,
         "paid_out": 8,
         "paid_loan_total": 34250.0,
-        "leads_purchased": 5108,
+        "leads_purchased": 5069,
         "qualifies": true,
-        "paid_out_rate": 0.0015661707126076742,
+        "paid_out_rate": 0.001578220556322746,
         "cost_model": "bid_floor",
-        "total_cost": 15324.0,
+        "total_cost": 15207.0,
         "cost_per_lead": 3.0,
-        "cost_per_paid_loan": 1915.5,
-        "rate_vs_median": 1.0784064212999218,
+        "cost_per_paid_loan": 1900.875,
+        "rate_vs_median": 1.086802130597751,
         "flag": null
       },
       {
@@ -713,18 +713,18 @@
         "broker_name": "Zero P",
         "commission_type": "4",
         "commission_rate": 10.25,
-        "applications": 58986,
+        "applications": 58935,
         "paid_out": 135,
         "paid_loan_total": 579000.0,
-        "leads_purchased": 83596,
-        "bid_total": 103869.45000000294,
+        "leads_purchased": 83500,
+        "bid_total": 103747.95000000356,
         "qualifies": true,
-        "paid_out_rate": 0.0016149098042968562,
+        "paid_out_rate": 0.0016167664670658684,
         "cost_model": "bid",
-        "total_cost": 103869.45000000294,
-        "cost_per_lead": 1.2425169864587173,
-        "cost_per_paid_loan": 769.4033333333551,
-        "rate_vs_median": 1.1119663321211541,
+        "total_cost": 103747.95000000356,
+        "cost_per_lead": 1.2424904191617192,
+        "cost_per_paid_loan": 768.5033333333597,
+        "rate_vs_median": 1.1133458083832335,
         "flag": null
       },
       {
@@ -734,17 +734,17 @@
         "broker_name": "Dogstar Digital Corp",
         "commission_type": "4",
         "commission_rate": 1.0,
-        "applications": 9511,
+        "applications": 9507,
         "paid_out": 18,
         "paid_loan_total": 61250.0,
-        "leads_purchased": 10516,
+        "leads_purchased": 10510,
         "qualifies": true,
-        "paid_out_rate": 0.001711677443895017,
+        "paid_out_rate": 0.0017126546146527116,
         "cost_model": "bid_floor",
-        "total_cost": 10516.0,
+        "total_cost": 10510.0,
         "cost_per_lead": 1.0,
-        "cost_per_paid_loan": 584.2222222222222,
-        "rate_vs_median": 1.1785968999619627,
+        "cost_per_paid_loan": 583.8888888888889,
+        "rate_vs_median": 1.1793767840152236,
         "flag": null
       },
       {
@@ -754,18 +754,18 @@
         "broker_name": "ITMedia",
         "commission_type": "4",
         "commission_rate": 10.0,
-        "applications": 6374,
+        "applications": 6367,
         "paid_out": 14,
         "paid_loan_total": 58250.0,
-        "leads_purchased": 8039,
-        "bid_total": 14839.000000000015,
+        "leads_purchased": 8034,
+        "bid_total": 14827.399999999987,
         "qualifies": true,
-        "paid_out_rate": 0.0017415101380768752,
+        "paid_out_rate": 0.0017425939756036844,
         "cost_model": "bid",
-        "total_cost": 14839.000000000015,
-        "cost_per_lead": 1.8458763527801985,
-        "cost_per_paid_loan": 1059.9285714285725,
-        "rate_vs_median": 1.1991385744495584,
+        "total_cost": 14827.399999999987,
+        "cost_per_lead": 1.8455812795618605,
+        "cost_per_paid_loan": 1059.099999999999,
+        "rate_vs_median": 1.1999937764500872,
         "flag": null
       },
       {
@@ -775,18 +775,18 @@
         "broker_name": "Bume International LLC",
         "commission_type": "4",
         "commission_rate": 10.0,
-        "applications": 8770,
+        "applications": 8763,
         "paid_out": 16,
         "paid_loan_total": 69000.0,
-        "leads_purchased": 9168,
-        "bid_total": 15763.79999999996,
+        "leads_purchased": 9163,
+        "bid_total": 15753.8999999999,
         "qualifies": true,
-        "paid_out_rate": 0.0017452006980802793,
+        "paid_out_rate": 0.0017461530066572083,
         "cost_model": "bid",
-        "total_cost": 15763.79999999996,
-        "cost_per_lead": 1.7194371727748647,
-        "cost_per_paid_loan": 985.2374999999975,
-        "rate_vs_median": 1.2016797556719023,
+        "total_cost": 15753.8999999999,
+        "cost_per_lead": 1.7192949907235513,
+        "cost_per_paid_loan": 984.6187499999937,
+        "rate_vs_median": 1.20244461420932,
         "flag": null
       },
       {
@@ -796,18 +796,18 @@
         "broker_name": "Acquire Interactive",
         "commission_type": "4",
         "commission_rate": 10.0,
-        "applications": 8213,
+        "applications": 8199,
         "paid_out": 19,
         "paid_loan_total": 63500.0,
-        "leads_purchased": 10420,
-        "bid_total": 16249.00000000004,
+        "leads_purchased": 10411,
+        "bid_total": 16230.799999999992,
         "qualifies": true,
-        "paid_out_rate": 0.0018234165067178502,
+        "paid_out_rate": 0.0018249927960810681,
         "cost_model": "bid",
-        "total_cost": 16249.00000000004,
-        "cost_per_lead": 1.559404990403075,
-        "cost_per_paid_loan": 855.2105263157915,
-        "rate_vs_median": 1.2555362284069098,
+        "total_cost": 16230.799999999992,
+        "cost_per_lead": 1.559004898664873,
+        "cost_per_paid_loan": 854.252631578947,
+        "rate_vs_median": 1.2567356642013254,
         "flag": null
       },
       {
@@ -817,18 +817,18 @@
         "broker_name": "Highwinds",
         "commission_type": "4",
         "commission_rate": 10.0,
-        "applications": 18313,
+        "applications": 18292,
         "paid_out": 36,
         "paid_loan_total": 161500.0,
-        "leads_purchased": 18853,
-        "bid_total": 26481.000000000407,
+        "leads_purchased": 18829,
+        "bid_total": 26443.80000000044,
         "qualifies": true,
-        "paid_out_rate": 0.0019095104227443908,
+        "paid_out_rate": 0.0019119443411758459,
         "cost_model": "bid",
-        "total_cost": 26481.000000000407,
-        "cost_per_lead": 1.404604041797083,
-        "cost_per_paid_loan": 735.5833333333446,
-        "rate_vs_median": 1.3148172704609347,
+        "total_cost": 26443.80000000044,
+        "cost_per_lead": 1.4044187158107408,
+        "cost_per_paid_loan": 734.5500000000122,
+        "rate_vs_median": 1.3166126719422169,
         "flag": null
       },
       {
@@ -838,18 +838,18 @@
         "broker_name": "Lead Economy",
         "commission_type": "4",
         "commission_rate": 10.0,
-        "applications": 15235,
+        "applications": 15233,
         "paid_out": 36,
         "paid_loan_total": 195250.0,
-        "leads_purchased": 18548,
-        "bid_total": 37812.40000000142,
+        "leads_purchased": 18546,
+        "bid_total": 37808.20000000152,
         "qualifies": true,
-        "paid_out_rate": 0.0019409100711667026,
+        "paid_out_rate": 0.0019411193788417987,
         "cost_model": "bid",
-        "total_cost": 37812.40000000142,
-        "cost_per_lead": 2.038624110416294,
-        "cost_per_paid_loan": 1050.344444444484,
-        "rate_vs_median": 1.3364378908777228,
+        "total_cost": 37808.20000000152,
+        "cost_per_lead": 2.0386174916424844,
+        "cost_per_paid_loan": 1050.22777777782,
+        "rate_vs_median": 1.3367033322549335,
         "flag": null
       },
       {
@@ -859,17 +859,17 @@
         "broker_name": "Fix Media, LLC",
         "commission_type": "4",
         "commission_rate": 3.0,
-        "applications": 7386,
+        "applications": 7388,
         "paid_out": 16,
         "paid_loan_total": 51750.0,
-        "leads_purchased": 8134,
+        "leads_purchased": 8140,
         "qualifies": true,
-        "paid_out_rate": 0.001967051880993361,
+        "paid_out_rate": 0.0019656019656019656,
         "cost_model": "bid_floor",
-        "total_cost": 24402.0,
+        "total_cost": 24420.0,
         "cost_per_lead": 3.0,
-        "cost_per_paid_loan": 1525.125,
-        "rate_vs_median": 1.3544381608064913,
+        "cost_per_paid_loan": 1526.25,
+        "rate_vs_median": 1.3535626535626535,
         "flag": null
       },
       {
@@ -879,17 +879,17 @@
         "broker_name": "Bume International LLC",
         "commission_type": "5",
         "commission_rate": 0.12,
-        "applications": 4644,
+        "applications": 4642,
         "paid_out": 11,
         "paid_loan_total": 45750.0,
-        "leads_purchased": 5529,
+        "leads_purchased": 5530,
         "qualifies": true,
-        "paid_out_rate": 0.0019895098571170193,
+        "paid_out_rate": 0.0019891500904159133,
         "cost_model": "rev_share",
         "total_cost": 5490.0,
-        "cost_per_lead": 0.9929462832338578,
+        "cost_per_lead": 0.9927667269439421,
         "cost_per_paid_loan": 499.09090909090907,
-        "rate_vs_median": 1.3699018809911376,
+        "rate_vs_median": 1.3697784810126583,
         "flag": null
       },
       {
@@ -899,18 +899,18 @@
         "broker_name": "TruePath Leads",
         "commission_type": "4",
         "commission_rate": 45.0,
-        "applications": 18313,
+        "applications": 18351,
         "paid_out": 39,
         "paid_loan_total": 158000.0,
-        "leads_purchased": 18853,
-        "bid_total": 26469.100000000504,
+        "leads_purchased": 18889,
+        "bid_total": 26505.600000000508,
         "qualifies": true,
-        "paid_out_rate": 0.0020686362913064234,
+        "paid_out_rate": 0.0020646937370956643,
         "cost_model": "bid",
-        "total_cost": 26469.100000000504,
-        "cost_per_lead": 1.4039728425184588,
-        "cost_per_paid_loan": 678.6948717948848,
-        "rate_vs_median": 1.4243853763326793,
+        "total_cost": 26505.600000000508,
+        "cost_per_lead": 1.4032293927683048,
+        "cost_per_paid_loan": 679.6307692307822,
+        "rate_vs_median": 1.4217997247075018,
         "flag": null
       },
       {
@@ -920,18 +920,18 @@
         "broker_name": "Leadtree Global",
         "commission_type": "4",
         "commission_rate": 10.0,
-        "applications": 101248,
-        "paid_out": 305,
-        "paid_loan_total": 1307750.0,
-        "leads_purchased": 145179,
-        "bid_total": 300272.5999999988,
+        "applications": 101211,
+        "paid_out": 304,
+        "paid_loan_total": 1304750.0,
+        "leads_purchased": 145134,
+        "bid_total": 300169.99999997846,
         "qualifies": true,
-        "paid_out_rate": 0.0021008548068246783,
+        "paid_out_rate": 0.002094616010032108,
         "cost_model": "bid",
-        "total_cost": 300272.5999999988,
-        "cost_per_lead": 2.0682922461237423,
-        "cost_per_paid_loan": 984.5003278688486,
-        "rate_vs_median": 1.4465698379242176,
+        "total_cost": 300169.99999997846,
+        "cost_per_lead": 2.0682266043792525,
+        "cost_per_paid_loan": 987.4013157894028,
+        "rate_vs_median": 1.4424049499083604,
         "flag": null
       },
       {
@@ -941,17 +941,17 @@
         "broker_name": "Search ROI, LLC",
         "commission_type": "4",
         "commission_rate": 3.0,
-        "applications": 72501,
+        "applications": 72454,
         "paid_out": 197,
         "paid_loan_total": 1052250.0,
-        "leads_purchased": 89086,
+        "leads_purchased": 89030,
         "qualifies": true,
-        "paid_out_rate": 0.002211346339492176,
+        "paid_out_rate": 0.002212737279568685,
         "cost_model": "bid_floor",
-        "total_cost": 267258.0,
+        "total_cost": 267090.0,
         "cost_per_lead": 3.0,
-        "cost_per_paid_loan": 1356.6395939086294,
-        "rate_vs_median": 1.5226501638865815,
+        "cost_per_paid_loan": 1355.7868020304568,
+        "rate_vs_median": 1.5237462091429856,
         "flag": null
       },
       {
@@ -961,17 +961,17 @@
         "broker_name": "AvenueLink",
         "commission_type": "2",
         "commission_rate": 2.0,
-        "applications": 14136,
+        "applications": 14123,
         "paid_out": 44,
         "paid_loan_total": 161500.0,
-        "leads_purchased": 19635,
+        "leads_purchased": 19619,
         "qualifies": true,
-        "paid_out_rate": 0.002240896358543417,
+        "paid_out_rate": 0.0022427238901065296,
         "cost_model": "cpl",
-        "total_cost": 39270.0,
+        "total_cost": 39238.0,
         "cost_per_lead": 2.0,
-        "cost_per_paid_loan": 892.5,
-        "rate_vs_median": 1.542997198879552,
+        "cost_per_paid_loan": 891.7727272727273,
+        "rate_vs_median": 1.5443957388246088,
         "flag": null
       },
       {
@@ -981,17 +981,17 @@
         "broker_name": "MARKET BULLET, LLC",
         "commission_type": "4",
         "commission_rate": 2.0,
-        "applications": 18274,
+        "applications": 18266,
         "paid_out": 55,
         "paid_loan_total": 212250.0,
-        "leads_purchased": 23781,
+        "leads_purchased": 23761,
         "qualifies": true,
-        "paid_out_rate": 0.0023127706992977586,
+        "paid_out_rate": 0.002314717394049072,
         "cost_model": "bid_floor",
-        "total_cost": 47562.0,
+        "total_cost": 47522.0,
         "cost_per_lead": 2.0,
-        "cost_per_paid_loan": 864.7636363636364,
-        "rate_vs_median": 1.592487174635213,
+        "cost_per_paid_loan": 864.0363636363636,
+        "rate_vs_median": 1.593972265477042,
         "flag": null
       },
       {
@@ -1004,14 +1004,14 @@
         "applications": 2663,
         "paid_out": 9,
         "paid_loan_total": 53250.0,
-        "leads_purchased": 3642,
+        "leads_purchased": 3640,
         "qualifies": true,
-        "paid_out_rate": 0.002471169686985173,
+        "paid_out_rate": 0.0024725274725274724,
         "cost_model": "cpf",
         "total_cost": 0.9,
-        "cost_per_lead": 0.0002471169686985173,
+        "cost_per_lead": 0.00024725274725274725,
         "cost_per_paid_loan": 0.1,
-        "rate_vs_median": 1.7015547775947282,
+        "rate_vs_median": 1.7026442307692307,
         "flag": null
       },
       {
@@ -1021,17 +1021,17 @@
         "broker_name": "CreditBuilder",
         "commission_type": "1",
         "commission_rate": 0.0,
-        "applications": 523,
+        "applications": 519,
         "paid_out": 2,
         "paid_loan_total": 14500.0,
-        "leads_purchased": 695,
+        "leads_purchased": 692,
         "qualifies": true,
-        "paid_out_rate": 0.0028776978417266188,
+        "paid_out_rate": 0.002890173410404624,
         "cost_model": "cpf",
         "total_cost": 0,
         "cost_per_lead": 0.0,
         "cost_per_paid_loan": 0.0,
-        "rate_vs_median": 1.981474820143885,
+        "rate_vs_median": 1.9902456647398843,
         "flag": null
       },
       {
@@ -1041,17 +1041,17 @@
         "broker_name": "MARKET BULLET, LLC",
         "commission_type": "4",
         "commission_rate": 3.0,
-        "applications": 11940,
+        "applications": 11952,
         "paid_out": 43,
         "paid_loan_total": 180750.0,
-        "leads_purchased": 14312,
+        "leads_purchased": 14324,
         "qualifies": true,
-        "paid_out_rate": 0.003004471771939631,
+        "paid_out_rate": 0.003001954761239877,
         "cost_model": "bid_floor",
-        "total_cost": 42936.0,
+        "total_cost": 42972.0,
         "cost_per_lead": 3.0,
-        "cost_per_paid_loan": 998.5116279069767,
-        "rate_vs_median": 2.068766594466182,
+        "cost_per_paid_loan": 999.3488372093024,
+        "rate_vs_median": 2.0672210974588103,
         "flag": null
       },
       {
@@ -1061,17 +1061,17 @@
         "broker_name": "Dogstar Digital Corp",
         "commission_type": "4",
         "commission_rate": 3.0,
-        "applications": 4149,
+        "applications": 4147,
         "paid_out": 14,
         "paid_loan_total": 58500.0,
-        "leads_purchased": 4247,
+        "leads_purchased": 4246,
         "qualifies": true,
-        "paid_out_rate": 0.0032964445490934777,
+        "paid_out_rate": 0.003297220913801225,
         "cost_model": "bid_floor",
-        "total_cost": 12741.0,
+        "total_cost": 12738.0,
         "cost_per_lead": 3.0,
-        "cost_per_paid_loan": 910.0714285714286,
-        "rate_vs_median": 2.2698080998351777,
+        "cost_per_paid_loan": 909.8571428571429,
+        "rate_vs_median": 2.2705487517663685,
         "flag": null
       },
       {
@@ -1081,17 +1081,17 @@
         "broker_name": "Dogstar Digital Corp",
         "commission_type": "4",
         "commission_rate": 2.0,
-        "applications": 13329,
-        "paid_out": 52,
-        "paid_loan_total": 182500.0,
+        "applications": 13330,
+        "paid_out": 51,
+        "paid_loan_total": 177500.0,
         "leads_purchased": 13722,
         "qualifies": true,
-        "paid_out_rate": 0.003789535053199242,
+        "paid_out_rate": 0.0037166593790992565,
         "cost_model": "bid_floor",
         "total_cost": 27444.0,
         "cost_per_lead": 2.0,
-        "cost_per_paid_loan": 527.7692307692307,
-        "rate_vs_median": 2.609331730068503,
+        "cost_per_paid_loan": 538.1176470588235,
+        "rate_vs_median": 2.5593845649322255,
         "flag": null
       },
       {
@@ -1111,7 +1111,7 @@
         "total_cost": 1602.3,
         "cost_per_lead": 2.1,
         "cost_per_paid_loan": 534.1,
-        "rate_vs_median": 2.707323066841415,
+        "rate_vs_median": 2.7075688073394493,
         "flag": null
       },
       {
@@ -1121,17 +1121,17 @@
         "broker_name": "AvenueLink",
         "commission_type": "4",
         "commission_rate": 3.0,
-        "applications": 9623,
+        "applications": 9610,
         "paid_out": 61,
         "paid_loan_total": 328500.0,
-        "leads_purchased": 12648,
+        "leads_purchased": 12629,
         "qualifies": true,
-        "paid_out_rate": 0.004822896900695762,
+        "paid_out_rate": 0.004830152822868002,
         "cost_model": "bid_floor",
-        "total_cost": 37944.0,
+        "total_cost": 37887.0,
         "cost_per_lead": 3.0,
-        "cost_per_paid_loan": 622.0327868852459,
-        "rate_vs_median": 3.3208659471853257,
+        "cost_per_paid_loan": 621.0983606557377,
+        "rate_vs_median": 3.326163987647478,
         "flag": null
       },
       {
@@ -1141,17 +1141,17 @@
         "broker_name": "Empire Webtech Pvt. Ltd.",
         "commission_type": "4",
         "commission_rate": 4.5,
-        "applications": 12727,
+        "applications": 12725,
         "paid_out": 89,
         "paid_loan_total": 410250.0,
-        "leads_purchased": 17815,
+        "leads_purchased": 17805,
         "qualifies": true,
-        "paid_out_rate": 0.0049957900645523435,
+        "paid_out_rate": 0.004998595900028082,
         "cost_model": "bid_floor",
-        "total_cost": 80167.5,
+        "total_cost": 80122.5,
         "cost_per_lead": 4.5,
-        "cost_per_paid_loan": 900.7584269662922,
-        "rate_vs_median": 3.4399136963233232,
+        "cost_per_paid_loan": 900.2528089887641,
+        "rate_vs_median": 3.442158101656838,
         "flag": null
       },
       {
@@ -1161,17 +1161,17 @@
         "broker_name": "Lead FollowUp",
         "commission_type": "2",
         "commission_rate": 0.0,
-        "applications": 1700,
+        "applications": 1697,
         "paid_out": 12,
         "paid_loan_total": 63750.0,
-        "leads_purchased": 1802,
+        "leads_purchased": 1801,
         "qualifies": true,
-        "paid_out_rate": 0.006659267480577136,
+        "paid_out_rate": 0.006662965019433648,
         "cost_model": "cpl",
         "total_cost": 0,
         "cost_per_lead": 0.0,
         "cost_per_paid_loan": 0.0,
-        "rate_vs_median": 4.585321864594895,
+        "rate_vs_median": 4.588284286507496,
         "flag": null
       },
       {
@@ -1181,14 +1181,14 @@
         "broker_name": "Unknown broker",
         "commission_type": null,
         "commission_rate": null,
-        "applications": 9685,
+        "applications": 9672,
         "paid_out": 118,
         "paid_loan_total": 644250.0,
-        "leads_purchased": 16318,
+        "leads_purchased": 16306,
         "qualifies": true,
-        "paid_out_rate": 0.0072312783429341835,
+        "paid_out_rate": 0.007236600024530847,
         "cost_model": "unknown",
-        "rate_vs_median": 4.979187094006619,
+        "rate_vs_median": 4.983303691892554,
         "flag": null
       },
       {
@@ -1208,12 +1208,397 @@
         "total_cost": 2000.0,
         "cost_per_lead": 7.518796992481203,
         "cost_per_paid_loan": 400.0,
-        "rate_vs_median": 12.942904135338345,
+        "rate_vs_median": 12.94407894736842,
         "flag": null
       }
     ]
   },
   "blocked_to_reconsider": [
+    {
+      "campaign_id": 439,
+      "source_name": "Premium",
+      "broker_id": 480,
+      "broker_name": "Leap Theory 2.0",
+      "excluded_count": 367,
+      "bounceback_leads": 127,
+      "bounceback_arefs": 125,
+      "bounceback_paid": 1,
+      "bounceback_rate": 0.3460490463215259,
+      "bounceback_paid_rate": 0.008,
+      "bounceback_paid_per_excluded": 0.0027247956403269754,
+      "by_strategy": {
+        "gov_id": 33,
+        "phone_dob": 92,
+        "email_dob": 118
+      },
+      "top_destinations": [
+        {
+          "campaign_id": 708,
+          "source_name": "EPC - CPC",
+          "broker_id": 143,
+          "broker_name": "Leadtree Global",
+          "bounced_count": 45
+        },
+        {
+          "campaign_id": 728,
+          "source_name": "CPF",
+          "broker_id": 488,
+          "broker_name": "Dot 818",
+          "bounced_count": 35
+        },
+        {
+          "campaign_id": 692,
+          "source_name": "Price Reject",
+          "broker_id": 477,
+          "broker_name": "Intimate Interactive",
+          "bounced_count": 33
+        },
+        {
+          "campaign_id": 440,
+          "source_name": "Standard",
+          "broker_id": 482,
+          "broker_name": "Search ROI, LLC",
+          "bounced_count": 25
+        },
+        {
+          "campaign_id": 647,
+          "source_name": "Price Reject",
+          "broker_id": 415,
+          "broker_name": "Round Sky",
+          "bounced_count": 18
+        }
+      ]
+    },
+    {
+      "campaign_id": 445,
+      "source_name": "Premium 2.0",
+      "broker_id": 483,
+      "broker_name": "MARKET BULLET, LLC",
+      "excluded_count": 2619,
+      "bounceback_leads": 1237,
+      "bounceback_arefs": 4901,
+      "bounceback_paid": 7,
+      "bounceback_rate": 0.4723176785032455,
+      "bounceback_paid_rate": 0.0014282799428688023,
+      "bounceback_paid_per_excluded": 0.002672775868652157,
+      "by_strategy": {
+        "gov_id": 393,
+        "phone_dob": 776,
+        "email_dob": 1138
+      },
+      "top_destinations": [
+        {
+          "campaign_id": 702,
+          "source_name": "Price Reject",
+          "broker_id": 488,
+          "broker_name": "Dot 818",
+          "bounced_count": 5989
+        },
+        {
+          "campaign_id": 621,
+          "source_name": "Price Reject",
+          "broker_id": 480,
+          "broker_name": "Leap Theory 2.0",
+          "bounced_count": 5457
+        },
+        {
+          "campaign_id": 728,
+          "source_name": "CPF",
+          "broker_id": 488,
+          "broker_name": "Dot 818",
+          "bounced_count": 5343
+        },
+        {
+          "campaign_id": 692,
+          "source_name": "Price Reject",
+          "broker_id": 477,
+          "broker_name": "Intimate Interactive",
+          "bounced_count": 2848
+        },
+        {
+          "campaign_id": 785,
+          "source_name": "Highwinds PR",
+          "broker_id": 620,
+          "broker_name": "Highwinds",
+          "bounced_count": 1066
+        }
+      ]
+    },
+    {
+      "campaign_id": 629,
+      "source_name": "Price Reject",
+      "broker_id": 476,
+      "broker_name": "Leads Market",
+      "excluded_count": 2008,
+      "bounceback_leads": 1246,
+      "bounceback_arefs": 1264,
+      "bounceback_paid": 3,
+      "bounceback_rate": 0.6205179282868526,
+      "bounceback_paid_rate": 0.0023734177215189874,
+      "bounceback_paid_per_excluded": 0.00149402390438247,
+      "by_strategy": {
+        "gov_id": 272,
+        "phone_dob": 951,
+        "email_dob": 1189
+      },
+      "top_destinations": [
+        {
+          "campaign_id": 708,
+          "source_name": "EPC - CPC",
+          "broker_id": 143,
+          "broker_name": "Leadtree Global",
+          "bounced_count": 604
+        },
+        {
+          "campaign_id": 575,
+          "source_name": "Premium",
+          "broker_id": 541,
+          "broker_name": "Empire Webtech Pvt. Ltd.",
+          "bounced_count": 553
+        },
+        {
+          "campaign_id": 782,
+          "source_name": "LM CPF catch all",
+          "broker_id": 476,
+          "broker_name": "Leads Market",
+          "bounced_count": 237
+        },
+        {
+          "campaign_id": 651,
+          "source_name": "money lion - $3 cpc - top position",
+          "broker_id": 560,
+          "broker_name": "Money Lion",
+          "bounced_count": 217
+        },
+        {
+          "campaign_id": 620,
+          "source_name": "Price Reject",
+          "broker_id": 238,
+          "broker_name": "Zero P",
+          "bounced_count": 162
+        }
+      ]
+    },
+    {
+      "campaign_id": 706,
+      "source_name": "Price Reject",
+      "broker_id": 473,
+      "broker_name": "Lead Economy",
+      "excluded_count": 5152,
+      "bounceback_leads": 1291,
+      "bounceback_arefs": 4842,
+      "bounceback_paid": 7,
+      "bounceback_rate": 0.25058229813664595,
+      "bounceback_paid_rate": 0.0014456836018174309,
+      "bounceback_paid_per_excluded": 0.001358695652173913,
+      "by_strategy": {
+        "gov_id": 446,
+        "phone_dob": 934,
+        "email_dob": 1125
+      },
+      "top_destinations": [
+        {
+          "campaign_id": 786,
+          "source_name": "TPL PR WL",
+          "broker_id": 614,
+          "broker_name": "TruePath Leads",
+          "bounced_count": 3986
+        },
+        {
+          "campaign_id": 702,
+          "source_name": "Price Reject",
+          "broker_id": 488,
+          "broker_name": "Dot 818",
+          "bounced_count": 3825
+        },
+        {
+          "campaign_id": 693,
+          "source_name": "Price Reject",
+          "broker_id": 479,
+          "broker_name": "Discover Nimbus",
+          "bounced_count": 1876
+        },
+        {
+          "campaign_id": 708,
+          "source_name": "EPC - CPC",
+          "broker_id": 143,
+          "broker_name": "Leadtree Global",
+          "bounced_count": 1857
+        },
+        {
+          "campaign_id": 759,
+          "source_name": "TPL Price Reject",
+          "broker_id": 614,
+          "broker_name": "TruePath Leads",
+          "bounced_count": 1774
+        }
+      ]
+    },
+    {
+      "campaign_id": 621,
+      "source_name": "Price Reject",
+      "broker_id": 480,
+      "broker_name": "Leap Theory 2.0",
+      "excluded_count": 8886,
+      "bounceback_leads": 997,
+      "bounceback_arefs": 4164,
+      "bounceback_paid": 6,
+      "bounceback_rate": 0.11219896466351564,
+      "bounceback_paid_rate": 0.001440922190201729,
+      "bounceback_paid_per_excluded": 0.0006752194463200541,
+      "by_strategy": {
+        "gov_id": 256,
+        "phone_dob": 533,
+        "email_dob": 950
+      },
+      "top_destinations": [
+        {
+          "campaign_id": 728,
+          "source_name": "CPF",
+          "broker_id": 488,
+          "broker_name": "Dot 818",
+          "bounced_count": 1641
+        },
+        {
+          "campaign_id": 702,
+          "source_name": "Price Reject",
+          "broker_id": 488,
+          "broker_name": "Dot 818",
+          "bounced_count": 1410
+        },
+        {
+          "campaign_id": 692,
+          "source_name": "Price Reject",
+          "broker_id": 477,
+          "broker_name": "Intimate Interactive",
+          "bounced_count": 303
+        },
+        {
+          "campaign_id": 640,
+          "source_name": "Price Reject",
+          "broker_id": 149,
+          "broker_name": "Pingyo",
+          "bounced_count": 288
+        },
+        {
+          "campaign_id": 639,
+          "source_name": "Price Reject",
+          "broker_id": 518,
+          "broker_name": "Leads Gate",
+          "bounced_count": 249
+        }
+      ]
+    },
+    {
+      "campaign_id": 799,
+      "source_name": "PingLogix PR",
+      "broker_id": 607,
+      "broker_name": "PingLogix LLC",
+      "excluded_count": 3322,
+      "bounceback_leads": 904,
+      "bounceback_arefs": 911,
+      "bounceback_paid": 2,
+      "bounceback_rate": 0.2721252257676099,
+      "bounceback_paid_rate": 0.0021953896816684962,
+      "bounceback_paid_per_excluded": 0.0006020469596628537,
+      "by_strategy": {
+        "gov_id": 84,
+        "phone_dob": 539,
+        "email_dob": 859
+      },
+      "top_destinations": [
+        {
+          "campaign_id": 708,
+          "source_name": "EPC - CPC",
+          "broker_id": 143,
+          "broker_name": "Leadtree Global",
+          "bounced_count": 316
+        },
+        {
+          "campaign_id": 621,
+          "source_name": "Price Reject",
+          "broker_id": 480,
+          "broker_name": "Leap Theory 2.0",
+          "bounced_count": 220
+        },
+        {
+          "campaign_id": 728,
+          "source_name": "CPF",
+          "broker_id": 488,
+          "broker_name": "Dot 818",
+          "bounced_count": 125
+        },
+        {
+          "campaign_id": 620,
+          "source_name": "Price Reject",
+          "broker_id": 238,
+          "broker_name": "Zero P",
+          "bounced_count": 124
+        },
+        {
+          "campaign_id": 639,
+          "source_name": "Price Reject",
+          "broker_id": 518,
+          "broker_name": "Leads Gate",
+          "bounced_count": 106
+        }
+      ]
+    },
+    {
+      "campaign_id": 389,
+      "source_name": "Premium",
+      "broker_id": 141,
+      "broker_name": "AvenueLink",
+      "excluded_count": 6450,
+      "bounceback_leads": 1255,
+      "bounceback_arefs": 3674,
+      "bounceback_paid": 3,
+      "bounceback_rate": 0.1945736434108527,
+      "bounceback_paid_rate": 0.0008165487207403375,
+      "bounceback_paid_per_excluded": 0.00046511627906976747,
+      "by_strategy": {
+        "gov_id": 244,
+        "phone_dob": 789,
+        "email_dob": 1175
+      },
+      "top_destinations": [
+        {
+          "campaign_id": 708,
+          "source_name": "EPC - CPC",
+          "broker_id": 143,
+          "broker_name": "Leadtree Global",
+          "bounced_count": 1430
+        },
+        {
+          "campaign_id": 702,
+          "source_name": "Price Reject",
+          "broker_id": 488,
+          "broker_name": "Dot 818",
+          "bounced_count": 617
+        },
+        {
+          "campaign_id": 621,
+          "source_name": "Price Reject",
+          "broker_id": 480,
+          "broker_name": "Leap Theory 2.0",
+          "bounced_count": 616
+        },
+        {
+          "campaign_id": 728,
+          "source_name": "CPF",
+          "broker_id": 488,
+          "broker_name": "Dot 818",
+          "bounced_count": 593
+        },
+        {
+          "campaign_id": 692,
+          "source_name": "Price Reject",
+          "broker_id": 477,
+          "broker_name": "Intimate Interactive",
+          "bounced_count": 298
+        }
+      ]
+    },
     {
       "campaign_id": 517,
       "source_name": "Standard",
@@ -1244,28 +1629,83 @@
           "source_name": "Price Reject",
           "broker_id": 518,
           "broker_name": "Leads Gate",
-          "bounced_count": 240
+          "bounced_count": 244
         },
         {
           "campaign_id": 728,
           "source_name": "CPF",
           "broker_id": 488,
           "broker_name": "Dot 818",
-          "bounced_count": 165
+          "bounced_count": 166
         },
         {
           "campaign_id": 793,
           "source_name": "EPC Catch all",
           "broker_id": 143,
           "broker_name": "Leadtree Global",
-          "bounced_count": 153
+          "bounced_count": 152
         },
         {
           "campaign_id": 628,
           "source_name": "EPCVIP PR $3",
           "broker_id": 143,
           "broker_name": "Leadtree Global",
-          "bounced_count": 123
+          "bounced_count": 125
+        }
+      ]
+    },
+    {
+      "campaign_id": 359,
+      "source_name": "Teapot Premium",
+      "broker_id": 306,
+      "broker_name": "Teapot",
+      "excluded_count": 15163,
+      "bounceback_leads": 1214,
+      "bounceback_arefs": 1223,
+      "bounceback_paid": 4,
+      "bounceback_rate": 0.0800633120094968,
+      "bounceback_paid_rate": 0.003270645952575634,
+      "bounceback_paid_per_excluded": 0.0002638000395700059,
+      "by_strategy": {
+        "gov_id": 191,
+        "phone_dob": 826,
+        "email_dob": 1150
+      },
+      "top_destinations": [
+        {
+          "campaign_id": 708,
+          "source_name": "EPC - CPC",
+          "broker_id": 143,
+          "broker_name": "Leadtree Global",
+          "bounced_count": 784
+        },
+        {
+          "campaign_id": 728,
+          "source_name": "CPF",
+          "broker_id": 488,
+          "broker_name": "Dot 818",
+          "bounced_count": 276
+        },
+        {
+          "campaign_id": 620,
+          "source_name": "Price Reject",
+          "broker_id": 238,
+          "broker_name": "Zero P",
+          "bounced_count": 272
+        },
+        {
+          "campaign_id": 702,
+          "source_name": "Price Reject",
+          "broker_id": 488,
+          "broker_name": "Dot 818",
+          "bounced_count": 164
+        },
+        {
+          "campaign_id": 647,
+          "source_name": "Price Reject",
+          "broker_id": 415,
+          "broker_name": "Round Sky",
+          "bounced_count": 149
         }
       ]
     },
@@ -1274,17 +1714,17 @@
       "source_name": "Highwinds PR",
       "broker_id": 620,
       "broker_name": "Highwinds",
-      "excluded_count": 16909,
-      "bounceback_leads": 930,
-      "bounceback_arefs": 3120,
+      "excluded_count": 16978,
+      "bounceback_leads": 929,
+      "bounceback_arefs": 3184,
       "bounceback_paid": 3,
-      "bounceback_rate": 0.05500029570051452,
-      "bounceback_paid_rate": 0.0009615384615384616,
-      "bounceback_paid_per_excluded": 0.00017742030871133717,
+      "bounceback_rate": 0.05471787018494522,
+      "bounceback_paid_rate": 0.0009422110552763819,
+      "bounceback_paid_per_excluded": 0.00017669925786311698,
       "by_strategy": {
-        "gov_id": 349,
-        "phone_dob": 597,
-        "email_dob": 826
+        "gov_id": 343,
+        "phone_dob": 589,
+        "email_dob": 827
       },
       "top_destinations": [
         {
@@ -1292,35 +1732,90 @@
           "source_name": "Price Reject",
           "broker_id": 480,
           "broker_name": "Leap Theory 2.0",
-          "bounced_count": 1160
+          "bounced_count": 1167
         },
         {
           "campaign_id": 702,
           "source_name": "Price Reject",
           "broker_id": 488,
           "broker_name": "Dot 818",
-          "bounced_count": 1124
+          "bounced_count": 1136
         },
         {
           "campaign_id": 728,
           "source_name": "CPF",
           "broker_id": 488,
           "broker_name": "Dot 818",
-          "bounced_count": 923
+          "bounced_count": 926
         },
         {
           "campaign_id": 692,
           "source_name": "Price Reject",
           "broker_id": 477,
           "broker_name": "Intimate Interactive",
-          "bounced_count": 577
+          "bounced_count": 580
         },
         {
           "campaign_id": 708,
           "source_name": "EPC - CPC",
           "broker_id": 143,
           "broker_name": "Leadtree Global",
-          "bounced_count": 418
+          "bounced_count": 426
+        }
+      ]
+    },
+    {
+      "campaign_id": 728,
+      "source_name": "CPF",
+      "broker_id": 488,
+      "broker_name": "Dot 818",
+      "excluded_count": 52407,
+      "bounceback_leads": 1107,
+      "bounceback_arefs": 4455,
+      "bounceback_paid": 6,
+      "bounceback_rate": 0.0211231324059763,
+      "bounceback_paid_rate": 0.0013468013468013469,
+      "bounceback_paid_per_excluded": 0.0001144885225256168,
+      "by_strategy": {
+        "gov_id": 324,
+        "phone_dob": 648,
+        "email_dob": 1037
+      },
+      "top_destinations": [
+        {
+          "campaign_id": 702,
+          "source_name": "Price Reject",
+          "broker_id": 488,
+          "broker_name": "Dot 818",
+          "bounced_count": 3150
+        },
+        {
+          "campaign_id": 621,
+          "source_name": "Price Reject",
+          "broker_id": 480,
+          "broker_name": "Leap Theory 2.0",
+          "bounced_count": 3127
+        },
+        {
+          "campaign_id": 692,
+          "source_name": "Price Reject",
+          "broker_id": 477,
+          "broker_name": "Intimate Interactive",
+          "bounced_count": 1446
+        },
+        {
+          "campaign_id": 785,
+          "source_name": "Highwinds PR",
+          "broker_id": 620,
+          "broker_name": "Highwinds",
+          "bounced_count": 595
+        },
+        {
+          "campaign_id": 445,
+          "source_name": "Premium 2.0",
+          "broker_id": 483,
+          "broker_name": "MARKET BULLET, LLC",
+          "bounced_count": 519
         }
       ]
     },
@@ -1347,7 +1842,7 @@
           "source_name": "EPC - CPC",
           "broker_id": 143,
           "broker_name": "Leadtree Global",
-          "bounced_count": 1276
+          "bounced_count": 1274
         },
         {
           "campaign_id": 517,
@@ -1361,21 +1856,1286 @@
           "source_name": "Price Reject",
           "broker_id": 518,
           "broker_name": "Leads Gate",
-          "bounced_count": 247
+          "bounced_count": 249
         },
         {
           "campaign_id": 728,
           "source_name": "CPF",
           "broker_id": 488,
           "broker_name": "Dot 818",
-          "bounced_count": 142
+          "bounced_count": 143
         },
         {
           "campaign_id": 793,
           "source_name": "EPC Catch all",
           "broker_id": 143,
           "broker_name": "Leadtree Global",
-          "bounced_count": 125
+          "bounced_count": 124
+        }
+      ]
+    },
+    {
+      "campaign_id": 693,
+      "source_name": "Price Reject",
+      "broker_id": 479,
+      "broker_name": "Discover Nimbus",
+      "excluded_count": 85686,
+      "bounceback_leads": 1135,
+      "bounceback_arefs": 3804,
+      "bounceback_paid": 8,
+      "bounceback_rate": 0.01324603785916019,
+      "bounceback_paid_rate": 0.002103049421661409,
+      "bounceback_paid_per_excluded": 9.336414350068855e-05,
+      "by_strategy": {
+        "gov_id": 377,
+        "phone_dob": 750,
+        "email_dob": 1064
+      },
+      "top_destinations": [
+        {
+          "campaign_id": 621,
+          "source_name": "Price Reject",
+          "broker_id": 480,
+          "broker_name": "Leap Theory 2.0",
+          "bounced_count": 757
+        },
+        {
+          "campaign_id": 702,
+          "source_name": "Price Reject",
+          "broker_id": 488,
+          "broker_name": "Dot 818",
+          "bounced_count": 750
+        },
+        {
+          "campaign_id": 728,
+          "source_name": "CPF",
+          "broker_id": 488,
+          "broker_name": "Dot 818",
+          "bounced_count": 694
+        },
+        {
+          "campaign_id": 708,
+          "source_name": "EPC - CPC",
+          "broker_id": 143,
+          "broker_name": "Leadtree Global",
+          "bounced_count": 677
+        },
+        {
+          "campaign_id": 692,
+          "source_name": "Price Reject",
+          "broker_id": 477,
+          "broker_name": "Intimate Interactive",
+          "bounced_count": 305
+        }
+      ]
+    },
+    {
+      "campaign_id": 421,
+      "source_name": "ALPremiumV2",
+      "broker_id": 141,
+      "broker_name": "AvenueLink",
+      "excluded_count": 121456,
+      "bounceback_leads": 1193,
+      "bounceback_arefs": 5021,
+      "bounceback_paid": 6,
+      "bounceback_rate": 0.009822487155842444,
+      "bounceback_paid_rate": 0.0011949810794662419,
+      "bounceback_paid_per_excluded": 4.94006059807667e-05,
+      "by_strategy": {
+        "gov_id": 392,
+        "phone_dob": 703,
+        "email_dob": 1102
+      },
+      "top_destinations": [
+        {
+          "campaign_id": 708,
+          "source_name": "EPC - CPC",
+          "broker_id": 143,
+          "broker_name": "Leadtree Global",
+          "bounced_count": 1004
+        },
+        {
+          "campaign_id": 702,
+          "source_name": "Price Reject",
+          "broker_id": 488,
+          "broker_name": "Dot 818",
+          "bounced_count": 839
+        },
+        {
+          "campaign_id": 621,
+          "source_name": "Price Reject",
+          "broker_id": 480,
+          "broker_name": "Leap Theory 2.0",
+          "bounced_count": 662
+        },
+        {
+          "campaign_id": 728,
+          "source_name": "CPF",
+          "broker_id": 488,
+          "broker_name": "Dot 818",
+          "bounced_count": 640
+        },
+        {
+          "campaign_id": 786,
+          "source_name": "TPL PR WL",
+          "broker_id": 614,
+          "broker_name": "TruePath Leads",
+          "bounced_count": 512
+        }
+      ]
+    },
+    {
+      "campaign_id": 692,
+      "source_name": "Price Reject",
+      "broker_id": 477,
+      "broker_name": "Intimate Interactive",
+      "excluded_count": 138698,
+      "bounceback_leads": 1264,
+      "bounceback_arefs": 3499,
+      "bounceback_paid": 6,
+      "bounceback_rate": 0.009113325354367043,
+      "bounceback_paid_rate": 0.0017147756501857674,
+      "bounceback_paid_per_excluded": 4.325945579604609e-05,
+      "by_strategy": {
+        "gov_id": 419,
+        "phone_dob": 881,
+        "email_dob": 1082
+      },
+      "top_destinations": [
+        {
+          "campaign_id": 621,
+          "source_name": "Price Reject",
+          "broker_id": 480,
+          "broker_name": "Leap Theory 2.0",
+          "bounced_count": 4261
+        },
+        {
+          "campaign_id": 702,
+          "source_name": "Price Reject",
+          "broker_id": 488,
+          "broker_name": "Dot 818",
+          "bounced_count": 4046
+        },
+        {
+          "campaign_id": 728,
+          "source_name": "CPF",
+          "broker_id": 488,
+          "broker_name": "Dot 818",
+          "bounced_count": 3283
+        },
+        {
+          "campaign_id": 785,
+          "source_name": "Highwinds PR",
+          "broker_id": 620,
+          "broker_name": "Highwinds",
+          "bounced_count": 867
+        },
+        {
+          "campaign_id": 708,
+          "source_name": "EPC - CPC",
+          "broker_id": 143,
+          "broker_name": "Leadtree Global",
+          "bounced_count": 702
+        }
+      ]
+    },
+    {
+      "campaign_id": 786,
+      "source_name": "TPL PR WL",
+      "broker_id": 614,
+      "broker_name": "TruePath Leads",
+      "excluded_count": 94011,
+      "bounceback_leads": 1197,
+      "bounceback_arefs": 1283,
+      "bounceback_paid": 2,
+      "bounceback_rate": 0.012732552573635,
+      "bounceback_paid_rate": 0.001558846453624318,
+      "bounceback_paid_per_excluded": 2.1274106221612364e-05,
+      "by_strategy": {
+        "gov_id": 349,
+        "phone_dob": 815,
+        "email_dob": 1112
+      },
+      "top_destinations": [
+        {
+          "campaign_id": 708,
+          "source_name": "EPC - CPC",
+          "broker_id": 143,
+          "broker_name": "Leadtree Global",
+          "bounced_count": 1542
+        },
+        {
+          "campaign_id": 628,
+          "source_name": "EPCVIP PR $3",
+          "broker_id": 143,
+          "broker_name": "Leadtree Global",
+          "bounced_count": 231
+        },
+        {
+          "campaign_id": 728,
+          "source_name": "CPF",
+          "broker_id": 488,
+          "broker_name": "Dot 818",
+          "bounced_count": 178
+        },
+        {
+          "campaign_id": 702,
+          "source_name": "Price Reject",
+          "broker_id": 488,
+          "broker_name": "Dot 818",
+          "bounced_count": 153
+        },
+        {
+          "campaign_id": 793,
+          "source_name": "EPC Catch all",
+          "broker_id": 143,
+          "broker_name": "Leadtree Global",
+          "bounced_count": 141
+        }
+      ]
+    },
+    {
+      "campaign_id": 672,
+      "source_name": "Price Reject",
+      "broker_id": 487,
+      "broker_name": "Stop Go",
+      "excluded_count": 111429,
+      "bounceback_leads": 1152,
+      "bounceback_arefs": 1099,
+      "bounceback_paid": 2,
+      "bounceback_rate": 0.010338421775300864,
+      "bounceback_paid_rate": 0.0018198362147406734,
+      "bounceback_paid_per_excluded": 1.7948648915452888e-05,
+      "by_strategy": {
+        "gov_id": 0,
+        "phone_dob": 794,
+        "email_dob": 1088
+      },
+      "top_destinations": [
+        {
+          "campaign_id": 708,
+          "source_name": "EPC - CPC",
+          "broker_id": 143,
+          "broker_name": "Leadtree Global",
+          "bounced_count": 762
+        },
+        {
+          "campaign_id": 728,
+          "source_name": "CPF",
+          "broker_id": 488,
+          "broker_name": "Dot 818",
+          "bounced_count": 216
+        },
+        {
+          "campaign_id": 651,
+          "source_name": "money lion - $3 cpc - top position",
+          "broker_id": 560,
+          "broker_name": "Money Lion",
+          "bounced_count": 164
+        },
+        {
+          "campaign_id": 702,
+          "source_name": "Price Reject",
+          "broker_id": 488,
+          "broker_name": "Dot 818",
+          "bounced_count": 157
+        },
+        {
+          "campaign_id": 620,
+          "source_name": "Price Reject",
+          "broker_id": 238,
+          "broker_name": "Zero P",
+          "bounced_count": 144
+        }
+      ]
+    },
+    {
+      "campaign_id": 370,
+      "source_name": "AvenueLink Standard",
+      "broker_id": 141,
+      "broker_name": "AvenueLink",
+      "excluded_count": 392075,
+      "bounceback_leads": 1187,
+      "bounceback_arefs": 4116,
+      "bounceback_paid": 5,
+      "bounceback_rate": 0.003027481986864758,
+      "bounceback_paid_rate": 0.0012147716229348883,
+      "bounceback_paid_per_excluded": 1.2752662118217178e-05,
+      "by_strategy": {
+        "gov_id": 412,
+        "phone_dob": 708,
+        "email_dob": 1082
+      },
+      "top_destinations": [
+        {
+          "campaign_id": 621,
+          "source_name": "Price Reject",
+          "broker_id": 480,
+          "broker_name": "Leap Theory 2.0",
+          "bounced_count": 1267
+        },
+        {
+          "campaign_id": 702,
+          "source_name": "Price Reject",
+          "broker_id": 488,
+          "broker_name": "Dot 818",
+          "bounced_count": 1111
+        },
+        {
+          "campaign_id": 708,
+          "source_name": "EPC - CPC",
+          "broker_id": 143,
+          "broker_name": "Leadtree Global",
+          "bounced_count": 987
+        },
+        {
+          "campaign_id": 728,
+          "source_name": "CPF",
+          "broker_id": 488,
+          "broker_name": "Dot 818",
+          "bounced_count": 984
+        },
+        {
+          "campaign_id": 692,
+          "source_name": "Price Reject",
+          "broker_id": 477,
+          "broker_name": "Intimate Interactive",
+          "bounced_count": 580
+        }
+      ]
+    },
+    {
+      "campaign_id": 620,
+      "source_name": "Price Reject",
+      "broker_id": 238,
+      "broker_name": "Zero P",
+      "excluded_count": 174784,
+      "bounceback_leads": 1094,
+      "bounceback_arefs": 1055,
+      "bounceback_paid": 2,
+      "bounceback_rate": 0.006259154155986818,
+      "bounceback_paid_rate": 0.0018957345971563982,
+      "bounceback_paid_per_excluded": 1.1442694983522518e-05,
+      "by_strategy": {
+        "gov_id": 106,
+        "phone_dob": 731,
+        "email_dob": 1019
+      },
+      "top_destinations": [
+        {
+          "campaign_id": 708,
+          "source_name": "EPC - CPC",
+          "broker_id": 143,
+          "broker_name": "Leadtree Global",
+          "bounced_count": 534
+        },
+        {
+          "campaign_id": 702,
+          "source_name": "Price Reject",
+          "broker_id": 488,
+          "broker_name": "Dot 818",
+          "bounced_count": 176
+        },
+        {
+          "campaign_id": 621,
+          "source_name": "Price Reject",
+          "broker_id": 480,
+          "broker_name": "Leap Theory 2.0",
+          "bounced_count": 171
+        },
+        {
+          "campaign_id": 728,
+          "source_name": "CPF",
+          "broker_id": 488,
+          "broker_name": "Dot 818",
+          "bounced_count": 162
+        },
+        {
+          "campaign_id": 799,
+          "source_name": "PingLogix PR",
+          "broker_id": 607,
+          "broker_name": "PingLogix LLC",
+          "bounced_count": 152
+        }
+      ]
+    },
+    {
+      "campaign_id": 676,
+      "source_name": "Price Reject",
+      "broker_id": 188,
+      "broker_name": "ITMedia",
+      "excluded_count": 99127,
+      "bounceback_leads": 235,
+      "bounceback_arefs": 236,
+      "bounceback_paid": 1,
+      "bounceback_rate": 0.002370696177630716,
+      "bounceback_paid_rate": 0.00423728813559322,
+      "bounceback_paid_per_excluded": 1.0088068840981771e-05,
+      "by_strategy": {
+        "gov_id": 136,
+        "phone_dob": 66,
+        "email_dob": 106
+      },
+      "top_destinations": [
+        {
+          "campaign_id": 620,
+          "source_name": "Price Reject",
+          "broker_id": 238,
+          "broker_name": "Zero P",
+          "bounced_count": 77
+        },
+        {
+          "campaign_id": 799,
+          "source_name": "PingLogix PR",
+          "broker_id": 607,
+          "broker_name": "PingLogix LLC",
+          "bounced_count": 50
+        },
+        {
+          "campaign_id": 708,
+          "source_name": "EPC - CPC",
+          "broker_id": 143,
+          "broker_name": "Leadtree Global",
+          "bounced_count": 40
+        },
+        {
+          "campaign_id": 728,
+          "source_name": "CPF",
+          "broker_id": 488,
+          "broker_name": "Dot 818",
+          "bounced_count": 30
+        },
+        {
+          "campaign_id": 566,
+          "source_name": "Lead Economy test $2.15 - CA only",
+          "broker_id": 418,
+          "broker_name": "Acquire Interactive",
+          "bounced_count": 17
+        }
+      ]
+    },
+    {
+      "campaign_id": 640,
+      "source_name": "Price Reject",
+      "broker_id": 149,
+      "broker_name": "Pingyo",
+      "excluded_count": 802117,
+      "bounceback_leads": 1093,
+      "bounceback_arefs": 2138,
+      "bounceback_paid": 6,
+      "bounceback_rate": 0.0013626441030423243,
+      "bounceback_paid_rate": 0.002806361085126286,
+      "bounceback_paid_per_excluded": 7.480205506179273e-06,
+      "by_strategy": {
+        "gov_id": 402,
+        "phone_dob": 681,
+        "email_dob": 989
+      },
+      "top_destinations": [
+        {
+          "campaign_id": 728,
+          "source_name": "CPF",
+          "broker_id": 488,
+          "broker_name": "Dot 818",
+          "bounced_count": 894
+        },
+        {
+          "campaign_id": 708,
+          "source_name": "EPC - CPC",
+          "broker_id": 143,
+          "broker_name": "Leadtree Global",
+          "bounced_count": 529
+        },
+        {
+          "campaign_id": 702,
+          "source_name": "Price Reject",
+          "broker_id": 488,
+          "broker_name": "Dot 818",
+          "bounced_count": 481
+        },
+        {
+          "campaign_id": 621,
+          "source_name": "Price Reject",
+          "broker_id": 480,
+          "broker_name": "Leap Theory 2.0",
+          "bounced_count": 378
+        },
+        {
+          "campaign_id": 799,
+          "source_name": "PingLogix PR",
+          "broker_id": 607,
+          "broker_name": "PingLogix LLC",
+          "bounced_count": 118
+        }
+      ]
+    },
+    {
+      "campaign_id": 566,
+      "source_name": "Lead Economy test $2.15 - CA only",
+      "broker_id": 418,
+      "broker_name": "Acquire Interactive",
+      "excluded_count": 155849,
+      "bounceback_leads": 1163,
+      "bounceback_arefs": 1167,
+      "bounceback_paid": 1,
+      "bounceback_rate": 0.007462351378577982,
+      "bounceback_paid_rate": 0.000856898029134533,
+      "bounceback_paid_per_excluded": 6.416467221477199e-06,
+      "by_strategy": {
+        "gov_id": 132,
+        "phone_dob": 767,
+        "email_dob": 1098
+      },
+      "top_destinations": [
+        {
+          "campaign_id": 708,
+          "source_name": "EPC - CPC",
+          "broker_id": 143,
+          "broker_name": "Leadtree Global",
+          "bounced_count": 439
+        },
+        {
+          "campaign_id": 621,
+          "source_name": "Price Reject",
+          "broker_id": 480,
+          "broker_name": "Leap Theory 2.0",
+          "bounced_count": 279
+        },
+        {
+          "campaign_id": 728,
+          "source_name": "CPF",
+          "broker_id": 488,
+          "broker_name": "Dot 818",
+          "bounced_count": 203
+        },
+        {
+          "campaign_id": 799,
+          "source_name": "PingLogix PR",
+          "broker_id": 607,
+          "broker_name": "PingLogix LLC",
+          "bounced_count": 163
+        },
+        {
+          "campaign_id": 693,
+          "source_name": "Price Reject",
+          "broker_id": 479,
+          "broker_name": "Discover Nimbus",
+          "bounced_count": 153
+        }
+      ]
+    },
+    {
+      "campaign_id": 682,
+      "source_name": "$1 tier",
+      "broker_id": 581,
+      "broker_name": "IPW1 LTD",
+      "excluded_count": 475046,
+      "bounceback_leads": 890,
+      "bounceback_arefs": 853,
+      "bounceback_paid": 3,
+      "bounceback_rate": 0.001873502776573216,
+      "bounceback_paid_rate": 0.0035169988276670576,
+      "bounceback_paid_per_excluded": 6.315177898561403e-06,
+      "by_strategy": {
+        "gov_id": 126,
+        "phone_dob": 578,
+        "email_dob": 836
+      },
+      "top_destinations": [
+        {
+          "campaign_id": 708,
+          "source_name": "EPC - CPC",
+          "broker_id": 143,
+          "broker_name": "Leadtree Global",
+          "bounced_count": 558
+        },
+        {
+          "campaign_id": 728,
+          "source_name": "CPF",
+          "broker_id": 488,
+          "broker_name": "Dot 818",
+          "bounced_count": 202
+        },
+        {
+          "campaign_id": 620,
+          "source_name": "Price Reject",
+          "broker_id": 238,
+          "broker_name": "Zero P",
+          "bounced_count": 158
+        },
+        {
+          "campaign_id": 702,
+          "source_name": "Price Reject",
+          "broker_id": 488,
+          "broker_name": "Dot 818",
+          "bounced_count": 142
+        },
+        {
+          "campaign_id": 799,
+          "source_name": "PingLogix PR",
+          "broker_id": 607,
+          "broker_name": "PingLogix LLC",
+          "bounced_count": 102
+        }
+      ]
+    },
+    {
+      "campaign_id": 795,
+      "source_name": "Stop Go 0.50 Catch All",
+      "broker_id": 487,
+      "broker_name": "Stop Go",
+      "excluded_count": 316700,
+      "bounceback_leads": 1239,
+      "bounceback_arefs": 785,
+      "bounceback_paid": 2,
+      "bounceback_rate": 0.003912219766340385,
+      "bounceback_paid_rate": 0.0025477707006369425,
+      "bounceback_paid_per_excluded": 6.315124723713293e-06,
+      "by_strategy": {
+        "gov_id": 0,
+        "phone_dob": 811,
+        "email_dob": 1203
+      },
+      "top_destinations": [
+        {
+          "campaign_id": 708,
+          "source_name": "EPC - CPC",
+          "broker_id": 143,
+          "broker_name": "Leadtree Global",
+          "bounced_count": 959
+        },
+        {
+          "campaign_id": 651,
+          "source_name": "money lion - $3 cpc - top position",
+          "broker_id": 560,
+          "broker_name": "Money Lion",
+          "bounced_count": 243
+        },
+        {
+          "campaign_id": 728,
+          "source_name": "CPF",
+          "broker_id": 488,
+          "broker_name": "Dot 818",
+          "bounced_count": 184
+        },
+        {
+          "campaign_id": 620,
+          "source_name": "Price Reject",
+          "broker_id": 238,
+          "broker_name": "Zero P",
+          "bounced_count": 165
+        },
+        {
+          "campaign_id": 440,
+          "source_name": "Standard",
+          "broker_id": 482,
+          "broker_name": "Search ROI, LLC",
+          "bounced_count": 116
+        }
+      ]
+    },
+    {
+      "campaign_id": 567,
+      "source_name": "Lead Economy test $3.15",
+      "broker_id": 418,
+      "broker_name": "Acquire Interactive",
+      "excluded_count": 605843,
+      "bounceback_leads": 1103,
+      "bounceback_arefs": 1112,
+      "bounceback_paid": 3,
+      "bounceback_rate": 0.0018206036877540881,
+      "bounceback_paid_rate": 0.002697841726618705,
+      "bounceback_paid_per_excluded": 4.951777935867873e-06,
+      "by_strategy": {
+        "gov_id": 145,
+        "phone_dob": 693,
+        "email_dob": 1052
+      },
+      "top_destinations": [
+        {
+          "campaign_id": 708,
+          "source_name": "EPC - CPC",
+          "broker_id": 143,
+          "broker_name": "Leadtree Global",
+          "bounced_count": 417
+        },
+        {
+          "campaign_id": 621,
+          "source_name": "Price Reject",
+          "broker_id": 480,
+          "broker_name": "Leap Theory 2.0",
+          "bounced_count": 220
+        },
+        {
+          "campaign_id": 693,
+          "source_name": "Price Reject",
+          "broker_id": 479,
+          "broker_name": "Discover Nimbus",
+          "bounced_count": 191
+        },
+        {
+          "campaign_id": 639,
+          "source_name": "Price Reject",
+          "broker_id": 518,
+          "broker_name": "Leads Gate",
+          "bounced_count": 160
+        },
+        {
+          "campaign_id": 799,
+          "source_name": "PingLogix PR",
+          "broker_id": 607,
+          "broker_name": "PingLogix LLC",
+          "bounced_count": 150
+        }
+      ]
+    },
+    {
+      "campaign_id": 702,
+      "source_name": "Price Reject",
+      "broker_id": 488,
+      "broker_name": "Dot 818",
+      "excluded_count": 1699746,
+      "bounceback_leads": 1055,
+      "bounceback_arefs": 5204,
+      "bounceback_paid": 8,
+      "bounceback_rate": 0.0006206809723335134,
+      "bounceback_paid_rate": 0.0015372790161414297,
+      "bounceback_paid_per_excluded": 4.706585572197258e-06,
+      "by_strategy": {
+        "gov_id": 343,
+        "phone_dob": 642,
+        "email_dob": 997
+      },
+      "top_destinations": [
+        {
+          "campaign_id": 621,
+          "source_name": "Price Reject",
+          "broker_id": 480,
+          "broker_name": "Leap Theory 2.0",
+          "bounced_count": 5064
+        },
+        {
+          "campaign_id": 728,
+          "source_name": "CPF",
+          "broker_id": 488,
+          "broker_name": "Dot 818",
+          "bounced_count": 5052
+        },
+        {
+          "campaign_id": 692,
+          "source_name": "Price Reject",
+          "broker_id": 477,
+          "broker_name": "Intimate Interactive",
+          "bounced_count": 2561
+        },
+        {
+          "campaign_id": 786,
+          "source_name": "TPL PR WL",
+          "broker_id": 614,
+          "broker_name": "TruePath Leads",
+          "bounced_count": 1293
+        },
+        {
+          "campaign_id": 785,
+          "source_name": "Highwinds PR",
+          "broker_id": 620,
+          "broker_name": "Highwinds",
+          "bounced_count": 983
+        }
+      ]
+    },
+    {
+      "campaign_id": 627,
+      "source_name": "EPCVIP PR $5",
+      "broker_id": 143,
+      "broker_name": "Leadtree Global",
+      "excluded_count": 638907,
+      "bounceback_leads": 1184,
+      "bounceback_arefs": 944,
+      "bounceback_paid": 3,
+      "bounceback_rate": 0.0018531648581092397,
+      "bounceback_paid_rate": 0.0031779661016949155,
+      "bounceback_paid_per_excluded": 4.6955190661551685e-06,
+      "by_strategy": {
+        "gov_id": 0,
+        "phone_dob": 957,
+        "email_dob": 1160
+      },
+      "top_destinations": [
+        {
+          "campaign_id": 708,
+          "source_name": "EPC - CPC",
+          "broker_id": 143,
+          "broker_name": "Leadtree Global",
+          "bounced_count": 1649
+        },
+        {
+          "campaign_id": 793,
+          "source_name": "EPC Catch all",
+          "broker_id": 143,
+          "broker_name": "Leadtree Global",
+          "bounced_count": 395
+        },
+        {
+          "campaign_id": 628,
+          "source_name": "EPCVIP PR $3",
+          "broker_id": 143,
+          "broker_name": "Leadtree Global",
+          "bounced_count": 343
+        },
+        {
+          "campaign_id": 639,
+          "source_name": "Price Reject",
+          "broker_id": 518,
+          "broker_name": "Leads Gate",
+          "bounced_count": 116
+        },
+        {
+          "campaign_id": 728,
+          "source_name": "CPF",
+          "broker_id": 488,
+          "broker_name": "Dot 818",
+          "bounced_count": 57
+        }
+      ]
+    },
+    {
+      "campaign_id": 647,
+      "source_name": "Price Reject",
+      "broker_id": 415,
+      "broker_name": "Round Sky",
+      "excluded_count": 489149,
+      "bounceback_leads": 1076,
+      "bounceback_arefs": 1027,
+      "bounceback_paid": 2,
+      "bounceback_rate": 0.002199738729916651,
+      "bounceback_paid_rate": 0.0019474196689386564,
+      "bounceback_paid_per_excluded": 4.0887336987298345e-06,
+      "by_strategy": {
+        "gov_id": 0,
+        "phone_dob": 666,
+        "email_dob": 1027
+      },
+      "top_destinations": [
+        {
+          "campaign_id": 708,
+          "source_name": "EPC - CPC",
+          "broker_id": 143,
+          "broker_name": "Leadtree Global",
+          "bounced_count": 622
+        },
+        {
+          "campaign_id": 728,
+          "source_name": "CPF",
+          "broker_id": 488,
+          "broker_name": "Dot 818",
+          "bounced_count": 155
+        },
+        {
+          "campaign_id": 702,
+          "source_name": "Price Reject",
+          "broker_id": 488,
+          "broker_name": "Dot 818",
+          "bounced_count": 134
+        },
+        {
+          "campaign_id": 621,
+          "source_name": "Price Reject",
+          "broker_id": 480,
+          "broker_name": "Leap Theory 2.0",
+          "bounced_count": 124
+        },
+        {
+          "campaign_id": 620,
+          "source_name": "Price Reject",
+          "broker_id": 238,
+          "broker_name": "Zero P",
+          "bounced_count": 109
+        }
+      ]
+    },
+    {
+      "campaign_id": 771,
+      "source_name": "Bume Price Reject",
+      "broker_id": 619,
+      "broker_name": "Bume International LLC",
+      "excluded_count": 2077910,
+      "bounceback_leads": 1288,
+      "bounceback_arefs": 3220,
+      "bounceback_paid": 6,
+      "bounceback_rate": 0.0006198536028990669,
+      "bounceback_paid_rate": 0.0018633540372670807,
+      "bounceback_paid_per_excluded": 2.8875167836913054e-06,
+      "by_strategy": {
+        "gov_id": 404,
+        "phone_dob": 863,
+        "email_dob": 1217
+      },
+      "top_destinations": [
+        {
+          "campaign_id": 621,
+          "source_name": "Price Reject",
+          "broker_id": 480,
+          "broker_name": "Leap Theory 2.0",
+          "bounced_count": 1752
+        },
+        {
+          "campaign_id": 702,
+          "source_name": "Price Reject",
+          "broker_id": 488,
+          "broker_name": "Dot 818",
+          "bounced_count": 1691
+        },
+        {
+          "campaign_id": 728,
+          "source_name": "CPF",
+          "broker_id": 488,
+          "broker_name": "Dot 818",
+          "bounced_count": 1540
+        },
+        {
+          "campaign_id": 708,
+          "source_name": "EPC - CPC",
+          "broker_id": 143,
+          "broker_name": "Leadtree Global",
+          "bounced_count": 894
+        },
+        {
+          "campaign_id": 692,
+          "source_name": "Price Reject",
+          "broker_id": 477,
+          "broker_name": "Intimate Interactive",
+          "bounced_count": 877
+        }
+      ]
+    },
+    {
+      "campaign_id": 684,
+      "source_name": "$3 tier",
+      "broker_id": 581,
+      "broker_name": "IPW1 LTD",
+      "excluded_count": 506335,
+      "bounceback_leads": 945,
+      "bounceback_arefs": 617,
+      "bounceback_paid": 1,
+      "bounceback_rate": 0.001866353303642845,
+      "bounceback_paid_rate": 0.0016207455429497568,
+      "bounceback_paid_per_excluded": 1.9749770408918997e-06,
+      "by_strategy": {
+        "gov_id": 151,
+        "phone_dob": 633,
+        "email_dob": 883
+      },
+      "top_destinations": [
+        {
+          "campaign_id": 708,
+          "source_name": "EPC - CPC",
+          "broker_id": 143,
+          "broker_name": "Leadtree Global",
+          "bounced_count": 539
+        },
+        {
+          "campaign_id": 702,
+          "source_name": "Price Reject",
+          "broker_id": 488,
+          "broker_name": "Dot 818",
+          "bounced_count": 183
+        },
+        {
+          "campaign_id": 620,
+          "source_name": "Price Reject",
+          "broker_id": 238,
+          "broker_name": "Zero P",
+          "bounced_count": 164
+        },
+        {
+          "campaign_id": 728,
+          "source_name": "CPF",
+          "broker_id": 488,
+          "broker_name": "Dot 818",
+          "bounced_count": 160
+        },
+        {
+          "campaign_id": 799,
+          "source_name": "PingLogix PR",
+          "broker_id": 607,
+          "broker_name": "PingLogix LLC",
+          "bounced_count": 137
+        }
+      ]
+    },
+    {
+      "campaign_id": 793,
+      "source_name": "EPC Catch all",
+      "broker_id": 143,
+      "broker_name": "Leadtree Global",
+      "excluded_count": 567936,
+      "bounceback_leads": 1125,
+      "bounceback_arefs": 1045,
+      "bounceback_paid": 1,
+      "bounceback_rate": 0.0019808569979716025,
+      "bounceback_paid_rate": 0.0009569377990430622,
+      "bounceback_paid_per_excluded": 1.7607617759747578e-06,
+      "by_strategy": {
+        "gov_id": 0,
+        "phone_dob": 857,
+        "email_dob": 1082
+      },
+      "top_destinations": [
+        {
+          "campaign_id": 708,
+          "source_name": "EPC - CPC",
+          "broker_id": 143,
+          "broker_name": "Leadtree Global",
+          "bounced_count": 1653
+        },
+        {
+          "campaign_id": 628,
+          "source_name": "EPCVIP PR $3",
+          "broker_id": 143,
+          "broker_name": "Leadtree Global",
+          "bounced_count": 168
+        },
+        {
+          "campaign_id": 639,
+          "source_name": "Price Reject",
+          "broker_id": 518,
+          "broker_name": "Leads Gate",
+          "bounced_count": 127
+        },
+        {
+          "campaign_id": 627,
+          "source_name": "EPCVIP PR $5",
+          "broker_id": 143,
+          "broker_name": "Leadtree Global",
+          "bounced_count": 101
+        },
+        {
+          "campaign_id": 728,
+          "source_name": "CPF",
+          "broker_id": 488,
+          "broker_name": "Dot 818",
+          "bounced_count": 78
+        }
+      ]
+    },
+    {
+      "campaign_id": 759,
+      "source_name": "TPL Price Reject",
+      "broker_id": 614,
+      "broker_name": "TruePath Leads",
+      "excluded_count": 2301472,
+      "bounceback_leads": 898,
+      "bounceback_arefs": 5125,
+      "bounceback_paid": 4,
+      "bounceback_rate": 0.0003901850641676284,
+      "bounceback_paid_rate": 0.0007804878048780488,
+      "bounceback_paid_per_excluded": 1.738018103196563e-06,
+      "by_strategy": {
+        "gov_id": 242,
+        "phone_dob": 646,
+        "email_dob": 831
+      },
+      "top_destinations": [
+        {
+          "campaign_id": 786,
+          "source_name": "TPL PR WL",
+          "broker_id": 614,
+          "broker_name": "TruePath Leads",
+          "bounced_count": 6272
+        },
+        {
+          "campaign_id": 702,
+          "source_name": "Price Reject",
+          "broker_id": 488,
+          "broker_name": "Dot 818",
+          "bounced_count": 5954
+        },
+        {
+          "campaign_id": 706,
+          "source_name": "Price Reject",
+          "broker_id": 473,
+          "broker_name": "Lead Economy",
+          "bounced_count": 3690
+        },
+        {
+          "campaign_id": 693,
+          "source_name": "Price Reject",
+          "broker_id": 479,
+          "broker_name": "Discover Nimbus",
+          "bounced_count": 2910
+        },
+        {
+          "campaign_id": 621,
+          "source_name": "Price Reject",
+          "broker_id": 480,
+          "broker_name": "Leap Theory 2.0",
+          "bounced_count": 2730
+        }
+      ]
+    },
+    {
+      "campaign_id": 628,
+      "source_name": "EPCVIP PR $3",
+      "broker_id": 143,
+      "broker_name": "Leadtree Global",
+      "excluded_count": 2151041,
+      "bounceback_leads": 1049,
+      "bounceback_arefs": 992,
+      "bounceback_paid": 3,
+      "bounceback_rate": 0.00048767085332171727,
+      "bounceback_paid_rate": 0.0030241935483870967,
+      "bounceback_paid_per_excluded": 1.394673555734177e-06,
+      "by_strategy": {
+        "gov_id": 0,
+        "phone_dob": 758,
+        "email_dob": 992
+      },
+      "top_destinations": [
+        {
+          "campaign_id": 708,
+          "source_name": "EPC - CPC",
+          "broker_id": 143,
+          "broker_name": "Leadtree Global",
+          "bounced_count": 1413
+        },
+        {
+          "campaign_id": 793,
+          "source_name": "EPC Catch all",
+          "broker_id": 143,
+          "broker_name": "Leadtree Global",
+          "bounced_count": 165
+        },
+        {
+          "campaign_id": 627,
+          "source_name": "EPCVIP PR $5",
+          "broker_id": 143,
+          "broker_name": "Leadtree Global",
+          "bounced_count": 151
+        },
+        {
+          "campaign_id": 639,
+          "source_name": "Price Reject",
+          "broker_id": 518,
+          "broker_name": "Leads Gate",
+          "bounced_count": 127
+        },
+        {
+          "campaign_id": 728,
+          "source_name": "CPF",
+          "broker_id": 488,
+          "broker_name": "Dot 818",
+          "bounced_count": 79
+        }
+      ]
+    },
+    {
+      "campaign_id": 683,
+      "source_name": "$2 tier",
+      "broker_id": 581,
+      "broker_name": "IPW1 LTD",
+      "excluded_count": 940169,
+      "bounceback_leads": 946,
+      "bounceback_arefs": 707,
+      "bounceback_paid": 1,
+      "bounceback_rate": 0.0010062020764351942,
+      "bounceback_paid_rate": 0.0014144271570014145,
+      "bounceback_paid_per_excluded": 1.063638558599571e-06,
+      "by_strategy": {
+        "gov_id": 152,
+        "phone_dob": 621,
+        "email_dob": 892
+      },
+      "top_destinations": [
+        {
+          "campaign_id": 708,
+          "source_name": "EPC - CPC",
+          "broker_id": 143,
+          "broker_name": "Leadtree Global",
+          "bounced_count": 577
+        },
+        {
+          "campaign_id": 620,
+          "source_name": "Price Reject",
+          "broker_id": 238,
+          "broker_name": "Zero P",
+          "bounced_count": 189
+        },
+        {
+          "campaign_id": 728,
+          "source_name": "CPF",
+          "broker_id": 488,
+          "broker_name": "Dot 818",
+          "bounced_count": 188
+        },
+        {
+          "campaign_id": 702,
+          "source_name": "Price Reject",
+          "broker_id": 488,
+          "broker_name": "Dot 818",
+          "bounced_count": 176
+        },
+        {
+          "campaign_id": 799,
+          "source_name": "PingLogix PR",
+          "broker_id": 607,
+          "broker_name": "PingLogix LLC",
+          "bounced_count": 111
+        }
+      ]
+    },
+    {
+      "campaign_id": 442,
+      "source_name": "Premium",
+      "broker_id": 482,
+      "broker_name": "Search ROI, LLC",
+      "excluded_count": 2277218,
+      "bounceback_leads": 1165,
+      "bounceback_arefs": 835,
+      "bounceback_paid": 2,
+      "bounceback_rate": 0.0005115891407849402,
+      "bounceback_paid_rate": 0.0023952095808383233,
+      "bounceback_paid_per_excluded": 8.78264619373288e-07,
+      "by_strategy": {
+        "gov_id": 0,
+        "phone_dob": 780,
+        "email_dob": 1091
+      },
+      "top_destinations": [
+        {
+          "campaign_id": 708,
+          "source_name": "EPC - CPC",
+          "broker_id": 143,
+          "broker_name": "Leadtree Global",
+          "bounced_count": 702
+        },
+        {
+          "campaign_id": 728,
+          "source_name": "CPF",
+          "broker_id": 488,
+          "broker_name": "Dot 818",
+          "bounced_count": 219
+        },
+        {
+          "campaign_id": 702,
+          "source_name": "Price Reject",
+          "broker_id": 488,
+          "broker_name": "Dot 818",
+          "bounced_count": 178
+        },
+        {
+          "campaign_id": 441,
+          "source_name": "Premium 2.0",
+          "broker_id": 482,
+          "broker_name": "Search ROI, LLC",
+          "bounced_count": 162
+        },
+        {
+          "campaign_id": 620,
+          "source_name": "Price Reject",
+          "broker_id": 238,
+          "broker_name": "Zero P",
+          "bounced_count": 155
         }
       ]
     },
@@ -1384,17 +3144,17 @@
       "source_name": "Price Reject",
       "broker_id": 518,
       "broker_name": "Leads Gate",
-      "excluded_count": 2530074,
-      "bounceback_leads": 947,
-      "bounceback_arefs": 874,
-      "bounceback_paid": 4,
-      "bounceback_rate": 0.0003742973525675534,
-      "bounceback_paid_rate": 0.004576659038901602,
-      "bounceback_paid_per_excluded": 1.5809814258397184e-06,
+      "excluded_count": 2528344,
+      "bounceback_leads": 963,
+      "bounceback_arefs": 866,
+      "bounceback_paid": 2,
+      "bounceback_rate": 0.0003808817154627693,
+      "bounceback_paid_rate": 0.0023094688221709007,
+      "bounceback_paid_per_excluded": 7.91031600130362e-07,
       "by_strategy": {
         "gov_id": 0,
-        "phone_dob": 560,
-        "email_dob": 907
+        "phone_dob": 551,
+        "email_dob": 909
       },
       "top_destinations": [
         {
@@ -1402,35 +3162,145 @@
           "source_name": "EPC - CPC",
           "broker_id": 143,
           "broker_name": "Leadtree Global",
-          "bounced_count": 973
+          "bounced_count": 967
         },
         {
           "campaign_id": 628,
           "source_name": "EPCVIP PR $3",
           "broker_id": 143,
           "broker_name": "Leadtree Global",
-          "bounced_count": 149
+          "bounced_count": 133
         },
         {
           "campaign_id": 793,
           "source_name": "EPC Catch all",
           "broker_id": 143,
           "broker_name": "Leadtree Global",
-          "bounced_count": 132
-        },
-        {
-          "campaign_id": 728,
-          "source_name": "CPF",
-          "broker_id": 488,
-          "broker_name": "Dot 818",
-          "bounced_count": 105
+          "bounced_count": 120
         },
         {
           "campaign_id": 621,
           "source_name": "Price Reject",
           "broker_id": 480,
           "broker_name": "Leap Theory 2.0",
-          "bounced_count": 72
+          "bounced_count": 101
+        },
+        {
+          "campaign_id": 627,
+          "source_name": "EPCVIP PR $5",
+          "broker_id": 143,
+          "broker_name": "Leadtree Global",
+          "bounced_count": 85
+        }
+      ]
+    },
+    {
+      "campaign_id": 440,
+      "source_name": "Standard",
+      "broker_id": 482,
+      "broker_name": "Search ROI, LLC",
+      "excluded_count": 1882935,
+      "bounceback_leads": 1259,
+      "bounceback_arefs": 982,
+      "bounceback_paid": 1,
+      "bounceback_rate": 0.0006686369949042319,
+      "bounceback_paid_rate": 0.0010183299389002036,
+      "bounceback_paid_per_excluded": 5.310857783194852e-07,
+      "by_strategy": {
+        "gov_id": 0,
+        "phone_dob": 798,
+        "email_dob": 1192
+      },
+      "top_destinations": [
+        {
+          "campaign_id": 708,
+          "source_name": "EPC - CPC",
+          "broker_id": 143,
+          "broker_name": "Leadtree Global",
+          "bounced_count": 858
+        },
+        {
+          "campaign_id": 728,
+          "source_name": "CPF",
+          "broker_id": 488,
+          "broker_name": "Dot 818",
+          "bounced_count": 247
+        },
+        {
+          "campaign_id": 702,
+          "source_name": "Price Reject",
+          "broker_id": 488,
+          "broker_name": "Dot 818",
+          "bounced_count": 161
+        },
+        {
+          "campaign_id": 620,
+          "source_name": "Price Reject",
+          "broker_id": 238,
+          "broker_name": "Zero P",
+          "bounced_count": 158
+        },
+        {
+          "campaign_id": 621,
+          "source_name": "Price Reject",
+          "broker_id": 480,
+          "broker_name": "Leap Theory 2.0",
+          "bounced_count": 141
+        }
+      ]
+    },
+    {
+      "campaign_id": 441,
+      "source_name": "Premium 2.0",
+      "broker_id": 482,
+      "broker_name": "Search ROI, LLC",
+      "excluded_count": 31925,
+      "bounceback_leads": 825,
+      "bounceback_arefs": 795,
+      "bounceback_paid": 0,
+      "bounceback_rate": 0.025841816758026624,
+      "bounceback_paid_rate": 0.0,
+      "bounceback_paid_per_excluded": 0.0,
+      "by_strategy": {
+        "gov_id": 0,
+        "phone_dob": 508,
+        "email_dob": 783
+      },
+      "top_destinations": [
+        {
+          "campaign_id": 708,
+          "source_name": "EPC - CPC",
+          "broker_id": 143,
+          "broker_name": "Leadtree Global",
+          "bounced_count": 507
+        },
+        {
+          "campaign_id": 621,
+          "source_name": "Price Reject",
+          "broker_id": 480,
+          "broker_name": "Leap Theory 2.0",
+          "bounced_count": 112
+        },
+        {
+          "campaign_id": 442,
+          "source_name": "Premium",
+          "broker_id": 482,
+          "broker_name": "Search ROI, LLC",
+          "bounced_count": 99
+        },
+        {
+          "campaign_id": 440,
+          "source_name": "Standard",
+          "broker_id": 482,
+          "broker_name": "Search ROI, LLC",
+          "bounced_count": 97
+        },
+        {
+          "campaign_id": 728,
+          "source_name": "CPF",
+          "broker_id": 488,
+          "broker_name": "Dot 818",
+          "bounced_count": 90
         }
       ]
     },
@@ -1471,23 +3341,851 @@
           "source_name": "CPF",
           "broker_id": 488,
           "broker_name": "Dot 818",
-          "bounced_count": 240
+          "bounced_count": 242
         },
         {
           "campaign_id": 639,
           "source_name": "Price Reject",
           "broker_id": 518,
           "broker_name": "Leads Gate",
-          "bounced_count": 206
+          "bounced_count": 210
         },
         {
           "campaign_id": 793,
           "source_name": "EPC Catch all",
           "broker_id": 143,
           "broker_name": "Leadtree Global",
-          "bounced_count": 135
+          "bounced_count": 134
+        }
+      ]
+    },
+    {
+      "campaign_id": 707,
+      "source_name": "Price Reject",
+      "broker_id": 418,
+      "broker_name": "Acquire Interactive",
+      "excluded_count": 1563110,
+      "bounceback_leads": 717,
+      "bounceback_arefs": 719,
+      "bounceback_paid": 0,
+      "bounceback_rate": 0.0004587009231595985,
+      "bounceback_paid_rate": 0.0,
+      "bounceback_paid_per_excluded": 0.0,
+      "by_strategy": {
+        "gov_id": 100,
+        "phone_dob": 458,
+        "email_dob": 681
+      },
+      "top_destinations": [
+        {
+          "campaign_id": 708,
+          "source_name": "EPC - CPC",
+          "broker_id": 143,
+          "broker_name": "Leadtree Global",
+          "bounced_count": 227
+        },
+        {
+          "campaign_id": 621,
+          "source_name": "Price Reject",
+          "broker_id": 480,
+          "broker_name": "Leap Theory 2.0",
+          "bounced_count": 161
+        },
+        {
+          "campaign_id": 799,
+          "source_name": "PingLogix PR",
+          "broker_id": 607,
+          "broker_name": "PingLogix LLC",
+          "bounced_count": 120
+        },
+        {
+          "campaign_id": 693,
+          "source_name": "Price Reject",
+          "broker_id": 479,
+          "broker_name": "Discover Nimbus",
+          "bounced_count": 115
+        },
+        {
+          "campaign_id": 620,
+          "source_name": "Price Reject",
+          "broker_id": 238,
+          "broker_name": "Zero P",
+          "bounced_count": 91
+        }
+      ]
+    },
+    {
+      "campaign_id": 708,
+      "source_name": "EPC - CPC",
+      "broker_id": 143,
+      "broker_name": "Leadtree Global",
+      "excluded_count": 974,
+      "bounceback_leads": 175,
+      "bounceback_arefs": 159,
+      "bounceback_paid": 0,
+      "bounceback_rate": 0.17967145790554415,
+      "bounceback_paid_rate": 0.0,
+      "bounceback_paid_per_excluded": 0.0,
+      "by_strategy": {
+        "gov_id": 0,
+        "phone_dob": 64,
+        "email_dob": 170
+      },
+      "top_destinations": [
+        {
+          "campaign_id": 786,
+          "source_name": "TPL PR WL",
+          "broker_id": 614,
+          "broker_name": "TruePath Leads",
+          "bounced_count": 40
+        },
+        {
+          "campaign_id": 441,
+          "source_name": "Premium 2.0",
+          "broker_id": 482,
+          "broker_name": "Search ROI, LLC",
+          "bounced_count": 34
+        },
+        {
+          "campaign_id": 442,
+          "source_name": "Premium",
+          "broker_id": 482,
+          "broker_name": "Search ROI, LLC",
+          "bounced_count": 29
+        },
+        {
+          "campaign_id": 759,
+          "source_name": "TPL Price Reject",
+          "broker_id": 614,
+          "broker_name": "TruePath Leads",
+          "bounced_count": 24
+        },
+        {
+          "campaign_id": 628,
+          "source_name": "EPCVIP PR $3",
+          "broker_id": 143,
+          "broker_name": "Leadtree Global",
+          "bounced_count": 19
+        }
+      ]
+    },
+    {
+      "campaign_id": 711,
+      "source_name": "$2 tier",
+      "broker_id": 593,
+      "broker_name": "Dogstar Digital Corp",
+      "excluded_count": 2695,
+      "bounceback_leads": 1204,
+      "bounceback_arefs": 981,
+      "bounceback_paid": 0,
+      "bounceback_rate": 0.44675324675324674,
+      "bounceback_paid_rate": 0.0,
+      "bounceback_paid_per_excluded": 0.0,
+      "by_strategy": {
+        "gov_id": 0,
+        "phone_dob": 821,
+        "email_dob": 1156
+      },
+      "top_destinations": [
+        {
+          "campaign_id": 708,
+          "source_name": "EPC - CPC",
+          "broker_id": 143,
+          "broker_name": "Leadtree Global",
+          "bounced_count": 732
+        },
+        {
+          "campaign_id": 710,
+          "source_name": "$1 tier",
+          "broker_id": 593,
+          "broker_name": "Dogstar Digital Corp",
+          "bounced_count": 272
+        },
+        {
+          "campaign_id": 651,
+          "source_name": "money lion - $3 cpc - top position",
+          "broker_id": 560,
+          "broker_name": "Money Lion",
+          "bounced_count": 224
+        },
+        {
+          "campaign_id": 728,
+          "source_name": "CPF",
+          "broker_id": 488,
+          "broker_name": "Dot 818",
+          "bounced_count": 168
+        },
+        {
+          "campaign_id": 627,
+          "source_name": "EPCVIP PR $5",
+          "broker_id": 143,
+          "broker_name": "Leadtree Global",
+          "bounced_count": 143
+        }
+      ]
+    },
+    {
+      "campaign_id": 798,
+      "source_name": "PR WL Dot818",
+      "broker_id": 488,
+      "broker_name": "Dot 818",
+      "excluded_count": 295,
+      "bounceback_leads": 69,
+      "bounceback_arefs": 69,
+      "bounceback_paid": 0,
+      "bounceback_rate": 0.23389830508474577,
+      "bounceback_paid_rate": 0.0,
+      "bounceback_paid_per_excluded": 0.0,
+      "by_strategy": {
+        "gov_id": 15,
+        "phone_dob": 53,
+        "email_dob": 65
+      },
+      "top_destinations": [
+        {
+          "campaign_id": 733,
+          "source_name": "CPF",
+          "broker_id": 539,
+          "broker_name": "PROFFILIANT, LLC",
+          "bounced_count": 62
+        },
+        {
+          "campaign_id": 728,
+          "source_name": "CPF",
+          "broker_id": 488,
+          "broker_name": "Dot 818",
+          "bounced_count": 10
+        },
+        {
+          "campaign_id": 771,
+          "source_name": "Bume Price Reject",
+          "broker_id": 619,
+          "broker_name": "Bume International LLC",
+          "bounced_count": 6
+        },
+        {
+          "campaign_id": 636,
+          "source_name": "Premium 2.0",
+          "broker_id": 551,
+          "broker_name": "Fix Media, LLC",
+          "bounced_count": 6
+        },
+        {
+          "campaign_id": 442,
+          "source_name": "Premium",
+          "broker_id": 482,
+          "broker_name": "Search ROI, LLC",
+          "bounced_count": 6
         }
       ]
     }
-  ]
+  ],
+  "cheaper_clones": {
+    "total_overspend": 9979.849999999977,
+    "leads_with_cheaper": 8417,
+    "campaigns": [
+      {
+        "campaign_id": 621,
+        "source_name": "Price Reject",
+        "broker_id": 480,
+        "broker_name": "Leap Theory 2.0",
+        "leads_with_cheaper_later": 1642,
+        "total_savings_if_waited": 1800.9500000000007,
+        "avg_savings_per_lead": 1.096802679658953,
+        "median_savings_per_lead": 0.9,
+        "avg_wait_days": 17.147990255785626,
+        "median_wait_days": 14.0,
+        "leads_purchased": 140237,
+        "cheaper_clone_rate": 0.011708750187183125
+      },
+      {
+        "campaign_id": 702,
+        "source_name": "Price Reject",
+        "broker_id": 488,
+        "broker_name": "Dot 818",
+        "leads_with_cheaper_later": 1649,
+        "total_savings_if_waited": 1447.4999999999977,
+        "avg_savings_per_lead": 0.8778047301394771,
+        "median_savings_per_lead": 0.8,
+        "avg_wait_days": 20.009096422073984,
+        "median_wait_days": 20,
+        "leads_purchased": 94723,
+        "cheaper_clone_rate": 0.017408654708993592
+      },
+      {
+        "campaign_id": 458,
+        "source_name": "Premium 2.0",
+        "broker_id": 498,
+        "broker_name": "Credit Ninja",
+        "leads_with_cheaper_later": 566,
+        "total_savings_if_waited": 858.5999999999998,
+        "avg_savings_per_lead": 1.5169611307420492,
+        "median_savings_per_lead": 1.7000000000000002,
+        "avg_wait_days": 16.872791519434628,
+        "median_wait_days": 13.0,
+        "leads_purchased": 22036,
+        "cheaper_clone_rate": 0.02568524233073153
+      },
+      {
+        "campaign_id": 786,
+        "source_name": "TPL PR WL",
+        "broker_id": 614,
+        "broker_name": "TruePath Leads",
+        "leads_with_cheaper_later": 613,
+        "total_savings_if_waited": 841.3000000000006,
+        "avg_savings_per_lead": 1.372430668841763,
+        "median_savings_per_lead": 1.4,
+        "avg_wait_days": 13.021207177814029,
+        "median_wait_days": 11,
+        "leads_purchased": 18889,
+        "cheaper_clone_rate": 0.03245275027793954
+      },
+      {
+        "campaign_id": 706,
+        "source_name": "Price Reject",
+        "broker_id": 473,
+        "broker_name": "Lead Economy",
+        "leads_with_cheaper_later": 385,
+        "total_savings_if_waited": 612.6000000000004,
+        "avg_savings_per_lead": 1.5911688311688321,
+        "median_savings_per_lead": 1.7000000000000002,
+        "avg_wait_days": 14.548051948051947,
+        "median_wait_days": 13,
+        "leads_purchased": 18546,
+        "cheaper_clone_rate": 0.020759193357058125
+      },
+      {
+        "campaign_id": 692,
+        "source_name": "Price Reject",
+        "broker_id": 477,
+        "broker_name": "Intimate Interactive",
+        "leads_with_cheaper_later": 346,
+        "total_savings_if_waited": 524.499999999999,
+        "avg_savings_per_lead": 1.5158959537572225,
+        "median_savings_per_lead": 1.7,
+        "avg_wait_days": 22.601156069364162,
+        "median_wait_days": 22.0,
+        "leads_purchased": 12815,
+        "cheaper_clone_rate": 0.026999609832227857
+      },
+      {
+        "campaign_id": 446,
+        "source_name": "Premium",
+        "broker_id": 483,
+        "broker_name": "MARKET BULLET, LLC",
+        "leads_with_cheaper_later": 198,
+        "total_savings_if_waited": 474.59999999999934,
+        "avg_savings_per_lead": 2.3969696969696934,
+        "median_savings_per_lead": 2.7,
+        "avg_wait_days": 17.575757575757574,
+        "median_wait_days": 13.0,
+        "leads_purchased": 14324,
+        "cheaper_clone_rate": 0.01382295448198827
+      },
+      {
+        "campaign_id": 759,
+        "source_name": "TPL Price Reject",
+        "broker_id": 614,
+        "broker_name": "TruePath Leads",
+        "leads_with_cheaper_later": 386,
+        "total_savings_if_waited": 465.2,
+        "avg_savings_per_lead": 1.205181347150259,
+        "median_savings_per_lead": 1.1,
+        "avg_wait_days": 17.681347150259068,
+        "median_wait_days": 16.0,
+        "leads_purchased": 24524,
+        "cheaper_clone_rate": 0.0157396835752732
+      },
+      {
+        "campaign_id": 693,
+        "source_name": "Price Reject",
+        "broker_id": 479,
+        "broker_name": "Discover Nimbus",
+        "leads_with_cheaper_later": 561,
+        "total_savings_if_waited": 459.7999999999992,
+        "avg_savings_per_lead": 0.8196078431372535,
+        "median_savings_per_lead": 0.7000000000000001,
+        "avg_wait_days": 15.02139037433155,
+        "median_wait_days": 13,
+        "leads_purchased": 37324,
+        "cheaper_clone_rate": 0.015030543350123245
+      },
+      {
+        "campaign_id": 421,
+        "source_name": "ALPremiumV2",
+        "broker_id": 141,
+        "broker_name": "AvenueLink",
+        "leads_with_cheaper_later": 285,
+        "total_savings_if_waited": 416.8999999999999,
+        "avg_savings_per_lead": 1.4628070175438594,
+        "median_savings_per_lead": 1.6,
+        "avg_wait_days": 16.07719298245614,
+        "median_wait_days": 12,
+        "leads_purchased": 19619,
+        "cheaper_clone_rate": 0.01452673428819002
+      },
+      {
+        "campaign_id": 445,
+        "source_name": "Premium 2.0",
+        "broker_id": 483,
+        "broker_name": "MARKET BULLET, LLC",
+        "leads_with_cheaper_later": 270,
+        "total_savings_if_waited": 409.7999999999993,
+        "avg_savings_per_lead": 1.517777777777775,
+        "median_savings_per_lead": 1.7,
+        "avg_wait_days": 17.874074074074073,
+        "median_wait_days": 15.0,
+        "leads_purchased": 23761,
+        "cheaper_clone_rate": 0.011363158116240899
+      },
+      {
+        "campaign_id": 785,
+        "source_name": "Highwinds PR",
+        "broker_id": 620,
+        "broker_name": "Highwinds",
+        "leads_with_cheaper_later": 240,
+        "total_savings_if_waited": 250.29999999999998,
+        "avg_savings_per_lead": 1.0429166666666665,
+        "median_savings_per_lead": 0.9000000000000001,
+        "avg_wait_days": 17.704166666666666,
+        "median_wait_days": 11.0,
+        "leads_purchased": 18829,
+        "cheaper_clone_rate": 0.012746295607838971
+      },
+      {
+        "campaign_id": 771,
+        "source_name": "Bume Price Reject",
+        "broker_id": 619,
+        "broker_name": "Bume International LLC",
+        "leads_with_cheaper_later": 187,
+        "total_savings_if_waited": 243.19999999999993,
+        "avg_savings_per_lead": 1.3005347593582883,
+        "median_savings_per_lead": 1.2000000000000002,
+        "avg_wait_days": 16.422459893048128,
+        "median_wait_days": 16,
+        "leads_purchased": 9163,
+        "cheaper_clone_rate": 0.02040816326530612
+      },
+      {
+        "campaign_id": 640,
+        "source_name": "Price Reject",
+        "broker_id": 149,
+        "broker_name": "Pingyo",
+        "leads_with_cheaper_later": 186,
+        "total_savings_if_waited": 200.39999999999998,
+        "avg_savings_per_lead": 1.0774193548387097,
+        "median_savings_per_lead": 1.0999999999999999,
+        "avg_wait_days": 15.741935483870968,
+        "median_wait_days": 17.0,
+        "leads_purchased": 54052,
+        "cheaper_clone_rate": 0.003441130762968993
+      },
+      {
+        "campaign_id": 439,
+        "source_name": "Premium",
+        "broker_id": 480,
+        "broker_name": "Leap Theory 2.0",
+        "leads_with_cheaper_later": 61,
+        "total_savings_if_waited": 146.30000000000004,
+        "avg_savings_per_lead": 2.3983606557377057,
+        "median_savings_per_lead": 2.6,
+        "avg_wait_days": 30.147540983606557,
+        "median_wait_days": 33,
+        "leads_purchased": 5069,
+        "cheaper_clone_rate": 0.012033931741960938
+      },
+      {
+        "campaign_id": 636,
+        "source_name": "Premium 2.0",
+        "broker_id": 551,
+        "broker_name": "Fix Media, LLC",
+        "leads_with_cheaper_later": 60,
+        "total_savings_if_waited": 123.3,
+        "avg_savings_per_lead": 2.055,
+        "median_savings_per_lead": 2.2,
+        "avg_wait_days": 15.466666666666667,
+        "median_wait_days": 10.0,
+        "leads_purchased": 8140,
+        "cheaper_clone_rate": 0.007371007371007371
+      },
+      {
+        "campaign_id": 442,
+        "source_name": "Premium",
+        "broker_id": 482,
+        "broker_name": "Search ROI, LLC",
+        "leads_with_cheaper_later": 70,
+        "total_savings_if_waited": 103.50000000000003,
+        "avg_savings_per_lead": 1.4785714285714289,
+        "median_savings_per_lead": 1.75,
+        "avg_wait_days": 10.028571428571428,
+        "median_wait_days": 4.5,
+        "leads_purchased": 89030,
+        "cheaper_clone_rate": 0.0007862518252274514
+      },
+      {
+        "campaign_id": 441,
+        "source_name": "Premium 2.0",
+        "broker_id": 482,
+        "broker_name": "Search ROI, LLC",
+        "leads_with_cheaper_later": 74,
+        "total_savings_if_waited": 81.90000000000002,
+        "avg_savings_per_lead": 1.106756756756757,
+        "median_savings_per_lead": 1.2,
+        "avg_wait_days": 13.608108108108109,
+        "median_wait_days": 8.0,
+        "leads_purchased": 86446,
+        "cheaper_clone_rate": 0.0008560257270434723
+      },
+      {
+        "campaign_id": 627,
+        "source_name": "EPCVIP PR $5",
+        "broker_id": 143,
+        "broker_name": "Leadtree Global",
+        "leads_with_cheaper_later": 83,
+        "total_savings_if_waited": 69.1,
+        "avg_savings_per_lead": 0.8325301204819276,
+        "median_savings_per_lead": 0.7999999999999998,
+        "avg_wait_days": 10.650602409638553,
+        "median_wait_days": 1,
+        "leads_purchased": 145134,
+        "cheaper_clone_rate": 0.0005718852922127137
+      },
+      {
+        "campaign_id": 647,
+        "source_name": "Price Reject",
+        "broker_id": 415,
+        "broker_name": "Round Sky",
+        "leads_with_cheaper_later": 67,
+        "total_savings_if_waited": 60.54999999999999,
+        "avg_savings_per_lead": 0.903731343283582,
+        "median_savings_per_lead": 0.7999999999999998,
+        "avg_wait_days": 10.35820895522388,
+        "median_wait_days": 2,
+        "leads_purchased": 70555,
+        "cheaper_clone_rate": 0.0009496137764864291
+      },
+      {
+        "campaign_id": 389,
+        "source_name": "Premium",
+        "broker_id": 141,
+        "broker_name": "AvenueLink",
+        "leads_with_cheaper_later": 31,
+        "total_savings_if_waited": 60.500000000000014,
+        "avg_savings_per_lead": 1.951612903225807,
+        "median_savings_per_lead": 2.2,
+        "avg_wait_days": 16.225806451612904,
+        "median_wait_days": 15,
+        "leads_purchased": 12629,
+        "cheaper_clone_rate": 0.0024546678280148865
+      },
+      {
+        "campaign_id": 370,
+        "source_name": "AvenueLink Standard",
+        "broker_id": 141,
+        "broker_name": "AvenueLink",
+        "leads_with_cheaper_later": 102,
+        "total_savings_if_waited": 54.000000000000036,
+        "avg_savings_per_lead": 0.5294117647058827,
+        "median_savings_per_lead": 0.6,
+        "avg_wait_days": 20.872549019607842,
+        "median_wait_days": 17.0,
+        "leads_purchased": 21684,
+        "cheaper_clone_rate": 0.004703929164360819
+      },
+      {
+        "campaign_id": 628,
+        "source_name": "EPCVIP PR $3",
+        "broker_id": 143,
+        "broker_name": "Leadtree Global",
+        "leads_with_cheaper_later": 67,
+        "total_savings_if_waited": 53.1,
+        "avg_savings_per_lead": 0.7925373134328358,
+        "median_savings_per_lead": 0.6999999999999997,
+        "avg_wait_days": 14.865671641791044,
+        "median_wait_days": 9,
+        "leads_purchased": 152561,
+        "cheaper_clone_rate": 0.0004391685948571391
+      },
+      {
+        "campaign_id": 575,
+        "source_name": "Premium",
+        "broker_id": 541,
+        "broker_name": "Empire Webtech Pvt. Ltd.",
+        "leads_with_cheaper_later": 17,
+        "total_savings_if_waited": 46.1,
+        "avg_savings_per_lead": 2.711764705882353,
+        "median_savings_per_lead": 2.5,
+        "avg_wait_days": 6.882352941176471,
+        "median_wait_days": 2,
+        "leads_purchased": 17805,
+        "cheaper_clone_rate": 0.0009547879809042403
+      },
+      {
+        "campaign_id": 798,
+        "source_name": "PR WL Dot818",
+        "broker_id": 488,
+        "broker_name": "Dot 818",
+        "leads_with_cheaper_later": 48,
+        "total_savings_if_waited": 39.49999999999999,
+        "avg_savings_per_lead": 0.8229166666666665,
+        "median_savings_per_lead": 0.8,
+        "avg_wait_days": 16.291666666666668,
+        "median_wait_days": 16.0,
+        "leads_purchased": 3808,
+        "cheaper_clone_rate": 0.012605042016806723
+      },
+      {
+        "campaign_id": 620,
+        "source_name": "Price Reject",
+        "broker_id": 238,
+        "broker_name": "Zero P",
+        "leads_with_cheaper_later": 54,
+        "total_savings_if_waited": 34.7,
+        "avg_savings_per_lead": 0.6425925925925926,
+        "median_savings_per_lead": 0.4,
+        "avg_wait_days": 15.444444444444445,
+        "median_wait_days": 12.5,
+        "leads_purchased": 83500,
+        "cheaper_clone_rate": 0.0006467065868263473
+      },
+      {
+        "campaign_id": 566,
+        "source_name": "Lead Economy test $2.15 - CA only",
+        "broker_id": 418,
+        "broker_name": "Acquire Interactive",
+        "leads_with_cheaper_later": 24,
+        "total_savings_if_waited": 28.099999999999994,
+        "avg_savings_per_lead": 1.1708333333333332,
+        "median_savings_per_lead": 1.3499999999999999,
+        "avg_wait_days": 13.125,
+        "median_wait_days": 7.0,
+        "leads_purchased": 30246,
+        "cheaper_clone_rate": 0.0007934933544931561
+      },
+      {
+        "campaign_id": 799,
+        "source_name": "PingLogix PR",
+        "broker_id": 607,
+        "broker_name": "PingLogix LLC",
+        "leads_with_cheaper_later": 27,
+        "total_savings_if_waited": 15.900000000000002,
+        "avg_savings_per_lead": 0.588888888888889,
+        "median_savings_per_lead": 0.3999999999999999,
+        "avg_wait_days": 17.11111111111111,
+        "median_wait_days": 16,
+        "leads_purchased": 76644,
+        "cheaper_clone_rate": 0.0003522780648191639
+      },
+      {
+        "campaign_id": 639,
+        "source_name": "Price Reject",
+        "broker_id": 518,
+        "broker_name": "Leads Gate",
+        "leads_with_cheaper_later": 18,
+        "total_savings_if_waited": 10.3,
+        "avg_savings_per_lead": 0.5722222222222223,
+        "median_savings_per_lead": 0.3500000000000001,
+        "avg_wait_days": 8.666666666666666,
+        "median_wait_days": 3.5,
+        "leads_purchased": 128968,
+        "cheaper_clone_rate": 0.00013956950561379568
+      },
+      {
+        "campaign_id": 711,
+        "source_name": "$2 tier",
+        "broker_id": 593,
+        "broker_name": "Dogstar Digital Corp",
+        "leads_with_cheaper_later": 9,
+        "total_savings_if_waited": 8.9,
+        "avg_savings_per_lead": 0.9888888888888889,
+        "median_savings_per_lead": 1.0,
+        "avg_wait_days": 11.0,
+        "median_wait_days": 3,
+        "leads_purchased": 13722,
+        "cheaper_clone_rate": 0.0006558810668998689
+      },
+      {
+        "campaign_id": 440,
+        "source_name": "Standard",
+        "broker_id": 482,
+        "broker_name": "Search ROI, LLC",
+        "leads_with_cheaper_later": 27,
+        "total_savings_if_waited": 8.200000000000003,
+        "avg_savings_per_lead": 0.3037037037037038,
+        "median_savings_per_lead": 0.30000000000000004,
+        "avg_wait_days": 15.962962962962964,
+        "median_wait_days": 12,
+        "leads_purchased": 30818,
+        "cheaper_clone_rate": 0.0008761113634888701
+      },
+      {
+        "campaign_id": 712,
+        "source_name": "$3 tier",
+        "broker_id": 593,
+        "broker_name": "Dogstar Digital Corp",
+        "leads_with_cheaper_later": 4,
+        "total_savings_if_waited": 7.000000000000001,
+        "avg_savings_per_lead": 1.7500000000000002,
+        "median_savings_per_lead": 2.2,
+        "avg_wait_days": 8.0,
+        "median_wait_days": 1.5,
+        "leads_purchased": 4246,
+        "cheaper_clone_rate": 0.0009420631182289214
+      },
+      {
+        "campaign_id": 317,
+        "source_name": "CPL1",
+        "broker_id": 149,
+        "broker_name": "Pingyo",
+        "leads_with_cheaper_later": 24,
+        "total_savings_if_waited": 5.749999999999999,
+        "avg_savings_per_lead": 0.2395833333333333,
+        "median_savings_per_lead": 0.19999999999999996,
+        "avg_wait_days": 17.5,
+        "median_wait_days": 17.0,
+        "leads_purchased": 4972,
+        "cheaper_clone_rate": 0.004827031375703942
+      },
+      {
+        "campaign_id": 793,
+        "source_name": "EPC Catch all",
+        "broker_id": 143,
+        "broker_name": "Leadtree Global",
+        "leads_with_cheaper_later": 15,
+        "total_savings_if_waited": 4.100000000000001,
+        "avg_savings_per_lead": 0.27333333333333343,
+        "median_savings_per_lead": 0.20000000000000007,
+        "avg_wait_days": 7.666666666666667,
+        "median_wait_days": 6,
+        "leads_purchased": 78840,
+        "cheaper_clone_rate": 0.0001902587519025875
+      },
+      {
+        "campaign_id": 707,
+        "source_name": "Price Reject",
+        "broker_id": 418,
+        "broker_name": "Acquire Interactive",
+        "leads_with_cheaper_later": 5,
+        "total_savings_if_waited": 3.4000000000000004,
+        "avg_savings_per_lead": 0.68,
+        "median_savings_per_lead": 0.5,
+        "avg_wait_days": 6.4,
+        "median_wait_days": 7,
+        "leads_purchased": 10411,
+        "cheaper_clone_rate": 0.00048026126212659685
+      },
+      {
+        "campaign_id": 423,
+        "source_name": "Premium 2.0",
+        "broker_id": 473,
+        "broker_name": "Lead Economy",
+        "leads_with_cheaper_later": 2,
+        "total_savings_if_waited": 2.6,
+        "avg_savings_per_lead": 1.3,
+        "median_savings_per_lead": 1.3,
+        "avg_wait_days": 43.5,
+        "median_wait_days": 43.5,
+        "leads_purchased": 145,
+        "cheaper_clone_rate": 0.013793103448275862
+      },
+      {
+        "campaign_id": 676,
+        "source_name": "Price Reject",
+        "broker_id": 188,
+        "broker_name": "ITMedia",
+        "leads_with_cheaper_later": 3,
+        "total_savings_if_waited": 2.5,
+        "avg_savings_per_lead": 0.8333333333333334,
+        "median_savings_per_lead": 1.0,
+        "avg_wait_days": 14.666666666666666,
+        "median_wait_days": 11,
+        "leads_purchased": 8034,
+        "cheaper_clone_rate": 0.0003734129947722181
+      },
+      {
+        "campaign_id": 672,
+        "source_name": "Price Reject",
+        "broker_id": 487,
+        "broker_name": "Stop Go",
+        "leads_with_cheaper_later": 5,
+        "total_savings_if_waited": 2.1,
+        "avg_savings_per_lead": 0.42000000000000004,
+        "median_savings_per_lead": 0.5,
+        "avg_wait_days": 9.8,
+        "median_wait_days": 6,
+        "leads_purchased": 9342,
+        "cheaper_clone_rate": 0.0005352172982230786
+      },
+      {
+        "campaign_id": 563,
+        "source_name": "Premium 2.0",
+        "broker_id": 536,
+        "broker_name": "YA Solutions",
+        "leads_with_cheaper_later": 1,
+        "total_savings_if_waited": 1.2,
+        "avg_savings_per_lead": 1.2,
+        "median_savings_per_lead": 1.2,
+        "avg_wait_days": 0.0,
+        "median_wait_days": 0,
+        "leads_purchased": 99,
+        "cheaper_clone_rate": 0.010101010101010102
+      },
+      {
+        "campaign_id": 519,
+        "source_name": "Premium",
+        "broker_id": 518,
+        "broker_name": "Leads Gate",
+        "leads_with_cheaper_later": 1,
+        "total_savings_if_waited": 0.6000000000000001,
+        "avg_savings_per_lead": 0.6000000000000001,
+        "median_savings_per_lead": 0.6000000000000001,
+        "avg_wait_days": 32.0,
+        "median_wait_days": 32,
+        "leads_purchased": 801,
+        "cheaper_clone_rate": 0.0012484394506866417
+      },
+      {
+        "campaign_id": 339,
+        "source_name": "Tea Trial",
+        "broker_id": 306,
+        "broker_name": "Teapot",
+        "leads_with_cheaper_later": 1,
+        "total_savings_if_waited": 0.4,
+        "avg_savings_per_lead": 0.4,
+        "median_savings_per_lead": 0.4,
+        "avg_wait_days": 30.0,
+        "median_wait_days": 30,
+        "leads_purchased": 1340,
+        "cheaper_clone_rate": 0.0007462686567164179
+      },
+      {
+        "campaign_id": 710,
+        "source_name": "$1 tier",
+        "broker_id": 593,
+        "broker_name": "Dogstar Digital Corp",
+        "leads_with_cheaper_later": 1,
+        "total_savings_if_waited": 0.4,
+        "avg_savings_per_lead": 0.4,
+        "median_savings_per_lead": 0.4,
+        "avg_wait_days": 2.0,
+        "median_wait_days": 2,
+        "leads_purchased": 10510,
+        "cheaper_clone_rate": 9.514747859181732e-05
+      },
+      {
+        "campaign_id": 795,
+        "source_name": "Stop Go 0.50 Catch All",
+        "broker_id": 487,
+        "broker_name": "Stop Go",
+        "leads_with_cheaper_later": 2,
+        "total_savings_if_waited": 0.19999999999999996,
+        "avg_savings_per_lead": 0.09999999999999998,
+        "median_savings_per_lead": 0.09999999999999998,
+        "avg_wait_days": 18.5,
+        "median_wait_days": 18.5,
+        "leads_purchased": 3158,
+        "cheaper_clone_rate": 0.0006333122229259025
+      }
+    ]
+  }
 }
