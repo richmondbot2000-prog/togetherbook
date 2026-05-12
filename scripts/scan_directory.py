@@ -101,10 +101,12 @@ def normalize(u: dict, tenant: str) -> dict:
     name = u.get('name') or {}
     orgs = (u.get('organizations') or [{}])
     primary_org = next((o for o in orgs if o.get('primary')), orgs[0]) if orgs else {}
-    # Aliases the admin configured (user-editable). Excludes the auto-generated
-    # *.test-google-a.com domain aliases via the separate nonEditableAliases
-    # bucket, which we intentionally drop.
-    aliases = [a for a in (u.get('aliases') or []) if a]
+    # User-editable aliases + non-editable ones (auto-generated when a domain is
+    # configured as a Workspace alias-domain — these are the rgroup.co.uk /
+    # mail.letme.co.uk / etc. ones the user expects to see). We strip the
+    # *.test-google-a.com autoprovisioned ones which never appear on real mail.
+    raw_aliases = (u.get('aliases') or []) + (u.get('nonEditableAliases') or [])
+    aliases = sorted({a for a in raw_aliases if a and not a.endswith('.test-google-a.com')})
     return {
         'email':       u.get('primaryEmail') or '',
         'aliases':     aliases,
