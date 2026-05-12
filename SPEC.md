@@ -414,43 +414,187 @@ The Directory page is the most involved data dependency. Setup steps, recorded f
 
 ### 11.1 Directory page (`directory.html`)
 
-Merges two JSON files:
-- `staff.json` — every Workspace user (61 in May 2026)
-- `staff-activity.json` — per-user 60-day warehouse activity (writes_60d, last_active_utc, tenants[], primary_tenant, top_warehouse) plus a parallel list of `external_users` (warehouse-only people not in Workspace)
+#### 11.1.1 Purpose
 
-**Sort order:**
-1. Has activity? (active first, then inactive Workspace)
-2. Within active: `primary_tenant` priority — `transform` / `together` (rank 0), `rgroup` / `rgdc` / `letme` (rank 1), everything else (rank 2)
-3. Within tenant: `writes_60d` desc
-4. Inactive Workspace accounts at the end, alphabetical by name
+The Directory is **the single point of reference and control for every user record across every Richmond Group system**. For each person it draws together:
 
-**Identity matching strategy** (in `scan_staff_activity.py`):
+- their Google Workspace account(s) (identity, login, mail, Drive)
+- their warehouse / loanbook activity (who's actually writing to Central Services in the last 60 days)
+- their HR record from the two payroll CSVs (employer, employee #, DOB, address, mobile, start, termination)
+- any free-form annotations the team has added (phone overrides, start-date overrides)
+
+A second, equally important purpose: **per-seat billing visibility for leavers**. Suspended accounts are never hidden — they stay on the list forever, greyed out and sorted to the bottom, so an ex-employee can't silently keep costing money or holding system access. The "Suspend + route" action both halts the seat fee (on the Flex billing plan) and forwards incoming mail to a colleague, so no email is lost when someone leaves.
+
+#### 11.1.2 Data sources and refresh cadence
+
+| Source | File / key | Owner | Refresh cadence | Failure mode |
+|---|---|---|---|---|
+| Google Workspace user list | `staff.json` (repo) | `scan_directory.py` | hourly via `refresh-directory.yml` | Page falls back to last good `staff.json`. Refresh failure is visible in `gh run list --workflow=refresh-directory.yml`. |
+| Warehouse activity (per user, 60d) | `staff-activity.json` (repo) | `scan_staff_activity.py` | hourly :15 via `refresh-staff-activity.yml` | Page still renders Workspace rows without activity meta. |
+| Annotations (notes) | `annotations.json` (repo) | `apifk-annotations-worker` writes on Save | on-demand (every Save) | Read fails silently → form starts empty; payroll-fallback still pre-fills. |
+| Payroll | `PAYROLL_KV` namespace, key `current` (Cloudflare Workers KV, **NOT** in repo) | manual: user runs `scripts/scan_payroll.py` against the two CSVs in `~/Desktop/wiki/Payroll/` and pastes the JSON into KV | manual — every time HR sends a refreshed CSV (typically monthly; **monthly reminder emails go out automatically** via `.github/workflows/email-payroll-monthly.yml` to `Payroll@letme.com` on the 1st of each month) | Endpoint returns 503; page just doesn't render the Payroll section. |
+| Workspace audit log (suspend / route / create) | `workspace-actions.json` (repo) | `apifk-workspace-worker` appends per action | on-demand | Page renders without the "→ forwards to X" chip. |
+
+Both `staff.json` and `staff-activity.json` are committed to the repo (no PII). `PAYROLL_KV` is **deliberately off-repo** because the CSVs contain DOBs, home addresses, and mobile numbers — only reachable via the Cloudflare-Access-gated endpoint `book.togetherbook.net/api/workspace/payroll`. The `github.io` public mirror cannot fetch it (no Worker route there) so the Payroll section is invisible there.
+
+#### 11.1.3 Identity matching — joining the three sources
+
+Workspace ↔ Activity ↔ Payroll are matched independently, because each system has a different primary key:
+
+**Workspace → Activity** (`scan_staff_activity.py`):
 - Strict: `local-part@<known-domain>` only. Known domains: `rgroup.co.uk`, `letme.co.uk`, `letme.com`, `transformcredit.com`, `togetherloans.com`, `lendingmate.ca`, `rapida.bg`, `rapidamoney.pl`, `clearloans.com.au`, `fianceo.com`, `tandolan.dk`, `tandolaina.fi`, `tando.dk`.
-- Bare-name matches (`Ed`, `Sophie`, `Igor`) deliberately excluded — would collide across staff sharing first names.
-- Aliases consolidated in `short_tenant()`: `togetherloans` → `transform`, `tandolan/tandolaina/tando` → `tandolan`, `rapidamoney` → `rapida`.
+- Bare-name matches (`Ed`, `Sophie`, `Igor`) **deliberately excluded** — collide across staff sharing first names.
+- Tenant aliases consolidated in `short_tenant()`: `togetherloans` → `transform`, `tandolan/tandolaina/tando` → `tandolan`, `rapidamoney` → `rapida`.
+- Warehouse usernames that look like emails but don't map to any Workspace account are emitted as `external_users` and rendered with dashed-photo placeholders.
 
-**Layout (changed 2026-05-12):** horizontal row list instead of a grid of cards. Each row is a `<button>` of the form `[44px avatar] [name · title · email + activity meta] [department + workspace chips right-aligned]`. On viewports ≤700px the aside chips wrap below the body. The grid-of-cards predecessor used 96px circular photos and 220px-min cards — kept in git history if we ever want it back.
+**Workspace → Payroll** (`payrollAllFor()` in `directory.html`, alias generation in `scan_payroll.py`):
+1. Try `payrollData.by_email[lowercase email]` — direct match (4 of 60 records have email today).
+2. Fall back to `payrollData.by_name[<alias>]` over a list of candidates derived from the Workspace user:
+   - `"given family"` lowercase
+   - `"given last-token-of-family"` (handles hyphenated family names: `Morgan Kennedy-Smith` → `morgan smith`)
+   - `"first-of-name last-of-name"` lowercase
+   - All of the above with apostrophes/hyphens/dots stripped (`Philip O'Neill` → `philip oneill`)
+3. The scanner emits **alias keys** so the same record matches multiple Workspace names:
+   - `"first last"` (full legal)
+   - `"last-token-of-firsts last"` (handles multi-token first names: `Ho Chun Cyrus Leung` → `cyrus leung`, `Rachid James Benamor` → `james benamor`)
+   - `"<nickname> last"` for known long-form first names (`Daniel`→`Dan`, `Philip`→`Phil`, `Maximillian`→`Max`, `Benjamin`→`Ben`, `Thomas`→`Tom`, plus ~20 more — see `NICKNAMES` map in `scripts/scan_payroll.py`).
+   - Punctuation-stripped variants of each.
 
-**Row variants:**
-- Workspace staff: photo (or initials placeholder), name + title + email, activity meta (`last seen … · [tenants] · mostly <warehouse>`), department + Workspace-tenant chip aside
-- Warehouse-only: dashed-border placeholder, derived display name from local-part, italic "no Workspace account" tag, activity meta; no aside chips
+**Workspace ↔ Workspace** (sibling accounts — same person, multiple domains):
+- The detail card groups Workspace accounts by lowercase `(given, family)` via `workspaceSiblings()` so e.g. Mourad Malki's `@letme.com` and `@clearloans.com.au` accounts both show under "Other emails" when viewing either.
+- Each sibling account is **still rendered as its own row** (so per-tenant activity is visible). The merge is in the detail card only.
 
-**Detail card + per-person notes (added 2026-05-12):** clicking a row opens a modal dialog (`#dirModalBackdrop` / `#dirModal`) showing every field we hold — Workspace (email, full name, department, tenants, suspended/admin flags) and warehouse activity (writes_60d, last active, tenants, primary tenant, top warehouse) — plus a two-input form for **phone** and **start date**. Saved values are surfaced inline in the row meta (`phone +44… · started 5 May 2026`) so the data is visible from the list. Close via × button, Escape key, or click outside. The mailto: action the row used to perform is now an "Email" button inside the card.
+#### 11.1.4 Field precedence (which source wins for each field)
 
-**Payroll integration in the detail card (added 2026-05-12 evening):** detail card grows a "Payroll" section when the entry matches a record from the two payroll CSVs in `~/Desktop/wiki/Payroll`. Shows employer (LetMe Property vs Together Loans / R Group) · employee number · start date · DOB + age · mobile (tappable `tel:` link) · home address · termination date if any. **The PII never enters the repo.** `scripts/scan_payroll.py` runs locally on the user's Mac, produces a JSON keyed by `by_email` (LetMe rows, which carry email) + `by_name` (TL/RG rows, no email — matched by lowercase `"first last"`), and the user pastes that JSON into a Workers KV namespace (`apifk-payroll`, key `current`) bound to `apifk-workspace-worker` as `PAYROLL_KV`. KV is used instead of a Worker Secret because the JSON is ~28 KB and exceeds the 5.1 KB Secret limit. The Worker serves it via `GET /api/workspace/payroll` behind Cloudflare Access — the github.io public URL returns 404 (no Worker route there) and the page just doesn't render the Payroll section. Page-side matching tries email first (`by_email[u.email]`), then `"u.given u.family"` lowercase, then a last-resort split of `u.name`.
+| Field | Master | Fallback chain |
+|---|---|---|
+| Login email, name, suspended, admin, photo, department, tenants | Workspace | — (Workspace is identity) |
+| Employer, employee #, DOB, home address, termination | Payroll | — |
+| Phone, start date | Annotation > Payroll mobile/start_date | (form pre-fills with payroll; annotation overrides when saved) |
+| All other emails | Workspace siblings + Payroll email field | Displayed under "Other emails" — never silently replaces the primary |
+| Forwarding target on suspended accounts | `workspace-actions.json` (latest successful `suspend-and-route`) | — |
 
-**Workspace account status indicator (added 2026-05-12 evening):** for staff entries where `u.suspended` is false (i.e. the Workspace seat is live and billing), the row's headline shows the colored "G" logomark (`assets/google-workspace-icon.svg`) inline next to the name, and the detail card shows the full "Google Workspace" wordmark (`assets/google-workspace-wordmark.svg`) under the title. Suspended Workspace accounts show neither — instead a red `Workspace account suspended` badge sits in the same slot in the card. External (warehouse-only) entries never show the Workspace marker.
+**Conflict policy: disagreements are silent**, not surfaced. E.g. if Workspace's family-name is `Smith` and payroll's is `Jones` for the same person, we just don't match payroll → it's invisible rather than wrong. If a future flag-mismatches UI is wanted, the data is all client-side and the page can grow a banner.
 
-**Workspace admin actions from the detail card (added 2026-05-12 evening):** the detail card has a "Manage Workspace account" section for staff entries with **Suspend** / **Unsuspend** (toggled by current state) and **Delete** buttons. Destructive actions show an inline confirmation strip with the billing/recovery semantics before firing. A `+ New user` button next to the search bar opens a create-user modal (first name, last name, email, auto-generated 16-char password with copy + regen). All actions POST to `book.togetherbook.net/api/workspace/*` → `apifk-workspace-worker` (code in `worker/workspace-worker.js`) which signs a Google service-account JWT with domain-wide-delegation, impersonates `james.benamor@letme.co.uk`, and calls the Admin SDK Directory API. The Worker also appends to `workspace-actions.json` (audit log, FIFO-trimmed to 2000 entries) via the GitHub Contents API on every action; the commit message (`Workspace: <action> <email> by <actor>`) makes git history a parallel audit trail.
+#### 11.1.5 Duplicate-record handling
 
-**Authorisation chain** for workspace actions: (1) Cloudflare Access gates the route on the edge — only logged-in `@letme.com` sessions reach the Worker. (2) The Worker enforces `ADMIN_EMAILS` (comma-separated secret, currently just `james.benamor@letme.com`) — anyone else with `@letme.com` access can read the Directory but cannot suspend/delete. (3) The service account has the `admin.directory.user` + `apps.licensing` OAuth scopes authorised via DWD (upgraded from the previous read-only scopes on 2026-05-12). (4) `james.benamor@letme.co.uk` (the impersonated account) is a Super Admin, required by the Admin SDK for user-management endpoints. Setup walkthrough: `worker/WORKSPACE_SETUP.md`.
+Two design decisions worth flagging:
 
-**Annotations persistence (server-side, added 2026-05-12 same evening):**
-- **Storage**: `annotations.json` at the repo root, shape `{ schema_version, updated_at, annotations: { "<email-or-username>": { phone, start_date } } }`. Page fetches it on load alongside `staff.json` / `staff-activity.json`.
-- **Writes**: `book.togetherbook.net/api/annotations` → Cloudflare Worker `apifk-annotations-worker` (code in `worker/annotations-worker.js`). The Worker requires the `Cf-Access-Jwt-Assertion` header (CF Access already gates the route at the edge), reads the current `annotations.json` via GitHub Contents API, merges the new value (or deletes the key if both fields are empty), and commits the file back to `main`. The Worker echoes the new state back so the page updates without refetching.
-- **Auth**: the route is bound under Cloudflare Access on the `togetherbook.net` zone — only logged-in `@letme.com` users can hit it. The Worker holds a fine-grained GitHub PAT (`GITHUB_TOKEN` secret) with `Contents: read+write` on this repo only.
-- **github.io fallback**: the public `richmondbot2000-prog.github.io/togetherbook/` URL can _read_ annotations.json fine but cannot write — the Worker route only exists on `book.togetherbook.net`. A save from github.io fails fast with a 401 from the Worker.
-- **Setup steps** for both the GitHub PAT and the Cloudflare Worker are in `worker/SETUP.md`.
+1. **Payroll duplicate-record policy (changed 2026-05-12 night).** `by_email` and `by_name` are **list-valued** in the scanner output. If two payroll rows share an email or a name alias (e.g. HR exports the same person twice, or two real people share `john smith`), all records are kept. The page renders the primary (sorted: active first, most-recent start first) under "Payroll" and the others under "Also on payroll as" in manuscript red. **Never silently drop data** is the rule.
+2. **Workspace duplicate-account policy.** A person with two Workspace seats (e.g. Mourad Malki across two tenants) renders as **two rows**. They aren't merged into one row because each seat has its own per-tenant activity record. The detail card surfaces the relationship via the "Other emails" field.
+
+#### 11.1.6 UI / sort order
+
+- Row form: `[44px avatar] [name · GW icon · title · email + activity meta] [department + workspace chips]`.
+- Workspace email is shown strikethrough on **suspended** rows since direct delivery no longer works there. A brass-coloured `→ <forward-target>` chip is appended when the suspension came with a route-to target (read from `workspace-actions.json`).
+- Sort (top to bottom):
+  1. **Suspended last** (greyed, opacity 0.55) — leavers stay visible forever so we can audit billing.
+  2. Within non-suspended: active (has DB writes in 60d) first.
+  3. Within active: `primary_tenant` priority — `transform/together` (0), `rgroup/rgdc/letme` (1), other (2).
+  4. Within tenant: `writes_60d` desc.
+  5. Inactive Workspace accounts at the end (still above suspended), alphabetical.
+- The `dir-row--suspended` class drops opacity to 0.55 and removes the row's background panel.
+
+#### 11.1.7 Workspace admin actions (Suspend + route, Unsuspend, Create user)
+
+The detail card's "Manage Workspace account" section drives Cloudflare Worker `apifk-workspace-worker2` at `book.togetherbook.net/api/workspace/*`. Actions:
+
+- **POST `/api/workspace/suspend-and-route`** `{ email, route_to }` — single atomic operation that (1) adds `route_to` as a `forwardingAddresses` on the user's mailbox (auto-verifies for in-domain addresses), (2) enables `autoForwarding` with `disposition: leaveInInbox`, (3) sets `suspended: true` on the user. Replaces the older bare "Suspend" — there is no Suspend-without-routing, because forgetting to set up a forward is the main "ex-employee email goes into a black hole" failure mode.
+- **POST `/api/workspace/unsuspend`** `{ email }` — sets `suspended: false`, then best-effort disables `autoForwarding`.
+- **POST `/api/workspace/create`** `{ given_name, family_name, email, password, org_unit_path? }` — creates a new Workspace user with `changePasswordAtNextLogin: true`.
+- **No Delete endpoint.** Deleting permanently removes the seat and its mailbox from the audit history; we never want that. Suspended-with-routing is the leaver workflow.
+
+Per-action authorisation chain:
+1. **Cloudflare Access** gates the route at the edge — only logged-in `@letme.com` sessions reach the Worker. Failure: 302 to CF Access login.
+2. The Worker checks `Cf-Access-Jwt-Assertion` header presence. Failure: 401.
+3. The Worker checks the CF-Access-Authenticated-User-Email is in the `ADMIN_EMAILS` env var (comma-separated, currently `james.benamor@letme.com`). Failure: 403.
+4. **Two Google access tokens are minted** per action via service-account JWT + DWD:
+   - **Admin token** — impersonates `IMPERSONATE_USER` (`james.benamor@letme.co.uk`, a Super Admin), scope `admin.directory.user + apps.licensing`. Used for the suspend/unsuspend/create endpoints.
+   - **Mailbox token** — impersonates the **target user**, scope `gmail.settings.basic`. Used for the forwarding setup. This is why Suspend+route needs `gmail.settings.basic` added to the DWD config in `admin.google.com` (Step 3 of `worker/WORKSPACE_SETUP.md`).
+5. Failure: 502 with the Google error message.
+
+**Audit log:** every action appends an entry to `workspace-actions.json` in the repo via the GitHub Contents API. The Worker holds a fine-grained PAT (`GITHUB_TOKEN` secret) with `Contents: read+write` on `richmondbot2000-prog/togetherbook`. The audit file is FIFO-trimmed to 2000 entries; older history persists in git via the commit log (commit message is `Workspace: <action> <email> by <actor>`). The page reads `workspace-actions.json` to surface forwarding targets on suspended rows; if it ever disappears, the UI degrades by hiding the `→ chip` but actions still work.
+
+#### 11.1.8 Annotations persistence (Notes form)
+
+- **Storage:** `annotations.json` at the repo root. Shape `{ schema_version, updated_at, annotations: { "<email-or-username>": { phone, start_date } } }`.
+- **Writes:** `book.togetherbook.net/api/annotations` → Worker `apifk-annotations-worker` (Cloudflare Worker name on the dashboard is the auto-generated `shiny-heart-00f8`). The Worker reads the current file via GitHub Contents API, merges in the new value (or deletes the key when both fields are empty), and commits back to `main`.
+- The form **pre-fills** Phone and Start Date with the matched payroll record's mobile/start_date when no annotation exists — so the user is editing an existing value rather than typing from a blank box.
+- **github.io fallback:** the public github.io URL can read `annotations.json` but cannot write — the Worker route only exists on `book.togetherbook.net`.
+
+#### 11.1.9 Payroll CSV ingestion (the manual process)
+
+This is the one place where personally-identifiable HR data enters the system. It must stay manual.
+
+1. HR sends the two spreadsheets (LetMe Property Management + Together Loans / R Group export) to `james.benamor@rgroup.co.uk`. The monthly cron at `.github/workflows/email-payroll-monthly.yml` prompts them on the 1st of each month.
+2. James exports each as CSV and drops both into `~/Desktop/wiki/Payroll/`, overwriting the previous files **with the same filenames** (or, if HR has renamed them, update `LETME_FILE` / `TLRG_FILE` constants at the top of `scripts/scan_payroll.py`).
+3. Run: `python3 ~/Desktop/togetherbook/scripts/scan_payroll.py | pbcopy`.
+4. Cloudflare dashboard → **Workers KV → apifk-payroll → KV Pairs**. Delete the `current` entry, then **Add entry** with key `current` and paste. (Cloudflare's KV UI has no in-place edit, only View/Delete.)
+5. No Worker redeploy needed — the next request reads the new value.
+
+**Schema of the produced JSON** (don't reshape unless you also update the page):
+```jsonc
+{
+  "schema_version": 1,
+  "updated_at": "<ISO>",
+  "counts": { "total": N, "letme": N, "tl_rg": N, "with_email": N },
+  "by_email": { "<lowercase-email>": [<record>, ...] },   // ALWAYS list-valued
+  "by_name":  { "<lowercase-alias>": [<record>, ...] }    // ALWAYS list-valued
+}
+```
+Each record:
+```jsonc
+{
+  "employer": "LetMe Property Management" | "Together Loans / R Group",
+  "employee_number": "string|null",
+  "first_name": "string",
+  "last_name": "string",
+  "email": "string|null",
+  "dob": "YYYY-MM-DD",
+  "age": int|null,
+  "mobile": "string|null",
+  "address": "string|null",
+  "start_date": "YYYY-MM-DD",
+  "termination_date": "YYYY-MM-DD|null",
+  "employee_group": "string|null"
+}
+```
+
+Reasonable expectation: ~60 records, ~28-30 KB minified. The 5.1 KB Worker Secret limit is why this is in KV (which supports up to 25 MB per value).
+
+#### 11.1.10 Failure modes — what to check if the page misbehaves
+
+| Symptom | Most likely cause | Fix |
+|---|---|---|
+| Payroll section missing on everyone | `PAYROLL_KV` empty / not bound; endpoint returns 503 | Re-run scanner → paste into KV → check `book.togetherbook.net/api/workspace/payroll` in browser returns JSON |
+| Payroll section missing on one specific person | No match — they aren't in either CSV, OR their Workspace name is too different from payroll's legal name (no alias covers the gap) | Check unmatched list with the Python diagnostic in `scripts/scan_payroll.py`; if it's worth fixing, either rename them in Workspace, add a nickname to the `NICKNAMES` map, or accept that one record won't match |
+| "Suspend + route" returns 502 | Most likely: `gmail.settings.basic` scope not added in DWD | `admin.google.com → Security → Access and data control → API controls → Manage Domain-Wide Delegation` — edit the existing Client ID, add scope `https://www.googleapis.com/auth/gmail.settings.basic` |
+| "Suspend + route" returns 401/403 | CF Access session expired, or `ADMIN_EMAILS` doesn't include the actor | Re-auth via book.togetherbook.net; or edit `ADMIN_EMAILS` env var on `apifk-workspace-worker2` and redeploy |
+| Forwarding chip ("→ X") missing on a suspended row | `workspace-actions.json` doesn't have a successful `suspend-and-route` for that email | Look at the file in repo; if the suspend happened outside this UI (e.g. via Admin Console directly) there's no record. Future-proof: have the suspender always use the page. |
+| Whole page blank / 404 | GitHub Pages CNAME `book.togetherbook.net` lost its HTTPS cert (state goes `bad_authz`) | `gh api repos/richmondbot2000-prog/togetherbook/pages` to check `https_certificate.state`. If bad, in repo Settings → Pages, uncheck and re-check "Enforce HTTPS" to retry ACME. |
+| Person's data is right in payroll but wrong on the page | Page caches `staff.json` etc. Check the cache-bust query string (`?v=<unix-ts>` on CSS/JSON refs) bumps on every directory.html commit |
+
+#### 11.1.11 Setup checklist (rebuilding from scratch)
+
+If the Workers / KV / DWD ever need to be re-created:
+
+1. **Service account** (one-time): `directory-reader@letme-directory.iam.gserviceaccount.com` — key JSON stored locally at `~/Desktop/wiki/letme-directory-f8cf5d0a941f.json` (gitignored) and pasted into both Workers' `GOOGLE_SERVICE_ACCOUNT_JSON` secret.
+2. **DWD scopes** authorised in `admin.google.com` against the service account's numeric Client ID:
+   - `https://www.googleapis.com/auth/admin.directory.user`
+   - `https://www.googleapis.com/auth/admin.directory.user.readonly`
+   - `https://www.googleapis.com/auth/admin.directory.group.readonly` (added by accident, harmless, kept)
+   - `https://www.googleapis.com/auth/apps.licensing`
+   - `https://www.googleapis.com/auth/gmail.settings.basic`
+3. **GitHub PATs** (one-time): fine-grained on the user `richmondbot2000-prog`, `Contents: read+write` on `togetherbook` only. Same token is reused by both Workers as `GITHUB_TOKEN` secret.
+4. **Cloudflare Workers** (two of them):
+   - `apifk-workspace-worker2` — route `book.togetherbook.net/api/workspace/*`. Bindings: `GOOGLE_SERVICE_ACCOUNT_JSON`, `GITHUB_TOKEN`, `IMPERSONATE_USER` (`james.benamor@letme.co.uk`), `ADMIN_EMAILS` (`james.benamor@letme.com`), KV binding `PAYROLL_KV` → `apifk-payroll` namespace. Code: `worker/workspace-worker.js`.
+   - `shiny-heart-00f8` (annotations) — route `book.togetherbook.net/api/annotations*`. Bindings: `GITHUB_TOKEN`. Code: `worker/annotations-worker.js`.
+5. **Cloudflare Access** application on the `togetherbook.net` zone with policy "Allow any `@letme.com` email" for the whole `book.togetherbook.net/*` path. The Worker enforces a stricter `ADMIN_EMAILS` for destructive actions on top.
+6. **GitHub Actions secrets** for the hourly refresh: `WORKSPACE_SERVICE_ACCOUNT_JSON`, `WORKSPACE_DELEGATE_USER`, `FABRIC_CLIENT_*`, `SMTP_USERNAME` / `SMTP_PASSWORD` (for the monthly payroll-request email).
+
+Full setup walkthroughs:
+- `worker/SETUP.md` — annotations Worker (one-time, ~10 min)
+- `worker/WORKSPACE_SETUP.md` — workspace Worker (one-time, ~20 min including DWD scope add)
 
 ### 11.2 TopUps page (`topups.html`)
 
