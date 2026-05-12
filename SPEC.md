@@ -1,6 +1,6 @@
 # TogetherBOOK — Site Specification
 
-_The source-of-truth document for `togetherbook.net` / `richmondbot2000-prog/APIsForKids`. Lives in this repo so future maintainers find it next to the code. **A successor Claude or engineer should be able to pick this up cold and operate the site competently.**_
+_The source-of-truth document for `togetherbook.net` / `richmondbot2000-prog/togetherbook`. Lives in this repo so future maintainers find it next to the code. **A successor Claude or engineer should be able to pick this up cold and operate the site competently.**_
 
 **Last reviewed:** 2026-05-12 (overnight rewrite to cover the source-quality analysis, brandwatch email notifications, multi-tenant Directory, and Cloudflare Access policy update)
 
@@ -49,8 +49,8 @@ A static-hosted internal site (cream paper / ink-blue / brass theme) that explai
 |---|---|
 | Canonical (gated) | <https://book.togetherbook.net> — Cloudflare Access in front, only `@letme.com` Google accounts pass |
 | Apex redirect | <https://togetherbook.net> 301 → `book.togetherbook.net` (Cloudflare Page Rule) |
-| Public backdoor | <https://richmondbot2000-prog.github.io/APIsForKids/> — same content, no login. Open by design. Pluggable by going GitHub Pro $4/mo + private source. |
-| Source of truth | <https://github.com/richmondbot2000-prog/APIsForKids> (public repo, `main` branch deploys via GitHub Pages) |
+| Public backdoor | <https://richmondbot2000-prog.github.io/togetherbook/> — same content, no login. Open by design. Pluggable by going GitHub Pro $4/mo + private source. |
+| Source of truth | <https://github.com/richmondbot2000-prog/togetherbook> (public repo, `main` branch deploys via GitHub Pages) |
 
 **Cloudflare Access setup**: Cloudflare One team `togetherbook` (Free plan). DNS for `book.togetherbook.net` proxied (orange cloud) to GitHub Pages IPs `185.199.108-111.153`. Cloudflare Universal SSL serves HTTPS to users; the GitHub Pages backend stays on HTTP. (We routed around `bad_authz` on Pages' Let's Encrypt for 12+ hours by enabling Cloudflare proxy.)
 
@@ -175,7 +175,7 @@ GitHub Actions schedules are written in classic 5-field cron syntax (UTC):
 
 **Time zone note:** GitHub Actions cron is always in UTC, never in the runner's local TZ. The 06:00–23:00 window roughly maps to "fully covered by the time anyone's awake in London" while leaving 00:00–05:00 UTC quiet (which is overnight in the UK and late-evening to early-morning across the US).
 
-**Manual triggering** (any workflow): `gh workflow run <name>.yml --repo richmondbot2000-prog/APIsForKids`. The `workflow_dispatch` trigger bypasses the guard so the run always does work, useful for forcing a fresh snapshot after a column-name fix or a data-source change.
+**Manual triggering** (any workflow): `gh workflow run <name>.yml --repo richmondbot2000-prog/togetherbook`. The `workflow_dispatch` trigger bypasses the guard so the run always does work, useful for forcing a fresh snapshot after a column-name fix or a data-source change.
 
 ---
 
@@ -370,11 +370,11 @@ There's no Cloudflare API integration. If we ever need one, the old DNS-flip tok
 
 | | Value |
 |---|---|
-| Repo | `richmondbot2000-prog/APIsForKids` (public) |
+| Repo | `richmondbot2000-prog/togetherbook` (public) |
 | Auth on dev machine | `gh` CLI logged in as `richmondbot2000-prog` (token in macOS keychain) |
 | Pages source | `main` branch, root |
 | Action runner | GitHub-hosted `ubuntu-latest` |
-| Secrets list | `gh secret list --repo richmondbot2000-prog/APIsForKids` |
+| Secrets list | `gh secret list --repo richmondbot2000-prog/togetherbook` |
 
 ---
 
@@ -449,7 +449,7 @@ Merges two JSON files:
 - **Storage**: `annotations.json` at the repo root, shape `{ schema_version, updated_at, annotations: { "<email-or-username>": { phone, start_date } } }`. Page fetches it on load alongside `staff.json` / `staff-activity.json`.
 - **Writes**: `book.togetherbook.net/api/annotations` → Cloudflare Worker `apifk-annotations-worker` (code in `worker/annotations-worker.js`). The Worker requires the `Cf-Access-Jwt-Assertion` header (CF Access already gates the route at the edge), reads the current `annotations.json` via GitHub Contents API, merges the new value (or deletes the key if both fields are empty), and commits the file back to `main`. The Worker echoes the new state back so the page updates without refetching.
 - **Auth**: the route is bound under Cloudflare Access on the `togetherbook.net` zone — only logged-in `@letme.com` users can hit it. The Worker holds a fine-grained GitHub PAT (`GITHUB_TOKEN` secret) with `Contents: read+write` on this repo only.
-- **github.io fallback**: the public `richmondbot2000-prog.github.io/APIsForKids/` URL can _read_ annotations.json fine but cannot write — the Worker route only exists on `book.togetherbook.net`. A save from github.io fails fast with a 401 from the Worker.
+- **github.io fallback**: the public `richmondbot2000-prog.github.io/togetherbook/` URL can _read_ annotations.json fine but cannot write — the Worker route only exists on `book.togetherbook.net`. A save from github.io fails fast with a 401 from the Worker.
 - **Setup steps** for both the GitHub PAT and the Cloudflare Worker are in `worker/SETUP.md`.
 
 ### 11.2 TopUps page (`topups.html`)
@@ -851,7 +851,7 @@ Comment out the `Send email` step in `.github/workflows/refresh-brandwatch.yml`.
 
 ### Editing copy or HTML
 
-1. Edit the file in `~/Desktop/APIsForKids/`
+1. Edit the file in `~/Desktop/togetherbook/`
 2. **Bump cache-bust query strings on every CSS link and the logo `<img src>` on every page** (see git history for the small Python regex pattern). Without this, GitHub Pages' 600s CDN cache + browser cache will hold old CSS.
 3. `git add -A && git commit -m "summary" && git push`
 4. ~30s later GitHub Pages rebuilds; another ~10s for Cloudflare Access' edge to propagate.
@@ -875,7 +875,7 @@ Follow the established pattern in `refresh-row-counts.yml`:
 ```python
 import re, time
 from pathlib import Path
-ROOT = Path('/Users/richmondrobot/Desktop/APIsForKids')
+ROOT = Path('/Users/richmondrobot/Desktop/togetherbook')
 v = str(int(time.time()))
 pages = ['index.html','apis.html','robots.html','yesterday.html','brandwatch.html',
          '1stcontact.html','directory.html','database.html','stats.html','topups.html',
@@ -910,9 +910,9 @@ Without this, you'll see the page render with an old JSON schema while the new s
 ### 15.1 Manually refresh a single page's data
 
 ```sh
-gh workflow run refresh-topups.yml --repo richmondbot2000-prog/APIsForKids
-gh run list --workflow=refresh-topups.yml --repo richmondbot2000-prog/APIsForKids --limit 1
-gh run watch <run-id> --repo richmondbot2000-prog/APIsForKids --exit-status
+gh workflow run refresh-topups.yml --repo richmondbot2000-prog/togetherbook
+gh run list --workflow=refresh-topups.yml --repo richmondbot2000-prog/togetherbook --limit 1
+gh run watch <run-id> --repo richmondbot2000-prog/togetherbook --exit-status
 git pull --rebase
 ```
 
@@ -924,7 +924,7 @@ The `workflow_dispatch` trigger bypasses the same-day guard so the refresh alway
 for w in refresh-yesterday-payouts refresh-row-counts refresh-brandwatch \
          refresh-1st-contact refresh-directory refresh-staff-activity \
          refresh-topups; do
-  gh workflow run "$w.yml" --repo richmondbot2000-prog/APIsForKids
+  gh workflow run "$w.yml" --repo richmondbot2000-prog/togetherbook
 done
 ```
 
@@ -935,10 +935,10 @@ Useful after a global change (e.g. updating a shared filter or reformatting JSON
 ```sh
 # JSON-shaped secrets (Workspace service account)
 gh secret set WORKSPACE_SERVICE_ACCOUNT_JSON \
-  --repo richmondbot2000-prog/APIsForKids < /path/to/key.json
+  --repo richmondbot2000-prog/togetherbook < /path/to/key.json
 
 # Plain-string secrets (most others)
-printf 'NEW_VALUE' | gh secret set FABRIC_CLIENT_SECRET --repo richmondbot2000-prog/APIsForKids
+printf 'NEW_VALUE' | gh secret set FABRIC_CLIENT_SECRET --repo richmondbot2000-prog/togetherbook
 ```
 
 After rotation, manually trigger any affected workflow to confirm it still runs.
@@ -946,8 +946,8 @@ After rotation, manually trigger any affected workflow to confirm it still runs.
 ### 15.4 Inspect why a workflow run failed
 
 ```sh
-gh run list --workflow=refresh-topups.yml --repo richmondbot2000-prog/APIsForKids --limit 5
-gh run view <run-id> --repo richmondbot2000-prog/APIsForKids --log-failed | tail -40
+gh run list --workflow=refresh-topups.yml --repo richmondbot2000-prog/togetherbook --limit 5
+gh run view <run-id> --repo richmondbot2000-prog/togetherbook --log-failed | tail -40
 ```
 
 The `--log-failed` flag returns only the failing step's stdout/stderr — much faster than scrolling through the full log.
@@ -989,14 +989,14 @@ The legacy single-tenant fallback (`WORKSPACE_DELEGATE_USER`) is retained for ba
 `database.md` is mirrored from `~/Desktop/wiki/Overview/06_Database_Schema.md`. To update:
 
 1. Edit the wiki version first (canonical).
-2. Copy across: `cp ~/Desktop/wiki/Overview/06_Database_Schema.md ~/Desktop/APIsForKids/database.md`
+2. Copy across: `cp ~/Desktop/wiki/Overview/06_Database_Schema.md ~/Desktop/togetherbook/database.md`
 3. Cache-bust + commit + push.
 
 (Currently this is manual. Could be automated with another GH Actions workflow that watches the wiki repo, but the schema rarely changes — manual is fine.)
 
 ### 15.8 Replace the Quiet logo
 
-1. Drop the new transparent PNG into `~/Desktop/APIsForKids/togetherbook-logo.png` (overwriting).
+1. Drop the new transparent PNG into `~/Desktop/togetherbook/togetherbook-logo.png` (overwriting).
 2. **Trim transparent padding before deploying** — the logo's visible glyph height should equal its image height. Pillow snippet:
    ```python
    from PIL import Image
@@ -1090,7 +1090,7 @@ A short list of footguns to avoid, kept brief; longer detail in `~/Desktop/wiki/
 
 - `CLAUDE.md` (this repo) — working-style notes + the nightly-update directive for Claude sessions
 - `CLAUDE_CONTEXT.md` (in the wiki repo) — operational notes for AI-assisted iteration; carries pending work and lessons learned in more conversational form
-- `~/Desktop/wiki/Overview/07_APIsForKids_Site.md` — the wiki-wide spec entry for this site, integrated alongside other Central Services docs. **Keep this in structural sync with SPEC.md.**
+- `~/Desktop/wiki/Overview/07_TogetherBook_Site.md` — the wiki-wide spec entry for this site, integrated alongside other Central Services docs. **Keep this in structural sync with SPEC.md.**
 - **`~/Desktop/wiki/partnerships-handbook.html`** — the Together Loans Partnerships Handbook. **Authoritative source** for partner terminology, commission types, AutoBlock thresholds, CPA target, dedup rules, scorecard semantics, and the partnership team's report library. Read this before doing anything substantive on the Brokers page or source-quality analysis.
 - `~/Desktop/wiki/TogetherBOOK_handoff/wiki/README.md` — the original Quiet Edition design handoff package
 - `~/Desktop/wiki/Markdown/*` — service-by-service Tettra exports, useful when adding new platform-aware pages

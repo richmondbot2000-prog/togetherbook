@@ -38,7 +38,7 @@ cat ~/Desktop/wiki/letme-directory-f8cf5d0a941f.json | pbcopy
 5. Select all the placeholder code (Cmd+A) → delete
 6. Paste the contents of `worker/workspace-worker.js` from this repo:
    ```bash
-   cat ~/Desktop/APIsForKids/worker/workspace-worker.js | pbcopy
+   cat ~/Desktop/togetherbook/worker/workspace-worker.js | pbcopy
    ```
 7. **Deploy** (top-right)
 
@@ -122,7 +122,7 @@ KV is used (not a Worker Secret) because the JSON is ~28 KB, which exceeds the 5
 
 ```bash
 # Process the two CSVs in ~/Desktop/wiki/Payroll into a single JSON blob:
-python3 ~/Desktop/APIsForKids/scripts/scan_payroll.py | pbcopy
+python3 ~/Desktop/togetherbook/scripts/scan_payroll.py | pbcopy
 ```
 
 Then in the Cloudflare dashboard → **Workers & Pages** → **KV** → open `apifk-payroll`:

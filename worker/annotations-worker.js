@@ -14,7 +14,7 @@
 //         "did this really come through Access?" check.
 
 const OWNER = "richmondbot2000-prog";
-const REPO = "APIsForKids";
+const REPO = "togetherbook";
 const FILE_PATH = "annotations.json";
 const BRANCH = "main";
 

@@ -13,7 +13,7 @@ Roughly 10-15 minutes of clicking through dashboards. You only do this once.
 2. **Token name:** `apifk-annotations-worker`
 3. **Resource owner:** `richmondbot2000-prog`
 4. **Expiration:** 1 year (max). Set a reminder; renewing is the same flow.
-5. **Repository access:** "Only select repositories" → `APIsForKids`
+5. **Repository access:** "Only select repositories" → `togetherbook`
 6. **Repository permissions:**
    - **Contents:** Read and write
 7. Generate, copy the token (starts `github_pat_…`). You won't see it again.

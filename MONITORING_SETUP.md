@@ -52,7 +52,7 @@ VoIP). Register Telegram on that number. Turn on 2FA (Settings → Privacy
 #### c. Authenticate locally
 
 ```bash
-cd /path/to/APIsForKids
+cd /path/to/togetherbook
 python3 -m venv .venv
 source .venv/bin/activate
 pip install 'telethon==1.*' httpx

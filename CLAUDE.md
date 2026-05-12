@@ -28,8 +28,8 @@ The visual treatment is the **Quiet Edition** — cream paper + ink blue + brass
 
 ## 4. The repo — orientation in 60 seconds
 
-- **Location:** `/Users/richmondrobot/Desktop/APIsForKids/`
-- **Live URLs:** `book.togetherbook.net` (Cloudflare Access gated) + `richmondbot2000-prog.github.io/APIsForKids/` (public backdoor)
+- **Location:** `/Users/richmondrobot/Desktop/togetherbook/`
+- **Live URLs:** `book.togetherbook.net` (Cloudflare Access gated) + `richmondbot2000-prog.github.io/togetherbook/` (public backdoor)
 - **GitHub auth:** `gh` CLI is logged in as `richmondbot2000-prog` (PAT in macOS keychain)
 - **Deploy flow:** `git push` to `main` → GitHub Pages rebuild (~30s) → Cloudflare edge propagation (~10s). Cache-bust CSS/image/JSON refs on every push (see SPEC §15 — "Cache-bust pattern").
 - **Data:** flat HTML files fetch JSON files at the repo root. JSON files are refreshed by `.github/workflows/refresh-*.yml` Action workflows that run Python scripts in `scripts/`. All data ultimately comes from the **Fabric data warehouse** (the Richmond Group warehouse that mirrors Central Services nightly).
@@ -68,7 +68,7 @@ Analysis unit is currently **(Broker, SourceReference1)** but a future improveme
 - **Auto-memory is on.** Save user info, working-style feedback, project context, and external references using the auto-memory format. Don't save things derivable from the code or git history.
 - **Sub-agents:** spawn `Explore` for broad codebase searches (>3 queries). For targeted lookups use grep/find directly.
 - **Background workflows:** the user often kicks off long-running workflow_dispatch runs. Use `ScheduleWakeup` for sensible delays (don't poll, don't pick exactly 5 min — see ScheduleWakeup tool description for cache-window heuristics). When a wakeup fires with a re-fired prompt and the user has paused or moved on, honour the pause, not the wakeup.
-- **gh CLI:** `gh run view <id> --log` to read full run output. `gh workflow run <name>.yml --ref main` to trigger. `gh secret list` / `gh secret set`. The `--repo richmondbot2000-prog/APIsForKids` flag is implicit when you're already cd'd into the repo.
+- **gh CLI:** `gh run view <id> --log` to read full run output. `gh workflow run <name>.yml --ref main` to trigger. `gh secret list` / `gh secret set`. The `--repo richmondbot2000-prog/togetherbook` flag is implicit when you're already cd'd into the repo.
 - **Don't use the gh CLI for setting JSON-shaped secrets via stdin** — heredoc escaping is brittle. Use the GitHub Web UI for those.
 
 ## 7. Documentation responsibilities — the nightly directive
@@ -76,7 +76,7 @@ Analysis unit is currently **(Broker, SourceReference1)** but a future improveme
 **Every overnight session, before signing off, you MUST:**
 
 1. **Update `SPEC.md`** (this repo) with anything structurally new or changed: new pages, new analysis sections, new workflow files, new env vars / secrets, new database joins, new design decisions, new lessons learned. SPEC.md is the source of truth for "how does this site work" — keep it complete enough that a successor Claude can pick it up cold and operate competently.
-2. **Update `~/Desktop/wiki/Overview/07_APIsForKids_Site.md`** to stay in structural sync. That document is the wiki-wide entry for this site, integrated alongside other Central Services docs. Pull from SPEC.md where appropriate but recognise the audience there is broader (also the engineering team).
+2. **Update `~/Desktop/wiki/Overview/07_TogetherBook_Site.md`** to stay in structural sync. That document is the wiki-wide entry for this site, integrated alongside other Central Services docs. Pull from SPEC.md where appropriate but recognise the audience there is broader (also the engineering team).
 3. **Commit and push both.** Don't stage them. If a section is genuinely incomplete, write the heading + a one-line "TBD: …" note rather than leaving a blank gap.
 
 You don't need permission to update these — it's a standing instruction.
@@ -85,19 +85,19 @@ The user goes to sleep and trusts you to use the time productively. They'd rathe
 
 ## 8. Memory references — useful pointers
 
-- `project_apisforkids.md` — high-level project state
-- `project_apisforkids_brokers.md` — Brokers page + Source-quality companion (terminology, cost models, the (Broker, SR1) decision)
-- `project_apisforkids_brandwatch_email.md` — Brandwatch email notification setup
-- `project_apisforkids_directory.md` — Directory page (multi-tenant Workspace)
-- `project_apisforkids_topups.md` — TopUps page (TUE concept)
-- `project_apisforkids_telegram.md` — Brand monitoring stack (Telegram + Discord + HIBP + Lookalike, dormant)
+- `project_togetherbook.md` — high-level project state
+- `project_togetherbook_brokers.md` — Brokers page + Source-quality companion (terminology, cost models, the (Broker, SR1) decision)
+- `project_togetherbook_brandwatch_email.md` — Brandwatch email notification setup
+- `project_togetherbook_directory.md` — Directory page (multi-tenant Workspace)
+- `project_togetherbook_topups.md` — TopUps page (TUE concept)
+- `project_togetherbook_telegram.md` — Brand monitoring stack (Telegram + Discord + HIBP + Lookalike, dormant)
 - `project_data_warehouse.md` — Fabric warehouse pointers
-- `reference_apisforkids_paths.md` — repo location, live URL, deployment flow
+- `reference_togetherbook_paths.md` — repo location, live URL, deployment flow
 - `reference_rg_wiki.md` — where source pages and overviews live in the user's filesystem
 - `reference_rg_schema_diagrams.md` — ER-diagram images for all 5 Central Services DBs
 - `feedback_working_style.md` — terse, few questions, push to live immediately
 - `feedback_design_must_communicate.md` — every design element must teach
-- `feedback_apisforkids_spec.md` — keep SPEC.md and the wiki version in sync
+- `feedback_togetherbook_spec.md` — keep SPEC.md and the wiki version in sync
 
 ## 9. Common operations cheatsheet
 

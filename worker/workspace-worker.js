@@ -24,7 +24,7 @@
 // via the GitHub Contents API. Commit message reflects the action so
 // `git log workspace-actions.json` is also a usable audit trail.
 
-const REPO = "richmondbot2000-prog/APIsForKids";
+const REPO = "richmondbot2000-prog/togetherbook";
 const AUDIT_PATH = "workspace-actions.json";
 const BRANCH = "main";
 
