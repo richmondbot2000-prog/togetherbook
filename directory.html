@@ -9,11 +9,11 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&family=Orbitron:wght@500;600;700;800&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="style.css?v=1778623915">
-<link rel="stylesheet" href="quiet-tokens.css?v=1778623915">
-<link rel="stylesheet" href="quiet.css?v=1778623915">
-<link rel="stylesheet" href="quiet-extras.css?v=1778623915">
-<link rel="stylesheet" href="quiet-legacy.css?v=1778623915">
+<link rel="stylesheet" href="style.css?v=1778624978">
+<link rel="stylesheet" href="quiet-tokens.css?v=1778624978">
+<link rel="stylesheet" href="quiet.css?v=1778624978">
+<link rel="stylesheet" href="quiet-extras.css?v=1778624978">
+<link rel="stylesheet" href="quiet-legacy.css?v=1778624978">
 <style>
   .dir-section { max-width: 1080px; margin: 0 auto; padding: 24px 0 48px; }
   @media (max-width: 800px) { .dir-section { padding: 2px 0 32px; } }
@@ -510,6 +510,109 @@
     border-left-color: var(--manuscript-red, #B23A48);
   }
   .dir-modal-banner--fade { opacity: 0; }
+
+  /* Groups section (below the people list). */
+  .dir-groups-section {
+    margin-top: 48px;
+    padding-top: 24px;
+    border-top: 1px solid var(--border);
+  }
+  .dir-groups-header {
+    display: flex;
+    align-items: baseline;
+    gap: 14px;
+    margin-bottom: 4px;
+  }
+  .dir-groups-title {
+    font-family: var(--font-display);
+    font-size: clamp(1.5rem, 3vw, 2.2rem);
+    font-weight: 800;
+    letter-spacing: 0.02em;
+    text-transform: uppercase;
+    margin: 0;
+    color: var(--ink);
+  }
+  .dir-groups-meta {
+    color: var(--muted);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.78rem;
+    flex: 1;
+  }
+  .dir-groups-blurb {
+    color: var(--ink-soft);
+    font-size: 0.92rem;
+    margin: 0 0 20px;
+    max-width: 720px;
+  }
+  .dir-row--group .dir-photo-placeholder {
+    background: var(--paper-200, #F5ECD4);
+    color: var(--brass-600, #A47829);
+    border: 1px solid var(--brass-300, #E2BF74);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.7rem;
+  }
+  .dir-row--group .dir-title { font-style: italic; color: var(--ink-500, #6B7794); }
+
+  .dir-modal-section .dir-group-link {
+    display: inline-block;
+    background: var(--paper-200, #F5ECD4);
+    border: 1px solid var(--brass-300, #E2BF74);
+    color: var(--brass-600, #A47829);
+    padding: 2px 8px;
+    border-radius: 3px;
+    font: 500 0.8rem 'JetBrains Mono', monospace;
+    text-decoration: none;
+    margin: 2px 4px 2px 0;
+    cursor: pointer;
+  }
+  .dir-modal-section .dir-group-link:hover {
+    background: var(--brass-300, #E2BF74);
+    color: var(--ink);
+  }
+
+  .dir-group-member-list {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    margin: 0 0 12px;
+    padding: 0;
+    list-style: none;
+  }
+  .dir-group-member-list li {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 4px 8px;
+    background: var(--bg-soft-2);
+    border-radius: 4px;
+    font-size: 0.9rem;
+  }
+  .dir-group-member-list .dir-group-member-email {
+    flex: 1;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.85rem;
+    color: var(--ink);
+  }
+  .dir-group-member-list .dir-group-member-role {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.66rem;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--muted);
+  }
+  .dir-group-member-list button {
+    background: transparent;
+    border: 1px solid var(--border);
+    color: var(--manuscript-red, #B23A48);
+    padding: 2px 8px;
+    border-radius: 4px;
+    cursor: pointer;
+    font: 500 0.75rem 'Inter', sans-serif;
+  }
+  .dir-group-member-list button:hover {
+    background: var(--manuscript-red, #B23A48);
+    color: #fff;
+  }
   .dir-modal-actions {
     display: flex;
     gap: 8px;
@@ -693,7 +796,7 @@
 
 <header class="qb-topbar">
   <a class="qb-brand" href="index.html" aria-label="TogetherBOOK — home">
-    <img class="qb-brand-logo" src="togetherbook-logo.png?v=1778623915" alt="TogetherBOOK">
+    <img class="qb-brand-logo" src="togetherbook-logo.png?v=1778624978" alt="TogetherBOOK">
   </a>
   <button class="qb-hamburger" aria-label="Toggle navigation menu" aria-expanded="false"
           onclick="document.body.classList.toggle('nav-open');this.setAttribute('aria-expanded',document.body.classList.contains('nav-open'))">
@@ -749,6 +852,16 @@
         service-account key and it's added as the <code>WORKSPACE_SERVICE_ACCOUNT_JSON</code>
         repo secret, the next refresh will fill this page.
       </div>
+
+      <div class="dir-groups-section" id="dirGroupsSection" hidden>
+        <div class="dir-groups-header">
+          <h2 class="dir-groups-title">Groups</h2>
+          <span class="dir-groups-meta" id="dirGroupsMeta"></span>
+          <button class="dir-new-btn" id="dirNewGroupBtn" type="button">+ New group</button>
+        </div>
+        <p class="dir-groups-blurb">Group emails (e.g. <code>finance@rgroup.co.uk</code>) deliver to every listed member. Groups are free — they don't consume Workspace seats.</p>
+        <div class="dir-list" id="dirGroupList"></div>
+      </div>
     </section>
 
     <div class="dir-modal-backdrop" id="dirModalBackdrop" aria-hidden="true">
@@ -783,8 +896,11 @@
     // Audit log of workspace actions — used to surface the forward target for
     // suspended accounts. Optional; absence just means we don't display routes.
     fetch("workspace-actions.json", { cache: "no-store" }).then(r => r.ok ? r.json() : null).catch(() => null),
+    // Groups list (group emails + members). Optional — the section just stays
+    // hidden if the file's absent.
+    fetch("groups.json", { cache: "no-store" }).then(r => r.ok ? r.json() : null).catch(() => null),
   ])
-    .then(([staff, activity, annotationsFile, payrollFile, workspaceActions]) => {
+    .then(([staff, activity, annotationsFile, payrollFile, workspaceActions, groupsFile]) => {
       annotationsMap = (annotationsFile && annotationsFile.annotations && typeof annotationsFile.annotations === "object")
         ? annotationsFile.annotations
         : {};
@@ -890,6 +1006,11 @@
       buildWorkspacePills(byWorkspace);
       document.getElementById("dirControls").hidden = allEntries.length === 0;
       renderGrid();
+
+      // Groups section
+      allGroups = (groupsFile && Array.isArray(groupsFile.groups)) ? groupsFile.groups : [];
+      buildGroupMembershipIndex();
+      renderGroupsSection();
     })
     .catch(err => {
       document.getElementById("dirMeta").textContent = "Couldn't load directory — " + err;
@@ -1157,6 +1278,8 @@
   let annotationsMap = {};                              // populated on page load
   let payrollData = null;                               // null until /api/workspace/payroll returns
   let forwardingByEmail = {};                           // email -> route_to (suspended-and-routed users)
+  let allGroups = [];                                   // [{ email, name, description, members:[…], … }]
+  let groupsByMemberEmail = {};                         // memberEmail -> [group, …]
   const ANNOTATIONS_API = "/api/annotations";           // same-origin Worker route
 
   function annotationFor(key) { return annotationsMap[key] || {}; }
@@ -1261,6 +1384,10 @@
     // Manage-account action buttons (suspend / unsuspend / delete).
     modal.querySelectorAll("[data-action]").forEach(btn => {
       btn.addEventListener("click", () => onManageClick(entry, btn.dataset.action, modal));
+    });
+    // Group-link chips — open the group modal in place of this user modal.
+    modal.querySelectorAll("[data-open-group]").forEach(chip => {
+      chip.addEventListener("click", () => openGroupCard(chip.dataset.openGroup));
     });
 
     const saveBtn = modal.querySelector("[data-save]");
@@ -1466,6 +1593,15 @@
         <dl class="dir-detail-grid">${workspaceDl}</dl>
       </div>
 
+      ${u && groupsForUser(u).length ? `
+        <div class="dir-modal-section">
+          <h3>Groups</h3>
+          <div>
+            ${groupsForUser(u).map(g => `<button type="button" class="dir-group-link" data-open-group="${escapeHtml(g.email)}">${escapeHtml(g.name || g.email)}</button>`).join("")}
+          </div>
+          <p class="dir-modal-saved-hint" style="text-align:left;margin:8px 0 0;">Tap a group to view or edit it.</p>
+        </div>` : ""}
+
       ${payrollSectionHtml(entry)}
 
       ${a ? `
@@ -1632,6 +1768,283 @@
     setTimeout(() => { if (div.parentNode) div.remove(); }, 8000);
   }
 
+  /* ----- Groups: list rendering + modal ----- */
+
+  function buildGroupMembershipIndex() {
+    groupsByMemberEmail = {};
+    for (const g of allGroups) {
+      for (const m of (g.members || [])) {
+        const k = (m.email || "").toLowerCase();
+        if (!k) continue;
+        (groupsByMemberEmail[k] ||= []).push(g);
+      }
+    }
+  }
+
+  // List the groups a person belongs to, looking up by primary email + every alias.
+  function groupsForUser(u) {
+    if (!u) return [];
+    const seen = new Set();
+    const out = [];
+    const candidates = [u.email, ...(u.aliases || [])].filter(Boolean).map(s => s.toLowerCase());
+    for (const email of candidates) {
+      for (const g of (groupsByMemberEmail[email] || [])) {
+        if (seen.has(g.email)) continue;
+        seen.add(g.email);
+        out.push(g);
+      }
+    }
+    return out;
+  }
+
+  function renderGroupsSection() {
+    const section = document.getElementById("dirGroupsSection");
+    const list = document.getElementById("dirGroupList");
+    if (!allGroups.length) {
+      section.hidden = false;   // still show the +New button + empty hint
+      list.innerHTML = `<div class="dir-empty" style="margin-top:8px;">No groups yet. Click <strong>+ New group</strong> to create one.</div>`;
+      document.getElementById("dirGroupsMeta").textContent = "0 groups";
+      return;
+    }
+    section.hidden = false;
+    document.getElementById("dirGroupsMeta").textContent =
+      `${allGroups.length} group${allGroups.length === 1 ? "" : "s"} · ${allGroups.reduce((n, g) => n + (g.member_count || 0), 0)} membership${allGroups.reduce((n, g) => n + (g.member_count || 0), 0) === 1 ? "" : "s"}`;
+    const rows = [...allGroups]
+      .sort((a, b) => (a.name || a.email).localeCompare(b.name || b.email))
+      .map(renderGroupRow);
+    list.innerHTML = rows.join("");
+  }
+
+  function renderGroupRow(g) {
+    const initials = (g.name || g.email).split(/[\s@.\-_]+/).filter(Boolean).slice(0, 2).map(t => t.charAt(0).toUpperCase()).join("") || "G";
+    const desc = g.description ? `<span class="dir-title">${escapeHtml(g.description)}</span>` : "";
+    return `
+      <button type="button" class="dir-row dir-row--group" data-group="${escapeHtml(g.email)}" title="View group ${escapeHtml(g.email)}">
+        <div class="dir-photo-placeholder">${escapeHtml(initials)}</div>
+        <div class="dir-row-body">
+          <div class="dir-row-headline">
+            <span class="dir-name">${escapeHtml(g.name || g.email)}</span>
+            ${desc}
+            <span class="dir-email">${escapeHtml(g.email)}</span>
+          </div>
+          <div class="dir-row-meta">
+            <span class="dir-last">${g.member_count || 0} member${g.member_count === 1 ? "" : "s"}</span>
+          </div>
+        </div>
+        <div class="dir-row-aside"></div>
+      </button>`;
+  }
+
+  function openGroupCard(groupEmail) {
+    const g = allGroups.find(x => x.email === groupEmail);
+    if (!g) return;
+    const modal = document.getElementById("dirModal");
+    modal.innerHTML = renderGroupModalBody(g);
+    const backdrop = document.getElementById("dirModalBackdrop");
+    backdrop.classList.add("open");
+    backdrop.setAttribute("aria-hidden", "false");
+    document.body.classList.add("dir-modal-open");
+    wireGroupModal(g);
+  }
+
+  function renderGroupModalBody(g) {
+    const memberLi = (m) => {
+      const u = allEntries.find(e => e.type === "staff" && e.user && (e.user.email || "").toLowerCase() === m.email);
+      const display = u && u.user ? (u.user.name || m.email) : m.email;
+      return `<li>
+          <span class="dir-group-member-email">${escapeHtml(display)} <span class="dir-modal-saved-hint" style="display:inline;margin:0;padding:0;">&lt;${escapeHtml(m.email)}&gt;</span></span>
+          <span class="dir-group-member-role">${escapeHtml(m.role || "member")}</span>
+          <button type="button" data-remove-member="${escapeHtml(m.email)}">Remove</button>
+        </li>`;
+    };
+    return `
+      <button class="dir-modal-close" type="button" data-close aria-label="Close">×</button>
+      <div class="dir-modal-head">
+        <div class="dir-photo-placeholder" style="width:64px;height:64px;font-size:1.1rem;">${escapeHtml((g.name || g.email).split(/[\s@.\-_]+/).filter(Boolean).slice(0, 2).map(t => t.charAt(0).toUpperCase()).join("") || "G")}</div>
+        <div>
+          <h2 class="dir-modal-name" id="dirModalName">${escapeHtml(g.name || g.email)}</h2>
+          <p class="dir-modal-title">${escapeHtml(g.description || "Workspace group · " + g.email)}</p>
+        </div>
+      </div>
+
+      <div class="dir-modal-section">
+        <h3>Group</h3>
+        <dl class="dir-detail-grid">
+          <dt>Email</dt><dd><a href="mailto:${escapeHtml(g.email)}">${escapeHtml(g.email)}</a></dd>
+          <dt>Name</dt><dd>${escapeHtml(g.name || "—")}</dd>
+          ${g.description ? `<dt>Description</dt><dd>${escapeHtml(g.description)}</dd>` : ""}
+          <dt>Members</dt><dd>${g.member_count || 0}</dd>
+        </dl>
+      </div>
+
+      <div class="dir-modal-section">
+        <h3>Members</h3>
+        ${g.members && g.members.length
+          ? `<ul class="dir-group-member-list">${g.members.map(memberLi).join("")}</ul>`
+          : `<p class="dir-modal-saved-hint" style="text-align:left;margin:0 0 12px;">No members yet — add some below.</p>`}
+
+        <div class="dir-form-row">
+          <label for="dirAddMember">Add member</label>
+          <input id="dirAddMember" name="member_email" type="email" placeholder="Type a Workspace email" list="dirAddMemberOptions" autocomplete="off">
+          <datalist id="dirAddMemberOptions">${adminEmailOptions()}</datalist>
+        </div>
+        <div class="dir-manage-actions">
+          <button type="button" data-add-member>Add member</button>
+        </div>
+        <div class="dir-confirm-slot"></div>
+      </div>
+
+      <div class="dir-modal-section">
+        <h3>Danger zone</h3>
+        <div class="dir-manage-actions">
+          <button type="button" class="danger" data-delete-group>Delete group</button>
+        </div>
+        <p class="dir-modal-saved-hint">Deleting the group permanently removes the address and stops all forwarding. Members are not affected. Logged to <code>workspace-actions.json</code>.</p>
+        <div class="dir-confirm-slot" data-delete-slot></div>
+      </div>
+    `;
+  }
+
+  function wireGroupModal(g) {
+    const modal = document.getElementById("dirModal");
+    const closeBtn = modal.querySelector("[data-close]");
+    if (closeBtn) { closeBtn.addEventListener("click", closeCard); closeBtn.focus(); }
+
+    modal.querySelectorAll("[data-remove-member]").forEach(btn => {
+      btn.addEventListener("click", () => runGroupAction("group-member-remove",
+        { group_email: g.email, member_email: btn.dataset.removeMember },
+        `Removed ${btn.dataset.removeMember} from ${g.email}.`));
+    });
+
+    const addBtn = modal.querySelector("[data-add-member]");
+    if (addBtn) {
+      addBtn.addEventListener("click", () => {
+        const input = modal.querySelector('input[name="member_email"]');
+        const email = (input.value || "").trim();
+        if (!email || !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) {
+          input.classList.add("dir-input-invalid");
+          input.focus();
+          input.addEventListener("input", () => input.classList.remove("dir-input-invalid"), { once: true });
+          return;
+        }
+        runGroupAction("group-member-add",
+          { group_email: g.email, member_email: email },
+          `Added ${email} to ${g.email}.`);
+      });
+    }
+
+    const delBtn = modal.querySelector("[data-delete-group]");
+    if (delBtn) {
+      delBtn.addEventListener("click", () => {
+        const slot = modal.querySelector("[data-delete-slot]");
+        slot.innerHTML = `
+          <div class="dir-confirm">
+            <div class="dir-confirm-text"><strong>Delete ${escapeHtml(g.email)}?</strong><br><span class="dir-modal-saved-hint" style="text-align:left;margin:0;">Permanent. Mail to this address will stop being delivered to members.</span></div>
+            <div class="dir-confirm-actions">
+              <button type="button" data-cancel>Cancel</button>
+              <button type="button" class="confirm" data-confirm>Delete group</button>
+            </div>
+          </div>`;
+        slot.querySelector("[data-cancel]").addEventListener("click", () => { slot.innerHTML = ""; });
+        slot.querySelector("[data-confirm]").addEventListener("click", () => runGroupAction("group-delete",
+          { email: g.email },
+          `Deleted ${g.email}.`, /*closeAfter*/ true));
+      });
+    }
+  }
+
+  async function runGroupAction(action, body, successText, closeAfter) {
+    const modal = document.getElementById("dirModal");
+    modal.querySelectorAll("[data-action], [data-confirm], [data-add-member], [data-remove-member], [data-delete-group]").forEach(b => b.disabled = true);
+    try {
+      await workspaceAction(action, body);
+      // Optimistic update of in-memory state so the UI flips instantly.
+      const g = allGroups.find(x => x.email === (body.group_email || body.email));
+      if (action === "group-member-add" && g) {
+        g.members.push({ email: body.member_email, role: body.role || "MEMBER", type: "USER", status: "ACTIVE" });
+        g.member_count = g.members.length;
+      } else if (action === "group-member-remove" && g) {
+        g.members = g.members.filter(m => m.email !== body.member_email);
+        g.member_count = g.members.length;
+      } else if (action === "group-delete") {
+        allGroups = allGroups.filter(x => x.email !== body.email);
+      }
+      buildGroupMembershipIndex();
+      renderGroupsSection();
+      if (closeAfter) {
+        showModalBanner(successText, "success");
+        setTimeout(closeCard, 1200);
+      } else {
+        // Re-render the modal so the member list reflects the new state.
+        const fresh = allGroups.find(x => x.email === (body.group_email || body.email));
+        if (fresh) {
+          openGroupCard(fresh.email);
+          showModalBanner(successText, "success");
+        } else {
+          closeCard();
+        }
+      }
+    } catch (err) {
+      showModalBanner(`Action failed — ${err.message || err}`, "error");
+      modal.querySelectorAll("[data-action], [data-confirm], [data-add-member], [data-remove-member], [data-delete-group]").forEach(b => b.disabled = false);
+    }
+  }
+
+  function openCreateGroupModal() {
+    const modal = document.getElementById("dirModal");
+    modal.innerHTML = `
+      <button class="dir-modal-close" type="button" data-close aria-label="Close">×</button>
+      <div class="dir-modal-head"><div><h2 class="dir-modal-name">New group</h2><p class="dir-modal-title">Create a Workspace group email</p></div></div>
+      <div class="dir-modal-section">
+        <h3>Group details</h3>
+        <div class="dir-form-row">
+          <label for="newGroupEmail">Email</label>
+          <input id="newGroupEmail" name="email" type="email" placeholder="finance@rgroup.co.uk" autocomplete="off">
+        </div>
+        <div class="dir-form-row">
+          <label for="newGroupName">Display name</label>
+          <input id="newGroupName" name="name" type="text" placeholder="Finance" autocomplete="off">
+        </div>
+        <div class="dir-form-row">
+          <label for="newGroupDesc">Description</label>
+          <input id="newGroupDesc" name="description" type="text" placeholder="(optional)" autocomplete="off">
+        </div>
+        <div class="dir-manage-actions">
+          <button type="button" class="primary" data-create-group>Create group</button>
+        </div>
+        <div class="dir-confirm-slot"></div>
+      </div>`;
+    const backdrop = document.getElementById("dirModalBackdrop");
+    backdrop.classList.add("open");
+    backdrop.setAttribute("aria-hidden", "false");
+    document.body.classList.add("dir-modal-open");
+    modal.querySelector("[data-close]").addEventListener("click", closeCard);
+    modal.querySelector("[data-create-group]").addEventListener("click", async () => {
+      const email = (modal.querySelector('input[name="email"]').value || "").trim();
+      const name = (modal.querySelector('input[name="name"]').value || "").trim();
+      const description = (modal.querySelector('input[name="description"]').value || "").trim();
+      if (!email || !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) {
+        modal.querySelector('input[name="email"]').classList.add("dir-input-invalid");
+        return;
+      }
+      if (!name) {
+        modal.querySelector('input[name="name"]').classList.add("dir-input-invalid");
+        return;
+      }
+      try {
+        await workspaceAction("group-create", { email, name, ...(description ? { description } : {}) });
+        // Optimistic add
+        allGroups.push({ email, name, description, tenant: "", aliases: [], member_count: 0, members: [] });
+        buildGroupMembershipIndex();
+        renderGroupsSection();
+        openGroupCard(email);
+        showModalBanner(`Created group ${email}.`, "success");
+      } catch (err) {
+        showModalBanner(`Create failed — ${err.message || err}`, "error");
+      }
+    });
+  }
+
   /* ----- Create-user modal ----- */
 
   function openCreateModal() {
@@ -1761,8 +2174,16 @@
     if (!row) return;
     openCard(row.dataset.key);
   });
+  // Group rows live in the dirGroupList container — open the group modal.
+  document.getElementById("dirGroupList").addEventListener("click", e => {
+    const row = e.target.closest(".dir-row[data-group]");
+    if (!row) return;
+    openGroupCard(row.dataset.group);
+  });
   // "+ New user" button -> open the create-user modal.
   document.getElementById("dirNewBtn").addEventListener("click", openCreateModal);
+  // "+ New group" button -> open the create-group modal.
+  document.getElementById("dirNewGroupBtn").addEventListener("click", openCreateGroupModal);
   // Click outside the modal to close.
   document.getElementById("dirModalBackdrop").addEventListener("click", e => {
     if (e.target === e.currentTarget) closeCard();

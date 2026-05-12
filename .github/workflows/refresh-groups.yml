@@ -1,0 +1,68 @@
+name: Refresh Groups
+
+# Pulls the live Google Workspace groups + members and commits groups.json
+# back to main so the Groups section on directory.html stays current.
+
+on:
+  schedule:
+    - cron: '20 6-23 * * *'   # offset from refresh-directory's :00 firings
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: refresh-groups
+  cancel-in-progress: false
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install Python deps
+        run: pip install --quiet 'google-api-python-client>=2.100' 'google-auth>=2.30'
+
+      - name: Scan
+        env:
+          WORKSPACE_SERVICE_ACCOUNT_JSON: ${{ secrets.WORKSPACE_SERVICE_ACCOUNT_JSON }}
+          WORKSPACE_TENANTS:              ${{ secrets.WORKSPACE_TENANTS }}
+          WORKSPACE_DELEGATE_USER:        ${{ secrets.WORKSPACE_DELEGATE_USER }}
+          WORKSPACE_DOMAIN:               letme.co.uk
+        run: python scripts/scan_groups.py
+
+      - name: Commit if groups.json changed
+        run: |
+          set -euo pipefail
+          git add groups.json
+          if git diff --cached --quiet -- groups.json; then
+            echo "no changes — nothing to commit"
+            exit 0
+          fi
+          git config user.name  "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          N=$(python -c "import json; d=json.load(open('groups.json')); print(d['totals']['groups'])")
+          M=$(python -c "import json; d=json.load(open('groups.json')); print(d['totals']['members'])")
+          git commit -m "Refresh groups: ${N} groups, ${M} memberships"
+
+          for attempt in 1 2 3; do
+            if git push; then
+              break
+            fi
+            if [ "$attempt" -eq 3 ]; then
+              echo "::error::Push failed after 3 attempts"
+              exit 1
+            fi
+            echo "Push rejected (concurrent commit); rebasing and retrying (attempt $attempt)…"
+            git fetch origin main
+            git rebase origin/main
+          done

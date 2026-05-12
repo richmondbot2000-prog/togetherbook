@@ -33,6 +33,8 @@ const BRANCH = "main";
 
 const ADMIN_SCOPES = [
   "https://www.googleapis.com/auth/admin.directory.user",
+  "https://www.googleapis.com/auth/admin.directory.group",
+  "https://www.googleapis.com/auth/admin.directory.group.member",
   "https://www.googleapis.com/auth/apps.licensing",
 ].join(" ");
 // Gmail settings scope — needed for forwardingAddresses + autoForwarding.
@@ -108,9 +110,13 @@ export default {
     let result;
     try {
       switch (action) {
-        case "suspend-and-route": result = await doSuspendAndRoute(env, adminToken, body); break;
-        case "unsuspend":         result = await doUnsuspend(env, adminToken, body); break;
-        case "create":            result = await doCreate(adminToken, body); break;
+        case "suspend-and-route":    result = await doSuspendAndRoute(env, adminToken, body); break;
+        case "unsuspend":            result = await doUnsuspend(env, adminToken, body); break;
+        case "create":               result = await doCreate(adminToken, body); break;
+        case "group-create":         result = await doGroupCreate(adminToken, body); break;
+        case "group-delete":         result = await doGroupDelete(adminToken, body); break;
+        case "group-member-add":     result = await doGroupMemberAdd(adminToken, body); break;
+        case "group-member-remove":  result = await doGroupMemberRemove(adminToken, body); break;
         default:
           return json({ error: `unknown action: ${action}` }, 404, req);
       }
@@ -124,9 +130,10 @@ export default {
         ts: new Date().toISOString(),
         actor,
         action,
-        target: body.email || body.primaryEmail || "",
+        target: body.email || body.primaryEmail || body.group_email || "",
         ok: !!result.ok,
         ...(body.route_to ? { route_to: body.route_to } : {}),
+        ...(body.member_email ? { member_email: body.member_email } : {}),
         ...(result.ok ? {} : { error: String(result.error || "").slice(0, 300) }),
       });
     } catch (e) { /* swallow audit failures */ }
@@ -196,6 +203,39 @@ async function doCreate(token, body) {
     changePasswordAtNextLogin: true,
     ...(body.org_unit_path ? { orgUnitPath: body.org_unit_path } : {}),
   });
+}
+
+/* ----------- Group actions ----------- */
+
+async function doGroupCreate(token, body) {
+  if (!body.email) return { ok: false, error: "missing email" };
+  if (!body.name) return { ok: false, error: "missing name" };
+  return adminApi(token, "POST", "groups", {
+    email: body.email,
+    name: body.name,
+    ...(body.description ? { description: body.description } : {}),
+  });
+}
+
+async function doGroupDelete(token, body) {
+  if (!body.email) return { ok: false, error: "missing email" };
+  return adminApi(token, "DELETE", `groups/${encodeURIComponent(body.email)}`);
+}
+
+async function doGroupMemberAdd(token, body) {
+  if (!body.group_email) return { ok: false, error: "missing group_email" };
+  if (!body.member_email) return { ok: false, error: "missing member_email" };
+  return adminApi(token, "POST", `groups/${encodeURIComponent(body.group_email)}/members`, {
+    email: body.member_email,
+    role: body.role || "MEMBER",
+  });
+}
+
+async function doGroupMemberRemove(token, body) {
+  if (!body.group_email) return { ok: false, error: "missing group_email" };
+  if (!body.member_email) return { ok: false, error: "missing member_email" };
+  return adminApi(token, "DELETE",
+    `groups/${encodeURIComponent(body.group_email)}/members/${encodeURIComponent(body.member_email)}`);
 }
 
 async function gmailApi(token, userEmail, method, suffix, payload) {
