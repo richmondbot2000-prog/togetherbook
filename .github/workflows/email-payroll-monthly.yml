@@ -1,0 +1,27 @@
+name: Monthly payroll-data request email
+
+on:
+  schedule:
+    # 09:00 UTC on the 1st of every month (10:00 BST / 09:00 GMT).
+    - cron: "0 9 1 * *"
+  workflow_dispatch:
+
+jobs:
+  send:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Send email
+        uses: dawidd6/action-send-mail@v3
+        with:
+          server_address: smtp.gmail.com
+          server_port: 465
+          secure: true
+          username: ${{ secrets.SMTP_USERNAME }}
+          password: ${{ secrets.SMTP_PASSWORD }}
+          from: APIsForKids Directory <${{ secrets.SMTP_USERNAME }}>
+          to: Payroll@letme.com
+          cc: james.benamor@rgroup.co.uk
+          subject: Monthly payroll spreadsheet request — Togetherbook Directory
+          body: |
+            Pinch, punch, first day of the month, and no returns, this is the Directory at Togetherbook.net. It would be great if you could send an updated spreadsheet of all payroll staff from ALL UK companies to james.benamor@rgroup.co.uk, so that he can give it to Claude to update the Directory page databases. Thank you :)
+          convert_markdown: false
