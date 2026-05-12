@@ -6,9 +6,9 @@
 <title>TogetherBOOK — Brokers</title>
 <link rel="icon" type="image/png" href="site-icon.png">
 <link rel="apple-touch-icon" href="site-icon.png">
-<link rel="stylesheet" href="quiet-tokens.css?v=1778568710">
-<link rel="stylesheet" href="quiet.css?v=1778568710">
-<link rel="stylesheet" href="quiet-extras.css?v=1778568710">
+<link rel="stylesheet" href="quiet-tokens.css?v=1778568921">
+<link rel="stylesheet" href="quiet.css?v=1778568921">
+<link rel="stylesheet" href="quiet-extras.css?v=1778568921">
 <style>
   .br-section { max-width: 1280px; margin: 0 auto; padding: 24px 0 48px; }
   @media (max-width: 800px) { .br-section { padding: 2px 0 32px; } }
@@ -501,7 +501,7 @@
 
 <header class="qb-topbar">
   <a class="qb-brand" href="index.html" aria-label="TogetherBOOK — home">
-    <img class="qb-brand-logo" src="togetherbook-logo.png?v=1778568710" alt="TogetherBOOK">
+    <img class="qb-brand-logo" src="togetherbook-logo.png?v=1778568921" alt="TogetherBOOK">
   </a>
   <button class="qb-hamburger" aria-label="Toggle navigation menu" aria-expanded="false"
           onclick="document.body.classList.toggle('nav-open');this.setAttribute('aria-expanded',document.body.classList.contains('nav-open'))">
@@ -692,7 +692,16 @@
     const filterEl = document.getElementById("brSqBrokerFilter");
     if (filterEl && !filterEl.__wired) {
       filterEl.__wired = true;
-      filterEl.addEventListener("input", () => _renderSqSections());
+      // Restore previous filter from localStorage so a user who filters
+      // to one broker doesn't have to retype after the hourly refresh.
+      try {
+        const saved = localStorage.getItem("brSqBrokerFilter");
+        if (saved) filterEl.value = saved;
+      } catch (e) { /* sandboxed storage */ }
+      filterEl.addEventListener("input", () => {
+        try { localStorage.setItem("brSqBrokerFilter", filterEl.value || ""); } catch (e) {}
+        _renderSqSections();
+      });
     }
     _renderSqSections();
   }
