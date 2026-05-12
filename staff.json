@@ -1,14 +1,14 @@
 {
   "schema_version": 2,
-  "updated_at": "2026-05-11T13:08:28.330485Z",
-  "snapshot_date": "2026-05-11",
+  "updated_at": "2026-05-12T08:09:23.530418Z",
+  "snapshot_date": "2026-05-12",
   "domain": "letme.co.uk",
   "tenants": [
     {
       "name": "letme.co.uk",
       "domain": "letme.co.uk",
       "delegate": "james.benamor@letme.co.uk",
-      "users": 61,
+      "users": 62,
       "suspended_hidden": 4,
       "error": null
     },
@@ -22,13 +22,13 @@
     }
   ],
   "totals": {
-    "users": 61,
+    "users": 62,
     "suspended_hidden": 4,
     "by_department": {
-      "(unspecified)": 61
+      "(unspecified)": 62
     },
     "by_tenant": {
-      "letme.co.uk": 61
+      "letme.co.uk": 62
     }
   },
   "fetch_errors": [
@@ -229,6 +229,21 @@
       "photo_url": "",
       "suspended": false,
       "admin": true,
+      "tenant": "letme.co.uk",
+      "tenants": [
+        "letme.co.uk"
+      ]
+    },
+    {
+      "email": "noreply@togetherbook.net",
+      "name": "Richmond Bot",
+      "given": "Richmond",
+      "family": "Bot",
+      "title": "",
+      "department": "",
+      "photo_url": "",
+      "suspended": false,
+      "admin": false,
       "tenant": "letme.co.uk",
       "tenants": [
         "letme.co.uk"
