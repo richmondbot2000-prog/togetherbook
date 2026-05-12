@@ -9,11 +9,11 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&family=Orbitron:wght@500;600;700;800&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="style.css?v=1778621012">
-<link rel="stylesheet" href="quiet-tokens.css?v=1778621012">
-<link rel="stylesheet" href="quiet.css?v=1778621012">
-<link rel="stylesheet" href="quiet-extras.css?v=1778621012">
-<link rel="stylesheet" href="quiet-legacy.css?v=1778621012">
+<link rel="stylesheet" href="style.css?v=1778621948">
+<link rel="stylesheet" href="quiet-tokens.css?v=1778621948">
+<link rel="stylesheet" href="quiet.css?v=1778621948">
+<link rel="stylesheet" href="quiet-extras.css?v=1778621948">
+<link rel="stylesheet" href="quiet-legacy.css?v=1778621948">
 <style>
   .dir-section { max-width: 1080px; margin: 0 auto; padding: 24px 0 48px; }
   @media (max-width: 800px) { .dir-section { padding: 2px 0 32px; } }
@@ -486,6 +486,10 @@
     border-color: var(--accent);
     box-shadow: 0 0 8px rgba(0, 212, 255, 0.18);
   }
+  .dir-form-row input.dir-input-invalid {
+    border-color: var(--manuscript-red, #B23A48);
+    box-shadow: 0 0 0 2px rgba(178, 58, 72, 0.25);
+  }
   .dir-modal-actions {
     display: flex;
     gap: 8px;
@@ -669,7 +673,7 @@
 
 <header class="qb-topbar">
   <a class="qb-brand" href="index.html" aria-label="TogetherBOOK — home">
-    <img class="qb-brand-logo" src="togetherbook-logo.png?v=1778621012" alt="TogetherBOOK">
+    <img class="qb-brand-logo" src="togetherbook-logo.png?v=1778621948" alt="TogetherBOOK">
   </a>
   <button class="qb-hamburger" aria-label="Toggle navigation menu" aria-expanded="false"
           onclick="document.body.classList.toggle('nav-open');this.setAttribute('aria-expanded',document.body.classList.contains('nav-open'))">
@@ -1436,8 +1440,8 @@
                </div>
                <p class="dir-modal-saved-hint">${forwardTo ? `Currently forwards to <code>${escapeHtml(forwardTo)}</code>. ` : ""}Unsuspending re-enables direct mailbox delivery and disables the forward.</p>`
             : `<div class="dir-form-row">
-                 <label for="dirRouteTo">Suspend and forward email to</label>
-                 <input id="dirRouteTo" name="route_to" type="email" placeholder="manager@letme.com" list="dirRouteOptions">
+                 <label for="dirRouteTo">Forward mail to</label>
+                 <input id="dirRouteTo" name="route_to" type="email" placeholder="Type a colleague's email" list="dirRouteOptions" autocomplete="off">
                  <datalist id="dirRouteOptions">${adminEmailOptions()}</datalist>
                </div>
                <div class="dir-manage-actions">
@@ -1502,7 +1506,14 @@
       const routeInput = modal.querySelector('input[name="route_to"]');
       const routeTo = (routeInput && routeInput.value || "").trim();
       if (!routeTo || !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(routeTo)) {
-        slot.innerHTML = `<div class="dir-confirm"><div class="dir-confirm-text"><span class="dir-modal-saved-hint" style="text-align:left;margin:0;color:var(--manuscript-red);">Enter a valid forwarding email above before suspending.</span></div></div>`;
+        // Highlight the input and focus it — the prior approach put the error
+        // far below in the confirm-slot, which read like a separate field.
+        if (routeInput) {
+          routeInput.classList.add("dir-input-invalid");
+          routeInput.focus();
+          routeInput.addEventListener("input", () => routeInput.classList.remove("dir-input-invalid"), { once: true });
+        }
+        slot.innerHTML = "";
         return;
       }
       slot.innerHTML = `
