@@ -29,6 +29,80 @@ LETME_FILE = (
 TLRG_FILE = "For James EmployeeDetails-20260512 (1).xlsx - Export.csv"
 
 
+NICKNAMES = {
+    "daniel": "dan",
+    "maximillian": "max",
+    "maximilian": "max",
+    "benjamin": "ben",
+    "philip": "phil",
+    "phillip": "phil",
+    "michael": "mike",
+    "christopher": "chris",
+    "thomas": "tom",
+    "william": "will",
+    "andrew": "andy",
+    "matthew": "matt",
+    "joseph": "joe",
+    "anthony": "tony",
+    "robert": "rob",
+    "richard": "rich",
+    "edward": "ed",
+    "patrick": "pat",
+    "samuel": "sam",
+    "nicholas": "nick",
+    "alexander": "alex",
+    "katherine": "kate",
+    "kathryn": "kate",
+    "elizabeth": "liz",
+    "rebecca": "becky",
+    "deborah": "debbie",
+    "susanne": "sue",
+    "susan": "sue",
+}
+
+
+def strip_punct(s):
+    """Drop apostrophes/hyphens/dots so 'O'Neill' == 'oneill', 'Kennedy-Smith' == 'kennedysmith'."""
+    return (s or "").lower().replace("'", "").replace("’", "").replace(".", "").replace("-", "").strip()
+
+
+def name_aliases(first, last):
+    """Generate every reasonable lookup key for a record.
+
+    Returns a list — duplicates are fine, the caller dedups. Aliases:
+      - 'first last' (full)
+      - 'lasttoken_of_firsts last' (handles 'Ho Chun Cyrus Leung' -> 'cyrus leung')
+      - 'nickname last' for known long-form first names
+      - punctuation-stripped variants of each of the above
+    """
+    first = (first or "").strip()
+    last = (last or "").strip()
+    if not first or not last:
+        return []
+    first_tokens = first.split()
+    last_token = first_tokens[-1] if first_tokens else first
+
+    candidates = set()
+    full = f"{first} {last}".lower()
+    candidates.add(full)
+    candidates.add(strip_punct(full))
+
+    if len(first_tokens) > 1:
+        short = f"{last_token} {last}".lower()
+        candidates.add(short)
+        candidates.add(strip_punct(short))
+
+    first_lower = first.lower()
+    last_token_lower = last_token.lower()
+    for legal, nick in NICKNAMES.items():
+        if first_lower == legal or last_token_lower == legal:
+            nick_full = f"{nick} {last}".lower()
+            candidates.add(nick_full)
+            candidates.add(strip_punct(nick_full))
+
+    return [c for c in candidates if c.strip()]
+
+
 def norm_name(first, last):
     return f"{(first or '').strip().lower()} {(last or '').strip().lower()}".strip()
 
@@ -130,11 +204,23 @@ def main():
     all_rows = load_letme() + load_tlrg()
     by_email = {}
     by_name = {}
+    # First pass: count how many records claim each alias. We only keep an
+    # alias if exactly one record produces it — drops ambiguous matches like
+    # two different "Sanders" entries colliding on "dan sanders".
+    alias_owners = {}
+    per_row_aliases = []
     for r in all_rows:
+        aliases = name_aliases(r["first_name"], r["last_name"])
+        per_row_aliases.append(aliases)
+        for a in aliases:
+            alias_owners.setdefault(a, []).append(id(r))
+
+    for r, aliases in zip(all_rows, per_row_aliases):
         if r["email"]:
             by_email[r["email"]] = r
-        if r["first_name"] and r["last_name"]:
-            by_name[norm_name(r["first_name"], r["last_name"])] = r
+        for a in aliases:
+            if len(alias_owners.get(a, [])) == 1:
+                by_name[a] = r
 
     output = {
         "schema_version": 1,

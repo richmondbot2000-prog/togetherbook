@@ -9,11 +9,11 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&family=Orbitron:wght@500;600;700;800&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="style.css?v=1778494049">
-<link rel="stylesheet" href="quiet-tokens.css?v=1778494049">
-<link rel="stylesheet" href="quiet.css?v=1778494049">
-<link rel="stylesheet" href="quiet-extras.css?v=1778494049">
-<link rel="stylesheet" href="quiet-legacy.css?v=1778494049">
+<link rel="stylesheet" href="style.css?v=1778611975">
+<link rel="stylesheet" href="quiet-tokens.css?v=1778611975">
+<link rel="stylesheet" href="quiet.css?v=1778611975">
+<link rel="stylesheet" href="quiet-extras.css?v=1778611975">
+<link rel="stylesheet" href="quiet-legacy.css?v=1778611975">
 <style>
   .dir-section { max-width: 1080px; margin: 0 auto; padding: 24px 0 48px; }
   @media (max-width: 800px) { .dir-section { padding: 2px 0 32px; } }
@@ -633,7 +633,7 @@
 
 <header class="qb-topbar">
   <a class="qb-brand" href="index.html" aria-label="TogetherBOOK — home">
-    <img class="qb-brand-logo" src="togetherbook-logo.png?v=1778494049" alt="TogetherBOOK">
+    <img class="qb-brand-logo" src="togetherbook-logo.png?v=1778611975" alt="TogetherBOOK">
   </a>
   <button class="qb-hamburger" aria-label="Toggle navigation menu" aria-expanded="false"
           onclick="document.body.classList.toggle('nav-open');this.setAttribute('aria-expanded',document.body.classList.contains('nav-open'))">
@@ -1055,7 +1055,10 @@
   }
 
   // Match a directory entry against a payroll record. Email is the strongest
-  // key (only LetMe rows carry it); fall back to lowercase "first last".
+  // key (only LetMe rows carry it); fall back to several normalised name
+  // variants. The scanner emits aliases for nicknames + multi-token first
+  // names; here we mirror with hyphenated-family fallback (e.g. workspace
+  // 'morgan kennedy-smith' -> payroll 'morgan smith').
   function payrollFor(entry) {
     if (!payrollData) return null;
     const u = entry.user;
@@ -1064,16 +1067,31 @@
     if (email && payrollData.by_email && payrollData.by_email[email]) {
       return payrollData.by_email[email];
     }
-    if (u) {
-      const candidates = new Set();
-      if (u.given && u.family) candidates.add(`${u.given} ${u.family}`.toLowerCase());
-      if (u.name) {
-        const parts = u.name.trim().toLowerCase().split(/\s+/);
-        if (parts.length >= 2) candidates.add(`${parts[0]} ${parts[parts.length - 1]}`);
-      }
-      for (const k of candidates) {
-        if (payrollData.by_name && payrollData.by_name[k]) return payrollData.by_name[k];
-      }
+    if (!u || !payrollData.by_name) return null;
+
+    const strip = s => (s || "").toLowerCase().replace(/['’.\-]/g, "").trim();
+    const candidates = new Set();
+    const add = s => {
+      const t = (s || "").trim();
+      if (!t) return;
+      candidates.add(t.toLowerCase());
+      candidates.add(strip(t));
+    };
+
+    if (u.given && u.family) {
+      add(`${u.given} ${u.family}`);
+      // hyphenated/multi-token family — also try just the last token
+      const famTokens = String(u.family).replace(/-/g, " ").trim().split(/\s+/);
+      if (famTokens.length > 1) add(`${u.given} ${famTokens[famTokens.length - 1]}`);
+    }
+    if (u.name) {
+      const parts = u.name.trim().split(/\s+/);
+      if (parts.length >= 2) add(`${parts[0]} ${parts[parts.length - 1]}`);
+      add(u.name);
+    }
+
+    for (const k of candidates) {
+      if (payrollData.by_name[k]) return payrollData.by_name[k];
     }
     return null;
   }
