@@ -450,6 +450,7 @@
     text-align: right;
     min-height: 1em;
   }
+  .dir-modal-toast.error { color: var(--warn, #c54c4c); }
   .dir-modal-saved-hint {
     font-family: 'JetBrains Mono', monospace;
     font-size: 0.66rem;
@@ -556,8 +557,12 @@
   Promise.all([
     fetch("staff.json", { cache: "no-store" }).then(r => r.ok ? r.json() : Promise.reject("staff.json HTTP " + r.status)),
     fetch("staff-activity.json", { cache: "no-store" }).then(r => r.ok ? r.json() : null).catch(() => null),
+    fetch("annotations.json", { cache: "no-store" }).then(r => r.ok ? r.json() : null).catch(() => null),
   ])
-    .then(([staff, activity]) => {
+    .then(([staff, activity, annotationsFile]) => {
+      annotationsMap = (annotationsFile && annotationsFile.annotations && typeof annotationsFile.annotations === "object")
+        ? annotationsFile.annotations
+        : {};
       const allWorkspaceUsers = staff.users || [];
       const activityByEmail = {};
       const externalUsers = [];
@@ -867,25 +872,41 @@
     })[c]);
   }
 
-  /* ----- Detail-card modal + per-person locally-saved notes ----- */
+  /* ----- Detail-card modal + per-person annotations ----- */
 
-  // Local-only annotations (phone, start_date) keyed by email/username.
-  // Browser-local because the site is static (GitHub Pages, no backend).
-  // Other people opening the directory in their own browser won't see them.
-  const ANNOTATIONS_KEY = "apifk-directory-annotations-v1";
-  function loadAnnotations() {
-    try { return JSON.parse(localStorage.getItem(ANNOTATIONS_KEY) || "{}"); }
-    catch (e) { return {}; }
-  }
-  function annotationFor(key) { return loadAnnotations()[key] || {}; }
-  function setAnnotation(key, v) {
-    const all = loadAnnotations();
-    if (!v || (!v.phone && !v.start_date)) delete all[key];
-    else all[key] = v;
-    try { localStorage.setItem(ANNOTATIONS_KEY, JSON.stringify(all)); } catch (e) {}
-  }
+  // Phone + start date per person, keyed by email/username. Stored in
+  // annotations.json at the repo root and committed by the Cloudflare
+  // Worker behind book.togetherbook.net/api/annotations (see worker/SETUP.md).
+  let annotationsMap = {};                              // populated on page load
+  const ANNOTATIONS_API = "/api/annotations";           // same-origin Worker route
+
+  function annotationFor(key) { return annotationsMap[key] || {}; }
   function entryKey(entry) {
     return entry.type === "staff" ? (entry.user.email || "") : (entry.activity.username || "");
+  }
+
+  // POST to the Worker. On success we both replace the local in-memory cache
+  // with the canonical state echoed back AND re-render the row list.
+  async function saveAnnotationRemote(key, phone, start_date) {
+    const res = await fetch(ANNOTATIONS_API, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ key, phone, start_date }),
+    });
+    if (!res.ok) {
+      let detail = "";
+      try { detail = (await res.json()).error || ""; } catch (e) {}
+      throw new Error(`HTTP ${res.status}${detail ? " — " + detail : ""}`);
+    }
+    const out = await res.json();
+    if (out && out.all && out.all.annotations) {
+      annotationsMap = out.all.annotations;
+    } else if (out && out.value === null) {
+      delete annotationsMap[key];
+    } else if (out && out.value) {
+      annotationsMap[key] = out.value;
+    }
+    return out;
   }
 
   function openCard(key) {
@@ -905,13 +926,24 @@
     }
     const saveBtn = modal.querySelector("[data-save]");
     if (saveBtn) {
-      saveBtn.addEventListener("click", () => {
+      saveBtn.addEventListener("click", async () => {
         const phone = (modal.querySelector('input[name="phone"]').value || "").trim();
         const start = (modal.querySelector('input[name="start_date"]').value || "").trim();
-        setAnnotation(key, { phone, start_date: start });
         const toast = modal.querySelector("[data-toast]");
-        if (toast) toast.textContent = "Saved to this browser.";
-        renderGrid();   // refresh rows so the new note shows inline
+        saveBtn.disabled = true;
+        if (toast) { toast.textContent = "Saving…"; toast.classList.remove("error"); }
+        try {
+          await saveAnnotationRemote(key, phone, start);
+          if (toast) toast.textContent = "Saved to the team directory.";
+          renderGrid();   // refresh rows so the new note shows inline
+        } catch (err) {
+          if (toast) {
+            toast.textContent = "Save failed — " + (err.message || err);
+            toast.classList.add("error");
+          }
+        } finally {
+          saveBtn.disabled = false;
+        }
       });
     }
   }
@@ -1013,7 +1045,7 @@
           <button type="button" class="primary" data-save>Save</button>
         </div>
         <p class="dir-modal-toast" data-toast></p>
-        <p class="dir-modal-saved-hint">Phone + start date are saved in this browser only.</p>
+        <p class="dir-modal-saved-hint">Saving writes <code>annotations.json</code> in the repo (everyone sees it).</p>
       </div>
     `;
   }
