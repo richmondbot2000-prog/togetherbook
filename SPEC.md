@@ -429,9 +429,11 @@ Merges two JSON files:
 - Bare-name matches (`Ed`, `Sophie`, `Igor`) deliberately excluded — would collide across staff sharing first names.
 - Aliases consolidated in `short_tenant()`: `togetherloans` → `transform`, `tandolan/tandolaina/tando` → `tandolan`, `rapidamoney` → `rapida`.
 
-**Card variants:**
-- Workspace staff: full photo + name + title + department + email + activity block
-- Warehouse-only: dashed-border placeholder photo, derived display name from local-part, italic "no Workspace account" tag, activity block
+**Layout (changed 2026-05-12):** horizontal row list instead of a grid of cards. Each row is `[44px avatar] [name · title · email + activity meta] [department + workspace chips right-aligned]`. On viewports ≤700px the aside chips wrap below the body. The grid-of-cards predecessor used 96px circular photos and 220px-min cards — kept in git history if we ever want it back.
+
+**Row variants:**
+- Workspace staff: photo (or initials placeholder), name + title + email, activity meta (`last seen … · [tenants] · mostly <warehouse>`), department + Workspace-tenant chip aside
+- Warehouse-only: dashed-border placeholder, derived display name from local-part, italic "no Workspace account" tag, activity meta; no aside chips
 
 ### 11.2 TopUps page (`topups.html`)
 
