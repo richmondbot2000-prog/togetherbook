@@ -9,11 +9,11 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&family=Orbitron:wght@500;600;700;800&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="style.css?v=1778623161">
-<link rel="stylesheet" href="quiet-tokens.css?v=1778623161">
-<link rel="stylesheet" href="quiet.css?v=1778623161">
-<link rel="stylesheet" href="quiet-extras.css?v=1778623161">
-<link rel="stylesheet" href="quiet-legacy.css?v=1778623161">
+<link rel="stylesheet" href="style.css?v=1778623915">
+<link rel="stylesheet" href="quiet-tokens.css?v=1778623915">
+<link rel="stylesheet" href="quiet.css?v=1778623915">
+<link rel="stylesheet" href="quiet-extras.css?v=1778623915">
+<link rel="stylesheet" href="quiet-legacy.css?v=1778623915">
 <style>
   .dir-section { max-width: 1080px; margin: 0 auto; padding: 24px 0 48px; }
   @media (max-width: 800px) { .dir-section { padding: 2px 0 32px; } }
@@ -84,6 +84,7 @@
     gap: 8px;
     align-items: center;
   }
+  .dir-filter-row[hidden] { display: none; }
   .dir-filter-label {
     font-family: 'JetBrains Mono', monospace;
     font-size: 0.66rem;
@@ -692,7 +693,7 @@
 
 <header class="qb-topbar">
   <a class="qb-brand" href="index.html" aria-label="TogetherBOOK — home">
-    <img class="qb-brand-logo" src="togetherbook-logo.png?v=1778623161" alt="TogetherBOOK">
+    <img class="qb-brand-logo" src="togetherbook-logo.png?v=1778623915" alt="TogetherBOOK">
   </a>
   <button class="qb-hamburger" aria-label="Toggle navigation menu" aria-expanded="false"
           onclick="document.body.classList.toggle('nav-open');this.setAttribute('aria-expanded',document.body.classList.contains('nav-open'))">
@@ -865,14 +866,24 @@
         if (!t) continue;
         byTenant[t] = (byTenant[t] || 0) + 1;
       }
-      // Workspace pills count distinct Google Workspace tenants — only show
-      // when staff.json has 2+ tenants configured (otherwise this row is
-      // visual noise).
+      // Workspace pills count per Workspace email-domain — derived from the
+      // primary email and any aliases. So a person with a single Workspace
+      // account but accounts on multiple alias-domains (letme.com,
+      // letme.co.uk, rgroup.co.uk, ...) gets counted on each domain. Useful
+      // for "show me everyone reachable on @rgroup.co.uk".
       const byWorkspace = {};
       for (const e of allEntries) {
         if (e.type !== "staff" || !e.user) continue;
-        const list = e.user.tenants || (e.user.tenant ? [e.user.tenant] : []);
-        for (const t of list) byWorkspace[t] = (byWorkspace[t] || 0) + 1;
+        const seen = new Set();
+        const collect = email => {
+          const dom = (email || "").split("@")[1];
+          if (!dom) return;
+          if (seen.has(dom)) return;
+          seen.add(dom);
+          byWorkspace[dom] = (byWorkspace[dom] || 0) + 1;
+        };
+        collect(e.user.email);
+        for (const a of (e.user.aliases || [])) collect(a);
       }
       buildDeptPills(byDept);
       buildTenantPills(byTenant);
@@ -991,9 +1002,16 @@
     }
     if (activeWorkspace !== "all") {
       // Workspace filter: staff-only (external users have no Google account).
+      // Match against email-domain of primary OR any alias.
       if (entry.type !== "staff" || !entry.user) return false;
-      const list = entry.user.tenants || (entry.user.tenant ? [entry.user.tenant] : []);
-      if (!list.includes(activeWorkspace)) return false;
+      const domains = new Set();
+      const primaryDom = (entry.user.email || "").split("@")[1];
+      if (primaryDom) domains.add(primaryDom);
+      for (const a of (entry.user.aliases || [])) {
+        const d = (a || "").split("@")[1];
+        if (d) domains.add(d);
+      }
+      if (!domains.has(activeWorkspace)) return false;
     }
     if (activeDept !== "all") {
       // The dept filter is for Workspace staff; external entries are excluded
