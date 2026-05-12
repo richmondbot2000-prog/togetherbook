@@ -6,9 +6,9 @@
 <title>TogetherBOOK — Brokers</title>
 <link rel="icon" type="image/png" href="site-icon.png">
 <link rel="apple-touch-icon" href="site-icon.png">
-<link rel="stylesheet" href="quiet-tokens.css?v=1778570538">
-<link rel="stylesheet" href="quiet.css?v=1778570538">
-<link rel="stylesheet" href="quiet-extras.css?v=1778570538">
+<link rel="stylesheet" href="quiet-tokens.css?v=1778571442">
+<link rel="stylesheet" href="quiet.css?v=1778571442">
+<link rel="stylesheet" href="quiet-extras.css?v=1778571442">
 <style>
   .br-section { max-width: 1280px; margin: 0 auto; padding: 24px 0 48px; }
   @media (max-width: 800px) { .br-section { padding: 2px 0 32px; } }
@@ -517,7 +517,7 @@
 
 <header class="qb-topbar">
   <a class="qb-brand" href="index.html" aria-label="TogetherBOOK — home">
-    <img class="qb-brand-logo" src="togetherbook-logo.png?v=1778570538" alt="TogetherBOOK">
+    <img class="qb-brand-logo" src="togetherbook-logo.png?v=1778571442" alt="TogetherBOOK">
   </a>
   <button class="qb-hamburger" aria-label="Toggle navigation menu" aria-expanded="false"
           onclick="document.body.classList.toggle('nav-open');this.setAttribute('aria-expanded',document.body.classList.contains('nav-open'))">
@@ -739,12 +739,13 @@
   //   SR1 alone:                 50+ accepts, ≤10% apply, (0 payouts OR CPA >20%)
   //   SR1 with SR2 children:    150+ accepts, ≤10% apply, (0 payouts OR CPA >20%)
   //   SR2 alone:                 50+ accepts, ≤10% apply, (0 payouts OR CPA >20%)
-  // We aggregate at SR1 level and don't know whether children exist; default
-  // to the 50-threshold (the more permissive of the two SR1 variants).
+  // sr2_distinct_count tells us which SR1 threshold applies.
   function _autoblockMatch(s) {
     if (!s) return false;
+    const hasSr2Children = (s.sr2_distinct_count || 0) > 0;
+    const threshold = hasSr2Children ? 150 : 50;
     const accepts = s.leads_purchased || 0;
-    if (accepts < 50) return false;
+    if (accepts < threshold) return false;
     if (_applyRate(s) > 0.10) return false;
     if ((s.paid_out || 0) === 0) return true;
     const cpa = _cpaPct(s);
