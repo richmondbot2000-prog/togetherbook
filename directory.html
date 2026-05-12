@@ -41,8 +41,13 @@
     gap: 12px;
     margin: 0 0 24px;
   }
+  .dir-search-row {
+    display: flex;
+    gap: 8px;
+    align-items: stretch;
+  }
   .dir-search {
-    width: 100%;
+    flex: 1;
     background: var(--bg-soft);
     border: 1px solid var(--border);
     color: var(--ink);
@@ -50,6 +55,21 @@
     padding: 12px 16px;
     border-radius: 10px;
     transition: border-color 0.15s, box-shadow 0.15s;
+  }
+  .dir-new-btn {
+    background: var(--accent-soft);
+    border: 1px solid var(--accent);
+    color: var(--accent-ink);
+    font: 600 0.9rem 'Inter', sans-serif;
+    padding: 0 18px;
+    border-radius: 10px;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: background 0.15s, border-color 0.15s;
+  }
+  .dir-new-btn:hover {
+    background: var(--accent);
+    color: var(--bg-soft);
   }
   .dir-search:focus {
     outline: none;
@@ -241,6 +261,23 @@
     padding: 2px 6px;
     border-radius: 3px;
     letter-spacing: 0.02em;
+  }
+
+  /* Google Workspace marker — shown only when staff && !suspended, i.e. the
+     account is live and billable. The row uses the small G logomark inline
+     with the name; the detail card uses the full "Google Workspace"
+     wordmark under the title. Suspended Workspace accounts show neither (the
+     suspended-badge takes that role instead). */
+  .dir-gws-icon {
+    width: 16px;
+    height: 16px;
+    vertical-align: -3px;
+    flex-shrink: 0;
+  }
+  .dir-modal-gws-wordmark {
+    height: 22px;
+    margin-top: 6px;
+    display: block;
   }
 
   .dir-row--external { opacity: 0.92; }
@@ -451,6 +488,124 @@
     min-height: 1em;
   }
   .dir-modal-toast.error { color: var(--warn, #c54c4c); }
+
+  /* Suspended badge in the modal head — bright red so it's hard to miss. */
+  .dir-suspended-badge {
+    display: inline-block;
+    margin-top: 4px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.66rem;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: #fff;
+    background: var(--warn, #c54c4c);
+    padding: 2px 8px;
+    border-radius: 4px;
+  }
+
+  /* Manage section action buttons */
+  .dir-manage-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 4px;
+  }
+  .dir-manage-actions button {
+    flex: 1 1 auto;
+    background: var(--bg-soft-2);
+    border: 1px solid var(--border);
+    color: var(--ink);
+    font: 600 0.85rem 'Inter', sans-serif;
+    padding: 10px 14px;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: border-color 0.15s, background 0.15s, color 0.15s;
+  }
+  .dir-manage-actions button:hover { border-color: var(--accent); }
+  .dir-manage-actions button.danger {
+    border-color: var(--warn, #c54c4c);
+    color: var(--warn, #c54c4c);
+  }
+  .dir-manage-actions button.danger:hover {
+    background: var(--warn, #c54c4c);
+    color: #fff;
+  }
+  .dir-manage-actions button:disabled {
+    opacity: 0.5;
+    cursor: wait;
+  }
+
+  /* Inline confirmation strip — shows after clicking Suspend/Delete. */
+  .dir-confirm {
+    margin-top: 10px;
+    padding: 10px 12px;
+    background: rgba(197, 76, 76, 0.08);
+    border: 1px solid var(--warn, #c54c4c);
+    border-radius: 8px;
+    font-size: 0.85rem;
+    color: var(--ink);
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .dir-confirm-text { flex: 1 1 200px; }
+  .dir-confirm-actions { display: flex; gap: 6px; }
+  .dir-confirm button {
+    background: var(--bg-soft-2);
+    border: 1px solid var(--border);
+    color: var(--ink);
+    font: 600 0.8rem 'Inter', sans-serif;
+    padding: 6px 12px;
+    border-radius: 6px;
+    cursor: pointer;
+  }
+  .dir-confirm button.confirm {
+    background: var(--warn, #c54c4c);
+    border-color: var(--warn, #c54c4c);
+    color: #fff;
+  }
+
+  /* Generated-password row in the create-user form. */
+  .dir-password-row {
+    display: grid;
+    grid-template-columns: 130px 1fr auto;
+    gap: 8px 8px;
+    align-items: center;
+    margin-bottom: 10px;
+  }
+  .dir-password-row label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--muted);
+  }
+  .dir-password-row input {
+    background: var(--bg-soft-2);
+    border: 1px solid var(--border);
+    color: var(--ink);
+    padding: 8px 12px;
+    border-radius: 6px;
+    font: 500 0.9rem 'JetBrains Mono', monospace;
+    width: 100%;
+    box-sizing: border-box;
+  }
+  .dir-password-row .pw-buttons { display: flex; gap: 4px; }
+  .dir-password-row .pw-buttons button {
+    background: var(--bg-soft-2);
+    border: 1px solid var(--border);
+    color: var(--ink-soft);
+    padding: 6px 10px;
+    border-radius: 6px;
+    font: 500 0.75rem 'Inter', sans-serif;
+    cursor: pointer;
+  }
+  .dir-password-row .pw-buttons button:hover { border-color: var(--accent); color: var(--ink); }
+  @media (max-width: 540px) {
+    .dir-password-row { grid-template-columns: 1fr; }
+  }
   .dir-modal-saved-hint {
     font-family: 'JetBrains Mono', monospace;
     font-size: 0.66rem;
@@ -506,7 +661,10 @@
       <p class="dir-meta" id="dirMeta">Loading…</p>
 
       <div class="dir-controls" id="dirControls" hidden>
-        <input type="search" class="dir-search" id="dirSearch" placeholder="Search by name, email, title, department, or warehouse username…">
+        <div class="dir-search-row">
+          <input type="search" class="dir-search" id="dirSearch" placeholder="Search by name, email, title, department, or warehouse username…">
+          <button type="button" class="dir-new-btn" id="dirNewBtn" title="Create a new Google Workspace user">+ New user</button>
+        </div>
         <div class="dir-filter-row" id="dirTenantRow">
           <span class="dir-filter-label">Tenant</span>
           <button class="dir-pill dir-pill--tenant active" data-value="all">All <span class="dir-pill-count" id="dirTenantCountAll">0</span></button>
@@ -827,12 +985,17 @@
       ? `<span class="dir-department">${escapeHtml(u.department)}</span>`
       : "";
 
+    const liveGws = !u.suspended
+      ? `<img class="dir-gws-icon" src="assets/google-workspace-icon.svg?v=1" alt="Google Workspace account active" title="Google Workspace account active">`
+      : "";
+
     return `
       <button type="button" class="dir-row" data-key="${escapeHtml(u.email)}" title="View details for ${escapeHtml(u.name || u.email)}">
         ${photo}
         <div class="dir-row-body">
           <div class="dir-row-headline">
             <span class="dir-name">${escapeHtml(u.name || u.email)}</span>
+            ${liveGws}
             ${u.title ? `<span class="dir-title">${escapeHtml(u.title)}</span>` : ""}
             <span class="dir-email">${escapeHtml(u.email)}</span>
           </div>
@@ -924,6 +1087,11 @@
       closeBtn.addEventListener("click", closeCard);
       closeBtn.focus();
     }
+    // Manage-account action buttons (suspend / unsuspend / delete).
+    modal.querySelectorAll("[data-action]").forEach(btn => {
+      btn.addEventListener("click", () => onManageClick(entry, btn.dataset.action, modal));
+    });
+
     const saveBtn = modal.querySelector("[data-save]");
     if (saveBtn) {
       saveBtn.addEventListener("click", async () => {
@@ -1009,6 +1177,13 @@
       <dt>Top warehouse</dt><dd>${escapeHtml(a.top_warehouse || "—")}</dd>
     ` : "";
 
+    const liveGwsWordmark = (u && !u.suspended)
+      ? `<img class="dir-modal-gws-wordmark" src="assets/google-workspace-wordmark.svg?v=1" alt="Google Workspace account active">`
+      : "";
+    const suspendedBadge = (u && u.suspended)
+      ? `<span class="dir-suspended-badge" title="This Workspace account is currently suspended — no email/Drive access, no billing on Flex plan">Workspace account suspended</span>`
+      : "";
+
     return `
       <button class="dir-modal-close" type="button" data-close aria-label="Close">×</button>
       <div class="dir-modal-head">
@@ -1016,6 +1191,8 @@
         <div>
           <h2 class="dir-modal-name" id="dirModalName">${escapeHtml(display)}</h2>
           <p class="dir-modal-title">${escapeHtml(subtitle)}</p>
+          ${liveGwsWordmark}
+          ${suspendedBadge}
         </div>
       </div>
 
@@ -1028,6 +1205,19 @@
         <div class="dir-modal-section">
           <h3>Warehouse activity (60d)</h3>
           <dl class="dir-detail-grid">${activityDl}</dl>
+        </div>` : ""}
+
+      ${u ? `
+        <div class="dir-modal-section">
+          <h3>Manage Workspace account</h3>
+          <div class="dir-manage-actions">
+            ${u.suspended
+              ? `<button type="button" data-action="unsuspend">Unsuspend</button>`
+              : `<button type="button" class="danger" data-action="suspend">Suspend</button>`}
+            <button type="button" class="danger" data-action="delete">Delete…</button>
+          </div>
+          <div class="dir-confirm-slot"></div>
+          <p class="dir-modal-saved-hint">Actions go via the workspace Worker → Google Workspace Admin SDK and are logged to <code>workspace-actions.json</code>.</p>
         </div>` : ""}
 
       <div class="dir-modal-section">
@@ -1050,12 +1240,232 @@
     `;
   }
 
+  /* ----- Workspace management actions ----- */
+
+  const WORKSPACE_API = "/api/workspace";   // book.togetherbook.net Worker route
+
+  async function workspaceAction(action, body) {
+    const res = await fetch(`${WORKSPACE_API}/${action}`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(body),
+    });
+    let data = null;
+    try { data = await res.json(); } catch (e) {}
+    if (!res.ok || (data && data.ok === false)) {
+      const msg = (data && (data.error || (data.details && data.details.slice(0, 200)))) || `HTTP ${res.status}`;
+      throw new Error(msg);
+    }
+    return data;
+  }
+
+  function onManageClick(entry, action, modal) {
+    const u = entry.user;
+    if (!u || !u.email) return;
+    const slot = modal.querySelector(".dir-confirm-slot");
+    if (!slot) return;
+
+    // Unsuspend doesn't need confirmation — it's reversible and non-destructive.
+    if (action === "unsuspend") {
+      runAction(entry, action, slot);
+      return;
+    }
+
+    const labels = {
+      suspend: { verb: "Suspend", danger: "Pauses email + Drive access. Billing stops on the Flex plan. Reversible." },
+      delete:  { verb: "Delete",  danger: "Permanently deletes this Workspace account. Recoverable for 20 days, then unrecoverable." },
+    };
+    const meta = labels[action];
+    slot.innerHTML = `
+      <div class="dir-confirm">
+        <div class="dir-confirm-text">
+          <strong>${meta.verb} ${escapeHtml(u.email)}?</strong><br>
+          <span class="dir-modal-saved-hint" style="text-align:left;margin:0;">${escapeHtml(meta.danger)}</span>
+        </div>
+        <div class="dir-confirm-actions">
+          <button type="button" data-cancel>Cancel</button>
+          <button type="button" class="confirm" data-confirm>${meta.verb}</button>
+        </div>
+      </div>`;
+    slot.querySelector("[data-cancel]").addEventListener("click", () => { slot.innerHTML = ""; });
+    slot.querySelector("[data-confirm]").addEventListener("click", () => runAction(entry, action, slot));
+  }
+
+  async function runAction(entry, action, slot) {
+    const u = entry.user;
+    const modal = document.getElementById("dirModal");
+    // Reuse the modal toast for feedback.
+    let toast = modal.querySelector("[data-toast]");
+    if (!toast) {
+      // Inject a transient toast inside the manage section's slot if Notes hasn't been rendered.
+      toast = document.createElement("p");
+      toast.className = "dir-modal-toast";
+      slot.appendChild(toast);
+    } else {
+      toast.classList.remove("error");
+    }
+    toast.textContent = `${action[0].toUpperCase()}${action.slice(1)}ing ${u.email}…`;
+    modal.querySelectorAll("[data-action], [data-confirm]").forEach(b => b.disabled = true);
+
+    try {
+      await workspaceAction(action, { email: u.email });
+      toast.textContent = `${action[0].toUpperCase()}${action.slice(1)} succeeded for ${u.email}.`;
+      // Optimistically update in-memory state so the row reflects reality
+      // before the next refresh-directory.yml run lands a fresh staff.json.
+      if (action === "suspend")   u.suspended = true;
+      if (action === "unsuspend") u.suspended = false;
+      if (action === "delete") {
+        const idx = allEntries.findIndex(e => e === entry);
+        if (idx >= 0) allEntries.splice(idx, 1);
+      }
+      if (slot) slot.innerHTML = "";
+      renderGrid();
+      if (action !== "delete") {
+        // Re-open the modal so the badge + suspend/unsuspend label flip cleanly,
+        // and all listeners are freshly wired.
+        openCard(entryKey(entry));
+      } else {
+        // After delete, the entry no longer exists — close the modal.
+        setTimeout(closeCard, 1200);
+      }
+    } catch (err) {
+      toast.textContent = `${action[0].toUpperCase()}${action.slice(1)} failed — ${err.message || err}`;
+      toast.classList.add("error");
+      modal.querySelectorAll("[data-action], [data-confirm]").forEach(b => b.disabled = false);
+    }
+  }
+
+  /* ----- Create-user modal ----- */
+
+  function openCreateModal() {
+    const modal = document.getElementById("dirModal");
+    modal.innerHTML = renderCreateBody();
+    const backdrop = document.getElementById("dirModalBackdrop");
+    backdrop.classList.add("open");
+    backdrop.setAttribute("aria-hidden", "false");
+    document.body.classList.add("dir-modal-open");
+
+    modal.querySelector("[data-close]").addEventListener("click", closeCard);
+    modal.querySelector("[data-regen]").addEventListener("click", () => {
+      modal.querySelector('input[name="password"]').value = generatePassword();
+    });
+    modal.querySelector("[data-copy]").addEventListener("click", async () => {
+      const pw = modal.querySelector('input[name="password"]').value;
+      try { await navigator.clipboard.writeText(pw); } catch (e) {}
+      const toast = modal.querySelector("[data-toast]");
+      if (toast) toast.textContent = "Password copied to clipboard.";
+    });
+    modal.querySelector("[data-create]").addEventListener("click", () => submitCreate(modal));
+  }
+
+  function renderCreateBody() {
+    const pw = generatePassword();
+    return `
+      <button class="dir-modal-close" type="button" data-close aria-label="Close">×</button>
+      <div class="dir-modal-head">
+        <img class="dir-modal-gws-wordmark" src="assets/google-workspace-wordmark.svg?v=1" alt="Google Workspace" style="height:28px;margin:0;">
+        <div>
+          <h2 class="dir-modal-name" id="dirModalName">Create new user</h2>
+          <p class="dir-modal-title">Adds a Google Workspace account immediately.</p>
+        </div>
+      </div>
+
+      <div class="dir-modal-section">
+        <h3>Account</h3>
+        <div class="dir-form-row">
+          <label for="newGiven">First name</label>
+          <input id="newGiven" name="given_name" type="text" placeholder="Jane" autocomplete="off">
+        </div>
+        <div class="dir-form-row">
+          <label for="newFamily">Last name</label>
+          <input id="newFamily" name="family_name" type="text" placeholder="Smith" autocomplete="off">
+        </div>
+        <div class="dir-form-row">
+          <label for="newEmail">Email</label>
+          <input id="newEmail" name="email" type="email" placeholder="jane.smith@letme.com" autocomplete="off">
+        </div>
+        <div class="dir-password-row">
+          <label for="newPw">Password</label>
+          <input id="newPw" name="password" type="text" value="${escapeHtml(pw)}">
+          <div class="pw-buttons">
+            <button type="button" data-regen title="Generate a new random password">↻</button>
+            <button type="button" data-copy title="Copy password to clipboard">Copy</button>
+          </div>
+        </div>
+        <div class="dir-modal-actions">
+          <button type="button" data-close>Cancel</button>
+          <button type="button" class="primary" data-create>Create user</button>
+        </div>
+        <p class="dir-modal-toast" data-toast></p>
+        <p class="dir-modal-saved-hint">The new user will be required to change password at first sign-in. The action is logged to <code>workspace-actions.json</code>.</p>
+      </div>
+    `;
+  }
+
+  async function submitCreate(modal) {
+    const get = name => (modal.querySelector(`input[name="${name}"]`).value || "").trim();
+    const body = {
+      given_name: get("given_name"),
+      family_name: get("family_name"),
+      email: get("email"),
+      password: get("password"),
+    };
+    const toast = modal.querySelector("[data-toast]");
+    toast.classList.remove("error");
+    if (!body.given_name || !body.family_name || !body.email || !body.password) {
+      toast.textContent = "All fields are required.";
+      toast.classList.add("error");
+      return;
+    }
+    const createBtn = modal.querySelector("[data-create]");
+    createBtn.disabled = true;
+    toast.textContent = `Creating ${body.email}…`;
+    try {
+      const out = await workspaceAction("create", body);
+      toast.textContent = `Created ${body.email}. Password is still on this screen — copy it before closing.`;
+      // Optimistically append to allEntries so the directory reflects the new
+      // account immediately. The next refresh-directory.yml run will replace
+      // this skeleton with the full Workspace record.
+      allEntries.unshift({
+        type: "staff",
+        user: {
+          email: body.email,
+          name: `${body.given_name} ${body.family_name}`,
+          given: body.given_name,
+          family: body.family_name,
+          title: "", department: "",
+          photo_url: "", suspended: false, admin: false,
+          tenant: body.email.split("@")[1] || "",
+          tenants: body.email.split("@")[1] ? [body.email.split("@")[1]] : [],
+        },
+        activity: null,
+      });
+      renderGrid();
+    } catch (err) {
+      toast.textContent = `Create failed — ${err.message || err}`;
+      toast.classList.add("error");
+      createBtn.disabled = false;
+    }
+  }
+
+  function generatePassword(len = 16) {
+    // Mixed-case + digits + a couple of symbols. Excludes lookalike chars.
+    const chars = "ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnpqrstuvwxyz23456789!@#$%&*";
+    const arr = new Uint32Array(len);
+    crypto.getRandomValues(arr);
+    let out = "";
+    for (const n of arr) out += chars[n % chars.length];
+    return out;
+  }
+
   // Click delegation: opening a row -> openCard().
   document.getElementById("dirGrid").addEventListener("click", e => {
     const row = e.target.closest(".dir-row[data-key]");
     if (!row) return;
     openCard(row.dataset.key);
   });
+  // "+ New user" button -> open the create-user modal.
+  document.getElementById("dirNewBtn").addEventListener("click", openCreateModal);
   // Click outside the modal to close.
   document.getElementById("dirModalBackdrop").addEventListener("click", e => {
     if (e.target === e.currentTarget) closeCard();
