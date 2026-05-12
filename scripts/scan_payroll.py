@@ -202,25 +202,26 @@ def main():
     args = ap.parse_args()
 
     all_rows = load_letme() + load_tlrg()
+    # Both lookups are LIST-valued: when two payroll rows share an email or
+    # name alias we keep all of them rather than dropping (don't lose data).
+    # The page renders the first record and lists the rest as "also on payroll".
     by_email = {}
     by_name = {}
-    # First pass: count how many records claim each alias. We only keep an
-    # alias if exactly one record produces it — drops ambiguous matches like
-    # two different "Sanders" entries colliding on "dan sanders".
-    alias_owners = {}
-    per_row_aliases = []
     for r in all_rows:
-        aliases = name_aliases(r["first_name"], r["last_name"])
-        per_row_aliases.append(aliases)
-        for a in aliases:
-            alias_owners.setdefault(a, []).append(id(r))
-
-    for r, aliases in zip(all_rows, per_row_aliases):
         if r["email"]:
-            by_email[r["email"]] = r
-        for a in aliases:
-            if len(alias_owners.get(a, [])) == 1:
-                by_name[a] = r
+            by_email.setdefault(r["email"], []).append(r)
+        for a in name_aliases(r["first_name"], r["last_name"]):
+            by_name.setdefault(a, []).append(r)
+
+    def sort_key(rec):
+        # Active records (no termination) before terminated; then most-recent
+        # start_date first, so the primary is the currently-active record.
+        return (rec.get("termination_date") is not None, -(int(rec.get("start_date","0000-00-00").replace("-","")) if rec.get("start_date") else 0))
+
+    for lst in by_email.values():
+        lst.sort(key=sort_key)
+    for lst in by_name.values():
+        lst.sort(key=sort_key)
 
     output = {
         "schema_version": 1,

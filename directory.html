@@ -9,11 +9,11 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&family=Orbitron:wght@500;600;700;800&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="style.css?v=1778615038">
-<link rel="stylesheet" href="quiet-tokens.css?v=1778615038">
-<link rel="stylesheet" href="quiet.css?v=1778615038">
-<link rel="stylesheet" href="quiet-extras.css?v=1778615038">
-<link rel="stylesheet" href="quiet-legacy.css?v=1778615038">
+<link rel="stylesheet" href="style.css?v=1778618951">
+<link rel="stylesheet" href="quiet-tokens.css?v=1778618951">
+<link rel="stylesheet" href="quiet.css?v=1778618951">
+<link rel="stylesheet" href="quiet-extras.css?v=1778618951">
+<link rel="stylesheet" href="quiet-legacy.css?v=1778618951">
 <style>
   .dir-section { max-width: 1080px; margin: 0 auto; padding: 24px 0 48px; }
   @media (max-width: 800px) { .dir-section { padding: 2px 0 32px; } }
@@ -401,6 +401,20 @@
     color: var(--muted);
     margin: 0 0 10px;
   }
+  .dir-modal-count {
+    font-weight: 400;
+    color: var(--manuscript-red, #B23A48);
+    margin-left: 6px;
+  }
+  .dir-modal-subhead {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.66rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--manuscript-red, #B23A48);
+    margin: 18px 0 8px;
+  }
   .dir-detail-grid {
     display: grid;
     grid-template-columns: 130px 1fr;
@@ -633,7 +647,7 @@
 
 <header class="qb-topbar">
   <a class="qb-brand" href="index.html" aria-label="TogetherBOOK — home">
-    <img class="qb-brand-logo" src="togetherbook-logo.png?v=1778615038" alt="TogetherBOOK">
+    <img class="qb-brand-logo" src="togetherbook-logo.png?v=1778618951" alt="TogetherBOOK">
   </a>
   <button class="qb-hamburger" aria-label="Toggle navigation menu" aria-expanded="false"
           onclick="document.body.classList.toggle('nav-open');this.setAttribute('aria-expanded',document.body.classList.contains('nav-open'))">
@@ -1054,46 +1068,59 @@
     return entry.type === "staff" ? (entry.user.email || "") : (entry.activity.username || "");
   }
 
-  // Match a directory entry against a payroll record. Email is the strongest
-  // key (only LetMe rows carry it); fall back to several normalised name
-  // variants. The scanner emits aliases for nicknames + multi-token first
-  // names; here we mirror with hyphenated-family fallback (e.g. workspace
-  // 'morgan kennedy-smith' -> payroll 'morgan smith').
-  function payrollFor(entry) {
-    if (!payrollData) return null;
+  // Return ALL payroll records that match this entry. Email is the strongest
+  // key (only LetMe rows carry it); falls back to several normalised name
+  // variants. Aliases live in the scanner; here we add a hyphenated-family
+  // fallback ('morgan kennedy-smith' -> 'morgan smith'). Records are
+  // deduplicated and returned in scanner order (active first, most recent
+  // start_date first).
+  function payrollAllFor(entry) {
+    if (!payrollData) return [];
     const u = entry.user;
     const a = entry.activity;
-    const email = ((u && u.email) || (a && a.username) || "").toLowerCase();
-    if (email && payrollData.by_email && payrollData.by_email[email]) {
-      return payrollData.by_email[email];
-    }
-    if (!u || !payrollData.by_name) return null;
-
-    const strip = s => (s || "").toLowerCase().replace(/['’.\-]/g, "").trim();
-    const candidates = new Set();
-    const add = s => {
-      const t = (s || "").trim();
-      if (!t) return;
-      candidates.add(t.toLowerCase());
-      candidates.add(strip(t));
+    const seen = new Set();
+    const out = [];
+    const pushAll = list => {
+      for (const r of (list || [])) {
+        const id = `${r.employer}|${r.employee_number}|${r.first_name}|${r.last_name}`;
+        if (seen.has(id)) continue;
+        seen.add(id);
+        out.push(r);
+      }
     };
 
-    if (u.given && u.family) {
-      add(`${u.given} ${u.family}`);
-      // hyphenated/multi-token family — also try just the last token
-      const famTokens = String(u.family).replace(/-/g, " ").trim().split(/\s+/);
-      if (famTokens.length > 1) add(`${u.given} ${famTokens[famTokens.length - 1]}`);
-    }
-    if (u.name) {
-      const parts = u.name.trim().split(/\s+/);
-      if (parts.length >= 2) add(`${parts[0]} ${parts[parts.length - 1]}`);
-      add(u.name);
-    }
+    const email = ((u && u.email) || (a && a.username) || "").toLowerCase();
+    if (email && payrollData.by_email) pushAll(payrollData.by_email[email]);
 
-    for (const k of candidates) {
-      if (payrollData.by_name[k]) return payrollData.by_name[k];
+    if (u && payrollData.by_name) {
+      const strip = s => (s || "").toLowerCase().replace(/['’.\-]/g, "").trim();
+      const candidates = new Set();
+      const add = s => {
+        const t = (s || "").trim();
+        if (!t) return;
+        candidates.add(t.toLowerCase());
+        candidates.add(strip(t));
+      };
+      if (u.given && u.family) {
+        add(`${u.given} ${u.family}`);
+        const famTokens = String(u.family).replace(/-/g, " ").trim().split(/\s+/);
+        if (famTokens.length > 1) add(`${u.given} ${famTokens[famTokens.length - 1]}`);
+      }
+      if (u.name) {
+        const parts = u.name.trim().split(/\s+/);
+        if (parts.length >= 2) add(`${parts[0]} ${parts[parts.length - 1]}`);
+        add(u.name);
+      }
+      for (const k of candidates) pushAll(payrollData.by_name[k]);
     }
-    return null;
+    return out;
+  }
+
+  // The primary record — first match, which the scanner has already sorted
+  // so that active (non-terminated) records come first.
+  function payrollFor(entry) {
+    const all = payrollAllFor(entry);
+    return all.length ? all[0] : null;
   }
 
   // POST to the Worker. On success we both replace the local in-memory cache
@@ -1173,8 +1200,8 @@
   }
 
   function payrollSectionHtml(entry) {
-    const p = payrollFor(entry);
-    if (!p) return "";
+    const all = payrollAllFor(entry);
+    if (!all.length) return "";
     const fmtUkDate = s => {
       if (!s) return "—";
       const d = new Date(s);
@@ -1183,23 +1210,50 @@
     };
     const row = (k, v) => v ? `<dt>${k}</dt><dd>${escapeHtml(v)}</dd>` : "";
     const rowRaw = (k, html) => html ? `<dt>${k}</dt><dd>${html}</dd>` : "";
-    const ageBits = [];
-    if (p.dob) ageBits.push(fmtUkDate(p.dob));
-    if (p.age != null) ageBits.push(`(${p.age})`);
-    return `
-      <div class="dir-modal-section">
-        <h3>Payroll</h3>
+
+    const recordBlock = (p, isPrimary) => {
+      const ageBits = [];
+      if (p.dob) ageBits.push(fmtUkDate(p.dob));
+      if (p.age != null) ageBits.push(`(${p.age})`);
+      const heading = isPrimary
+        ? ""
+        : `<h4 class="dir-modal-subhead">Also on payroll as</h4>`;
+      return `
+        ${heading}
         <dl class="dir-detail-grid">
           ${row("Employer", p.employer)}
           ${row("Employee #", p.employee_number)}
           ${rowRaw("Start date", p.start_date ? escapeHtml(fmtUkDate(p.start_date)) : "")}
           ${row("Date of birth", ageBits.join(" "))}
+          ${p.email ? `<dt>Payroll email</dt><dd><a href="mailto:${escapeHtml(p.email)}">${escapeHtml(p.email)}</a></dd>` : ""}
           ${p.mobile ? `<dt>Mobile</dt><dd><a href="tel:${escapeHtml(p.mobile.replace(/\s+/g, ""))}">${escapeHtml(p.mobile)}</a></dd>` : ""}
           ${row("Address", p.address)}
           ${p.termination_date ? `<dt>Terminated</dt><dd>${escapeHtml(fmtUkDate(p.termination_date))}</dd>` : ""}
         </dl>
+      `;
+    };
+
+    return `
+      <div class="dir-modal-section">
+        <h3>Payroll${all.length > 1 ? ` <span class="dir-modal-count">${all.length} records</span>` : ""}</h3>
+        ${all.map((p, i) => recordBlock(p, i === 0)).join("")}
       </div>
     `;
+  }
+
+  // Find every Workspace account that belongs to the same person as `entry`,
+  // matched by lowercase (given, family). Returns a list of user records
+  // including the entry's own. Used to surface multi-domain email accounts
+  // (e.g. mourad.malki@letme.com + mourad.malki@clearloans.com.au).
+  function workspaceSiblings(entry) {
+    const u = entry.user;
+    if (!u || !u.given || !u.family) return u ? [u] : [];
+    const norm = s => (s || "").toLowerCase().trim();
+    const wantG = norm(u.given);
+    const wantF = norm(u.family);
+    return allEntries
+      .filter(e => e.type === "staff" && e.user && norm(e.user.given) === wantG && norm(e.user.family) === wantF)
+      .map(e => e.user);
   }
 
   function renderModalBody(entry) {
@@ -1235,8 +1289,23 @@
     const tenantList = u ? (u.tenants || (u.tenant ? [u.tenant] : [])) : [];
     const mailto = u ? u.email : (a.username || "");
 
+    // Find sibling Workspace accounts (same person, multiple domains/tenants)
+    // and the payroll record's email if it differs from any Workspace email.
+    const siblings = u ? workspaceSiblings(entry) : [];
+    const allEmails = new Set();
+    for (const s of siblings) {
+      if (s.email) allEmails.add(s.email.toLowerCase());
+    }
+    const primaryPayroll = payrollFor(entry);
+    if (primaryPayroll && primaryPayroll.email) {
+      allEmails.add(primaryPayroll.email.toLowerCase());
+    }
+    const primaryEmail = (u && u.email) ? u.email.toLowerCase() : "";
+    const otherEmails = Array.from(allEmails).filter(e => e !== primaryEmail);
+
     const workspaceDl = u ? `
       <dt>Email</dt><dd>${escapeHtml(u.email || "—")}</dd>
+      ${otherEmails.length ? `<dt>Other emails</dt><dd>${otherEmails.map(e => `<a href="mailto:${escapeHtml(e)}">${escapeHtml(e)}</a>`).join("<br>")}</dd>` : ""}
       ${(u.given || u.family) ? `<dt>Full name</dt><dd>${escapeHtml(((u.given || "") + " " + (u.family || "")).trim())}</dd>` : ""}
       ${u.department ? `<dt>Department</dt><dd>${escapeHtml(u.department)}</dd>` : ""}
       ${tenantList.length ? `<dt>Workspace</dt><dd>${tenantList.map(t => escapeHtml(t)).join(", ")}</dd>` : ""}
