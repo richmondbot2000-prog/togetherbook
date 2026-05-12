@@ -108,6 +108,12 @@
     gap: 6px;
   }
   .dir-row {
+    /* <button> reset — the row is a button so the click opens the detail card. */
+    appearance: none;
+    font: inherit;
+    text-align: left;
+    width: 100%;
+    cursor: pointer;
     display: grid;
     grid-template-columns: 44px minmax(0, 1fr) auto;
     align-items: center;
@@ -119,6 +125,11 @@
     text-decoration: none;
     color: inherit;
     transition: border-color 0.15s, background 0.15s;
+  }
+  .dir-row:focus-visible {
+    outline: none;
+    border-color: var(--accent);
+    box-shadow: 0 0 0 2px rgba(0, 212, 255, 0.35);
   }
   .dir-row:hover {
     border-color: var(--accent);
@@ -262,6 +273,194 @@
     font-size: 0.95rem;
     text-align: center;
   }
+
+  /* Local-note bits shown inline in the row meta when the user has saved a
+     phone number or start date for this person. */
+  .dir-note {
+    color: var(--ink-700, #2C3E66);
+    font-style: italic;
+  }
+  .dir-note b {
+    color: var(--ink-900, #11192E);
+    font-weight: 600;
+    font-style: normal;
+  }
+
+  /* Detail-card modal */
+  body.dir-modal-open { overflow: hidden; }
+  .dir-modal-backdrop {
+    position: fixed;
+    inset: 0;
+    background: rgba(11, 14, 28, 0.55);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 100;
+    padding: 16px;
+  }
+  .dir-modal-backdrop.open { display: flex; }
+  .dir-modal {
+    background: var(--bg-soft);
+    border: 1px solid var(--accent);
+    border-radius: 14px;
+    max-width: 560px;
+    width: 100%;
+    max-height: calc(100vh - 32px);
+    overflow-y: auto;
+    padding: 24px;
+    position: relative;
+    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.4);
+  }
+  .dir-modal-close {
+    position: absolute;
+    top: 12px; right: 12px;
+    background: transparent;
+    border: 1px solid var(--border);
+    color: var(--ink-soft);
+    width: 32px; height: 32px;
+    border-radius: 8px;
+    font-size: 1.1rem;
+    font-weight: 600;
+    line-height: 1;
+    cursor: pointer;
+    transition: border-color 0.15s, color 0.15s;
+  }
+  .dir-modal-close:hover { border-color: var(--accent); color: var(--ink); }
+  .dir-modal-head {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    margin: 0 36px 16px 0;
+  }
+  .dir-modal-head .dir-photo,
+  .dir-modal-head .dir-photo-placeholder {
+    width: 72px; height: 72px;
+    font-size: 1.4rem;
+  }
+  .dir-modal-name {
+    font-family: var(--font-display);
+    font-size: 1.4rem;
+    font-weight: 700;
+    color: var(--ink);
+    margin: 0 0 4px;
+    line-height: 1.2;
+  }
+  .dir-modal-title {
+    color: var(--ink-soft);
+    font-size: 0.95rem;
+    margin: 0;
+  }
+  .dir-modal-section {
+    border-top: 1px solid var(--border);
+    padding-top: 14px;
+    margin-top: 14px;
+  }
+  .dir-modal-section h3 {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.7rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--muted);
+    margin: 0 0 10px;
+  }
+  .dir-detail-grid {
+    display: grid;
+    grid-template-columns: 130px 1fr;
+    gap: 6px 14px;
+    font-size: 0.88rem;
+    margin: 0;
+  }
+  .dir-detail-grid dt {
+    color: var(--muted);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    align-self: baseline;
+  }
+  .dir-detail-grid dd {
+    margin: 0;
+    color: var(--ink);
+    word-break: break-word;
+  }
+  .dir-form-row {
+    display: grid;
+    grid-template-columns: 130px 1fr;
+    gap: 8px 14px;
+    align-items: center;
+    margin-bottom: 10px;
+  }
+  .dir-form-row label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--muted);
+  }
+  .dir-form-row input {
+    background: var(--bg-soft-2);
+    border: 1px solid var(--border);
+    color: var(--ink);
+    padding: 8px 12px;
+    border-radius: 6px;
+    font: 500 0.9rem 'Inter', sans-serif;
+    width: 100%;
+    box-sizing: border-box;
+  }
+  .dir-form-row input:focus {
+    outline: none;
+    border-color: var(--accent);
+    box-shadow: 0 0 8px rgba(0, 212, 255, 0.18);
+  }
+  .dir-modal-actions {
+    display: flex;
+    gap: 8px;
+    justify-content: flex-end;
+    margin-top: 16px;
+    flex-wrap: wrap;
+  }
+  .dir-modal-actions button,
+  .dir-modal-actions a.dir-modal-btn {
+    background: var(--bg-soft-2);
+    border: 1px solid var(--border);
+    color: var(--ink-soft);
+    padding: 8px 14px;
+    border-radius: 8px;
+    font: 600 0.85rem 'Inter', sans-serif;
+    cursor: pointer;
+    text-decoration: none;
+    transition: border-color 0.15s, color 0.15s, background 0.15s;
+  }
+  .dir-modal-actions .primary {
+    background: var(--accent-soft);
+    border-color: var(--accent);
+    color: var(--accent-ink);
+  }
+  .dir-modal-actions button:hover,
+  .dir-modal-actions a.dir-modal-btn:hover {
+    border-color: var(--accent);
+    color: var(--ink);
+  }
+  .dir-modal-toast {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.7rem;
+    color: var(--accent-ink);
+    margin: 8px 0 0;
+    text-align: right;
+    min-height: 1em;
+  }
+  .dir-modal-saved-hint {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.66rem;
+    color: var(--muted);
+    margin: 4px 0 0;
+    text-align: right;
+  }
+  @media (max-width: 540px) {
+    .dir-detail-grid, .dir-form-row { grid-template-columns: 1fr; }
+    .dir-detail-grid dt { padding-top: 4px; }
+  }
 </style>
 </head>
 <body>
@@ -332,6 +531,10 @@
         repo secret, the next refresh will fill this page.
       </div>
     </section>
+
+    <div class="dir-modal-backdrop" id="dirModalBackdrop" aria-hidden="true">
+      <div class="dir-modal" id="dirModal" role="dialog" aria-modal="true" aria-labelledby="dirModalName"></div>
+    </div>
   </main>
 
 <script>
@@ -563,16 +766,26 @@
     return true;
   }
 
-  function activityHtml(a) {
-    if (!a) return "";
-    const lastDate = a.last_active_utc
-      ? new Date(a.last_active_utc).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" })
-      : null;
-    const tenants = (a.tenants || []).map(t => `<span class="dir-tenant">${escapeHtml(t)}</span>`).join("");
+  function rowMetaHtml(a, key) {
+    const ann = annotationFor(key);
     const parts = [];
-    if (lastDate) parts.push(`<span class="dir-last">last seen <b>${escapeHtml(lastDate)}</b></span>`);
-    if (tenants) parts.push(`<span class="dir-tenants">${tenants}</span>`);
-    if (a.top_warehouse) parts.push(`<span class="dir-warehouse">mostly <em>${escapeHtml(a.top_warehouse)}</em></span>`);
+    if (a) {
+      const lastDate = a.last_active_utc
+        ? new Date(a.last_active_utc).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" })
+        : null;
+      if (lastDate) parts.push(`<span class="dir-last">last seen <b>${escapeHtml(lastDate)}</b></span>`);
+      const tenants = (a.tenants || []).map(t => `<span class="dir-tenant">${escapeHtml(t)}</span>`).join("");
+      if (tenants) parts.push(`<span class="dir-tenants">${tenants}</span>`);
+      if (a.top_warehouse) parts.push(`<span class="dir-warehouse">mostly <em>${escapeHtml(a.top_warehouse)}</em></span>`);
+    }
+    if (ann.phone) parts.push(`<span class="dir-note">phone <b>${escapeHtml(ann.phone)}</b></span>`);
+    if (ann.start_date) {
+      const d = new Date(ann.start_date);
+      const label = isNaN(d.getTime())
+        ? ann.start_date
+        : d.toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" });
+      parts.push(`<span class="dir-note">started <b>${escapeHtml(label)}</b></span>`);
+    }
     return parts.length ? `<div class="dir-row-meta">${parts.join("")}</div>` : "";
   }
 
@@ -610,7 +823,7 @@
       : "";
 
     return `
-      <a class="dir-row" href="mailto:${escapeHtml(u.email)}" title="Email ${escapeHtml(u.name || u.email)}">
+      <button type="button" class="dir-row" data-key="${escapeHtml(u.email)}" title="View details for ${escapeHtml(u.name || u.email)}">
         ${photo}
         <div class="dir-row-body">
           <div class="dir-row-headline">
@@ -618,10 +831,10 @@
             ${u.title ? `<span class="dir-title">${escapeHtml(u.title)}</span>` : ""}
             <span class="dir-email">${escapeHtml(u.email)}</span>
           </div>
-          ${activityHtml(a)}
+          ${rowMetaHtml(a, u.email)}
         </div>
         <div class="dir-row-aside">${departmentChip}${workspaceChip}</div>
-      </a>
+      </button>
     `;
   }
 
@@ -633,7 +846,7 @@
     const initials = ((local.charAt(0) || "?") + (local.split(/[._-]/)[1]?.charAt(0) || "")).toUpperCase();
 
     return `
-      <a class="dir-row dir-row--external" href="mailto:${escapeHtml(username)}" title="Active in DB only — ${escapeHtml(username)}">
+      <button type="button" class="dir-row dir-row--external" data-key="${escapeHtml(username)}" title="Active in DB only — ${escapeHtml(username)}">
         <div class="dir-photo-placeholder">${escapeHtml(initials)}</div>
         <div class="dir-row-body">
           <div class="dir-row-headline">
@@ -641,10 +854,10 @@
             <span class="dir-title">no Workspace account</span>
             <span class="dir-email">${escapeHtml(username)}</span>
           </div>
-          ${activityHtml(a)}
+          ${rowMetaHtml(a, username)}
         </div>
         <div class="dir-row-aside"></div>
-      </a>
+      </button>
     `;
   }
 
@@ -653,11 +866,176 @@
       "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;"
     })[c]);
   }
+
+  /* ----- Detail-card modal + per-person locally-saved notes ----- */
+
+  // Local-only annotations (phone, start_date) keyed by email/username.
+  // Browser-local because the site is static (GitHub Pages, no backend).
+  // Other people opening the directory in their own browser won't see them.
+  const ANNOTATIONS_KEY = "apifk-directory-annotations-v1";
+  function loadAnnotations() {
+    try { return JSON.parse(localStorage.getItem(ANNOTATIONS_KEY) || "{}"); }
+    catch (e) { return {}; }
+  }
+  function annotationFor(key) { return loadAnnotations()[key] || {}; }
+  function setAnnotation(key, v) {
+    const all = loadAnnotations();
+    if (!v || (!v.phone && !v.start_date)) delete all[key];
+    else all[key] = v;
+    try { localStorage.setItem(ANNOTATIONS_KEY, JSON.stringify(all)); } catch (e) {}
+  }
+  function entryKey(entry) {
+    return entry.type === "staff" ? (entry.user.email || "") : (entry.activity.username || "");
+  }
+
+  function openCard(key) {
+    const entry = allEntries.find(e => entryKey(e) === key);
+    if (!entry) return;
+    const modal = document.getElementById("dirModal");
+    modal.innerHTML = renderModalBody(entry);
+    const backdrop = document.getElementById("dirModalBackdrop");
+    backdrop.classList.add("open");
+    backdrop.setAttribute("aria-hidden", "false");
+    document.body.classList.add("dir-modal-open");
+
+    const closeBtn = modal.querySelector("[data-close]");
+    if (closeBtn) {
+      closeBtn.addEventListener("click", closeCard);
+      closeBtn.focus();
+    }
+    const saveBtn = modal.querySelector("[data-save]");
+    if (saveBtn) {
+      saveBtn.addEventListener("click", () => {
+        const phone = (modal.querySelector('input[name="phone"]').value || "").trim();
+        const start = (modal.querySelector('input[name="start_date"]').value || "").trim();
+        setAnnotation(key, { phone, start_date: start });
+        const toast = modal.querySelector("[data-toast]");
+        if (toast) toast.textContent = "Saved to this browser.";
+        renderGrid();   // refresh rows so the new note shows inline
+      });
+    }
+  }
+
+  function closeCard() {
+    const backdrop = document.getElementById("dirModalBackdrop");
+    backdrop.classList.remove("open");
+    backdrop.setAttribute("aria-hidden", "true");
+    document.body.classList.remove("dir-modal-open");
+    document.getElementById("dirModal").innerHTML = "";
+  }
+
+  function renderModalBody(entry) {
+    const u = entry.user;
+    const a = entry.activity;
+    const key = entryKey(entry);
+    const ann = annotationFor(key);
+
+    const display = u
+      ? (u.name || u.email || "—")
+      : prettyName((a.username || "").split("@")[0] || (a.username || ""));
+    const subtitle = u
+      ? (u.title || "No title set")
+      : "Active in warehouse only — not a Workspace user";
+
+    const initials = u
+      ? (((u.given || u.name || "?").charAt(0) + (u.family || "").charAt(0)).toUpperCase()
+         || (u.email || "?").charAt(0).toUpperCase())
+      : (((a.username || "?").charAt(0) + ((a.username || "").split(/[._-]/)[1]?.charAt(0) || "")).toUpperCase());
+    const photo = (u && u.photo_url)
+      ? `<img class="dir-photo" src="${escapeHtml(u.photo_url)}" alt="${escapeHtml(display)}" referrerpolicy="no-referrer" onerror="this.outerHTML='<div class=&quot;dir-photo-placeholder&quot;>${escapeHtml(initials)}</div>'">`
+      : `<div class="dir-photo-placeholder">${escapeHtml(initials)}</div>`;
+
+    const fmtDateTime = s => {
+      if (!s) return "—";
+      const d = new Date(s);
+      if (isNaN(d.getTime())) return s;
+      return d.toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" })
+        + " "
+        + d.toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit" });
+    };
+    const yesno = v => v ? "yes" : "no";
+    const tenantList = u ? (u.tenants || (u.tenant ? [u.tenant] : [])) : [];
+    const mailto = u ? u.email : (a.username || "");
+
+    const workspaceDl = u ? `
+      <dt>Email</dt><dd>${escapeHtml(u.email || "—")}</dd>
+      ${(u.given || u.family) ? `<dt>Full name</dt><dd>${escapeHtml(((u.given || "") + " " + (u.family || "")).trim())}</dd>` : ""}
+      ${u.department ? `<dt>Department</dt><dd>${escapeHtml(u.department)}</dd>` : ""}
+      ${tenantList.length ? `<dt>Workspace</dt><dd>${tenantList.map(t => escapeHtml(t)).join(", ")}</dd>` : ""}
+      <dt>Suspended</dt><dd>${yesno(u.suspended)}</dd>
+      <dt>Admin</dt><dd>${yesno(u.admin)}</dd>
+    ` : `
+      <dt>Username</dt><dd>${escapeHtml(a.username || "—")}</dd>
+      <dt>Workspace</dt><dd>none (warehouse-only operator)</dd>
+    `;
+
+    const activityDl = a ? `
+      <dt>Writes (60d)</dt><dd>${(a.writes_60d || 0).toLocaleString("en-GB")}</dd>
+      <dt>Last active</dt><dd>${fmtDateTime(a.last_active_utc)}</dd>
+      <dt>Tenants</dt><dd>${(a.tenants || []).join(", ") || "—"}</dd>
+      <dt>Primary tenant</dt><dd>${escapeHtml(a.primary_tenant || "—")}</dd>
+      <dt>Top warehouse</dt><dd>${escapeHtml(a.top_warehouse || "—")}</dd>
+    ` : "";
+
+    return `
+      <button class="dir-modal-close" type="button" data-close aria-label="Close">×</button>
+      <div class="dir-modal-head">
+        ${photo}
+        <div>
+          <h2 class="dir-modal-name" id="dirModalName">${escapeHtml(display)}</h2>
+          <p class="dir-modal-title">${escapeHtml(subtitle)}</p>
+        </div>
+      </div>
+
+      <div class="dir-modal-section">
+        <h3>Workspace</h3>
+        <dl class="dir-detail-grid">${workspaceDl}</dl>
+      </div>
+
+      ${a ? `
+        <div class="dir-modal-section">
+          <h3>Warehouse activity (60d)</h3>
+          <dl class="dir-detail-grid">${activityDl}</dl>
+        </div>` : ""}
+
+      <div class="dir-modal-section">
+        <h3>Notes</h3>
+        <div class="dir-form-row">
+          <label for="dirPhone">Phone</label>
+          <input id="dirPhone" name="phone" type="tel" value="${escapeHtml(ann.phone || "")}" placeholder="+44 7…">
+        </div>
+        <div class="dir-form-row">
+          <label for="dirStart">Start date</label>
+          <input id="dirStart" name="start_date" type="date" value="${escapeHtml(ann.start_date || "")}">
+        </div>
+        <div class="dir-modal-actions">
+          ${mailto ? `<a class="dir-modal-btn" href="mailto:${escapeHtml(mailto)}">Email</a>` : ""}
+          <button type="button" class="primary" data-save>Save</button>
+        </div>
+        <p class="dir-modal-toast" data-toast></p>
+        <p class="dir-modal-saved-hint">Phone + start date are saved in this browser only.</p>
+      </div>
+    `;
+  }
+
+  // Click delegation: opening a row -> openCard().
+  document.getElementById("dirGrid").addEventListener("click", e => {
+    const row = e.target.closest(".dir-row[data-key]");
+    if (!row) return;
+    openCard(row.dataset.key);
+  });
+  // Click outside the modal to close.
+  document.getElementById("dirModalBackdrop").addEventListener("click", e => {
+    if (e.target === e.currentTarget) closeCard();
+  });
 </script>
 
 <script>
   document.addEventListener('keydown', e => {
-    if (e.key === 'Escape') document.body.classList.remove('nav-open');
+    if (e.key === 'Escape') {
+      document.body.classList.remove('nav-open');
+      if (document.body.classList.contains('dir-modal-open')) closeCard();
+    }
   });
   document.querySelectorAll('.qb-nav-link').forEach(a =>
     a.addEventListener('click', () => document.body.classList.remove('nav-open'))
