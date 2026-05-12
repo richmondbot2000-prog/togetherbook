@@ -429,11 +429,15 @@ Merges two JSON files:
 - Bare-name matches (`Ed`, `Sophie`, `Igor`) deliberately excluded — would collide across staff sharing first names.
 - Aliases consolidated in `short_tenant()`: `togetherloans` → `transform`, `tandolan/tandolaina/tando` → `tandolan`, `rapidamoney` → `rapida`.
 
-**Layout (changed 2026-05-12):** horizontal row list instead of a grid of cards. Each row is `[44px avatar] [name · title · email + activity meta] [department + workspace chips right-aligned]`. On viewports ≤700px the aside chips wrap below the body. The grid-of-cards predecessor used 96px circular photos and 220px-min cards — kept in git history if we ever want it back.
+**Layout (changed 2026-05-12):** horizontal row list instead of a grid of cards. Each row is a `<button>` of the form `[44px avatar] [name · title · email + activity meta] [department + workspace chips right-aligned]`. On viewports ≤700px the aside chips wrap below the body. The grid-of-cards predecessor used 96px circular photos and 220px-min cards — kept in git history if we ever want it back.
 
 **Row variants:**
 - Workspace staff: photo (or initials placeholder), name + title + email, activity meta (`last seen … · [tenants] · mostly <warehouse>`), department + Workspace-tenant chip aside
 - Warehouse-only: dashed-border placeholder, derived display name from local-part, italic "no Workspace account" tag, activity meta; no aside chips
+
+**Detail card + per-person notes (added 2026-05-12):** clicking a row opens a modal dialog (`#dirModalBackdrop` / `#dirModal`) showing every field we hold — Workspace (email, full name, department, tenants, suspended/admin flags) and warehouse activity (writes_60d, last active, tenants, primary tenant, top warehouse) — plus a two-input form for **phone** and **start date**. Form values are saved to `localStorage` under `apifk-directory-annotations-v1` as `{ "<email-or-username>": { phone, start_date } }` and surfaced inline in the row meta (`phone +44… · started 5 May 2026`) so the saved data is visible from the list. Close via × button, Escape key, or click outside. The mailto: action that the row used to perform is now an "Email" button inside the card.
+
+**Annotations are browser-local — they don't sync.** The site is a static GitHub Pages build with no backend, so per-person notes only exist in the browser that wrote them. If we ever want a shared store, the obvious upgrade is an `annotations.json` committed via a GH Actions workflow (similar to how the other JSON files are refreshed) — not built yet.
 
 ### 11.2 TopUps page (`topups.html`)
 
