@@ -9,11 +9,11 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&family=Orbitron:wght@500;600;700;800&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="style.css?v=1778673407">
-<link rel="stylesheet" href="quiet-tokens.css?v=1778673407">
-<link rel="stylesheet" href="quiet.css?v=1778673407">
-<link rel="stylesheet" href="quiet-extras.css?v=1778673407">
-<link rel="stylesheet" href="quiet-legacy.css?v=1778673407">
+<link rel="stylesheet" href="style.css?v=1778674057">
+<link rel="stylesheet" href="quiet-tokens.css?v=1778674057">
+<link rel="stylesheet" href="quiet.css?v=1778674057">
+<link rel="stylesheet" href="quiet-extras.css?v=1778674057">
+<link rel="stylesheet" href="quiet-legacy.css?v=1778674057">
 <style>
   .dir-section { max-width: 1080px; margin: 0 auto; padding: 24px 0 48px; }
   @media (max-width: 800px) { .dir-section { padding: 2px 0 32px; } }
@@ -953,7 +953,7 @@
 
 <header class="qb-topbar">
   <a class="qb-brand" href="index.html" aria-label="TogetherBOOK — home">
-    <img class="qb-brand-logo" src="togetherbook-logo.png?v=1778673407" alt="TogetherBOOK">
+    <img class="qb-brand-logo" src="togetherbook-logo.png?v=1778674057" alt="TogetherBOOK">
   </a>
   <button class="qb-hamburger" aria-label="Toggle navigation menu" aria-expanded="false"
           onclick="document.body.classList.toggle('nav-open');this.setAttribute('aria-expanded',document.body.classList.contains('nav-open'))">
@@ -1893,6 +1893,15 @@
     const unlinkBtn = modal.querySelector("[data-unlink]");
     if (unlinkBtn) unlinkBtn.addEventListener("click", () => savePayrollLink(entry, null));
 
+    // For active users, check the live autoForwarding state via the Gmail
+    // API and swap the Manage section into 'Live + forwarding active' mode
+    // if a rule is set. staff.json doesn't include this; we only know after
+    // an async fetch. Suspended users can't be impersonated so we rely on
+    // forwardingByEmail there.
+    if (entry.type === "staff" && entry.user && !entry.user.suspended && !entry.user.deletion_time) {
+      checkLiveForwarding(entry);
+    }
+
     const saveBtn = modal.querySelector("[data-save]");
     if (saveBtn) {
       saveBtn.addEventListener("click", async () => {
@@ -2207,17 +2216,17 @@
                  <button type="button" data-action="unsuspend">Move back to live (will cost £11/mo)</button>
                </div>
                <p class="dir-modal-saved-hint">To re-enable forwarding for this person, move them back to live first, then use Suspend + set forwarding.</p>`
-            : (() => {
-                return `<div class="dir-form-row">
-                 <label for="dirRouteTo">Forward mail to</label>
-                 <input id="dirRouteTo" name="route_to" type="email" placeholder="Type a colleague's email" list="dirRouteOptions" autocomplete="off">
-                 <datalist id="dirRouteOptions">${adminEmailOptions()}</datalist>
-               </div>
-               <div class="dir-manage-actions">
-                 <button type="button" class="danger" data-action="suspend-and-route">Suspend + set forwarding</button>
-               </div>
-               <p class="dir-modal-saved-hint">Suspends the Workspace seat (no per-seat fee on Flex) and auto-forwards the mailbox to the address above. Logged to <code>workspace-actions.json</code>.</p>`;
-              })()}
+            : `<div id="dirManageLive">
+                 <div class="dir-form-row">
+                   <label for="dirRouteTo">Forward mail to</label>
+                   <input id="dirRouteTo" name="route_to" type="email" placeholder="Type a colleague's email" list="dirRouteOptions" autocomplete="off">
+                   <datalist id="dirRouteOptions">${adminEmailOptions()}</datalist>
+                 </div>
+                 <div class="dir-manage-actions">
+                   <button type="button" class="danger" data-action="suspend-and-route">Suspend + set forwarding</button>
+                 </div>
+                 <p class="dir-modal-saved-hint">Suspends the Workspace seat (no per-seat fee on Flex) and auto-forwards the mailbox to the address above. Logged to <code>workspace-actions.json</code>.</p>
+               </div>`}
           <div class="dir-confirm-slot"></div>
         </div>` : ""}
 
@@ -2865,6 +2874,50 @@
     } else {
       showModalBanner(`${ok}/${seats.length} recovered; failures: ${failures.join("; ")}`, ok > 0 ? "success" : "error");
     }
+  }
+
+  // Async-check whether the active user has Gmail autoForwarding set. If so,
+  // swap the Manage section into a 'Live + forwarding active' state with a
+  // 'Disable forwarding' button. Best-effort: if the Gmail call fails (e.g.
+  // user has no Gmail license), we leave the default Live UI in place.
+  async function checkLiveForwarding(entry) {
+    const u = entry.user;
+    if (!u || !u.email) return;
+    try {
+      const res = await fetch(`${WORKSPACE_API}/get-forwarding`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email: u.email }),
+      });
+      if (!res.ok) return;
+      const data = await res.json();
+      if (!data || !data.ok || !data.data || !data.data.enabled) return;
+      const target = data.data.emailAddress || "";
+      // Render the Live+forwarding state in place of the default Live UI.
+      const container = document.getElementById("dirManageLive");
+      if (!container) return;
+      container.innerHTML = `
+        <p class="dir-modal-saved-hint" style="text-align:left;margin:0 0 10px;">Account is <strong>live</strong>. Mail also forwards to <code>${escapeHtml(target)}</code>.</p>
+        <div class="dir-manage-actions">
+          <button type="button" data-action="disable-forwarding">Disable forwarding</button>
+          <button type="button" class="danger" data-action="suspend-and-route" data-prefill="${escapeHtml(target)}">Suspend + keep this forward</button>
+        </div>
+        <p class="dir-modal-saved-hint">Disable turns off forwarding immediately. Suspend keeps forwarding to <code>${escapeHtml(target)}</code> and stops the seat fee.</p>`;
+      // Re-wire the new buttons.
+      const modal = document.getElementById("dirModal");
+      container.querySelectorAll("[data-action]").forEach(btn => {
+        btn.addEventListener("click", () => {
+          // If the action is suspend-and-route with a prefill, populate the
+          // input first (the user can edit if they want a different target).
+          if (btn.dataset.action === "suspend-and-route" && btn.dataset.prefill) {
+            // No live input on this state — pass the prefill via extras directly.
+            runAction(entry, "suspend-and-route", modal.querySelector(".dir-confirm-slot"), { route_to: btn.dataset.prefill });
+            return;
+          }
+          onManageClick(entry, btn.dataset.action, modal);
+        });
+      });
+    } catch (e) { /* network failure or denied — keep default UI */ }
   }
 
   // Pin a banner at the top of the open modal. Auto-dismisses after 8s.

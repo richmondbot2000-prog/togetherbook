@@ -114,6 +114,7 @@ export default {
         case "add-forwarding":       result = await doAddForwarding(env, adminToken, body); break;
         case "disable-forwarding":   result = await doDisableForwarding(env, body); break;
         case "cancel-forwarding":    result = await doCancelForwarding(env, adminToken, body); break;
+        case "get-forwarding":       result = await doGetForwarding(env, body); break;
         case "unsuspend":            result = await doUnsuspend(env, adminToken, body); break;
         case "recover":              result = await doRecover(adminToken, body); break;
         case "reset-password":       result = await doResetPassword(adminToken, body); break;
@@ -224,6 +225,22 @@ async function doAddForwarding(env, adminToken, body) {
   }
   if (forwardErr) return { ok: false, error: forwardErr };
   return { ok: true, data: { suspended: true, forwarded_to: body.route_to } };
+}
+
+// Read the current autoForwarding state for an active user. Returns
+// { enabled, emailAddress, disposition } or empty {} if nothing set.
+// Suspended users can't be impersonated for the Gmail API — caller should
+// fall back to the audit-log-based forwardingByEmail in that case.
+async function doGetForwarding(env, body) {
+  if (!body.email) return { ok: false, error: "missing email" };
+  try {
+    const mailboxToken = await getGoogleAccessToken(env, body.email, GMAIL_SCOPES);
+    const res = await gmailApi(mailboxToken, body.email, "GET", "settings/autoForwarding");
+    if (!res.ok) return { ok: false, error: res.error, status: res.status };
+    return { ok: true, data: res.data || {} };
+  } catch (e) {
+    return { ok: false, error: "gmail get failed: " + (e.message || e) };
+  }
 }
 
 // Disable autoForwarding for an active user. Standalone — used when you set
