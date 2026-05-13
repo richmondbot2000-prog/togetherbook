@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "updated_at": "2026-05-13T20:33:49.297Z",
+  "updated_at": "2026-05-13T20:33:51.568Z",
   "actions": [
     {
       "ts": "2026-05-13T20:27:39.210Z",
@@ -146,6 +146,13 @@
       "ts": "2026-05-13T20:33:49.297Z",
       "actor": "james.benamor@letme.com",
       "action": "get-forwarding",
+      "target": "clementia.dsouza@togetherloans.com",
+      "ok": true
+    },
+    {
+      "ts": "2026-05-13T20:33:51.568Z",
+      "actor": "james.benamor@letme.com",
+      "action": "admin-add",
       "target": "clementia.dsouza@togetherloans.com",
       "ok": true
     }
