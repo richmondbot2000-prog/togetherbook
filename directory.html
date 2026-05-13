@@ -9,11 +9,11 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&family=Orbitron:wght@500;600;700;800&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="style.css?v=1778667479">
-<link rel="stylesheet" href="quiet-tokens.css?v=1778667479">
-<link rel="stylesheet" href="quiet.css?v=1778667479">
-<link rel="stylesheet" href="quiet-extras.css?v=1778667479">
-<link rel="stylesheet" href="quiet-legacy.css?v=1778667479">
+<link rel="stylesheet" href="style.css?v=1778668322">
+<link rel="stylesheet" href="quiet-tokens.css?v=1778668322">
+<link rel="stylesheet" href="quiet.css?v=1778668322">
+<link rel="stylesheet" href="quiet-extras.css?v=1778668322">
+<link rel="stylesheet" href="quiet-legacy.css?v=1778668322">
 <style>
   .dir-section { max-width: 1080px; margin: 0 auto; padding: 24px 0 48px; }
   @media (max-width: 800px) { .dir-section { padding: 2px 0 32px; } }
@@ -943,7 +943,7 @@
 
 <header class="qb-topbar">
   <a class="qb-brand" href="index.html" aria-label="TogetherBOOK — home">
-    <img class="qb-brand-logo" src="togetherbook-logo.png?v=1778667479" alt="TogetherBOOK">
+    <img class="qb-brand-logo" src="togetherbook-logo.png?v=1778668322" alt="TogetherBOOK">
   </a>
   <button class="qb-hamburger" aria-label="Toggle navigation menu" aria-expanded="false"
           onclick="document.body.classList.toggle('nav-open');this.setAttribute('aria-expanded',document.body.classList.contains('nav-open'))">
@@ -1025,11 +1025,13 @@
         <div class="dir-list" id="dirGroupList"></div>
       </div>
     </section>
-
-    <div class="dir-modal-backdrop" id="dirModalBackdrop" aria-hidden="true">
-      <div class="dir-modal" id="dirModal" role="dialog" aria-modal="true" aria-labelledby="dirModalName"></div>
-    </div>
   </main>
+
+  <!-- Modal lives at body level, outside .qb-page's stacking context, so its
+       z-index can render above the sticky topbar (which is also body-level). -->
+  <div class="dir-modal-backdrop" id="dirModalBackdrop" aria-hidden="true">
+    <div class="dir-modal" id="dirModal" role="dialog" aria-modal="true" aria-labelledby="dirModalName"></div>
+  </div>
 
 <script>
   // Each entry is { type: 'staff'|'external', user: {…} | null, activity: {…} | null }.
