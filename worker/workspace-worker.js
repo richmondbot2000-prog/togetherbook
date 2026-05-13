@@ -32,6 +32,15 @@ const AUDIT_PATH = "workspace-actions.json";
 const ADMINS_PATH = "admins.json";
 const BRANCH = "main";
 
+// Cloudflare Access: the allowlist on book.togetherbook.net is auto-synced
+// from admins.json so non-@letme.com admins can sign in from any IP. The
+// account ID + Access app UID are not secret (they appear in dashboard URLs)
+// so they live here as constants; the API token is a secret env var.
+const CLOUDFLARE_ACCOUNT_ID = "012bbf0ed36f984997fe0854612fcb01";
+const CLOUDFLARE_ACCESS_APP_ID = "cd685a63-7765-47ff-98da-26ed5a57951a";
+const ACCESS_POLICY_NAME = "Letme staff + Directory admins";
+const ACCESS_DOMAIN_RULE = "letme.com";
+
 // The Owner is a special hardcoded admin who:
 //   1. Is always treated as an admin even if absent from admins.json
 //   2. Cannot be removed from admins by anyone (including themselves via API)
@@ -170,6 +179,17 @@ export default {
       } catch (e) {
         result = { ok: false, error: e.message };
       }
+      // On success, push the new admin list to the Cloudflare Access app
+      // allowlist so the new admin can actually sign in from any IP. Non-fatal
+      // if the sync fails — the admins.json commit still happened.
+      if (result.ok && Array.isArray(result.admins)) {
+        try {
+          const sync = await syncAccessAllowlist(env, result.admins);
+          result.access_sync = sync;
+        } catch (e) {
+          result.access_sync = { ok: false, error: e.message };
+        }
+      }
       try {
         await appendAudit(env, {
           ts: new Date().toISOString(),
@@ -177,6 +197,7 @@ export default {
           action,
           target: (body.target_email || "").toLowerCase(),
           ok: !!result.ok,
+          ...(result.access_sync ? { access_sync_ok: !!result.access_sync.ok } : {}),
           ...(result.ok ? {} : { error: String(result.error || "").slice(0, 300) }),
         });
       } catch (e) {}
@@ -856,6 +877,54 @@ async function commitFile(env, path, b64Content, message) {
     return { ok: false, error: `commit failed (${putRes.status}): ${detail}` };
   }
   return { ok: true, path };
+}
+
+/* ----------- Cloudflare Access allowlist sync ----------- */
+
+// Push the current admin list to the Cloudflare Access app's allow policy.
+// Build the include list as: every email in `letme.com` (covers any current
+// or future @letme.com staff) + every non-@letme.com admin explicitly.
+// Non-fatal: if the token isn't set or the PUT fails, the admin change
+// itself still succeeded — we just log + return a warning.
+async function syncAccessAllowlist(env, admins) {
+  if (!env.CLOUDFLARE_API_TOKEN) {
+    return { ok: false, error: "CLOUDFLARE_API_TOKEN secret not configured — allowlist not synced" };
+  }
+  const extras = Array.from(new Set(
+    (admins || [])
+      .map(e => (e || "").toString().trim().toLowerCase())
+      .filter(e => e && !e.endsWith("@" + ACCESS_DOMAIN_RULE)),
+  )).sort();
+  const include = [
+    { email_domain: { domain: ACCESS_DOMAIN_RULE } },
+    ...extras.map(e => ({ email: { email: e } })),
+  ];
+
+  const url = `https://api.cloudflare.com/client/v4/accounts/${CLOUDFLARE_ACCOUNT_ID}/access/apps/${CLOUDFLARE_ACCESS_APP_ID}`;
+  const headers = {
+    "Authorization": `Bearer ${env.CLOUDFLARE_API_TOKEN}`,
+    "Content-Type": "application/json",
+  };
+
+  const getRes = await fetch(url, { headers });
+  if (!getRes.ok) {
+    return { ok: false, error: `Access app GET failed: ${getRes.status}` };
+  }
+  const app = (await getRes.json()).result;
+  // Strip server-managed fields before PUT.
+  for (const k of ["id", "uid", "created_at", "updated_at", "aud"]) delete app[k];
+  for (const p of (app.policies || [])) {
+    p.name = ACCESS_POLICY_NAME;
+    p.include = include;
+    for (const k of ["id", "uid", "created_at", "updated_at"]) delete p[k];
+  }
+
+  const putRes = await fetch(url, { method: "PUT", headers, body: JSON.stringify(app) });
+  if (!putRes.ok) {
+    const detail = (await putRes.text()).slice(0, 200);
+    return { ok: false, error: `Access app PUT failed (${putRes.status}): ${detail}` };
+  }
+  return { ok: true, include_count: include.length };
 }
 
 /* ----------- Admin list (admins.json in repo) ----------- */
