@@ -9,11 +9,11 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&family=Orbitron:wght@500;600;700;800&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="style.css?v=1778672515">
-<link rel="stylesheet" href="quiet-tokens.css?v=1778672515">
-<link rel="stylesheet" href="quiet.css?v=1778672515">
-<link rel="stylesheet" href="quiet-extras.css?v=1778672515">
-<link rel="stylesheet" href="quiet-legacy.css?v=1778672515">
+<link rel="stylesheet" href="style.css?v=1778673407">
+<link rel="stylesheet" href="quiet-tokens.css?v=1778673407">
+<link rel="stylesheet" href="quiet.css?v=1778673407">
+<link rel="stylesheet" href="quiet-extras.css?v=1778673407">
+<link rel="stylesheet" href="quiet-legacy.css?v=1778673407">
 <style>
   .dir-section { max-width: 1080px; margin: 0 auto; padding: 24px 0 48px; }
   @media (max-width: 800px) { .dir-section { padding: 2px 0 32px; } }
@@ -953,7 +953,7 @@
 
 <header class="qb-topbar">
   <a class="qb-brand" href="index.html" aria-label="TogetherBOOK — home">
-    <img class="qb-brand-logo" src="togetherbook-logo.png?v=1778672515" alt="TogetherBOOK">
+    <img class="qb-brand-logo" src="togetherbook-logo.png?v=1778673407" alt="TogetherBOOK">
   </a>
   <button class="qb-hamburger" aria-label="Toggle navigation menu" aria-expanded="false"
           onclick="document.body.classList.toggle('nav-open');this.setAttribute('aria-expanded',document.body.classList.contains('nav-open'))">
@@ -2190,43 +2190,33 @@
             ? (() => {
                 const t = new Date(u.deletion_time).getTime();
                 const days = isNaN(t) ? null : 20 - Math.floor((Date.now() - t) / 86400000);
-                return `<p class="dir-modal-saved-hint" style="text-align:left;margin:0 0 10px;">Deleted on <code>${escapeHtml(u.deletion_time)}</code>${days != null ? ` — recoverable for ${Math.max(0, days)} more day${days === 1 ? "" : "s"}. After that the account is permanently gone.` : "."}</p>
+                return `<p class="dir-modal-saved-hint" style="text-align:left;margin:0 0 10px;">Deleted on <code>${escapeHtml(u.deletion_time)}</code>${days != null ? ` — recoverable for ${Math.max(0, days)} more day${days === 1 ? "" : "s"}.` : "."}</p>
               <div class="dir-manage-actions">
                 <button type="button" data-action="recover">Recover account</button>
-              </div>
-              <p class="dir-modal-saved-hint">Restores the seat into the root OU and re-enables sign-in. The user will keep their old mail / Drive / calendar.</p>`;
+              </div>`;
               })()
-            : u.suspended
-            ? (() => {
-                const memberOf = groupsForUser(u);
-                const noForward = !forwardTo;
-                return `${noForward ? `<div class="dir-form-row">
-                 <label for="dirAddFwdTo">Forward mail to</label>
-                 <input id="dirAddFwdTo" name="add_fwd_to" type="email" placeholder="Type a colleague's email" list="dirRouteOptions" autocomplete="off">
-                 <datalist id="dirRouteOptions">${adminEmailOptions()}</datalist>
-               </div>` : ""}
+            : u.suspended && forwardTo
+            ? `<p class="dir-modal-saved-hint" style="text-align:left;margin:0 0 10px;">Account is <strong>suspended</strong>. Mail forwards to <code>${escapeHtml(forwardTo)}</code>. £0/month.</p>
                <div class="dir-manage-actions">
-                 ${noForward ? `<button type="button" data-action="add-forwarding">Add forwarding</button>` : ""}
-                 <button type="button" data-action="unsuspend">Unsuspend (turn forwarding off)</button>
-                 ${memberOf.length ? `<button type="button" class="danger" data-action="purge-groups">Remove from ${memberOf.length} group${memberOf.length === 1 ? "" : "s"}</button>` : ""}
-                 <button type="button" class="danger" data-action="convert-to-group">Convert to group (free, mailbox parked)</button>
+                 <button type="button" class="danger" data-action="cancel-forwarding">Cancel forwarding (move to black hole)</button>
                </div>
-               <p class="dir-modal-saved-hint">${forwardTo ? `Currently forwards to <code>${escapeHtml(forwardTo)}</code>. ` : `<strong style="color:var(--manuscript-red);">No forwarding configured — mail to this address is going nowhere.</strong> Type a colleague's email above and click <strong>Add forwarding</strong>. The account is briefly unsuspended (~2s) to set the rule, then re-suspended. `}Unsuspending re-enables direct mailbox delivery and disables the forward.${memberOf.length ? ` Leavers should typically be removed from all groups too — ${memberOf.length} membership${memberOf.length === 1 ? "" : "s"} still active.` : ""}<br><br><strong>Convert to group</strong>: renames the user to <code>&lt;local&gt;.archived.&lt;timestamp&gt;@&lt;domain&gt;</code> and parks them suspended (mailbox preserved, free), then re-creates the original email address as a forwarding-only Group with the target as a member. Free forever, no Workspace seat, and the original mailbox is recoverable by renaming back if ever needed.</p>`;
-              })()
+               <p class="dir-modal-saved-hint">Cancel keeps the account suspended but stops forwarding — mail to <code>${escapeHtml(u.email)}</code> will go nowhere.</p>`
+            : u.suspended
+            ? `<p class="dir-modal-saved-hint" style="text-align:left;margin:0 0 10px;"><strong style="color:var(--manuscript-red);">Black hole.</strong> Account is suspended and no forwarding is set — mail to this address is going nowhere.</p>
+               <div class="dir-manage-actions">
+                 <button type="button" data-action="unsuspend">Move back to live (will cost £11/mo)</button>
+               </div>
+               <p class="dir-modal-saved-hint">To re-enable forwarding for this person, move them back to live first, then use Suspend + set forwarding.</p>`
             : (() => {
-                const memberOf = groupsForUser(u);
                 return `<div class="dir-form-row">
                  <label for="dirRouteTo">Forward mail to</label>
                  <input id="dirRouteTo" name="route_to" type="email" placeholder="Type a colleague's email" list="dirRouteOptions" autocomplete="off">
                  <datalist id="dirRouteOptions">${adminEmailOptions()}</datalist>
                </div>
                <div class="dir-manage-actions">
-                 <button type="button" data-action="reset-password">Reset password…</button>
-                 <button type="button" data-action="disable-forwarding">Disable forwarding</button>
-                 <button type="button" class="danger" data-action="suspend-and-route">Suspend + route</button>
-                 ${memberOf.length ? `<button type="button" class="danger" data-action="leaver-full">Suspend + route + remove from ${memberOf.length} group${memberOf.length === 1 ? "" : "s"}</button>` : ""}
+                 <button type="button" class="danger" data-action="suspend-and-route">Suspend + set forwarding</button>
                </div>
-               <p class="dir-modal-saved-hint">Reset password generates a one-shot password the user must change on next sign-in — useful for lockouts. Suspend+route suspends the Workspace seat (no per-seat fee on Flex) and sets the mailbox to auto-forward to the address above. Logged to <code>workspace-actions.json</code>.${memberOf.length ? ` The 'Suspend + route + remove' button also revokes the ${memberOf.length} group membership${memberOf.length === 1 ? "" : "s"} this person has — the full leaver workflow in one click.` : ""}</p>`;
+               <p class="dir-modal-saved-hint">Suspends the Workspace seat (no per-seat fee on Flex) and auto-forwards the mailbox to the address above. Logged to <code>workspace-actions.json</code>.</p>`;
               })()}
           <div class="dir-confirm-slot"></div>
         </div>` : ""}
@@ -2286,6 +2276,26 @@
     // forwarding wasn't set).
     if (action === "disable-forwarding") {
       runAction(entry, action, slot, {});
+      return;
+    }
+
+    // Cancel forwarding (suspended user): unsuspend → disable autoForwarding
+    // → re-suspend. Confirms first because moving to the black-hole list
+    // means new mail goes nowhere.
+    if (action === "cancel-forwarding") {
+      slot.innerHTML = `
+        <div class="dir-confirm">
+          <div class="dir-confirm-text">
+            <strong>Cancel forwarding for ${escapeHtml(u.email)}?</strong><br>
+            <span class="dir-modal-saved-hint" style="text-align:left;margin:0;">Mail to this address will stop being forwarded. Account stays suspended (£0/mo) but mail now goes nowhere — the address moves to the black-hole list.</span>
+          </div>
+          <div class="dir-confirm-actions">
+            <button type="button" data-cancel>Keep forwarding</button>
+            <button type="button" class="confirm" data-confirm>Cancel forwarding</button>
+          </div>
+        </div>`;
+      slot.querySelector("[data-cancel]").addEventListener("click", () => { slot.innerHTML = ""; });
+      slot.querySelector("[data-confirm]").addEventListener("click", () => runAction(entry, "cancel-forwarding", slot, {}));
       return;
     }
 
@@ -2497,10 +2507,13 @@
     for (const seat of seats) {
       try {
         await workspaceAction(action, { email: seat.email, ...(extras || {}) });
-        seat.suspended = action === "suspend-and-route" ? true : (action === "unsuspend" ? false : seat.suspended);
+        if (action === "suspend-and-route") seat.suspended = true;
+        if (action === "unsuspend") seat.suspended = false;
         if (action === "suspend-and-route" && extras && extras.route_to) {
           forwardingByEmail[seat.email.toLowerCase()] = extras.route_to;
         } else if (action === "unsuspend") {
+          delete forwardingByEmail[(seat.email || "").toLowerCase()];
+        } else if (action === "cancel-forwarding" || action === "disable-forwarding") {
           delete forwardingByEmail[(seat.email || "").toLowerCase()];
         }
         okCount++;

@@ -113,6 +113,7 @@ export default {
         case "suspend-and-route":    result = await doSuspendAndRoute(env, adminToken, body); break;
         case "add-forwarding":       result = await doAddForwarding(env, adminToken, body); break;
         case "disable-forwarding":   result = await doDisableForwarding(env, body); break;
+        case "cancel-forwarding":    result = await doCancelForwarding(env, adminToken, body); break;
         case "unsuspend":            result = await doUnsuspend(env, adminToken, body); break;
         case "recover":              result = await doRecover(adminToken, body); break;
         case "reset-password":       result = await doResetPassword(adminToken, body); break;
@@ -238,6 +239,28 @@ async function doDisableForwarding(env, body) {
   } catch (e) {
     return { ok: false, error: "gmail token / call failed: " + (e.message || e) };
   }
+}
+
+// Cancel forwarding on a SUSPENDED user — leaves the account suspended
+// (in the black-hole list, mail goes nowhere). Same pattern as add-forwarding:
+// briefly unsuspend, disable autoForwarding, re-suspend. ~2 seconds.
+async function doCancelForwarding(env, adminToken, body) {
+  if (!body.email) return { ok: false, error: "missing email" };
+  const u1 = await adminApi(adminToken, "PUT", `users/${encodeURIComponent(body.email)}`, { suspended: false });
+  if (!u1.ok) return { ok: false, error: "unsuspend (step 1): " + u1.error };
+  let fwdErr = null;
+  try {
+    const mailboxToken = await getGoogleAccessToken(env, body.email, GMAIL_SCOPES);
+    const res = await gmailApi(mailboxToken, body.email, "PUT", "settings/autoForwarding", { enabled: false });
+    if (!res.ok) fwdErr = "setAutoForwarding off: " + res.error;
+  } catch (e) {
+    fwdErr = "gmail step: " + (e.message || e);
+  }
+  // Always re-suspend, even on failure.
+  const u2 = await adminApi(adminToken, "PUT", `users/${encodeURIComponent(body.email)}`, { suspended: true });
+  if (!u2.ok && !fwdErr) return { ok: false, error: "re-suspend (step 3): " + u2.error + ". User is currently UNSUSPENDED — investigate." };
+  if (fwdErr) return { ok: false, error: fwdErr };
+  return { ok: true, data: { suspended: true, autoForwarding: false } };
 }
 
 async function doUnsuspend(env, adminToken, body) {
