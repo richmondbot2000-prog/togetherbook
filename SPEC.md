@@ -481,29 +481,51 @@ Workspace ↔ Activity ↔ Payroll are matched independently, because each syste
 
 Two design decisions worth flagging:
 
-1. **Payroll duplicate-record policy (changed 2026-05-12 night).** `by_email` and `by_name` are **list-valued** in the scanner output. If two payroll rows share an email or a name alias (e.g. HR exports the same person twice, or two real people share `john smith`), all records are kept. The page renders the primary (sorted: active first, most-recent start first) under "Payroll" and the others under "Also on payroll as" in manuscript red. **Never silently drop data** is the rule.
+1. **Payroll duplicate-record policy.** `by_email` and `by_name` are **list-valued** in the scanner output. If two payroll rows share an email or a name alias, all records are kept. The page renders the primary (sorted: active first, most-recent start first) under "Payroll" and the others under "Also on payroll as" in manuscript red. **Never silently drop data** is the rule.
 2. **Workspace duplicate-account policy.** A person with two Workspace seats (e.g. Mourad Malki across two tenants) renders as **two rows**. They aren't merged into one row because each seat has its own per-tenant activity record. The detail card surfaces the relationship via the "Other emails" field.
 
-#### 11.1.6 UI / sort order
+#### 11.1.6 UI layout, sort, top-of-page panels
 
-- Row form: `[44px avatar] [name · GW icon · title · email + activity meta] [department + workspace chips]`.
-- Workspace email is shown strikethrough on **suspended** rows since direct delivery no longer works there. A brass-coloured `→ <forward-target>` chip is appended when the suspension came with a route-to target (read from `workspace-actions.json`).
-- Sort (top to bottom):
-  1. **Suspended last** (greyed, opacity 0.55) — leavers stay visible forever so we can audit billing.
-  2. Within non-suspended: active (has DB writes in 60d) first.
-  3. Within active: `primary_tenant` priority — `transform/together` (0), `rgroup/rgdc/letme` (1), other (2).
-  4. Within tenant: `writes_60d` desc.
-  5. Inactive Workspace accounts at the end (still above suspended), alphabetical.
-- The `dir-row--suspended` class drops opacity to 0.55 and removes the row's background panel.
+**Top of page (above the user list)** — three at-a-glance panels:
+
+- **Meta line** (`#dirMeta`): "Updated <iso> · N Workspace accounts · M active in DB · K extra people active in DB only".
+- **Health panel** (`#dirHealthPanel`): a red-bordered card flagging data-quality issues — (a) suspended Workspace accounts with no recorded forwarding target (mail going nowhere), (b) active users with no matched payroll record (HR gap), (c) payroll records with no Workspace match (leaver-on-the-books or contractor). Each row has a one-click action ("Show them" filters to that subset or opens a list dialog). When everything is clean, the panel turns green with a single tick.
+- **Billing summary** (`#dirBillingSummary`): three cards — live seats × `SEAT_GBP_PER_MONTH` (default £11, edit the JS constant for Business Plus / Enterprise), suspended count with "N of M have forwarding set", and total monthly cost with "Avoiding £X/mo from suspended accounts". Implements the "per-seat-billing visibility" half of the page's stated dual purpose.
+
+**Filter rows** (below the search input):
+
+- **Status** (`#dirStatusRow`): All / Active / Suspended. The Suspended pill is the one-click route to leaver review.
+- **Tenant** (`#dirTenantRow`): activity-tenant pills (transform / letme / rgroup / etc.) — counts derived from `staff-activity.primary_tenant`.
+- **Workspace** (`#dirWorkspaceRow`): per email-domain pills (letme.com, letme.co.uk, rgroup.co.uk, …). Counts include the user's primary email **and any alias** so a person with a `@rgroup.co.uk` alias counts under that pill. Hidden when only one domain exists.
+- **Department** (`#dirDeptRow`): Workspace department pills.
+
+**Row form**: `[44px avatar] [name · GW icon · title · email + activity meta] [department + workspace chips]`. Activity meta surfaces last-seen + tenants + warehouse, plus phone + start_date — these last two can come from an annotation OR (fallback) from the matched payroll record. When the source is payroll rather than a saved annotation, the row meta appends ` (payroll)` so the source is obvious.
+
+**Suspended-row styling**: `.dir-row--suspended` drops opacity to 0.55, the email is strikethrough, and a brass `→ <forward-target>` chip is appended (read from `workspace-actions.json`).
+
+**Sort** (top to bottom):
+1. **Suspended last** (greyed, opacity 0.55) — leavers stay visible forever so we can audit billing.
+2. Within non-suspended: active (has DB writes in 60d) first.
+3. Within active: `primary_tenant` priority — `transform/together` (0), `rgroup/rgdc/letme` (1), other (2).
+4. Within tenant: `writes_60d` desc.
+5. Inactive Workspace accounts at the end (still above suspended), alphabetical.
+
+**Search** (`#dirSearch`) covers name, email, every alias, title, department, plus payroll fields (first/last name in payroll, mobile, address, employee number). Single search box matches across all of them.
 
 #### 11.1.7 Workspace admin actions (Suspend + route, Unsuspend, Create user)
 
 The detail card's "Manage Workspace account" section drives Cloudflare Worker `apifk-workspace-worker2` at `book.togetherbook.net/api/workspace/*`. Actions:
 
-- **POST `/api/workspace/suspend-and-route`** `{ email, route_to }` — single atomic operation that (1) adds `route_to` as a `forwardingAddresses` on the user's mailbox (auto-verifies for in-domain addresses), (2) enables `autoForwarding` with `disposition: leaveInInbox`, (3) sets `suspended: true` on the user. Replaces the older bare "Suspend" — there is no Suspend-without-routing, because forgetting to set up a forward is the main "ex-employee email goes into a black hole" failure mode.
+- **POST `/api/workspace/suspend-and-route`** `{ email, route_to }` — single atomic operation that (1) adds `route_to` as a `forwardingAddresses` on the user's mailbox (auto-verifies for in-domain addresses), (2) enables `autoForwarding` with `disposition: leaveInInbox`, (3) sets `suspended: true` on the user. The only "Suspend" path — there is no Suspend-without-routing, because forgetting to set up a forward is the main "ex-employee email goes into a black hole" failure mode.
 - **POST `/api/workspace/unsuspend`** `{ email }` — sets `suspended: false`, then best-effort disables `autoForwarding`.
 - **POST `/api/workspace/create`** `{ given_name, family_name, email, password, org_unit_path? }` — creates a new Workspace user with `changePasswordAtNextLogin: true`.
 - **No Delete endpoint.** Deleting permanently removes the seat and its mailbox from the audit history; we never want that. Suspended-with-routing is the leaver workflow.
+
+**On the suspended user's card:**
+- **"Unsuspend"** button — reverses the suspend + disables forwarding.
+- **"Remove from N groups"** button (appears only when the user is in 1+ groups) — loops `group-member-remove` across every group the user is a member of. Best-effort: one failure doesn't abort. A summary banner reports wins and any failures.
+- **Audit history section** — chronological list of every `suspend-and-route` / `unsuspend` event for this user, with timestamp, actor, and forward target. Read from `workspace-actions.json`. If the user is suspended but no `suspend-and-route` event is logged (e.g. someone used the Admin Console directly), the section flags the gap and warns that the forward target is unknown.
+- **Email button** on a suspended user mailto's the forwarding address (suffixed "via forward"), not the dead primary mailbox.
 
 Per-action authorisation chain:
 1. **Cloudflare Access** gates the route at the edge — only logged-in `@letme.com` sessions reach the Worker. Failure: 302 to CF Access login.
