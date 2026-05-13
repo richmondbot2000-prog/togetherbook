@@ -9,11 +9,11 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&family=Orbitron:wght@500;600;700;800&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="style.css?v=1778663309">
-<link rel="stylesheet" href="quiet-tokens.css?v=1778663309">
-<link rel="stylesheet" href="quiet.css?v=1778663309">
-<link rel="stylesheet" href="quiet-extras.css?v=1778663309">
-<link rel="stylesheet" href="quiet-legacy.css?v=1778663309">
+<link rel="stylesheet" href="style.css?v=1778663459">
+<link rel="stylesheet" href="quiet-tokens.css?v=1778663459">
+<link rel="stylesheet" href="quiet.css?v=1778663459">
+<link rel="stylesheet" href="quiet-extras.css?v=1778663459">
+<link rel="stylesheet" href="quiet-legacy.css?v=1778663459">
 <style>
   .dir-section { max-width: 1080px; margin: 0 auto; padding: 24px 0 48px; }
   @media (max-width: 800px) { .dir-section { padding: 2px 0 32px; } }
@@ -917,7 +917,7 @@
 
 <header class="qb-topbar">
   <a class="qb-brand" href="index.html" aria-label="TogetherBOOK — home">
-    <img class="qb-brand-logo" src="togetherbook-logo.png?v=1778663309" alt="TogetherBOOK">
+    <img class="qb-brand-logo" src="togetherbook-logo.png?v=1778663459" alt="TogetherBOOK">
   </a>
   <button class="qb-hamburger" aria-label="Toggle navigation menu" aria-expanded="false"
           onclick="document.body.classList.toggle('nav-open');this.setAttribute('aria-expanded',document.body.classList.contains('nav-open'))">
@@ -1265,6 +1265,9 @@
     const suspendedNoRoute = staff.filter(e =>
       e.user.suspended && !forwardingByEmail[(e.user.email || "").toLowerCase()]
     );
+    const suspendedInGroups = staff.filter(e =>
+      e.user.suspended && groupsForUser(e.user).length > 0
+    );
     const activeNoPayroll = staff.filter(e =>
       !e.user.suspended && (e.user.email || "") && !payrollFor(e)
     );
@@ -1305,6 +1308,10 @@
     if (suspendedNoRoute.length) {
       lines.push(`<div class="dir-health-row"><span class="dir-health-count">${suspendedNoRoute.length}</span><span>suspended Workspace account${suspendedNoRoute.length === 1 ? "" : "s"} with <strong>no recorded forwarding target</strong> — mail to ${suspendedNoRoute.length === 1 ? "this address" : "these addresses"} may be going into a black hole. <button data-health="suspended-no-route">Show them</button></span></div>`);
     }
+    if (suspendedInGroups.length) {
+      const totalMemberships = suspendedInGroups.reduce((n, e) => n + groupsForUser(e.user).length, 0);
+      lines.push(`<div class="dir-health-row"><span class="dir-health-count">${suspendedInGroups.length}</span><span>suspended Workspace account${suspendedInGroups.length === 1 ? "" : "s"} <strong>still in ${totalMemberships} group${totalMemberships === 1 ? "" : "s"}</strong> — they keep receiving group mail. Leaver hygiene gap. <button data-health="suspended-in-groups">Show them</button></span></div>`);
+    }
     if (activeNoPayroll.length) {
       lines.push(`<div class="dir-health-row"><span class="dir-health-count">${activeNoPayroll.length}</span><span>active Workspace user${activeNoPayroll.length === 1 ? "" : "s"} with <strong>no payroll match</strong> — HR may not have them on file (or they're a contractor / shared mailbox). <button data-health="active-no-payroll">Show them</button></span></div>`);
     }
@@ -1329,6 +1336,12 @@
           document.getElementById("dirSearch").value = "";
           document.querySelectorAll(".dir-pill--status").forEach(p => p.classList.toggle("active", p.dataset.value === "suspended"));
           renderGrid();
+        } else if (kind === "suspended-in-groups") {
+          showHealthDialog("Suspended Workspace accounts still in groups",
+            suspendedInGroups.map(e => {
+              const gs = groupsForUser(e.user);
+              return `${e.user.name || e.user.email} <code>${e.user.email}</code> — in: ${gs.map(g => escapeHtml(g.email)).join(", ")}`;
+            }));
         } else if (kind === "active-no-payroll") {
           showHealthDialog("Active users without a payroll record", activeNoPayroll.map(e => `${e.user.name || e.user.email} <code>${e.user.email}</code>`));
         } else if (kind === "unclaimed-payroll") {
