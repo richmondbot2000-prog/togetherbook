@@ -9,11 +9,11 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&family=Orbitron:wght@500;600;700;800&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="style.css?v=1778676971">
-<link rel="stylesheet" href="quiet-tokens.css?v=1778676971">
-<link rel="stylesheet" href="quiet.css?v=1778676971">
-<link rel="stylesheet" href="quiet-extras.css?v=1778676971">
-<link rel="stylesheet" href="quiet-legacy.css?v=1778676971">
+<link rel="stylesheet" href="style.css?v=1778677131">
+<link rel="stylesheet" href="quiet-tokens.css?v=1778677131">
+<link rel="stylesheet" href="quiet.css?v=1778677131">
+<link rel="stylesheet" href="quiet-extras.css?v=1778677131">
+<link rel="stylesheet" href="quiet-legacy.css?v=1778677131">
 <style>
   .dir-section { max-width: 1080px; margin: 0 auto; padding: 24px 0 48px; }
   @media (max-width: 800px) { .dir-section { padding: 2px 0 32px; } }
@@ -965,7 +965,7 @@
 
 <header class="qb-topbar">
   <a class="qb-brand" href="index.html" aria-label="TogetherBOOK — home">
-    <img class="qb-brand-logo" src="togetherbook-logo.png?v=1778676971" alt="TogetherBOOK">
+    <img class="qb-brand-logo" src="togetherbook-logo.png?v=1778677131" alt="TogetherBOOK">
   </a>
   <button class="qb-hamburger" aria-label="Toggle navigation menu" aria-expanded="false"
           onclick="document.body.classList.toggle('nav-open');this.setAttribute('aria-expanded',document.body.classList.contains('nav-open'))">
@@ -2224,10 +2224,16 @@
                <p class="dir-modal-saved-hint">Cancel keeps the account suspended but stops forwarding — mail to <code>${escapeHtml(u.email)}</code> will go nowhere.</p>`
             : u.suspended
             ? `<p class="dir-modal-saved-hint" style="text-align:left;margin:0 0 10px;"><strong style="color:var(--manuscript-red);">Black hole.</strong> Account is suspended and no forwarding is set — mail to this address is going nowhere.</p>
-               <div class="dir-manage-actions">
-                 <button type="button" data-action="unsuspend">Move back to live (will cost £11/mo)</button>
+               <div class="dir-form-row">
+                 <label for="dirAddFwdTo">Forward mail to</label>
+                 <input id="dirAddFwdTo" name="add_fwd_to" type="email" placeholder="Type a colleague's email" list="dirRouteOptions" autocomplete="off">
+                 <datalist id="dirRouteOptions">${adminEmailOptions()}</datalist>
                </div>
-               <p class="dir-modal-saved-hint">To re-enable forwarding for this person, move them back to live first, then use Suspend + set forwarding.</p>`
+               <div class="dir-manage-actions">
+                 <button type="button" data-action="add-forwarding">Add forwarding</button>
+                 <button type="button" data-action="unsuspend">Move back to live (£11/mo)</button>
+               </div>
+               <p class="dir-modal-saved-hint">Add forwarding briefly unsuspends the account (~2s), sets a forwarding rule, then re-suspends — account stays at £0/mo and mail flows. Or move back to live to use the mailbox actively (resumes seat fee).</p>`
             : `<div id="dirManageLive">
                  <div class="dir-form-row">
                    <label for="dirRouteTo">Forward mail to</label>
