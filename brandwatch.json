@@ -1,16 +1,16 @@
 {
   "schema_version": 1,
-  "snapshot_date": "2026-05-12",
-  "updated_at": "2026-05-12T08:08:37Z",
+  "snapshot_date": "2026-05-13",
+  "updated_at": "2026-05-13T08:20:16Z",
   "brands": [
     "Together Loans",
     "TransformCredit"
   ],
   "totals": {
-    "all": 289,
+    "all": 291,
     "by_source": {
       "trustpilot": 238,
-      "bbb": 12,
+      "bbb": 14,
       "reddit": 25,
       "bluesky": 0,
       "lemmy": 0,
@@ -21,19 +21,19 @@
       "youtube": 7
     },
     "by_brand": {
-      "together_loans": 271,
+      "together_loans": 273,
       "transform_credit": 18
     }
   },
   "source_status": {
     "trustpilot": {
-      "ok": true,
-      "fetched": 20,
-      "error": null
+      "ok": false,
+      "fetched": 0,
+      "error": "HTTPError: 500 Server Error: Internal Server Error for url: https://api.scraperapi.com/?api_key=d45dbd4045b58d674921125d0e585bca&url=https%3A%2F%2Fwww.trustpilot.com%2Freview%2Ftransformcredit.com&country_code=us&render=true"
     },
     "bbb": {
       "ok": true,
-      "fetched": 0,
+      "fetched": 2,
       "error": null
     },
     "reddit": {
@@ -63,7 +63,7 @@
     },
     "google_news": {
       "ok": true,
-      "fetched": 67,
+      "fetched": 63,
       "error": null
     },
     "cfpb": {
@@ -287,6 +287,34 @@
       "score_max": null,
       "site_name": "r/Loan_",
       "site_domain": "reddit.com"
+    },
+    {
+      "source": "bbb",
+      "brand": "together_loans",
+      "id": "bbb-0654_90019971_673801",
+      "title": "Together Loans — 5-star review",
+      "snippet": "Very courteous people and they do move at a nice pace. Got my loan within 24 hours. I recommend this loan place to everyone.",
+      "url": "https://www.bbb.org/us/il/chicago/profile/consumer-finance-companies/together-loans-0654-90019971/customer-reviews",
+      "date": "2026-05-08",
+      "author": "LJ W",
+      "score": 5,
+      "score_max": 5,
+      "site_name": "BBB",
+      "site_domain": "bbb.org"
+    },
+    {
+      "source": "bbb",
+      "brand": "together_loans",
+      "id": "bbb-0654_90019971_673753",
+      "title": "Together Loans — 5-star review",
+      "snippet": "Life savers they are absolutely amazing helped get us back on track and saved us tons",
+      "url": "https://www.bbb.org/us/il/chicago/profile/consumer-finance-companies/together-loans-0654-90019971/customer-reviews",
+      "date": "2026-05-08",
+      "author": "Aline H",
+      "score": 5,
+      "score_max": 5,
+      "site_name": "BBB",
+      "site_domain": "bbb.org"
     },
     {
       "source": "trustpilot",
@@ -3741,7 +3769,7 @@
       "url": "https://www.reddit.com/r/findacosigner/comments/1q7hl9n/co_signers_beware/",
       "date": "2026-01-08",
       "author": "u/Dirftboat95",
-      "score": 8,
+      "score": 10,
       "score_max": null,
       "site_name": "r/findacosigner",
       "site_domain": "reddit.com"
@@ -3965,7 +3993,7 @@
       "url": "https://www.reddit.com/r/findacosigner/comments/1ocmme8/need_a_cosigner/",
       "date": "2025-10-21",
       "author": "u/CodyPalmer7",
-      "score": 5,
+      "score": 4,
       "score_max": null,
       "site_name": "r/findacosigner",
       "site_domain": "reddit.com"
