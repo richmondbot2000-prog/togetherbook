@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "updated_at": "2026-05-13T20:43:01.269Z",
+  "updated_at": "2026-05-13T20:53:01.017Z",
   "actions": [
     {
       "ts": "2026-05-13T20:27:39.210Z",
@@ -266,6 +266,13 @@
       "target": "alert@togetherloans.com",
       "ok": true,
       "member_email": "james.benamor@letme.com"
+    },
+    {
+      "ts": "2026-05-13T20:53:01.017Z",
+      "actor": "kelly.black@letme.com",
+      "action": "get-forwarding",
+      "target": "joshua.carless@letme.co.uk",
+      "ok": true
     }
   ]
 }
