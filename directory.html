@@ -9,11 +9,11 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&family=Orbitron:wght@500;600;700;800&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="style.css?v=1778670881">
-<link rel="stylesheet" href="quiet-tokens.css?v=1778670881">
-<link rel="stylesheet" href="quiet.css?v=1778670881">
-<link rel="stylesheet" href="quiet-extras.css?v=1778670881">
-<link rel="stylesheet" href="quiet-legacy.css?v=1778670881">
+<link rel="stylesheet" href="style.css?v=1778672515">
+<link rel="stylesheet" href="quiet-tokens.css?v=1778672515">
+<link rel="stylesheet" href="quiet.css?v=1778672515">
+<link rel="stylesheet" href="quiet-extras.css?v=1778672515">
+<link rel="stylesheet" href="quiet-legacy.css?v=1778672515">
 <style>
   .dir-section { max-width: 1080px; margin: 0 auto; padding: 24px 0 48px; }
   @media (max-width: 800px) { .dir-section { padding: 2px 0 32px; } }
@@ -953,7 +953,7 @@
 
 <header class="qb-topbar">
   <a class="qb-brand" href="index.html" aria-label="TogetherBOOK — home">
-    <img class="qb-brand-logo" src="togetherbook-logo.png?v=1778670881" alt="TogetherBOOK">
+    <img class="qb-brand-logo" src="togetherbook-logo.png?v=1778672515" alt="TogetherBOOK">
   </a>
   <button class="qb-hamburger" aria-label="Toggle navigation menu" aria-expanded="false"
           onclick="document.body.classList.toggle('nav-open');this.setAttribute('aria-expanded',document.body.classList.contains('nav-open'))">
@@ -2222,6 +2222,7 @@
                </div>
                <div class="dir-manage-actions">
                  <button type="button" data-action="reset-password">Reset password…</button>
+                 <button type="button" data-action="disable-forwarding">Disable forwarding</button>
                  <button type="button" class="danger" data-action="suspend-and-route">Suspend + route</button>
                  ${memberOf.length ? `<button type="button" class="danger" data-action="leaver-full">Suspend + route + remove from ${memberOf.length} group${memberOf.length === 1 ? "" : "s"}</button>` : ""}
                </div>
@@ -2277,6 +2278,13 @@
 
     // Unsuspend doesn't need confirmation — it's reversible and non-destructive.
     if (action === "unsuspend") {
+      runAction(entry, action, slot, {});
+      return;
+    }
+
+    // Disable forwarding: no confirmation. Standalone, idempotent (no-op if
+    // forwarding wasn't set).
+    if (action === "disable-forwarding") {
       runAction(entry, action, slot, {});
       return;
     }

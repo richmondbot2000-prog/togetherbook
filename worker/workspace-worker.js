@@ -112,6 +112,7 @@ export default {
       switch (action) {
         case "suspend-and-route":    result = await doSuspendAndRoute(env, adminToken, body); break;
         case "add-forwarding":       result = await doAddForwarding(env, adminToken, body); break;
+        case "disable-forwarding":   result = await doDisableForwarding(env, body); break;
         case "unsuspend":            result = await doUnsuspend(env, adminToken, body); break;
         case "recover":              result = await doRecover(adminToken, body); break;
         case "reset-password":       result = await doResetPassword(adminToken, body); break;
@@ -222,6 +223,21 @@ async function doAddForwarding(env, adminToken, body) {
   }
   if (forwardErr) return { ok: false, error: forwardErr };
   return { ok: true, data: { suspended: true, forwarded_to: body.route_to } };
+}
+
+// Disable autoForwarding for an active user. Standalone — used when you set
+// up forwarding on yourself for testing and want to switch it back off
+// without going to Gmail settings. Best-effort: no-op if nothing was set.
+async function doDisableForwarding(env, body) {
+  if (!body.email) return { ok: false, error: "missing email" };
+  try {
+    const mailboxToken = await getGoogleAccessToken(env, body.email, GMAIL_SCOPES);
+    const res = await gmailApi(mailboxToken, body.email, "PUT", "settings/autoForwarding", { enabled: false });
+    if (!res.ok) return { ok: false, error: "setAutoForwarding: " + res.error };
+    return { ok: true, data: { autoForwarding: false } };
+  } catch (e) {
+    return { ok: false, error: "gmail token / call failed: " + (e.message || e) };
+  }
 }
 
 async function doUnsuspend(env, adminToken, body) {
