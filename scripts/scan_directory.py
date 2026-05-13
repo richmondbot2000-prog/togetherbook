@@ -118,12 +118,18 @@ def normalize(u: dict, tenant: str) -> dict:
     # configured as a Workspace alias-domain — these are the rgroup.co.uk /
     # mail.letme.co.uk / etc. ones the user expects to see). We strip the
     # *.test-google-a.com autoprovisioned ones which never appear on real mail.
-    raw_aliases = (u.get('aliases') or []) + (u.get('nonEditableAliases') or [])
+    # We also expose the editable subset separately so the Directory page can
+    # offer alias→group conversion only on aliases that can actually be deleted
+    # via the API (nonEditableAliases can't be removed and linger ~21 days).
+    editable_raw = u.get('aliases') or []
+    raw_aliases = editable_raw + (u.get('nonEditableAliases') or [])
     aliases = sorted({a for a in raw_aliases if a and not a.endswith('.test-google-a.com')})
+    editable_aliases = sorted({a for a in editable_raw if a and not a.endswith('.test-google-a.com')})
     return {
-        'id':            u.get('id') or '',           # immutable Workspace user id — needed for undelete
-        'email':         u.get('primaryEmail') or '',
-        'aliases':       aliases,
+        'id':              u.get('id') or '',         # immutable Workspace user id — needed for undelete
+        'email':           u.get('primaryEmail') or '',
+        'aliases':         aliases,
+        'aliases_editable': editable_aliases,
         'name':          (name.get('fullName') or '').strip(),
         'given':         (name.get('givenName') or '').strip(),
         'family':        (name.get('familyName') or '').strip(),

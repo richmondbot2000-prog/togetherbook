@@ -9,11 +9,11 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&family=Orbitron:wght@500;600;700;800&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="style.css?v=1778687715">
-<link rel="stylesheet" href="quiet-tokens.css?v=1778687715">
-<link rel="stylesheet" href="quiet.css?v=1778687715">
-<link rel="stylesheet" href="quiet-extras.css?v=1778687715">
-<link rel="stylesheet" href="quiet-legacy.css?v=1778687715">
+<link rel="stylesheet" href="style.css?v=1778698378">
+<link rel="stylesheet" href="quiet-tokens.css?v=1778698378">
+<link rel="stylesheet" href="quiet.css?v=1778698378">
+<link rel="stylesheet" href="quiet-extras.css?v=1778698378">
+<link rel="stylesheet" href="quiet-legacy.css?v=1778698378">
 <style>
   .dir-section { max-width: 1080px; margin: 0 auto; padding: 24px 0 48px; }
   @media (max-width: 800px) { .dir-section { padding: 2px 0 32px; } }
@@ -632,6 +632,82 @@
     font: inherit;
   }
   .dir-link-btn:hover { text-decoration: none; }
+
+  /* Alias→group conversion panel. Lives in a slot under the Workspace
+     section, opened by the "Convert one to a group" link next to the
+     Other-emails list. Less alarming than the red dir-confirm strip
+     because nothing destructive happens until the user commits. */
+  .dir-alias-panel {
+    margin-top: 12px;
+    padding: 14px 16px 16px;
+    background: var(--bg-soft);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    position: relative;
+  }
+  .dir-alias-panel h4 {
+    margin: 0 0 6px;
+    font: 700 0.92rem 'Inter', sans-serif;
+    color: var(--ink);
+  }
+  .dir-alias-panel p {
+    margin: 0 0 10px;
+    font-size: 0.82rem;
+    color: var(--ink-soft);
+    line-height: 1.45;
+  }
+  .dir-alias-panel-close {
+    position: absolute;
+    top: 8px; right: 8px;
+    background: transparent;
+    border: none;
+    font-size: 1.1rem;
+    line-height: 1;
+    color: var(--ink-soft);
+    cursor: pointer;
+    padding: 4px 6px;
+    border-radius: 4px;
+  }
+  .dir-alias-panel-close:hover { background: var(--bg-soft-2); }
+  .dir-alias-panel-list {
+    list-style: none;
+    margin: 0 0 12px;
+    padding: 0;
+    max-height: 280px;
+    overflow-y: auto;
+  }
+  .dir-alias-panel-list li { margin: 0; }
+  .dir-alias-panel-list label {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    padding: 6px 8px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 0.86rem;
+  }
+  .dir-alias-panel-list label:hover { background: var(--bg-soft-2); }
+  .dir-alias-panel-list input[type="radio"]:checked + span { font-weight: 600; }
+  .dir-alias-panel-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 8px;
+  }
+  .dir-alias-panel-actions button {
+    background: var(--accent);
+    color: #fff;
+    border: 1px solid var(--accent);
+    font: 600 0.82rem 'Inter', sans-serif;
+    padding: 7px 14px;
+    border-radius: 6px;
+    cursor: pointer;
+  }
+  .dir-alias-panel-actions button:disabled {
+    background: var(--bg-soft-2);
+    color: var(--ink-soft);
+    border-color: var(--border);
+    cursor: not-allowed;
+  }
   .dir-link-list {
     list-style: none;
     padding: 0;
@@ -989,7 +1065,7 @@
 
 <header class="qb-topbar">
   <a class="qb-brand" href="index.html" aria-label="TogetherBOOK — home">
-    <img class="qb-brand-logo" src="togetherbook-logo.png?v=1778687715" alt="TogetherBOOK">
+    <img class="qb-brand-logo" src="togetherbook-logo.png?v=1778698378" alt="TogetherBOOK">
   </a>
   <button class="qb-hamburger" aria-label="Toggle navigation menu" aria-expanded="false"
           onclick="document.body.classList.toggle('nav-open');this.setAttribute('aria-expanded',document.body.classList.contains('nav-open'))">
@@ -1961,6 +2037,11 @@
     modal.querySelectorAll("[data-open-group]").forEach(chip => {
       chip.addEventListener("click", () => openGroupCard(chip.dataset.openGroup));
     });
+    // "Convert one to a group" link next to Other emails.
+    const aliasPanelLink = modal.querySelector("[data-open-alias-panel]");
+    if (aliasPanelLink) {
+      aliasPanelLink.addEventListener("click", () => openAliasPanel(entry));
+    }
 
     // For active users, check the live autoForwarding state via the Gmail
     // API and swap the Manage section into 'Live + forwarding active' mode
@@ -2203,9 +2284,22 @@
       return isSuspended ? `<span class="dir-email--suspended">${link}</span>` : link;
     }).join("<br>");
 
+    // Aliases that we know are editable (i.e., can be removed via the API and
+    // immediately replaced with a Group at the same address). Auto-generated
+    // nonEditableAliases are excluded — they linger ~21 days and would fail.
+    const editableAliases = (u && Array.isArray(u.aliases_editable))
+      ? u.aliases_editable.filter(a => a && a.toLowerCase() !== (u.email || "").toLowerCase())
+      : [];
+    const canOfferAliasToGroup = !!(u && !u.suspended && !u.deletion_time && editableAliases.length);
+    const otherEmailsCell = otherEmails.length
+      ? otherEmailHtml + (canOfferAliasToGroup
+          ? `<div style="margin-top:6px;"><button type="button" class="dir-link-btn" data-open-alias-panel="1">Convert one to a group</button></div>`
+          : "")
+      : "";
+
     const workspaceDl = u ? `
       <dt>Email</dt><dd>${emailDisplay}</dd>
-      ${otherEmails.length ? `<dt>Other emails</dt><dd>${otherEmailHtml}</dd>` : ""}
+      ${otherEmails.length ? `<dt>Other emails</dt><dd>${otherEmailsCell}</dd>` : ""}
       ${(u.given || u.family) ? `<dt>Full name</dt><dd>${escapeHtml(((u.given || "") + " " + (u.family || "")).trim())}</dd>` : ""}
       ${u.department ? `<dt>Department</dt><dd>${escapeHtml(u.department)}</dd>` : ""}
       ${tenantList.length ? `<dt>Workspace</dt><dd>${tenantList.map(t => escapeHtml(t)).join(", ")}</dd>` : ""}
@@ -2246,6 +2340,7 @@
       <div class="dir-modal-section">
         <h3>Workspace</h3>
         <dl class="dir-detail-grid">${workspaceDl}</dl>
+        <div class="dir-alias-panel-slot"></div>
       </div>
 
       ${u ? (() => {
@@ -3029,6 +3124,94 @@
       showModalBanner(`Recovered ${ok} seat${ok === 1 ? "" : "s"} for ${entry.user.name || entry.user.email}.`, "success");
     } else {
       showModalBanner(`${ok}/${seats.length} recovered; failures: ${failures.join("; ")}`, ok > 0 ? "success" : "error");
+    }
+  }
+
+  // "Convert one alias to a group" — opens the in-card panel that lists every
+  // editable alias on this user and lets them pick exactly one to detach +
+  // recreate as a Group at the same address with the user as initial member.
+  function openAliasPanel(entry) {
+    const modal = document.getElementById("dirModal");
+    const slot = modal.querySelector(".dir-alias-panel-slot");
+    if (!slot) return;
+    const u = entry.user;
+    const editable = (u && Array.isArray(u.aliases_editable))
+      ? u.aliases_editable.filter(a => a && a.toLowerCase() !== (u.email || "").toLowerCase())
+      : [];
+    if (!editable.length) { slot.innerHTML = ""; return; }
+    slot.innerHTML = `
+      <div class="dir-alias-panel">
+        <button type="button" class="dir-alias-panel-close" data-alias-close aria-label="Close">×</button>
+        <h4>Convert an alias to a group</h4>
+        <p>
+          The selected alias will be detached from <strong>${escapeHtml(u.email)}</strong> and immediately re-created as a Workspace <strong>Group</strong> at the same address. ${escapeHtml(u.name || u.email)} is added as the first member, so mail still reaches them — you can then add more members from the Group card. Free, no seat fee.
+        </p>
+        <ul class="dir-alias-panel-list">
+          ${editable.map((a, i) => `
+            <li>
+              <label>
+                <input type="radio" name="aliasPick" value="${escapeHtml(a)}" data-alias-radio>
+                <span>${escapeHtml(a)}</span>
+              </label>
+            </li>
+          `).join("")}
+        </ul>
+        <div class="dir-alias-panel-actions">
+          <button type="button" data-alias-convert disabled>CONVERT TO GROUP</button>
+        </div>
+      </div>`;
+    const panel = slot.querySelector(".dir-alias-panel");
+    const closeBtn = panel.querySelector("[data-alias-close]");
+    const convertBtn = panel.querySelector("[data-alias-convert]");
+    panel.querySelectorAll("[data-alias-radio]").forEach(radio => {
+      radio.addEventListener("change", () => {
+        convertBtn.disabled = !radio.checked;
+      });
+    });
+    closeBtn.addEventListener("click", () => { slot.innerHTML = ""; });
+    convertBtn.addEventListener("click", () => {
+      const picked = panel.querySelector("[data-alias-radio]:checked");
+      if (!picked) return;
+      runAliasToGroup(entry, picked.value, panel);
+    });
+  }
+
+  // Execute the alias→group conversion. One Worker round-trip handles the
+  // alias removal + group creation + initial-member add atomically (with
+  // step-level error reporting). On success we refresh the grid; the new
+  // group will land in groups.json on the next hourly refresh, so we patch
+  // local state for instant visual feedback.
+  async function runAliasToGroup(entry, alias, panel) {
+    const u = entry.user;
+    const convertBtn = panel.querySelector("[data-alias-convert]");
+    const closeBtn = panel.querySelector("[data-alias-close]");
+    convertBtn.disabled = true;
+    convertBtn.textContent = "Converting…";
+    closeBtn.disabled = true;
+    try {
+      const localPart = alias.split("@")[0] || "group";
+      const groupName = localPart
+        .replace(/[._-]+/g, " ")
+        .replace(/\b\w/g, c => c.toUpperCase());
+      await workspaceAction("alias-to-group", {
+        user_email: u.email,
+        alias,
+        group_name: groupName,
+        initial_member: u.email,
+        description: `Forwarding group at ${alias}. Converted from an alias on ${u.email} on ${new Date().toISOString().slice(0, 10)}.`,
+      });
+      // Patch local state so the change shows immediately.
+      u.aliases = (u.aliases || []).filter(a => a.toLowerCase() !== alias.toLowerCase());
+      u.aliases_editable = (u.aliases_editable || []).filter(a => a.toLowerCase() !== alias.toLowerCase());
+      panel.parentElement.innerHTML = "";
+      renderGrid();
+      openCard(entryKey(entry));
+      showModalBanner(`Converted ${alias} into a Workspace Group. ${u.email} is the initial member.`, "success");
+    } catch (err) {
+      convertBtn.disabled = false;
+      convertBtn.textContent = "CONVERT TO GROUP";
+      closeBtn.disabled = false;
+      showModalBanner(`Conversion failed: ${err.message || err}`, "error");
     }
   }
 
