@@ -9,11 +9,11 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&family=Orbitron:wght@500;600;700;800&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="style.css?v=1778680121">
-<link rel="stylesheet" href="quiet-tokens.css?v=1778680121">
-<link rel="stylesheet" href="quiet.css?v=1778680121">
-<link rel="stylesheet" href="quiet-extras.css?v=1778680121">
-<link rel="stylesheet" href="quiet-legacy.css?v=1778680121">
+<link rel="stylesheet" href="style.css?v=1778680675">
+<link rel="stylesheet" href="quiet-tokens.css?v=1778680675">
+<link rel="stylesheet" href="quiet.css?v=1778680675">
+<link rel="stylesheet" href="quiet-extras.css?v=1778680675">
+<link rel="stylesheet" href="quiet-legacy.css?v=1778680675">
 <style>
   .dir-section { max-width: 1080px; margin: 0 auto; padding: 24px 0 48px; }
   @media (max-width: 800px) { .dir-section { padding: 2px 0 32px; } }
@@ -973,7 +973,7 @@
 
 <header class="qb-topbar">
   <a class="qb-brand" href="index.html" aria-label="TogetherBOOK — home">
-    <img class="qb-brand-logo" src="togetherbook-logo.png?v=1778680121" alt="TogetherBOOK">
+    <img class="qb-brand-logo" src="togetherbook-logo.png?v=1778680675" alt="TogetherBOOK">
   </a>
   <button class="qb-hamburger" aria-label="Toggle navigation menu" aria-expanded="false"
           onclick="document.body.classList.toggle('nav-open');this.setAttribute('aria-expanded',document.body.classList.contains('nav-open'))">
@@ -2694,50 +2694,36 @@
     }
   }
 
-  // Two-step convert wizard. The API can't delete a user AND keep the email
-  // address immediately reusable in one shot (Google locks the address for
-  // 20 days unless the admin ticks "Make email available for reuse" in the
-  // admin console). So the page walks the admin through the manual delete,
-  // then calls the Worker to create the Group + add the member.
+  // Fully-automated convert-to-group. Calls /api/workspace/convert-to-group
+  // which renames the user → deletes the renamed user → creates a Group at
+  // the freed original address → adds the forward target as a member. No
+  // manual step in admin.google.com. ~3 seconds.
   function openConvertWizard(entry, forwardTo, slot) {
     const u = entry.user;
     if (!u || !u.email) return;
-    // Best-effort admin.google.com deep link. Workspace uses internal userKey
-    // (immutable id) for direct links, which we have on the user record.
-    const adminLink = u.id
-      ? `https://admin.google.com/ac/users/${encodeURIComponent(u.id)}`
-      : `https://admin.google.com/ac/users`;
     slot.innerHTML = `
       <div class="dir-confirm">
         <div class="dir-confirm-text">
-          <strong>Convert ${escapeHtml(u.email)} → forwarding group to ${escapeHtml(forwardTo)}</strong><br>
-          <span class="dir-modal-saved-hint" style="text-align:left;margin:8px 0 12px;display:block;">
-            One manual step needed because Google won't immediately reuse a deleted user's email otherwise.
+          <strong>Convert ${escapeHtml(u.email)} → forwarding group to ${escapeHtml(forwardTo)}?</strong><br>
+          <span class="dir-modal-saved-hint" style="text-align:left;margin:6px 0 0;display:block;">
+            The Workspace user is deleted, then the address re-emerges as a forwarding-only Group with ${escapeHtml(forwardTo)} as a member. Mailbox content is kept in Vault for 25 days, then unrecoverable. £0/month forever afterwards.
           </span>
-          <ol style="margin:0 0 12px 18px;padding:0;line-height:1.6;font-size:0.9rem;">
-            <li><a href="${escapeHtml(adminLink)}" target="_blank" rel="noopener">Open the user in admin.google.com</a></li>
-            <li>Click <strong>Delete user</strong> (might be under the 'more' menu).</li>
-            <li><strong>Tick the box that says "Make email available for reuse immediately"</strong> (or similar — wording varies).</li>
-            <li>Confirm the delete.</li>
-            <li>Come back here and click <strong>Create the group now</strong> below.</li>
-          </ol>
         </div>
         <div class="dir-confirm-actions">
           <button type="button" data-cancel>Cancel</button>
-          <button type="button" class="confirm" data-confirm>I've deleted the user — create the group now</button>
+          <button type="button" class="confirm" data-confirm>Convert</button>
         </div>
       </div>`;
     slot.querySelector("[data-cancel]").addEventListener("click", () => { slot.innerHTML = ""; });
-    slot.querySelector("[data-confirm]").addEventListener("click", () => runCreateForwardingGroup(entry, u, forwardTo, slot));
+    slot.querySelector("[data-confirm]").addEventListener("click", () => runConvertToGroupNow(entry, u, forwardTo, slot));
   }
 
-  async function runCreateForwardingGroup(entry, u, forwardTo, slot) {
+  async function runConvertToGroupNow(entry, u, forwardTo, slot) {
     const modal = document.getElementById("dirModal");
     modal.querySelectorAll("[data-action], [data-confirm]").forEach(b => b.disabled = true);
-    showModalBanner(`Creating forwarding group at ${u.email}…`, "info");
+    showModalBanner(`Converting ${u.email} to a forwarding group…`, "info");
     try {
-      await workspaceAction("create-forwarding-group", { email: u.email, forward_to: forwardTo });
-      // Remove the (now-deleted) user from in-memory state; add the new Group.
+      await workspaceAction("convert-to-group", { email: u.email, forward_to: forwardTo });
       const idx = allEntries.findIndex(e => e === entry);
       if (idx >= 0) allEntries.splice(idx, 1);
       allGroups.push({
@@ -2759,7 +2745,7 @@
       showModalBanner(`${u.email} is now a Group forwarding to ${forwardTo}. £0/month.`, "success");
       setTimeout(closeCard, 1800);
     } catch (err) {
-      showModalBanner(`Create failed — ${err.message || err}`, "error");
+      showModalBanner(`Convert failed — ${err.message || err}`, "error");
       modal.querySelectorAll("[data-action], [data-confirm]").forEach(b => b.disabled = false);
     }
   }
