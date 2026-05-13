@@ -112,6 +112,7 @@ export default {
       switch (action) {
         case "suspend-and-route":    result = await doSuspendAndRoute(env, adminToken, body); break;
         case "unsuspend":            result = await doUnsuspend(env, adminToken, body); break;
+        case "recover":              result = await doRecover(adminToken, body); break;
         case "create":               result = await doCreate(adminToken, body); break;
         case "group-create":         result = await doGroupCreate(adminToken, body); break;
         case "group-delete":         result = await doGroupDelete(adminToken, body); break;
@@ -191,6 +192,16 @@ async function doUnsuspend(env, adminToken, body) {
     await gmailApi(mailboxToken, body.email, "PUT", "settings/autoForwarding", { enabled: false });
   } catch (e) { /* swallow */ }
   return { ok: true, data: { suspended: false } };
+}
+
+// Recover a deleted user (within Workspace's 20-day undelete window).
+// Requires the user's immutable id, not the email — the email may have been
+// recycled. Restores into the root OU by default.
+async function doRecover(token, body) {
+  if (!body.user_id) return { ok: false, error: "missing user_id" };
+  return adminApi(token, "POST", `users/${encodeURIComponent(body.user_id)}/undelete`, {
+    orgUnitPath: body.org_unit_path || "/",
+  });
 }
 
 async function doCreate(token, body) {

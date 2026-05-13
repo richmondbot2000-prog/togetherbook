@@ -9,11 +9,11 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&family=Orbitron:wght@500;600;700;800&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="style.css?v=1778665242">
-<link rel="stylesheet" href="quiet-tokens.css?v=1778665242">
-<link rel="stylesheet" href="quiet.css?v=1778665242">
-<link rel="stylesheet" href="quiet-extras.css?v=1778665242">
-<link rel="stylesheet" href="quiet-legacy.css?v=1778665242">
+<link rel="stylesheet" href="style.css?v=1778666011">
+<link rel="stylesheet" href="quiet-tokens.css?v=1778666011">
+<link rel="stylesheet" href="quiet.css?v=1778666011">
+<link rel="stylesheet" href="quiet-extras.css?v=1778666011">
+<link rel="stylesheet" href="quiet-legacy.css?v=1778666011">
 <style>
   .dir-section { max-width: 1080px; margin: 0 auto; padding: 24px 0 48px; }
   @media (max-width: 800px) { .dir-section { padding: 2px 0 32px; } }
@@ -361,6 +361,27 @@
     background: transparent;
   }
   .dir-row--suspended .dir-name { color: var(--ink-500, #6B7794); }
+  .dir-row--deleted {
+    opacity: 0.45;
+    background: transparent;
+  }
+  .dir-row--deleted .dir-name { color: var(--manuscript-red, #B23A48); }
+  .dir-row--deleted .dir-email {
+    text-decoration: line-through;
+    text-decoration-color: var(--manuscript-red, #B23A48);
+    text-decoration-thickness: 1.5px;
+  }
+  .dir-deleted-chip {
+    display: inline-block;
+    font: 600 11px/1.4 var(--font-mono, "JetBrains Mono", ui-monospace, monospace);
+    color: var(--manuscript-red, #B23A48);
+    background: #FBE3E5;
+    border: 1px solid var(--manuscript-red, #B23A48);
+    padding: 1px 6px;
+    border-radius: 3px;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+  }
   .dir-email--suspended {
     text-decoration: line-through;
     text-decoration-color: var(--manuscript-red, #B23A48);
@@ -919,7 +940,7 @@
 
 <header class="qb-topbar">
   <a class="qb-brand" href="index.html" aria-label="TogetherBOOK — home">
-    <img class="qb-brand-logo" src="togetherbook-logo.png?v=1778665242" alt="TogetherBOOK">
+    <img class="qb-brand-logo" src="togetherbook-logo.png?v=1778666011" alt="TogetherBOOK">
   </a>
   <button class="qb-hamburger" aria-label="Toggle navigation menu" aria-expanded="false"
           onclick="document.body.classList.toggle('nav-open');this.setAttribute('aria-expanded',document.body.classList.contains('nav-open'))">
@@ -963,6 +984,7 @@
             <button class="dir-pill dir-pill--status active" data-value="all">All <span class="dir-pill-count" id="dirStatusCountAll">0</span></button>
             <button class="dir-pill dir-pill--status" data-value="active">Active <span class="dir-pill-count" id="dirStatusCountActive">0</span></button>
             <button class="dir-pill dir-pill--status" data-value="suspended">Suspended <span class="dir-pill-count" id="dirStatusCountSuspended">0</span></button>
+            <button class="dir-pill dir-pill--status" data-value="deleted">Deleted <span class="dir-pill-count" id="dirStatusCountDeleted">0</span></button>
           </div>
           <div class="dir-filter-row" id="dirTenantRow">
             <span class="dir-filter-label">Tenant</span>
@@ -1118,6 +1140,7 @@
           ...primary,
           aliases: [...allAliases].sort(),
           suspended: members.every(m => m.suspended),    // greyed only if ALL seats are suspended
+          deletion_time: members.every(m => m.deletion_time) ? members[0].deletion_time : "",
           admin: members.some(m => m.admin),
           tenants: [...new Set(members.flatMap(m => m.tenants || (m.tenant ? [m.tenant] : [])))],
         };
@@ -1127,10 +1150,13 @@
         allEntries.push({ type: "external", user: null, activity: e });
       }
 
-      // Sort: suspended accounts to the very bottom (they stay forever, just
-      // greyed). Then active in DB first; within active, tenant priority;
-      // within tenant, writes desc; finally alphabetical.
+      // Sort order: deleted last, then suspended, then active.
+      // Leavers (deleted within the 20-day undelete window) stay visible at
+      // the very bottom so we can recover them in one click.
       allEntries.sort((a, b) => {
+        const aDel = a.user && a.user.deletion_time ? 1 : 0;
+        const bDel = b.user && b.user.deletion_time ? 1 : 0;
+        if (aDel !== bDel) return aDel - bDel;
         const aSusp = a.user && a.user.suspended ? 1 : 0;
         const bSusp = b.user && b.user.suspended ? 1 : 0;
         if (aSusp !== bSusp) return aSusp - bSusp;
@@ -1268,11 +1294,13 @@
   // visibility ("did we actually stop the bill when so-and-so left?").
   function renderStatusPills() {
     const staffEntries = allEntries.filter(e => e.type === "staff" && e.user);
-    const active = staffEntries.filter(e => !e.user.suspended).length;
-    const suspended = staffEntries.filter(e => e.user.suspended).length;
+    const active = staffEntries.filter(e => !e.user.suspended && !e.user.deletion_time).length;
+    const suspended = staffEntries.filter(e => e.user.suspended && !e.user.deletion_time).length;
+    const deleted = staffEntries.filter(e => e.user.deletion_time).length;
     document.getElementById("dirStatusCountAll").textContent = allEntries.length;
     document.getElementById("dirStatusCountActive").textContent = active;
     document.getElementById("dirStatusCountSuspended").textContent = suspended;
+    document.getElementById("dirStatusCountDeleted").textContent = deleted;
     document.querySelectorAll(".dir-pill--status").forEach(p => {
       p.classList.toggle("active", p.dataset.value === activeStatus);
       // Avoid attaching duplicate handlers across re-renders
@@ -1434,12 +1462,13 @@
   function renderBillingSummary() {
     const staffEntries = allEntries.filter(e => e.type === "staff" && e.user);
     if (!staffEntries.length) return;
-    const live = staffEntries.filter(e => !e.user.suspended).length;
-    const suspended = staffEntries.filter(e => e.user.suspended).length;
+    const deleted = staffEntries.filter(e => e.user.deletion_time).length;
+    const live = staffEntries.filter(e => !e.user.suspended && !e.user.deletion_time).length;
+    const suspended = staffEntries.filter(e => e.user.suspended && !e.user.deletion_time).length;
     const monthly = live * SEAT_GBP_PER_MONTH;
     const fmtGbp = n => "£" + n.toLocaleString("en-GB");
     const line = document.getElementById("dirBillingLine");
-    line.innerHTML = `<b>${live}</b> live · <b>${suspended}</b> suspended · <b>${fmtGbp(monthly)}</b>/mo`;
+    line.innerHTML = `<b>${live}</b> live · <b>${suspended}</b> suspended${deleted ? ` · <b>${deleted}</b> deleted` : ""} · <b>${fmtGbp(monthly)}</b>/mo`;
     line.hidden = false;
   }
 
@@ -1490,12 +1519,12 @@
 
   function visible(entry) {
     if (activeStatus !== "all") {
-      // Status filter — only meaningful for staff entries (externals have
-      // no Workspace account to be suspended).
       if (entry.type !== "staff" || !entry.user) return false;
       const isSusp = !!entry.user.suspended;
-      if (activeStatus === "suspended" && !isSusp) return false;
-      if (activeStatus === "active" && isSusp) return false;
+      const isDel = !!entry.user.deletion_time;
+      if (activeStatus === "deleted" && !isDel) return false;
+      if (activeStatus === "suspended" && (!isSusp || isDel)) return false;
+      if (activeStatus === "active" && (isSusp || isDel)) return false;
     }
     if (activeTenant !== "all") {
       // Tenant filter applies to anyone with activity data, staff or external.
@@ -1607,23 +1636,38 @@
       ? `<span class="dir-department">${escapeHtml(u.department)}</span>`
       : "";
 
-    const liveGws = !u.suspended
+    const isDeleted = !!u.deletion_time;
+    const liveGws = !u.suspended && !isDeleted
       ? `<img class="dir-gws-icon" src="assets/google-workspace-icon.svg?v=1" alt="Google Workspace account active" title="Google Workspace account active">`
       : "";
 
-    // Suspended accounts: grey out the row and strikethrough the email (since
-    // direct delivery no longer works — mail forwards via admin routing).
-    const suspendedClass = u.suspended ? " dir-row--suspended" : "";
-    const emailHtml = u.suspended
-      ? `<span class="dir-email dir-email--suspended" title="Mailbox suspended — direct delivery no longer works">${escapeHtml(u.email)}</span>`
-      : `<span class="dir-email">${escapeHtml(u.email)}</span>`;
-    const forwardTo = u.suspended ? forwardingByEmail[(u.email || "").toLowerCase()] : null;
+    // Visual states (most-severe-wins):
+    //   - DELETED: brightest red strikethrough + a 'DELETED · recoverable for Nd' chip
+    //   - Suspended: grey row, strikethrough email, forward-target chip if known
+    //   - Active: nothing extra
+    const stateClass = isDeleted ? " dir-row--deleted" : (u.suspended ? " dir-row--suspended" : "");
+    const emailHtml = isDeleted
+      ? `<span class="dir-email" title="Deleted">${escapeHtml(u.email)}</span>`
+      : u.suspended
+        ? `<span class="dir-email dir-email--suspended" title="Mailbox suspended — direct delivery no longer works">${escapeHtml(u.email)}</span>`
+        : `<span class="dir-email">${escapeHtml(u.email)}</span>`;
+    let stateChip = "";
+    if (isDeleted) {
+      const days = (() => {
+        const t = new Date(u.deletion_time).getTime();
+        if (isNaN(t)) return null;
+        const remaining = 20 - Math.floor((Date.now() - t) / 86400000);
+        return remaining >= 0 ? remaining : 0;
+      })();
+      stateChip = `<span class="dir-deleted-chip" title="Deleted on ${escapeHtml(u.deletion_time)} — recoverable for ${days == null ? "?" : days} more days">DELETED${days != null ? ` · ${days}d left` : ""}</span>`;
+    }
+    const forwardTo = (u.suspended && !isDeleted) ? forwardingByEmail[(u.email || "").toLowerCase()] : null;
     const forwardChip = forwardTo
       ? `<span class="dir-forward-chip" title="Suspended — mail forwards to ${escapeHtml(forwardTo)}">→ ${escapeHtml(forwardTo)}</span>`
       : "";
 
     return `
-      <button type="button" class="dir-row${suspendedClass}" data-key="${escapeHtml(u.email)}" title="View details for ${escapeHtml(u.name || u.email)}">
+      <button type="button" class="dir-row${stateClass}" data-key="${escapeHtml(u.email)}" title="View details for ${escapeHtml(u.name || u.email)}">
         ${photo}
         <div class="dir-row-body">
           <div class="dir-row-headline">
@@ -1631,6 +1675,7 @@
             ${liveGws}
             ${u.title ? `<span class="dir-title">${escapeHtml(u.title)}</span>` : ""}
             ${emailHtml}
+            ${stateChip}
             ${forwardChip}
           </div>
           ${rowMetaHtml(a, u.email, entry)}
@@ -2122,7 +2167,17 @@
       ${u ? `
         <div class="dir-modal-section">
           <h3>Manage Workspace account</h3>
-          ${u.suspended
+          ${u.deletion_time
+            ? (() => {
+                const t = new Date(u.deletion_time).getTime();
+                const days = isNaN(t) ? null : 20 - Math.floor((Date.now() - t) / 86400000);
+                return `<p class="dir-modal-saved-hint" style="text-align:left;margin:0 0 10px;">Deleted on <code>${escapeHtml(u.deletion_time)}</code>${days != null ? ` — recoverable for ${Math.max(0, days)} more day${days === 1 ? "" : "s"}. After that the account is permanently gone.` : "."}</p>
+              <div class="dir-manage-actions">
+                <button type="button" data-action="recover">Recover account</button>
+              </div>
+              <p class="dir-modal-saved-hint">Restores the seat into the root OU and re-enables sign-in. The user will keep their old mail / Drive / calendar.</p>`;
+              })()
+            : u.suspended
             ? (() => {
                 const memberOf = groupsForUser(u);
                 return `<div class="dir-manage-actions">
@@ -2195,6 +2250,28 @@
     // Unsuspend doesn't need confirmation — it's reversible and non-destructive.
     if (action === "unsuspend") {
       runAction(entry, action, slot, {});
+      return;
+    }
+
+    // Recover a deleted user — needs the immutable user id (the email might
+    // have been recycled). Loop across every deleted seat the merged person has.
+    if (action === "recover") {
+      const seats = (entry.accounts && entry.accounts.length) ? entry.accounts : [u];
+      const deletedSeats = seats.filter(s => s.deletion_time && s.id);
+      if (!deletedSeats.length) return;
+      slot.innerHTML = `
+        <div class="dir-confirm">
+          <div class="dir-confirm-text">
+            <strong>Recover ${deletedSeats.length} seat${deletedSeats.length === 1 ? "" : "s"} for ${escapeHtml(u.name || u.email)}?</strong><br>
+            <span class="dir-modal-saved-hint" style="text-align:left;margin:0;">${deletedSeats.map(s => escapeHtml(s.email)).join(", ")}</span>
+          </div>
+          <div class="dir-confirm-actions">
+            <button type="button" data-cancel>Cancel</button>
+            <button type="button" class="confirm" data-confirm>Recover</button>
+          </div>
+        </div>`;
+      slot.querySelector("[data-cancel]").addEventListener("click", () => { slot.innerHTML = ""; });
+      slot.querySelector("[data-confirm]").addEventListener("click", () => runRecover(entry, deletedSeats, slot));
       return;
     }
 
@@ -2565,6 +2642,44 @@
     } catch (err) {
       openCard(key);
       showModalBanner(`Link failed — ${err.message || err}`, "error");
+    }
+  }
+
+  // Recover deleted seats by calling /api/workspace/recover with the user's
+  // immutable id (the email may have been recycled). Best-effort: each seat
+  // is tried independently; banner reports wins + failures. The next
+  // refresh-directory run will land an updated staff.json where deletion_time
+  // is gone, so the row will reappear in its normal active position.
+  async function runRecover(entry, seats, slot) {
+    const modal = document.getElementById("dirModal");
+    modal.querySelectorAll("[data-action], [data-confirm]").forEach(b => b.disabled = true);
+    let ok = 0;
+    const failures = [];
+    for (const seat of seats) {
+      try {
+        await workspaceAction("recover", { user_id: seat.id, email: seat.email });
+        seat.deletion_time = "";
+        ok++;
+      } catch (err) {
+        failures.push(`${seat.email}: ${err.message || err}`);
+      }
+    }
+    // Recompute merged-user state from the seats.
+    if (entry.accounts && entry.accounts.length) {
+      entry.user.deletion_time = entry.accounts.every(s => s.deletion_time) ? entry.accounts[0].deletion_time : "";
+    } else {
+      entry.user.deletion_time = "";
+    }
+    if (slot) slot.innerHTML = "";
+    renderGrid();
+    renderBillingSummary();
+    renderStatusPills();
+    renderHealth();
+    openCard(entryKey(entry));
+    if (failures.length === 0) {
+      showModalBanner(`Recovered ${ok} seat${ok === 1 ? "" : "s"} for ${entry.user.name || entry.user.email}.`, "success");
+    } else {
+      showModalBanner(`${ok}/${seats.length} recovered; failures: ${failures.join("; ")}`, ok > 0 ? "success" : "error");
     }
   }
 

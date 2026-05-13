@@ -85,6 +85,7 @@ def fetch_users(service) -> list[dict]:
             'orderBy': 'email',
             'projection': 'full',
             'viewType': 'admin_view',
+            'showDeleted': 'true',   # include recently-deleted (20-day window) so leavers don't fall off the page
         }
         if page_token:
             kwargs['pageToken'] = page_token
@@ -108,17 +109,19 @@ def normalize(u: dict, tenant: str) -> dict:
     raw_aliases = (u.get('aliases') or []) + (u.get('nonEditableAliases') or [])
     aliases = sorted({a for a in raw_aliases if a and not a.endswith('.test-google-a.com')})
     return {
-        'email':       u.get('primaryEmail') or '',
-        'aliases':     aliases,
-        'name':        (name.get('fullName') or '').strip(),
-        'given':       (name.get('givenName') or '').strip(),
-        'family':      (name.get('familyName') or '').strip(),
-        'title':       (primary_org.get('title') or '').strip(),
-        'department':  (primary_org.get('department') or '').strip(),
-        'photo_url':   u.get('thumbnailPhotoUrl') or '',
-        'suspended':   bool(u.get('suspended')),
-        'admin':       bool(u.get('isAdmin')),
-        'tenant':      tenant,
+        'id':            u.get('id') or '',           # immutable Workspace user id — needed for undelete
+        'email':         u.get('primaryEmail') or '',
+        'aliases':       aliases,
+        'name':          (name.get('fullName') or '').strip(),
+        'given':         (name.get('givenName') or '').strip(),
+        'family':        (name.get('familyName') or '').strip(),
+        'title':         (primary_org.get('title') or '').strip(),
+        'department':    (primary_org.get('department') or '').strip(),
+        'photo_url':     u.get('thumbnailPhotoUrl') or '',
+        'suspended':     bool(u.get('suspended')),
+        'admin':         bool(u.get('isAdmin')),
+        'deletion_time': u.get('deletionTime') or '',  # ISO timestamp if the account is in the 20-day deleted window
+        'tenant':        tenant,
     }
 
 
