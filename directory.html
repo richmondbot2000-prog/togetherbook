@@ -9,11 +9,11 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&family=Orbitron:wght@500;600;700;800&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="style.css?v=1778687079">
-<link rel="stylesheet" href="quiet-tokens.css?v=1778687079">
-<link rel="stylesheet" href="quiet.css?v=1778687079">
-<link rel="stylesheet" href="quiet-extras.css?v=1778687079">
-<link rel="stylesheet" href="quiet-legacy.css?v=1778687079">
+<link rel="stylesheet" href="style.css?v=1778687227">
+<link rel="stylesheet" href="quiet-tokens.css?v=1778687227">
+<link rel="stylesheet" href="quiet.css?v=1778687227">
+<link rel="stylesheet" href="quiet-extras.css?v=1778687227">
+<link rel="stylesheet" href="quiet-legacy.css?v=1778687227">
 <style>
   .dir-section { max-width: 1080px; margin: 0 auto; padding: 24px 0 48px; }
   @media (max-width: 800px) { .dir-section { padding: 2px 0 32px; } }
@@ -989,7 +989,7 @@
 
 <header class="qb-topbar">
   <a class="qb-brand" href="index.html" aria-label="TogetherBOOK — home">
-    <img class="qb-brand-logo" src="togetherbook-logo.png?v=1778687079" alt="TogetherBOOK">
+    <img class="qb-brand-logo" src="togetherbook-logo.png?v=1778687227" alt="TogetherBOOK">
   </a>
   <button class="qb-hamburger" aria-label="Toggle navigation menu" aria-expanded="false"
           onclick="document.body.classList.toggle('nav-open');this.setAttribute('aria-expanded',document.body.classList.contains('nav-open'))">
@@ -1636,18 +1636,22 @@
       // Tenant filter applies to anyone with activity data, staff or external.
       if (!entry.activity || entry.activity.primary_tenant !== activeTenant) return false;
     }
-    if (activeWorkspace !== "all") {
-      // Workspace filter: staff-only (external users have no Google account).
-      // Match against email-domain of primary OR any alias.
+    // Workspace filter: staff-only (external users have no Google account).
+    // "All" means "any Workspace tenant" — it must still require a Workspace
+    // account, otherwise warehouse-only people leak through.
+    if (document.getElementById("dirWorkspaceRow") && !document.getElementById("dirWorkspaceRow").hidden) {
       if (entry.type !== "staff" || !entry.user) return false;
-      const domains = new Set();
-      const primaryDom = (entry.user.email || "").split("@")[1];
-      if (primaryDom) domains.add(primaryDom);
-      for (const a of (entry.user.aliases || [])) {
-        const d = (a || "").split("@")[1];
-        if (d) domains.add(d);
+      if (activeWorkspace !== "all") {
+        // Match against email-domain of primary OR any alias.
+        const domains = new Set();
+        const primaryDom = (entry.user.email || "").split("@")[1];
+        if (primaryDom) domains.add(primaryDom);
+        for (const a of (entry.user.aliases || [])) {
+          const d = (a || "").split("@")[1];
+          if (d) domains.add(d);
+        }
+        if (!domains.has(activeWorkspace)) return false;
       }
-      if (!domains.has(activeWorkspace)) return false;
     }
     if (activeDept !== "all") {
       // The dept filter is for Workspace staff; external entries are excluded
