@@ -259,46 +259,84 @@ async function doResetPassword(token, body) {
   });
 }
 
-// Convert a Workspace user into a Group at the same address. Used as the
-// 'leaver, no longer paying for a seat, mail still goes somewhere' workflow.
-// Steps: (1) delete the user, (2) create a Group at the same email, (3) add
-// the forward target as a member. Mailbox is preserved in Vault for 25 days
-// then unrecoverable. Cost after conversion: £0/month forever.
+// Convert a Workspace user into a Group at the same address. We CAN'T just
+// delete the user — Google locks the freed email for the 20-day undelete
+// window, so the next-step group creation fails with "Entity already exists".
+//
+// Workaround: rename the user (primaryEmail -> <local>.archived@<domain>),
+// then DELETE the auto-created alias of the old primary so the address is
+// fully free, THEN create the group. After this the original address is a
+// working forwarding-only Group, and the renamed user can optionally be
+// suspended/deleted later (their new address goes into the 20-day window
+// but we don't care).
 async function doConvertToGroup(token, body) {
   if (!body.email) return { ok: false, error: "missing email" };
   if (!body.forward_to) return { ok: false, error: "missing forward_to" };
   if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(body.forward_to)) {
     return { ok: false, error: "forward_to is not a valid email" };
   }
-  // 1. Delete the user. Once deleted, the address is freed and the next
-  //    24 hours window the address may still resolve to the deleted user —
-  //    but Group creation usually succeeds immediately.
-  const del = await adminApi(token, "DELETE", `users/${encodeURIComponent(body.email)}`);
-  if (!del.ok) return { ok: false, error: "delete user: " + del.error };
+  const [local, domain] = body.email.split("@");
+  if (!local || !domain) return { ok: false, error: "email parse failed" };
+  // Choose a parking address. Append .archived plus a unix-time suffix so we
+  // never collide with a previously-converted user of the same local-part.
+  const parkedEmail = `${local}.archived.${Math.floor(Date.now() / 1000)}@${domain}`;
 
-  // 2. Create the Group at the freed address.
-  const groupName = body.name || (body.email.split("@")[0].replace(/[._-]+/g, " ") + " (ex-employee)");
+  // 1. Rename the user. PUT /users/<email>/primaryEmail isn't a thing —
+  //    we PUT the full user resource with the new primaryEmail. Google
+  //    auto-creates an alias of the old primary on the renamed user.
+  const ren = await adminApi(token, "PUT", `users/${encodeURIComponent(body.email)}`, {
+    primaryEmail: parkedEmail,
+  });
+  if (!ren.ok) return { ok: false, error: "rename user: " + ren.error };
+
+  // 2. Delete the auto-generated alias of the original address so it's free
+  //    for the Group. The userKey here is the new primaryEmail.
+  const delAlias = await adminApi(token, "DELETE",
+    `users/${encodeURIComponent(parkedEmail)}/aliases/${encodeURIComponent(body.email)}`);
+  if (!delAlias.ok && delAlias.status !== 404) {
+    // 404 is fine — the alias was already gone.
+    return { ok: false, error: "free old address: " + delAlias.error + " — manually delete the alias in admin.google.com or rename back" };
+  }
+
+  // 3. Create the Group at the freed address.
+  const groupName = body.name || (local.replace(/[._-]+/g, " ") + " (ex-employee)");
   const groupDescription = body.description ||
-    `Forwarding-only group at ${body.email}. The Workspace account was converted on ${new Date().toISOString().slice(0, 10)} to keep the email address working without paying for a seat.`;
+    `Forwarding-only group at ${body.email}. The Workspace account was converted on ${new Date().toISOString().slice(0, 10)} to keep the email address working without paying for a seat. Original user is parked at ${parkedEmail} (suspended).`;
   const grp = await adminApi(token, "POST", "groups", {
     email: body.email,
     name: groupName,
     description: groupDescription,
   });
   if (!grp.ok) {
-    return { ok: false, error: "create group (user already deleted — restore from admin.google.com → Recently deleted within 20 days): " + grp.error };
+    return { ok: false, error: "create group: " + grp.error + ". Original user is parked at " + parkedEmail };
   }
 
-  // 3. Add the forward target as a member. Failure here leaves the group
-  //    intact but empty — the admin can add members manually if needed.
+  // 4. Add the forward target as a member.
   const mem = await adminApi(token, "POST", `groups/${encodeURIComponent(body.email)}/members`, {
     email: body.forward_to,
     role: "MEMBER",
   });
   if (!mem.ok) {
-    return { ok: false, error: "create group succeeded but member add failed: " + mem.error };
+    return { ok: false, error: "group created but member add failed: " + mem.error };
   }
-  return { ok: true, data: { converted: true, group_email: body.email, member: body.forward_to } };
+
+  // 5. Suspend the parked user if requested (default: yes, since we're
+  //    treating them as a leaver and don't want the seat fee to continue).
+  let parkedSuspendOk = true;
+  if (body.suspend_parked !== false) {
+    const sus = await adminApi(token, "PUT", `users/${encodeURIComponent(parkedEmail)}`, { suspended: true });
+    parkedSuspendOk = sus.ok;
+  }
+  return {
+    ok: true,
+    data: {
+      converted: true,
+      group_email: body.email,
+      member: body.forward_to,
+      parked_at: parkedEmail,
+      parked_suspended: parkedSuspendOk,
+    },
+  };
 }
 
 async function doCreate(token, body) {
