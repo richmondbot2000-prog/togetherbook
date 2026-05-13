@@ -9,11 +9,11 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&family=Orbitron:wght@500;600;700;800&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="style.css?v=1778662193">
-<link rel="stylesheet" href="quiet-tokens.css?v=1778662193">
-<link rel="stylesheet" href="quiet.css?v=1778662193">
-<link rel="stylesheet" href="quiet-extras.css?v=1778662193">
-<link rel="stylesheet" href="quiet-legacy.css?v=1778662193">
+<link rel="stylesheet" href="style.css?v=1778662530">
+<link rel="stylesheet" href="quiet-tokens.css?v=1778662530">
+<link rel="stylesheet" href="quiet.css?v=1778662530">
+<link rel="stylesheet" href="quiet-extras.css?v=1778662530">
+<link rel="stylesheet" href="quiet-legacy.css?v=1778662530">
 <style>
   .dir-section { max-width: 1080px; margin: 0 auto; padding: 24px 0 48px; }
   @media (max-width: 800px) { .dir-section { padding: 2px 0 32px; } }
@@ -33,6 +33,52 @@
     font-size: 0.78rem;
     margin: 0 0 16px;
   }
+
+  /* Health panel — surfaces data-quality issues at a glance. Each line
+     is clickable to either filter the list or open a dialog of details. */
+  .dir-health-panel {
+    margin: 0 0 18px;
+    padding: 12px 16px;
+    background: var(--paper-200, #F5ECD4);
+    border: 1px solid var(--brass-300, #E2BF74);
+    border-left: 4px solid var(--manuscript-red, #B23A48);
+    border-radius: 6px;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+  .dir-health-panel.dir-health-panel--ok {
+    border-left-color: #4A9A2E;
+    background: #E6F1E0;
+    border-color: #B8D5A3;
+  }
+  .dir-health-row {
+    display: flex;
+    align-items: baseline;
+    gap: 10px;
+    font-size: 0.9rem;
+    color: var(--ink);
+  }
+  .dir-health-row .dir-health-count {
+    font-family: 'JetBrains Mono', monospace;
+    font-weight: 700;
+    color: var(--manuscript-red, #B23A48);
+    min-width: 32px;
+    text-align: right;
+  }
+  .dir-health-panel--ok .dir-health-row .dir-health-count {
+    color: #2D5C1F;
+  }
+  .dir-health-row button {
+    background: transparent;
+    border: none;
+    color: var(--accent-ink);
+    text-decoration: underline;
+    cursor: pointer;
+    padding: 0;
+    font: inherit;
+  }
+  .dir-health-row button:hover { text-decoration: none; }
 
   /* Per-seat billing summary — three cards at the top of the page. The
      dual-purpose statement of the Directory: track every user record AND
@@ -871,7 +917,7 @@
 
 <header class="qb-topbar">
   <a class="qb-brand" href="index.html" aria-label="TogetherBOOK — home">
-    <img class="qb-brand-logo" src="togetherbook-logo.png?v=1778662193" alt="TogetherBOOK">
+    <img class="qb-brand-logo" src="togetherbook-logo.png?v=1778662530" alt="TogetherBOOK">
   </a>
   <button class="qb-hamburger" aria-label="Toggle navigation menu" aria-expanded="false"
           onclick="document.body.classList.toggle('nav-open');this.setAttribute('aria-expanded',document.body.classList.contains('nav-open'))">
@@ -897,6 +943,8 @@
       <h1>Directory</h1>
       <p class="lead">Every Workspace account, plus everyone who's written into the Central Services platform in the last 60 days. Sorted by which tenant they work on most.</p>
       <p class="dir-meta" id="dirMeta">Loading…</p>
+
+      <div class="dir-health-panel" id="dirHealthPanel" hidden></div>
 
       <div class="dir-billing-summary" id="dirBillingSummary" hidden>
         <div class="dir-billing-card dir-billing-card--live">
@@ -1109,6 +1157,7 @@
       buildWorkspacePills(byWorkspace);
       renderStatusPills();
       renderBillingSummary();
+      renderHealth();
       document.getElementById("dirControls").hidden = allEntries.length === 0;
       renderGrid();
 
@@ -1199,6 +1248,94 @@
         renderGrid();
       });
     });
+  }
+
+  // Compute + render the data-quality health panel. Three lines:
+  //   - Suspended without a recorded forward target (mail going nowhere)
+  //   - Active Workspace users with no matched payroll record (HR gap?)
+  //   - Payroll records with no matched Workspace user (no Workspace account
+  //     for someone who's on the books? could be contractor or missing setup)
+  function renderHealth() {
+    const panel = document.getElementById("dirHealthPanel");
+    const staff = allEntries.filter(e => e.type === "staff" && e.user);
+
+    const suspendedNoRoute = staff.filter(e =>
+      e.user.suspended && !forwardingByEmail[(e.user.email || "").toLowerCase()]
+    );
+    const activeNoPayroll = staff.filter(e =>
+      !e.user.suspended && (e.user.email || "") && !payrollFor(e)
+    );
+
+    // Payroll records that no staff entry claims via payrollAllFor — count unique people.
+    const payrollClaimed = new Set();
+    for (const e of staff) {
+      for (const p of payrollAllFor(e)) {
+        payrollClaimed.add(`${p.first_name}|${p.last_name}|${p.employee_number || ""}`);
+      }
+    }
+    const unclaimed = [];
+    if (payrollData) {
+      const seenId = new Set();
+      for (const lst of Object.values(payrollData.by_email || {}).concat(Object.values(payrollData.by_name || {}))) {
+        for (const p of (lst || [])) {
+          const id = `${p.first_name}|${p.last_name}|${p.employee_number || ""}`;
+          if (seenId.has(id)) continue;
+          seenId.add(id);
+          if (!payrollClaimed.has(id)) unclaimed.push(p);
+        }
+      }
+    }
+
+    const lines = [];
+    if (suspendedNoRoute.length) {
+      lines.push(`<div class="dir-health-row"><span class="dir-health-count">${suspendedNoRoute.length}</span><span>suspended Workspace account${suspendedNoRoute.length === 1 ? "" : "s"} with <strong>no recorded forwarding target</strong> — mail to ${suspendedNoRoute.length === 1 ? "this address" : "these addresses"} may be going into a black hole. <button data-health="suspended-no-route">Show them</button></span></div>`);
+    }
+    if (activeNoPayroll.length) {
+      lines.push(`<div class="dir-health-row"><span class="dir-health-count">${activeNoPayroll.length}</span><span>active Workspace user${activeNoPayroll.length === 1 ? "" : "s"} with <strong>no payroll match</strong> — HR may not have them on file (or they're a contractor / shared mailbox). <button data-health="active-no-payroll">Show them</button></span></div>`);
+    }
+    if (unclaimed.length) {
+      lines.push(`<div class="dir-health-row"><span class="dir-health-count">${unclaimed.length}</span><span>payroll record${unclaimed.length === 1 ? "" : "s"} with <strong>no Workspace account</strong> — likely either an alias-domain user, a leaver still on the books, or a contractor. <button data-health="unclaimed-payroll">Show them</button></span></div>`);
+    }
+    if (!lines.length) {
+      panel.className = "dir-health-panel dir-health-panel--ok";
+      panel.innerHTML = `<div class="dir-health-row"><span class="dir-health-count">✓</span><span>No data-quality issues detected — every suspended account has a forwarding target, every active staff member matches a payroll record, and every payroll record is on Workspace.</span></div>`;
+    } else {
+      panel.className = "dir-health-panel";
+      panel.innerHTML = lines.join("");
+    }
+    panel.hidden = false;
+
+    panel.querySelectorAll("[data-health]").forEach(btn => {
+      btn.addEventListener("click", () => {
+        const kind = btn.dataset.health;
+        if (kind === "suspended-no-route") {
+          activeStatus = "suspended";
+          searchTerm = "";
+          document.getElementById("dirSearch").value = "";
+          document.querySelectorAll(".dir-pill--status").forEach(p => p.classList.toggle("active", p.dataset.value === "suspended"));
+          renderGrid();
+        } else if (kind === "active-no-payroll") {
+          showHealthDialog("Active users without a payroll record", activeNoPayroll.map(e => `${e.user.name || e.user.email} <code>${e.user.email}</code>`));
+        } else if (kind === "unclaimed-payroll") {
+          showHealthDialog("Payroll records without a Workspace match", unclaimed.map(p => `${p.first_name} ${p.last_name} · ${p.employer || ""} ${p.email ? `(${p.email})` : ""}`));
+        }
+      });
+    });
+  }
+
+  function showHealthDialog(title, items) {
+    const modal = document.getElementById("dirModal");
+    modal.innerHTML = `
+      <button class="dir-modal-close" type="button" data-close aria-label="Close">×</button>
+      <div class="dir-modal-head"><div><h2 class="dir-modal-name">${escapeHtml(title)}</h2><p class="dir-modal-title">${items.length} entr${items.length === 1 ? "y" : "ies"}</p></div></div>
+      <div class="dir-modal-section">
+        <ul class="dir-audit-list">${items.map(it => `<li>${it}</li>`).join("")}</ul>
+      </div>`;
+    const backdrop = document.getElementById("dirModalBackdrop");
+    backdrop.classList.add("open");
+    backdrop.setAttribute("aria-hidden", "false");
+    document.body.classList.add("dir-modal-open");
+    modal.querySelector("[data-close]").addEventListener("click", closeCard);
   }
 
   function renderBillingSummary() {
