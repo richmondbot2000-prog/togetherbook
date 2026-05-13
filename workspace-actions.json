@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "updated_at": "2026-05-13T21:06:48.297Z",
+  "updated_at": "2026-05-13T21:12:18.328Z",
   "actions": [
     {
       "ts": "2026-05-13T20:27:39.210Z",
@@ -349,6 +349,13 @@
       "actor": "kelly.black@letme.com",
       "action": "get-forwarding",
       "target": "alerts@togetherloans.com",
+      "ok": true
+    },
+    {
+      "ts": "2026-05-13T21:12:18.328Z",
+      "actor": "kelly.black@letme.com",
+      "action": "get-forwarding",
+      "target": "mourad.malki@clearloans.com.au",
       "ok": true
     }
   ]
