@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "updated_at": "2026-05-13T20:34:10.857Z",
+  "updated_at": "2026-05-13T20:34:14.216Z",
   "actions": [
     {
       "ts": "2026-05-13T20:27:39.210Z",
@@ -182,6 +182,13 @@
       "actor": "james.benamor@letme.com",
       "action": "get-forwarding",
       "target": "ben.gardner@letme.com",
+      "ok": true
+    },
+    {
+      "ts": "2026-05-13T20:34:14.216Z",
+      "actor": "james.benamor@letme.com",
+      "action": "get-forwarding",
+      "target": "ben.gardner@togetherloans.com",
       "ok": true
     }
   ]
