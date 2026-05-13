@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "updated_at": "2026-05-13T20:59:24.564Z",
+  "updated_at": "2026-05-13T20:59:32.743Z",
   "actions": [
     {
       "ts": "2026-05-13T20:27:39.210Z",
@@ -279,6 +279,13 @@
       "actor": "kelly.black@letme.com",
       "action": "get-forwarding",
       "target": "kamran.kamaei@letme.com",
+      "ok": true
+    },
+    {
+      "ts": "2026-05-13T20:59:32.743Z",
+      "actor": "kelly.black@letme.com",
+      "action": "get-forwarding",
+      "target": "morgan.smith@letme.com",
       "ok": true
     }
   ]
