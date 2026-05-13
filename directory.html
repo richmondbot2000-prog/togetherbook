@@ -9,11 +9,11 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&family=Orbitron:wght@500;600;700;800&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="style.css?v=1778676654">
-<link rel="stylesheet" href="quiet-tokens.css?v=1778676654">
-<link rel="stylesheet" href="quiet.css?v=1778676654">
-<link rel="stylesheet" href="quiet-extras.css?v=1778676654">
-<link rel="stylesheet" href="quiet-legacy.css?v=1778676654">
+<link rel="stylesheet" href="style.css?v=1778676971">
+<link rel="stylesheet" href="quiet-tokens.css?v=1778676971">
+<link rel="stylesheet" href="quiet.css?v=1778676971">
+<link rel="stylesheet" href="quiet-extras.css?v=1778676971">
+<link rel="stylesheet" href="quiet-legacy.css?v=1778676971">
 <style>
   .dir-section { max-width: 1080px; margin: 0 auto; padding: 24px 0 48px; }
   @media (max-width: 800px) { .dir-section { padding: 2px 0 32px; } }
@@ -965,7 +965,7 @@
 
 <header class="qb-topbar">
   <a class="qb-brand" href="index.html" aria-label="TogetherBOOK — home">
-    <img class="qb-brand-logo" src="togetherbook-logo.png?v=1778676654" alt="TogetherBOOK">
+    <img class="qb-brand-logo" src="togetherbook-logo.png?v=1778676971" alt="TogetherBOOK">
   </a>
   <button class="qb-hamburger" aria-label="Toggle navigation menu" aria-expanded="false"
           onclick="document.body.classList.toggle('nav-open');this.setAttribute('aria-expanded',document.body.classList.contains('nav-open'))">
@@ -1893,7 +1893,7 @@
     }
     // Manage-account action buttons (suspend / unsuspend / delete).
     modal.querySelectorAll("[data-action]").forEach(btn => {
-      btn.addEventListener("click", () => onManageClick(entry, btn.dataset.action, modal));
+      btn.addEventListener("click", () => onManageClick(entry, btn.dataset.action, modal, btn));
     });
     // Group-link chips — open the group modal in place of this user modal.
     modal.querySelectorAll("[data-open-group]").forEach(chip => {
@@ -2242,6 +2242,16 @@
           <div class="dir-confirm-slot"></div>
         </div>` : ""}
 
+      ${u && !u.deletion_time ? `
+        <div class="dir-modal-section">
+          <h3>Password</h3>
+          <div class="dir-manage-actions">
+            <button type="button" data-action="reset-password">Reset password…</button>
+          </div>
+          <p class="dir-modal-saved-hint">Generates a one-shot password and forces the user to change it at next sign-in. Useful for account lockouts or initial handover.</p>
+          <div class="dir-confirm-slot" data-pw-slot></div>
+        </div>` : ""}
+
       <div class="dir-modal-section">
         <h3>Notes</h3>
         <div class="dir-form-row">
@@ -2281,10 +2291,13 @@
     return data;
   }
 
-  function onManageClick(entry, action, modal) {
+  function onManageClick(entry, action, modal, btn) {
     const u = entry.user;
     if (!u || !u.email) return;
-    const slot = modal.querySelector(".dir-confirm-slot");
+    // Use the confirm slot in the same section as the clicked button so the
+    // confirm strip renders next to the action, not in a random other section.
+    const slot = (btn && btn.closest(".dir-modal-section")?.querySelector(".dir-confirm-slot"))
+      || modal.querySelector(".dir-confirm-slot");
     if (!slot) return;
 
     // Unsuspend doesn't need confirmation — it's reversible and non-destructive.
