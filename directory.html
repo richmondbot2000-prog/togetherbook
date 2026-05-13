@@ -9,11 +9,11 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&family=Orbitron:wght@500;600;700;800&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="style.css?v=1778678145">
-<link rel="stylesheet" href="quiet-tokens.css?v=1778678145">
-<link rel="stylesheet" href="quiet.css?v=1778678145">
-<link rel="stylesheet" href="quiet-extras.css?v=1778678145">
-<link rel="stylesheet" href="quiet-legacy.css?v=1778678145">
+<link rel="stylesheet" href="style.css?v=1778678726">
+<link rel="stylesheet" href="quiet-tokens.css?v=1778678726">
+<link rel="stylesheet" href="quiet.css?v=1778678726">
+<link rel="stylesheet" href="quiet-extras.css?v=1778678726">
+<link rel="stylesheet" href="quiet-legacy.css?v=1778678726">
 <style>
   .dir-section { max-width: 1080px; margin: 0 auto; padding: 24px 0 48px; }
   @media (max-width: 800px) { .dir-section { padding: 2px 0 32px; } }
@@ -973,7 +973,7 @@
 
 <header class="qb-topbar">
   <a class="qb-brand" href="index.html" aria-label="TogetherBOOK — home">
-    <img class="qb-brand-logo" src="togetherbook-logo.png?v=1778678145" alt="TogetherBOOK">
+    <img class="qb-brand-logo" src="togetherbook-logo.png?v=1778678726" alt="TogetherBOOK">
   </a>
   <button class="qb-hamburger" aria-label="Toggle navigation menu" aria-expanded="false"
           onclick="document.body.classList.toggle('nav-open');this.setAttribute('aria-expanded',document.body.classList.contains('nav-open'))">
@@ -1105,6 +1105,14 @@
       //   - auditByEmail: target -> chronological list of every successful action
       forwardingByEmail = {};
       auditByEmail = {};
+      // First source of truth: forward_to fields in annotations.json. This
+      // is the reliable record because the annotations Worker is known to
+      // write successfully; the audit log historically silent-fails.
+      for (const [k, ann] of Object.entries(annotationsMap)) {
+        if (ann && ann.forward_to) forwardingByEmail[k.toLowerCase()] = ann.forward_to;
+      }
+      // Second source: workspace-actions.json audit log. Only used to update
+      // forwarding state from events the annotations.json didn't capture.
       for (const a of ((workspaceActions && workspaceActions.actions) || [])) {
         const target = (a.target || "").toLowerCase();
         if (!target) continue;
@@ -1860,6 +1868,7 @@
     if (phone !== undefined) payload.phone = phone;
     if (start_date !== undefined && start_date !== "") payload.start_date = start_date;
     if (opts && Object.prototype.hasOwnProperty.call(opts, "address")) payload.address = opts.address;
+    if (opts && Object.prototype.hasOwnProperty.call(opts, "forward_to")) payload.forward_to = opts.forward_to;
     if (opts && Object.prototype.hasOwnProperty.call(opts, "payroll_match")) {
       payload.payroll_match = opts.payroll_match;
     }
@@ -2560,12 +2569,18 @@
         await workspaceAction(action, { email: seat.email, ...(extras || {}) });
         if (action === "suspend-and-route") seat.suspended = true;
         if (action === "unsuspend") seat.suspended = false;
-        if (action === "suspend-and-route" && extras && extras.route_to) {
-          forwardingByEmail[seat.email.toLowerCase()] = extras.route_to;
-        } else if (action === "unsuspend") {
-          delete forwardingByEmail[(seat.email || "").toLowerCase()];
-        } else if (action === "cancel-forwarding" || action === "disable-forwarding") {
-          delete forwardingByEmail[(seat.email || "").toLowerCase()];
+        const lcEmail = (seat.email || "").toLowerCase();
+        // Persist forwarding state into annotations.json (the reliable
+        // store) AND update in-memory forwardingByEmail. The workspace
+        // Worker's own audit log historically silent-fails.
+        if ((action === "suspend-and-route" || action === "add-forwarding") && extras && extras.route_to) {
+          forwardingByEmail[lcEmail] = extras.route_to;
+          saveAnnotationRemote(lcEmail, undefined, undefined, { forward_to: extras.route_to })
+            .catch(err => console.warn("forward_to save failed for " + lcEmail, err));
+        } else if (action === "unsuspend" || action === "cancel-forwarding" || action === "disable-forwarding") {
+          delete forwardingByEmail[lcEmail];
+          saveAnnotationRemote(lcEmail, undefined, undefined, { forward_to: "" })
+            .catch(err => console.warn("forward_to clear failed for " + lcEmail, err));
         }
         okCount++;
       } catch (err) {
