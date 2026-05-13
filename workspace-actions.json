@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "updated_at": "2026-05-13T20:42:46.127Z",
+  "updated_at": "2026-05-13T20:43:01.269Z",
   "actions": [
     {
       "ts": "2026-05-13T20:27:39.210Z",
@@ -258,6 +258,14 @@
       "target": "alert@togetherloans.com",
       "ok": true,
       "member_email": "james.benamor@rgroup.co.uk"
+    },
+    {
+      "ts": "2026-05-13T20:43:01.269Z",
+      "actor": "james.benamor@letme.com",
+      "action": "group-member-add",
+      "target": "alert@togetherloans.com",
+      "ok": true,
+      "member_email": "james.benamor@letme.com"
     }
   ]
 }
