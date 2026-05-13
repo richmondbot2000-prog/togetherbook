@@ -9,11 +9,11 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&family=Orbitron:wght@500;600;700;800&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="style.css?v=1778675465">
-<link rel="stylesheet" href="quiet-tokens.css?v=1778675465">
-<link rel="stylesheet" href="quiet.css?v=1778675465">
-<link rel="stylesheet" href="quiet-extras.css?v=1778675465">
-<link rel="stylesheet" href="quiet-legacy.css?v=1778675465">
+<link rel="stylesheet" href="style.css?v=1778676654">
+<link rel="stylesheet" href="quiet-tokens.css?v=1778676654">
+<link rel="stylesheet" href="quiet.css?v=1778676654">
+<link rel="stylesheet" href="quiet-extras.css?v=1778676654">
+<link rel="stylesheet" href="quiet-legacy.css?v=1778676654">
 <style>
   .dir-section { max-width: 1080px; margin: 0 auto; padding: 24px 0 48px; }
   @media (max-width: 800px) { .dir-section { padding: 2px 0 32px; } }
@@ -708,6 +708,18 @@
     border-radius: 3px;
     text-transform: lowercase;
   }
+  .dir-row--defunct { opacity: 0.55; }
+  .dir-row--defunct .dir-name { color: var(--ink-500, #6B7794); }
+  .dir-defunct-chip {
+    display: inline-block;
+    font: 500 11px/1.4 var(--font-mono, "JetBrains Mono", ui-monospace, monospace);
+    color: var(--ink-500, #6B7794);
+    background: var(--bg-soft-2);
+    border: 1px solid var(--border);
+    padding: 1px 6px;
+    border-radius: 3px;
+    text-transform: lowercase;
+  }
   .dir-row--group .dir-title { font-style: italic; color: var(--ink-500, #6B7794); }
 
   .dir-modal-section .dir-group-link {
@@ -953,7 +965,7 @@
 
 <header class="qb-topbar">
   <a class="qb-brand" href="index.html" aria-label="TogetherBOOK — home">
-    <img class="qb-brand-logo" src="togetherbook-logo.png?v=1778675465" alt="TogetherBOOK">
+    <img class="qb-brand-logo" src="togetherbook-logo.png?v=1778676654" alt="TogetherBOOK">
   </a>
   <button class="qb-hamburger" aria-label="Toggle navigation menu" aria-expanded="false"
           onclick="document.body.classList.toggle('nav-open');this.setAttribute('aria-expanded',document.body.classList.contains('nav-open'))">
@@ -2986,8 +2998,14 @@
           return hay.includes(term);
         })
       : allGroups;
+    // Defunct groups to the bottom; within each bucket, alphabetical by email.
     const rows = [...matches]
-      .sort((a, b) => (a.name || a.email).localeCompare(b.name || b.email))
+      .sort((a, b) => {
+        const aD = isDefunctGroup(a) ? 1 : 0;
+        const bD = isDefunctGroup(b) ? 1 : 0;
+        if (aD !== bD) return aD - bD;
+        return (a.email || "").localeCompare(b.email || "");
+      })
       .map(renderGroupRow);
     list.innerHTML = rows.length
       ? rows.join("")
@@ -3003,6 +3021,31 @@
     return d.startsWith("Forwarding-only group at ") && d.includes("converted on ");
   }
 
+  // A group is "defunct" if no member email maps to anyone reachable — i.e.
+  // every member is gone from the directory (deleted/renamed/etc.) AND isn't
+  // another current Group. Mail to a defunct group goes nowhere.
+  function isDefunctGroup(g) {
+    if (!g.members || !g.members.length) return true;   // empty group = defunct
+    const stamp = allEntries.length + ":" + allGroups.length;
+    if (isDefunctGroup._cacheStamp !== stamp) {
+      const set = new Set();
+      for (const e of allEntries) {
+        if (e.type !== "staff" || !e.user) continue;
+        if (e.user.deletion_time) continue;
+        if (e.user.email) set.add(e.user.email.toLowerCase());
+        for (const a of (e.user.aliases || [])) if (a) set.add(a.toLowerCase());
+      }
+      for (const gr of allGroups) {
+        if (gr.email) set.add(gr.email.toLowerCase());
+        for (const a of (gr.aliases || [])) if (a) set.add(a.toLowerCase());
+      }
+      isDefunctGroup._reachable = set;
+      isDefunctGroup._cacheStamp = stamp;
+    }
+    const reachable = isDefunctGroup._reachable;
+    return g.members.every(m => !reachable.has((m.email || "").toLowerCase()));
+  }
+
   function renderGroupRow(g) {
     // Identify groups by EMAIL — the address is what matters operationally.
     // The Workspace 'name' field is descriptive admin metadata and not
@@ -3010,16 +3053,22 @@
     const local = (g.email || "").split("@")[0] || "G";
     const initials = local.split(/[._-]+/).filter(Boolean).slice(0, 2).map(t => t.charAt(0).toUpperCase()).join("") || "G";
     const isEx = isExEmployeeGroup(g);
+    const isDead = isDefunctGroup(g);
     const exChip = isEx
       ? `<span class="dir-ex-chip" title="This group was created by converting a Workspace user. Mail to this address forwards to the listed member(s) at £0/month.">ex-employee</span>`
       : "";
+    const deadChip = isDead
+      ? `<span class="dir-defunct-chip" title="No current Workspace user matches any member of this group — mail to this address goes nowhere reachable. Either add a live member or delete the group.">defunct</span>`
+      : "";
+    const classes = `dir-row dir-row--group${isDead ? " dir-row--defunct" : ""}`;
     return `
-      <button type="button" class="dir-row dir-row--group" data-group="${escapeHtml(g.email)}" title="View group ${escapeHtml(g.email)}">
+      <button type="button" class="${classes}" data-group="${escapeHtml(g.email)}" title="View group ${escapeHtml(g.email)}">
         <div class="dir-photo-placeholder">${escapeHtml(initials)}</div>
         <div class="dir-row-body">
           <div class="dir-row-headline">
             <span class="dir-name" style="font-family:'JetBrains Mono',monospace;font-weight:500;">${escapeHtml(g.email)}</span>
             ${exChip}
+            ${deadChip}
           </div>
           <div class="dir-row-meta">
             <span class="dir-last">${g.member_count || 0} member${g.member_count === 1 ? "" : "s"}${isEx && g.members && g.members.length ? ` · forwarding to <em>${escapeHtml(g.members.map(m => m.email).join(", "))}</em>` : ""}</span>
