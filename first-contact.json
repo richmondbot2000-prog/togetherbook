@@ -1,42 +1,42 @@
 {
   "schema_version": 1,
-  "updated_at": "2026-05-12T17:21:24.157488Z",
-  "snapshot_date": "2026-05-12",
+  "updated_at": "2026-05-13T08:22:19.729116Z",
+  "snapshot_date": "2026-05-13",
   "window_months": 3,
   "totals": {
-    "items": 141,
+    "items": 140,
     "by_lender": {
-      "Together Loans / TransformCredit": 141
+      "Together Loans / TransformCredit": 140
     },
     "by_role": {
-      "BRW": 139,
+      "BRW": 138,
       "GT": 2
     }
   },
   "word_cloud": [
     [
       "payment",
-      107
+      105
     ],
     [
       "loan",
-      84
+      83
     ],
     [
       "together",
-      72
+      71
     ],
     [
       "loans",
-      68
-    ],
-    [
-      "account",
       67
     ],
     [
+      "account",
+      66
+    ],
+    [
       "statement",
-      33
+      32
     ],
     [
       "credit",
@@ -51,10 +51,6 @@
       20
     ],
     [
-      "ach",
-      19
-    ],
-    [
       "transform",
       19
     ],
@@ -63,11 +59,15 @@
       19
     ],
     [
-      "unsuccessful",
-      17
+      "ach",
+      18
     ],
     [
       "paid",
+      16
+    ],
+    [
+      "unsuccessful",
       16
     ],
     [
@@ -79,12 +79,12 @@
       16
     ],
     [
-      "get",
+      "back",
       15
     ],
     [
-      "back",
-      15
+      "update",
+      14
     ],
     [
       "required",
@@ -92,6 +92,10 @@
     ],
     [
       "date",
+      14
+    ],
+    [
+      "get",
       14
     ],
     [
@@ -104,10 +108,6 @@
     ],
     [
       "payments",
-      13
-    ],
-    [
-      "update",
       13
     ],
     [
@@ -131,11 +131,11 @@
       12
     ],
     [
-      "receipt",
+      "request",
       11
     ],
     [
-      "pay",
+      "receipt",
       11
     ],
     [
@@ -155,10 +155,6 @@
       11
     ],
     [
-      "make",
-      11
-    ],
-    [
       "office",
       11
     ],
@@ -167,7 +163,7 @@
       10
     ],
     [
-      "request",
+      "make",
       10
     ],
     [
@@ -175,7 +171,7 @@
       10
     ],
     [
-      "call",
+      "pay",
       9
     ],
     [
@@ -211,6 +207,10 @@
       8
     ],
     [
+      "call",
+      8
+    ],
+    [
       "friday",
       8
     ],
@@ -232,10 +232,6 @@
     ],
     [
       "correct",
-      7
-    ],
-    [
-      "much",
       7
     ],
     [
@@ -287,6 +283,10 @@
       6
     ],
     [
+      "much",
+      6
+    ],
+    [
       "via",
       6
     ],
@@ -323,6 +323,18 @@
       6
     ],
     [
+      "currently",
+      5
+    ],
+    [
+      "process",
+      5
+    ],
+    [
+      "contact",
+      5
+    ],
+    [
       "taken",
       5
     ],
@@ -344,10 +356,6 @@
     ],
     [
       "take",
-      5
-    ],
-    [
-      "automatically",
       5
     ],
     [
@@ -383,6 +391,10 @@
       5
     ],
     [
+      "methods",
+      4
+    ],
+    [
       "confirm",
       4
     ],
@@ -416,10 +428,6 @@
     ],
     [
       "funds",
-      4
-    ],
-    [
-      "right",
       4
     ],
     [
@@ -463,10 +471,6 @@
       4
     ],
     [
-      "contact",
-      4
-    ],
-    [
       "appreciate",
       4
     ],
@@ -495,7 +499,7 @@
       4
     ],
     [
-      "currently",
+      "automatically",
       4
     ],
     [
@@ -504,10 +508,6 @@
     ],
     [
       "scheduled",
-      4
-    ],
-    [
-      "process",
       4
     ],
     [
@@ -575,6 +575,10 @@
       3
     ],
     [
+      "right",
+      3
+    ],
+    [
       "give",
       3
     ],
@@ -609,13 +613,18 @@
     [
       "went",
       3
-    ],
-    [
-      "took",
-      3
     ]
   ],
   "items": [
+    {
+      "received_utc": "2026-05-12T17:41:03",
+      "received_date": "2026-05-12",
+      "days_after_payout": 64,
+      "role": "BRW",
+      "lender_name": "Together Loans / TransformCredit",
+      "subject": "Update ****'s Payment Methods Request - ****",
+      "body": "**** and I are currently in the process of filing bankruptcy. Please contact our attorney with any questions. ****"
+    },
     {
       "received_utc": "2026-05-12T16:26:35",
       "received_date": "2026-05-12",
@@ -1065,15 +1074,6 @@
       "lender_name": "Together Loans / TransformCredit",
       "subject": "Your Together Loans Loan : ****",
       "body": "Yes limit no need 5 times in a day less then hour apart 1 is Enough had tje same issues with u before so stop."
-    },
-    {
-      "received_utc": "2026-04-24T15:53:26",
-      "received_date": "2026-04-24",
-      "days_after_payout": 71,
-      "role": "BRW",
-      "lender_name": "Together Loans / TransformCredit",
-      "subject": "Your Together Loans Loan : ****",
-      "body": "Can i get a pay off statement please as if i were to pay it off right now how much would it be?"
     },
     {
       "received_utc": "2026-04-24T15:14:32",
@@ -1731,15 +1731,6 @@
       "lender_name": "Together Loans / TransformCredit",
       "subject": "Your Together Loans Payment Receipt - ****",
       "body": "Good morning, The payment I made today was intended for the March 19th payment, can this be changed? ***** Falana ****, M.Ed., Retired* Physical address: 17650 NW 100th Ave - Reddick, Florida 32686 Mailing address: P O Box 5101 - Ocala, FL **** Cell: **** *“Teaching is not a lost art, but the regard for it is a lost tradition.” ― Jacques Barzun *"
-    },
-    {
-      "received_utc": "2026-03-17T13:14:22",
-      "received_date": "2026-03-17",
-      "days_after_payout": 33,
-      "role": "BRW",
-      "lender_name": "Together Loans / TransformCredit",
-      "subject": "Unsuccessful ACH payment - ****",
-      "body": "Will this payment now draft from my account automatically or will I need to call in to make the payment?"
     },
     {
       "received_utc": "2026-03-16T19:53:09",
