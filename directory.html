@@ -9,11 +9,11 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&family=Orbitron:wght@500;600;700;800&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="style.css?v=1778663459">
-<link rel="stylesheet" href="quiet-tokens.css?v=1778663459">
-<link rel="stylesheet" href="quiet.css?v=1778663459">
-<link rel="stylesheet" href="quiet-extras.css?v=1778663459">
-<link rel="stylesheet" href="quiet-legacy.css?v=1778663459">
+<link rel="stylesheet" href="style.css?v=1778663729">
+<link rel="stylesheet" href="quiet-tokens.css?v=1778663729">
+<link rel="stylesheet" href="quiet.css?v=1778663729">
+<link rel="stylesheet" href="quiet-extras.css?v=1778663729">
+<link rel="stylesheet" href="quiet-legacy.css?v=1778663729">
 <style>
   .dir-section { max-width: 1080px; margin: 0 auto; padding: 24px 0 48px; }
   @media (max-width: 800px) { .dir-section { padding: 2px 0 32px; } }
@@ -917,7 +917,7 @@
 
 <header class="qb-topbar">
   <a class="qb-brand" href="index.html" aria-label="TogetherBOOK — home">
-    <img class="qb-brand-logo" src="togetherbook-logo.png?v=1778663459" alt="TogetherBOOK">
+    <img class="qb-brand-logo" src="togetherbook-logo.png?v=1778663729" alt="TogetherBOOK">
   </a>
   <button class="qb-hamburger" aria-label="Toggle navigation menu" aria-expanded="false"
           onclick="document.body.classList.toggle('nav-open');this.setAttribute('aria-expanded',document.body.classList.contains('nav-open'))">
@@ -2397,6 +2397,33 @@
     wireGroupModal(g);
   }
 
+  // Render a group's audit history — every successful create / member-add /
+  // member-remove targeting this group's email. Read from workspace-actions.json.
+  function groupAuditHistoryHtml(g) {
+    if (!g || !g.email) return "";
+    const events = (auditByEmail[g.email.toLowerCase()] || [])
+      .filter(e => e.ok && (e.action === "group-create" || e.action === "group-member-add" || e.action === "group-member-remove"))
+      .slice(-20)   // last 20 events is plenty for a card
+      .sort((a, b) => (a.ts || "").localeCompare(b.ts || ""));
+    if (!events.length) return "";
+    const fmtTs = ts => {
+      try {
+        const d = new Date(ts);
+        return d.toLocaleString("en-GB", { day: "numeric", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit" });
+      } catch (e) { return ts; }
+    };
+    const rows = events.map(e => {
+      const verb = e.action === "group-create" ? "Created" : e.action === "group-member-add" ? "Added" : "Removed";
+      const who = e.member_email ? ` <code>${escapeHtml(e.member_email)}</code>` : "";
+      return `<li><span class="dir-audit-ts">${escapeHtml(fmtTs(e.ts))}</span> · ${verb}${who} <span class="dir-audit-actor">by ${escapeHtml(e.actor || "unknown")}</span></li>`;
+    }).join("");
+    return `
+      <div class="dir-modal-section">
+        <h3>Audit history${events.length === 20 ? ` <span class="dir-modal-count">last 20</span>` : ""}</h3>
+        <ul class="dir-audit-list">${rows}</ul>
+      </div>`;
+  }
+
   function renderGroupModalBody(g) {
     const memberLi = (m) => {
       const u = allEntries.find(e => e.type === "staff" && e.user && (e.user.email || "").toLowerCase() === m.email);
@@ -2443,6 +2470,8 @@
         </div>
         <div class="dir-confirm-slot"></div>
       </div>
+
+      ${groupAuditHistoryHtml(g)}
 
       <div class="dir-modal-section">
         <h3>Danger zone</h3>
