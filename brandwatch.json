@@ -29,7 +29,7 @@
     "trustpilot": {
       "ok": false,
       "fetched": 0,
-      "error": "HTTPError: 500 Server Error: Internal Server Error for url: https://api.scraperapi.com/?api_key=d45dbd4045b58d674921125d0e585bca&url=https%3A%2F%2Fwww.trustpilot.com%2Freview%2Ftransformcredit.com&country_code=us&render=true"
+      "error": "HTTPError: 500 Server Error: Internal Server Error for url: https://api.scraperapi.com/?<redacted>"
     },
     "bbb": {
       "ok": true,

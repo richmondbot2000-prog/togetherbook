@@ -1286,7 +1286,11 @@ def run() -> dict:
                 # Don't fail the whole run for one bad source.
                 print(f"  {source_key}: FAILED — {e}", flush=True)
                 source_status[source_key]["ok"] = False
-                source_status[source_key]["error"] = f"{type(e).__name__}: {e}"
+                # Sanitise: strip URL query-strings entirely so api_key
+                # parameters can't leak into the public brandwatch.json.
+                raw_err = f"{type(e).__name__}: {e}"
+                redacted = re.sub(r"https?://[^\s]+", lambda m: m.group(0).split("?", 1)[0] + "?<redacted>", raw_err)
+                source_status[source_key]["error"] = redacted
 
     # Merge in archived trustpilot + bbb reviews (already passed precision
     # filter on the scan that originally fetched them — they're trusted).
