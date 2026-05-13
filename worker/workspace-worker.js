@@ -126,6 +126,8 @@ export default {
         case "recover":              result = await doRecover(adminToken, body); break;
         case "reset-password":       result = await doResetPassword(adminToken, body); break;
         case "convert-to-group":     result = await doConvertToGroup(adminToken, body); break;
+        case "create-forwarding-group": result = await doCreateForwardingGroup(adminToken, body); break;
+        case "suspend-no-forward":   result = await doSuspendNoForward(adminToken, body); break;
         case "create":               result = await doCreate(adminToken, body); break;
         case "group-create":         result = await doGroupCreate(adminToken, body); break;
         case "group-delete":         result = await doGroupDelete(adminToken, body); break;
@@ -400,6 +402,51 @@ async function doConvertToGroup(token, body) {
       parked_suspended: parkedSuspendOk,
     },
   };
+}
+
+// Create a forwarding-only Group at an address that's already been freed
+// (by the admin manually deleting the user with "Make email available for
+// reuse immediately" ticked in admin.google.com). Adds the forward target
+// as a member. The delete step has to be manual because the API can't tick
+// that checkbox; if we tried to delete the user here we'd hit the 20-day
+// address lockout.
+// Just suspend the user — no forwarding setup. Used as the 'I want them
+// offboarded but mail can bounce' action. Symmetrical with unsuspend.
+async function doSuspendNoForward(token, body) {
+  if (!body.email) return { ok: false, error: "missing email" };
+  return adminApi(token, "PUT", `users/${encodeURIComponent(body.email)}`, { suspended: true });
+}
+
+async function doCreateForwardingGroup(token, body) {
+  if (!body.email) return { ok: false, error: "missing email" };
+  if (!body.forward_to) return { ok: false, error: "missing forward_to" };
+  if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(body.forward_to)) {
+    return { ok: false, error: "forward_to is not a valid email" };
+  }
+  const local = body.email.split("@")[0] || "ex-employee";
+  const groupName = body.name || (local.replace(/[._-]+/g, " ") + " (ex-employee)");
+  const groupDescription = body.description ||
+    `Forwarding-only group at ${body.email}. Created on ${new Date().toISOString().slice(0, 10)} after the Workspace user was offboarded.`;
+  const grp = await adminApi(token, "POST", "groups", {
+    email: body.email,
+    name: groupName,
+    description: groupDescription,
+  });
+  if (!grp.ok) {
+    return {
+      ok: false,
+      error: "create group: " + grp.error +
+        " — if 'Entity already exists', the user wasn't fully deleted (or wasn't deleted with the 'free email immediately' option ticked). Open admin.google.com, delete the user with that option, then retry.",
+    };
+  }
+  const mem = await adminApi(token, "POST", `groups/${encodeURIComponent(body.email)}/members`, {
+    email: body.forward_to,
+    role: "MEMBER",
+  });
+  if (!mem.ok) {
+    return { ok: false, error: "group created but member add failed: " + mem.error };
+  }
+  return { ok: true, data: { group_email: body.email, member: body.forward_to } };
 }
 
 async function doCreate(token, body) {

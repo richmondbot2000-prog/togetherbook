@@ -9,11 +9,11 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&family=Orbitron:wght@500;600;700;800&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="style.css?v=1778678726">
-<link rel="stylesheet" href="quiet-tokens.css?v=1778678726">
-<link rel="stylesheet" href="quiet.css?v=1778678726">
-<link rel="stylesheet" href="quiet-extras.css?v=1778678726">
-<link rel="stylesheet" href="quiet-legacy.css?v=1778678726">
+<link rel="stylesheet" href="style.css?v=1778680121">
+<link rel="stylesheet" href="quiet-tokens.css?v=1778680121">
+<link rel="stylesheet" href="quiet.css?v=1778680121">
+<link rel="stylesheet" href="quiet-extras.css?v=1778680121">
+<link rel="stylesheet" href="quiet-legacy.css?v=1778680121">
 <style>
   .dir-section { max-width: 1080px; margin: 0 auto; padding: 24px 0 48px; }
   @media (max-width: 800px) { .dir-section { padding: 2px 0 32px; } }
@@ -973,7 +973,7 @@
 
 <header class="qb-topbar">
   <a class="qb-brand" href="index.html" aria-label="TogetherBOOK — home">
-    <img class="qb-brand-logo" src="togetherbook-logo.png?v=1778678726" alt="TogetherBOOK">
+    <img class="qb-brand-logo" src="togetherbook-logo.png?v=1778680121" alt="TogetherBOOK">
   </a>
   <button class="qb-hamburger" aria-label="Toggle navigation menu" aria-expanded="false"
           onclick="document.body.classList.toggle('nav-open');this.setAttribute('aria-expanded',document.body.classList.contains('nav-open'))">
@@ -2255,10 +2255,9 @@
                  <datalist id="dirRouteOptions">${adminEmailOptions()}</datalist>
                </div>
                <div class="dir-manage-actions">
-                 <button type="button" data-action="add-forwarding">Add forwarding</button>
                  <button type="button" data-action="unsuspend">Move back to live (£11/mo)</button>
                </div>
-               <p class="dir-modal-saved-hint">Add forwarding briefly unsuspends the account (~2s), sets a forwarding rule, then re-suspends — account stays at £0/mo and mail flows. Or move back to live to use the mailbox actively (resumes seat fee).</p>`
+               <p class="dir-modal-saved-hint">Suspended without forwarding — mail bounces. To restart forwarding reliably, move back to live first, then convert to a forwarding group.</p>`
             : `<div id="dirManageLive">
                  <div class="dir-form-row">
                    <label for="dirRouteTo">Forward mail to</label>
@@ -2266,9 +2265,10 @@
                    <datalist id="dirRouteOptions">${adminEmailOptions()}</datalist>
                  </div>
                  <div class="dir-manage-actions">
-                   <button type="button" class="danger" data-action="suspend-and-route">Suspend + set forwarding</button>
+                   <button type="button" class="danger" data-action="convert-and-forward">Convert to group + start forwarding</button>
+                   <button type="button" data-action="suspend-no-forward">Suspend without forwarding</button>
                  </div>
-                 <p class="dir-modal-saved-hint">Suspends the Workspace seat (no per-seat fee on Flex) and auto-forwards the mailbox to the address above. Logged to <code>workspace-actions.json</code>.</p>
+                 <p class="dir-modal-saved-hint"><strong>Convert to group</strong> deletes the Workspace user and re-creates the email address as a forwarding-only Group with the target as a member. Free forever (no seat fee), and mail reliably flows. Requires one manual step in admin.google.com (delete with 'Make email available immediately' ticked) — the next button will walk you through it. <br><strong>Suspend without forwarding</strong> just stops the seat fee; mail to this address will bounce.</p>
                </div>`}
           <div class="dir-confirm-slot"></div>
         </div>` : ""}
@@ -2512,6 +2512,41 @@
       return;
     }
 
+    if (action === "suspend-no-forward") {
+      // Just suspend. Mail will bounce — that's explicit in the button label.
+      slot.innerHTML = `
+        <div class="dir-confirm">
+          <div class="dir-confirm-text">
+            <strong>Suspend ${escapeHtml(u.email)} without forwarding?</strong><br>
+            <span class="dir-modal-saved-hint" style="text-align:left;margin:0;">Stops the seat fee (£0/mo on Flex). Mail to this address will bounce — no forwarding. Reversible via Move back to live.</span>
+          </div>
+          <div class="dir-confirm-actions">
+            <button type="button" data-cancel>Cancel</button>
+            <button type="button" class="confirm" data-confirm>Suspend</button>
+          </div>
+        </div>`;
+      slot.querySelector("[data-cancel]").addEventListener("click", () => { slot.innerHTML = ""; });
+      slot.querySelector("[data-confirm]").addEventListener("click", () => runAction(entry, "suspend-no-forward", slot, {}));
+      return;
+    }
+
+    if (action === "convert-and-forward") {
+      const routeInput = modal.querySelector('input[name="route_to"]');
+      const routeTo = (routeInput && routeInput.value || "").trim();
+      if (!routeTo || !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(routeTo)) {
+        if (routeInput) {
+          routeInput.classList.add("dir-input-invalid");
+          routeInput.focus();
+          routeInput.addEventListener("input", () => routeInput.classList.remove("dir-input-invalid"), { once: true });
+        }
+        return;
+      }
+      openConvertWizard(entry, routeTo, slot);
+      return;
+    }
+
+    // Legacy: original Suspend + set forwarding flow still wired (in case any
+    // older UI surface invokes it), but no card currently shows this button.
     if (action === "suspend-and-route") {
       const routeInput = modal.querySelector('input[name="route_to"]');
       const routeTo = (routeInput && routeInput.value || "").trim();
@@ -2524,9 +2559,6 @@
         slot.innerHTML = "";
         return;
       }
-      // No inline confirmation step — typing the forwarding address IS the
-      // confirmation. One button, one click. The modal re-renders into the
-      // suspended state after success, which is the natural "it worked" signal.
       runAction(entry, action, slot, { route_to: routeTo });
       return;
     }
@@ -2567,7 +2599,7 @@
     for (const seat of seats) {
       try {
         await workspaceAction(action, { email: seat.email, ...(extras || {}) });
-        if (action === "suspend-and-route") seat.suspended = true;
+        if (action === "suspend-and-route" || action === "suspend-no-forward") seat.suspended = true;
         if (action === "unsuspend") seat.suspended = false;
         const lcEmail = (seat.email || "").toLowerCase();
         // Persist forwarding state into annotations.json (the reliable
@@ -2659,6 +2691,76 @@
       showModalBanner(`Leaver workflow complete: ${u.email} suspended, mail forwards to ${routeTo}, removed from ${removed} group${removed === 1 ? "" : "s"}.`, "success");
     } else {
       showModalBanner(`Leaver workflow partial: suspended OK, mail forwards to ${routeTo}. Removed from ${removed} group${removed === 1 ? "" : "s"}; ${failures.length} group removal${failures.length === 1 ? "" : "s"} failed: ${failures.join("; ")}`, "error");
+    }
+  }
+
+  // Two-step convert wizard. The API can't delete a user AND keep the email
+  // address immediately reusable in one shot (Google locks the address for
+  // 20 days unless the admin ticks "Make email available for reuse" in the
+  // admin console). So the page walks the admin through the manual delete,
+  // then calls the Worker to create the Group + add the member.
+  function openConvertWizard(entry, forwardTo, slot) {
+    const u = entry.user;
+    if (!u || !u.email) return;
+    // Best-effort admin.google.com deep link. Workspace uses internal userKey
+    // (immutable id) for direct links, which we have on the user record.
+    const adminLink = u.id
+      ? `https://admin.google.com/ac/users/${encodeURIComponent(u.id)}`
+      : `https://admin.google.com/ac/users`;
+    slot.innerHTML = `
+      <div class="dir-confirm">
+        <div class="dir-confirm-text">
+          <strong>Convert ${escapeHtml(u.email)} → forwarding group to ${escapeHtml(forwardTo)}</strong><br>
+          <span class="dir-modal-saved-hint" style="text-align:left;margin:8px 0 12px;display:block;">
+            One manual step needed because Google won't immediately reuse a deleted user's email otherwise.
+          </span>
+          <ol style="margin:0 0 12px 18px;padding:0;line-height:1.6;font-size:0.9rem;">
+            <li><a href="${escapeHtml(adminLink)}" target="_blank" rel="noopener">Open the user in admin.google.com</a></li>
+            <li>Click <strong>Delete user</strong> (might be under the 'more' menu).</li>
+            <li><strong>Tick the box that says "Make email available for reuse immediately"</strong> (or similar — wording varies).</li>
+            <li>Confirm the delete.</li>
+            <li>Come back here and click <strong>Create the group now</strong> below.</li>
+          </ol>
+        </div>
+        <div class="dir-confirm-actions">
+          <button type="button" data-cancel>Cancel</button>
+          <button type="button" class="confirm" data-confirm>I've deleted the user — create the group now</button>
+        </div>
+      </div>`;
+    slot.querySelector("[data-cancel]").addEventListener("click", () => { slot.innerHTML = ""; });
+    slot.querySelector("[data-confirm]").addEventListener("click", () => runCreateForwardingGroup(entry, u, forwardTo, slot));
+  }
+
+  async function runCreateForwardingGroup(entry, u, forwardTo, slot) {
+    const modal = document.getElementById("dirModal");
+    modal.querySelectorAll("[data-action], [data-confirm]").forEach(b => b.disabled = true);
+    showModalBanner(`Creating forwarding group at ${u.email}…`, "info");
+    try {
+      await workspaceAction("create-forwarding-group", { email: u.email, forward_to: forwardTo });
+      // Remove the (now-deleted) user from in-memory state; add the new Group.
+      const idx = allEntries.findIndex(e => e === entry);
+      if (idx >= 0) allEntries.splice(idx, 1);
+      allGroups.push({
+        email: u.email,
+        name: (u.email.split("@")[0] || "ex").replace(/[._-]+/g, " ") + " (ex-employee)",
+        description: `Forwarding-only group at ${u.email}. Created on ${new Date().toISOString().slice(0, 10)} after the Workspace user was offboarded.`,
+        tenant: "",
+        aliases: [],
+        member_count: 1,
+        members: [{ email: forwardTo, role: "MEMBER", type: "USER", status: "ACTIVE" }],
+        _converted: true,
+      });
+      buildGroupMembershipIndex();
+      renderGroupsSection();
+      renderBillingSummary();
+      renderStatusPills();
+      renderHealth();
+      renderGrid();
+      showModalBanner(`${u.email} is now a Group forwarding to ${forwardTo}. £0/month.`, "success");
+      setTimeout(closeCard, 1800);
+    } catch (err) {
+      showModalBanner(`Create failed — ${err.message || err}`, "error");
+      modal.querySelectorAll("[data-action], [data-confirm]").forEach(b => b.disabled = false);
     }
   }
 
@@ -3212,11 +3314,11 @@
       ${groupAuditHistoryHtml(g)}
 
       <div class="dir-modal-section">
-        <h3>Danger zone</h3>
+        <h3>${isExEmployeeGroup(g) ? "Close this forward" : "Danger zone"}</h3>
         <div class="dir-manage-actions">
-          <button type="button" class="danger" data-delete-group>Delete group</button>
+          <button type="button" class="danger" data-delete-group>${isExEmployeeGroup(g) ? "Close this forward (delete group)" : "Delete group"}</button>
         </div>
-        <p class="dir-modal-saved-hint">Deleting the group permanently removes the address and stops all forwarding. Members are not affected. Logged to <code>workspace-actions.json</code>.</p>
+        <p class="dir-modal-saved-hint">${isExEmployeeGroup(g) ? "Closes the forward by deleting the group — mail to this address will start bouncing. Use this when the ex-employee's mail no longer needs to reach anyone." : "Deleting the group permanently removes the address and stops all forwarding. Members are not affected. Logged to <code>workspace-actions.json</code>."}</p>
         <div class="dir-confirm-slot" data-delete-slot></div>
       </div>
     `;
