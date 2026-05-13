@@ -1,76 +1,22 @@
 {
   "schema_version": 1,
-  "updated_at": "2026-05-12T08:09:47.334455Z",
-  "target_date": "2026-05-11",
+  "updated_at": "2026-05-13T08:22:18.199538Z",
+  "target_date": "2026-05-12",
   "totals": {
-    "borrowers": 205
+    "borrowers": 198
   },
   "items": [
     {
-      "first_name": "Angel",
+      "first_name": "Christina",
       "state": "AZ",
-      "city": "Phoenix",
+      "city": "Gilbert",
       "county": "Maricopa",
-      "amount": 5000.0,
-      "lat": 33.4916,
-      "lng": -112.0793
+      "amount": 3500.0,
+      "lat": 33.316,
+      "lng": -111.7541
     },
     {
-      "first_name": "Brant",
-      "state": "AZ",
-      "city": "Mesa",
-      "county": "Maricopa",
-      "amount": 5000.0,
-      "lat": 33.4141,
-      "lng": -111.7712
-    },
-    {
-      "first_name": "David",
-      "state": "AZ",
-      "city": "Surprise",
-      "county": "Maricopa",
-      "amount": 3000.0,
-      "lat": 33.6378,
-      "lng": -112.3854
-    },
-    {
-      "first_name": "david",
-      "state": "AZ",
-      "city": "Phoenix",
-      "county": "Maricopa",
-      "amount": 5000.0,
-      "lat": 33.4916,
-      "lng": -112.0793
-    },
-    {
-      "first_name": "Faith",
-      "state": "AZ",
-      "city": "Page",
-      "county": "Coconino",
-      "amount": 5000.0,
-      "lat": 36.9147,
-      "lng": -111.4558
-    },
-    {
-      "first_name": "Justin",
-      "state": "AZ",
-      "city": "Kingman",
-      "county": "Mohave",
-      "amount": 6000.0,
-      "lat": 35.2198,
-      "lng": -113.9298
-    },
-    {
-      "first_name": "Leo",
-      "state": "AZ",
-      "city": "Surprise",
-      "county": "Maricopa",
-      "amount": 3000.0,
-      "lat": 33.6378,
-      "lng": -112.3854
-    },
-    {
-      "first_name": "Mark",
+      "first_name": "Danielle",
       "state": "AZ",
       "city": "Phoenix",
       "county": "Maricopa",
@@ -79,520 +25,529 @@
       "lng": -112.0793
     },
     {
-      "first_name": "Martin",
+      "first_name": "Ebony",
       "state": "AZ",
-      "city": "Vail",
-      "county": "Pima",
+      "city": "Phoenix",
+      "county": "Maricopa",
+      "amount": 5000.0,
+      "lat": 33.4916,
+      "lng": -112.0793
+    },
+    {
+      "first_name": "Hector",
+      "state": "AZ",
+      "city": "Yuma",
+      "county": "Yuma",
       "amount": 4500.0,
-      "lat": 32.0027,
-      "lng": -110.7053
+      "lat": 32.6805,
+      "lng": -114.5585
     },
     {
-      "first_name": "Michael",
+      "first_name": "Oyuki",
       "state": "AZ",
-      "city": "Mesa",
-      "county": "Maricopa",
-      "amount": 5000.0,
-      "lat": 33.4141,
-      "lng": -111.7712
-    },
-    {
-      "first_name": "Samantha",
-      "state": "AZ",
-      "city": "Mesa",
+      "city": "Phoenix",
       "county": "Maricopa",
       "amount": 3000.0,
-      "lat": 33.4141,
-      "lng": -111.7712
+      "lat": 33.4916,
+      "lng": -112.0793
     },
     {
-      "first_name": "Sean",
-      "state": "AZ",
-      "city": "Chandler",
-      "county": "Maricopa",
-      "amount": 5000.0,
-      "lat": 33.2926,
-      "lng": -111.8502
-    },
-    {
-      "first_name": "Tokemia",
-      "state": "AZ",
-      "city": "Tucson",
-      "county": "Pima",
-      "amount": 6000.0,
-      "lat": 32.2255,
-      "lng": -110.9447
-    },
-    {
-      "first_name": "Angel",
+      "first_name": "Andrew",
       "state": "CA",
-      "city": "Norwalk",
-      "county": "Los Angeles",
-      "amount": 6250.0,
-      "lat": 33.9033,
-      "lng": -118.0817
-    },
-    {
-      "first_name": "CANDACE",
-      "state": "CA",
-      "city": "Santa Ana",
-      "county": "Orange",
-      "amount": 3000.0,
-      "lat": 33.7409,
-      "lng": -117.8666
-    },
-    {
-      "first_name": "Chris",
-      "state": "CA",
-      "city": "Hesperia",
+      "city": "Chino Hills",
       "county": "San Bernardino",
       "amount": 3000.0,
-      "lat": 34.4242,
-      "lng": -117.337
+      "lat": 33.9797,
+      "lng": -117.7308
     },
     {
-      "first_name": "Christopher",
+      "first_name": "Anthony",
       "state": "CA",
       "city": "Los Angeles",
       "county": "Los Angeles",
-      "amount": 6250.0,
+      "amount": 4000.0,
       "lat": 34.0337,
       "lng": -118.2813
     },
     {
-      "first_name": "Constance",
+      "first_name": "Christian",
       "state": "CA",
-      "city": "Roseville",
-      "county": "Placer",
-      "amount": 5000.0,
-      "lat": 38.7553,
-      "lng": -121.286
-    },
-    {
-      "first_name": "Curtis",
-      "state": "CA",
-      "city": "Temecula",
-      "county": "Riverside",
-      "amount": 7000.0,
-      "lat": 33.4995,
-      "lng": -117.1407
-    },
-    {
-      "first_name": "Darian",
-      "state": "CA",
-      "city": "Twentynine Palms",
+      "city": "Ontario",
       "county": "San Bernardino",
-      "amount": 8500.0,
-      "lat": 34.1917,
-      "lng": -116.0602
-    },
-    {
-      "first_name": "Eduardo",
-      "state": "CA",
-      "city": "Bakersfield",
-      "county": "Kern",
-      "amount": 7750.0,
-      "lat": 35.3348,
-      "lng": -118.9857
-    },
-    {
-      "first_name": "Katie",
-      "state": "CA",
-      "city": "Spring Valley",
-      "county": "San Diego",
       "amount": 3000.0,
-      "lat": 32.7366,
-      "lng": -116.9888
+      "lat": 34.0574,
+      "lng": -117.6404
     },
     {
-      "first_name": "Luis",
+      "first_name": "Courtney",
       "state": "CA",
-      "city": "San Marcos",
-      "county": "San Diego",
+      "city": "Shafter",
+      "county": "Kern",
       "amount": 7000.0,
-      "lat": 33.1376,
-      "lng": -117.1717
+      "lat": 35.497,
+      "lng": -119.2801
     },
     {
-      "first_name": "Luis",
+      "first_name": "Elena",
       "state": "CA",
-      "city": "Selma",
-      "county": "Fresno",
-      "amount": 5000.0,
-      "lat": 36.5695,
-      "lng": -119.617
+      "city": "San Clemente",
+      "county": "Orange",
+      "amount": 7000.0,
+      "lat": 33.4462,
+      "lng": -117.6272
     },
     {
-      "first_name": "Mahki",
+      "first_name": "Gary",
+      "state": "CA",
+      "city": "Montebello",
+      "county": "Los Angeles",
+      "amount": 5750.0,
+      "lat": 34.0133,
+      "lng": -118.113
+    },
+    {
+      "first_name": "Giselle",
+      "state": "CA",
+      "city": "Milpitas",
+      "county": "Santa Clara",
+      "amount": 6750.0,
+      "lat": 37.4296,
+      "lng": -121.9005
+    },
+    {
+      "first_name": "Jamar",
       "state": "CA",
       "city": "Moreno Valley",
       "county": "Riverside",
-      "amount": 3000.0,
+      "amount": 8000.0,
       "lat": 33.9289,
       "lng": -117.2263
     },
     {
-      "first_name": "Melody",
+      "first_name": "Jarod",
       "state": "CA",
-      "city": "Sherman Oaks",
-      "county": "Los Angeles",
-      "amount": 8500.0,
-      "lat": 34.1516,
-      "lng": -118.4477
-    },
-    {
-      "first_name": "Rosanna",
-      "state": "CA",
-      "city": "Bakersfield",
-      "county": "Kern",
-      "amount": 8500.0,
-      "lat": 35.3348,
-      "lng": -118.9857
-    },
-    {
-      "first_name": "Sean",
-      "state": "CA",
-      "city": "Yucaipa",
-      "county": "San Bernardino",
-      "amount": 5000.0,
-      "lat": 34.0282,
-      "lng": -117.0489
-    },
-    {
-      "first_name": "Sean",
-      "state": "CA",
-      "city": "Corona",
+      "city": "Moreno Valley",
       "county": "Riverside",
-      "amount": 3000.0,
-      "lat": 33.853,
-      "lng": -117.5537
+      "amount": 10000.0,
+      "lat": 33.9289,
+      "lng": -117.2263
     },
     {
-      "first_name": "Steven",
+      "first_name": "Jayro",
       "state": "CA",
-      "city": "San Jose",
-      "county": "Santa Clara",
+      "city": "Bell Gardens",
+      "county": "Los Angeles",
       "amount": 3000.0,
-      "lat": 37.3205,
-      "lng": -121.8794
+      "lat": 33.9653,
+      "lng": -118.1515
     },
     {
-      "first_name": "Taiwo",
+      "first_name": "Jorge",
       "state": "CA",
       "city": "Los Angeles",
       "county": "Los Angeles",
-      "amount": 10000.0,
+      "amount": 8500.0,
       "lat": 34.0337,
       "lng": -118.2813
     },
     {
-      "first_name": "Timothy",
+      "first_name": "Julian",
       "state": "CA",
-      "city": "Hemet",
-      "county": "Riverside",
-      "amount": 5000.0,
-      "lat": 33.742,
-      "lng": -116.9714
-    },
-    {
-      "first_name": "Troy",
-      "state": "CA",
-      "city": "Gilroy",
-      "county": "Santa Clara",
+      "city": "Fairfield",
+      "county": "Solano",
       "amount": 7500.0,
-      "lat": 37.0117,
-      "lng": -121.5739
+      "lat": 38.2547,
+      "lng": -122.0836
     },
     {
-      "first_name": "Walter",
+      "first_name": "Khairi",
       "state": "CA",
-      "city": "Susanville",
-      "county": "Lassen",
-      "amount": 3000.0,
-      "lat": 40.4073,
-      "lng": -120.6497
-    },
-    {
-      "first_name": "Walter",
-      "state": "CA",
-      "city": "Caruthers",
+      "city": "Clovis",
       "county": "Fresno",
-      "amount": 7750.0,
-      "lat": 36.5358,
-      "lng": -119.8446
-    },
-    {
-      "first_name": "Willie",
-      "state": "CA",
-      "city": "Folsom",
-      "county": "Sacramento",
-      "amount": 8500.0,
-      "lat": 38.6745,
-      "lng": -121.1639
-    },
-    {
-      "first_name": "Christian",
-      "state": "FL",
-      "city": "Yulee",
-      "county": "Nassau",
-      "amount": 3000.0,
-      "lat": 30.6227,
-      "lng": -81.5904
-    },
-    {
-      "first_name": "Colleen",
-      "state": "FL",
-      "city": "Lehigh Acres",
-      "county": "Lee",
-      "amount": 3000.0,
-      "lat": 26.6016,
-      "lng": -81.6586
-    },
-    {
-      "first_name": "DANA",
-      "state": "FL",
-      "city": "Vernon",
-      "county": "Washington",
-      "amount": 3000.0,
-      "lat": 30.6267,
-      "lng": -85.7553
-    },
-    {
-      "first_name": "Gabriela",
-      "state": "FL",
-      "city": "Jacksonville",
-      "county": "Duval",
-      "amount": 3500.0,
-      "lat": 30.3119,
-      "lng": -81.6533
-    },
-    {
-      "first_name": "Gustavo",
-      "state": "FL",
-      "city": "Miami",
-      "county": "Miami-Dade",
-      "amount": 7000.0,
-      "lat": 25.769,
-      "lng": -80.2586
-    },
-    {
-      "first_name": "Joshua",
-      "state": "FL",
-      "city": "Chattahoochee",
-      "county": "Gadsden",
-      "amount": 3000.0,
-      "lat": 30.6834,
-      "lng": -84.828
-    },
-    {
-      "first_name": "Julia",
-      "state": "FL",
-      "city": "Fort Mc Coy",
-      "county": "Marion",
-      "amount": 3000.0,
-      "lat": 29.391,
-      "lng": -81.8551
-    },
-    {
-      "first_name": "Levonda",
-      "state": "FL",
-      "city": "Crestview",
-      "county": "Okaloosa",
-      "amount": 3000.0,
-      "lat": 30.7708,
-      "lng": -86.5375
-    },
-    {
-      "first_name": "Marcus",
-      "state": "FL",
-      "city": "New Port Richey",
-      "county": "Pasco",
-      "amount": 7500.0,
-      "lat": 28.2473,
-      "lng": -82.6915
-    },
-    {
-      "first_name": "Rachaud",
-      "state": "FL",
-      "city": "Lakeland",
-      "county": "Polk",
       "amount": 5000.0,
-      "lat": 28.0429,
-      "lng": -81.9644
+      "lat": 36.8272,
+      "lng": -119.6864
     },
     {
-      "first_name": "Robert",
-      "state": "FL",
-      "city": "Largo",
-      "county": "Pinellas",
+      "first_name": "Krystal",
+      "state": "CA",
+      "city": "Clearlake",
+      "county": "Lake",
       "amount": 3000.0,
-      "lat": 27.8855,
-      "lng": -82.7857
+      "lat": 38.9576,
+      "lng": -122.636
     },
     {
-      "first_name": "Ryan",
-      "state": "FL",
-      "city": "Gainesville",
-      "county": "Alachua",
-      "amount": 7000.0,
-      "lat": 29.6677,
-      "lng": -82.3536
+      "first_name": "Luis",
+      "state": "CA",
+      "city": "Rancho Cucamonga",
+      "county": "San Bernardino",
+      "amount": 5000.0,
+      "lat": 34.1336,
+      "lng": -117.5771
     },
     {
-      "first_name": "Schryell",
-      "state": "FL",
-      "city": "Jacksonville",
-      "county": "Duval",
+      "first_name": "Michael",
+      "state": "CA",
+      "city": "San Diego",
+      "county": "San Diego",
       "amount": 10000.0,
-      "lat": 30.3119,
-      "lng": -81.6533
+      "lat": 32.7551,
+      "lng": -117.1473
     },
     {
-      "first_name": "Stephen",
-      "state": "FL",
-      "city": "Fort Mc Coy",
-      "county": "Marion",
-      "amount": 8000.0,
-      "lat": 29.391,
-      "lng": -81.8551
+      "first_name": "Rene",
+      "state": "CA",
+      "city": "Merced",
+      "county": "Merced",
+      "amount": 5000.0,
+      "lat": 37.2951,
+      "lng": -120.4895
     },
     {
-      "first_name": "Steven",
+      "first_name": "Rita",
+      "state": "CA",
+      "city": "Bellflower",
+      "county": "Los Angeles",
+      "amount": 3000.0,
+      "lat": 33.8842,
+      "lng": -118.1217
+    },
+    {
+      "first_name": "Shawn",
+      "state": "CA",
+      "city": "Riverside",
+      "county": "Riverside",
+      "amount": 3000.0,
+      "lat": 33.9507,
+      "lng": -117.3974
+    },
+    {
+      "first_name": "Spencer",
+      "state": "CA",
+      "city": "San Francisco",
+      "county": "City and County of San Francisco",
+      "amount": 7000.0,
+      "lat": 37.7687,
+      "lng": -122.4244
+    },
+    {
+      "first_name": "TREVEON",
+      "state": "CA",
+      "city": "San Bernardino",
+      "county": "San Bernardino",
+      "amount": 5000.0,
+      "lat": 34.1195,
+      "lng": -117.2964
+    },
+    {
+      "first_name": "Venus",
+      "state": "CA",
+      "city": "Torrance",
+      "county": "Los Angeles",
+      "amount": 7000.0,
+      "lat": 33.811,
+      "lng": -118.3132
+    },
+    {
+      "first_name": "victor",
+      "state": "CA",
+      "city": "Kerman",
+      "county": "Fresno",
+      "amount": 7250.0,
+      "lat": 36.7306,
+      "lng": -120.0724
+    },
+    {
+      "first_name": "Viviana",
+      "state": "CA",
+      "city": "Chino",
+      "county": "San Bernardino",
+      "amount": 5000.0,
+      "lat": 33.9832,
+      "lng": -117.6624
+    },
+    {
+      "first_name": "Zackery",
+      "state": "CA",
+      "city": "California City",
+      "county": "Kern",
+      "amount": 10000.0,
+      "lat": 35.1574,
+      "lng": -117.9253
+    },
+    {
+      "first_name": "Anthony",
       "state": "FL",
       "city": "Davenport",
       "county": "Polk",
-      "amount": 10000.0,
+      "amount": 3500.0,
       "lat": 28.232,
       "lng": -81.6387
     },
     {
-      "first_name": "Todd",
+      "first_name": "Austin",
       "state": "FL",
-      "city": "Largo",
+      "city": "Saint Petersburg",
       "county": "Pinellas",
-      "amount": 10000.0,
-      "lat": 27.8855,
-      "lng": -82.7857
+      "amount": 7750.0,
+      "lat": 27.8273,
+      "lng": -82.7001
     },
     {
-      "first_name": "Veronica",
+      "first_name": "BIENVENIDO",
       "state": "FL",
-      "city": "Middleburg",
-      "county": "Clay",
-      "amount": 3500.0,
-      "lat": 30.0765,
-      "lng": -81.8624
-    },
-    {
-      "first_name": "William",
-      "state": "FL",
-      "city": "Melbourne",
-      "county": "Brevard",
-      "amount": 3000.0,
-      "lat": 28.0873,
-      "lng": -80.6303
-    },
-    {
-      "first_name": "YURI",
-      "state": "FL",
-      "city": "Miami Beach",
+      "city": "Miami",
       "county": "Miami-Dade",
+      "amount": 8500.0,
+      "lat": 25.769,
+      "lng": -80.2586
+    },
+    {
+      "first_name": "Casey",
+      "state": "FL",
+      "city": "Crestview",
+      "county": "Okaloosa",
+      "amount": 8500.0,
+      "lat": 30.7708,
+      "lng": -86.5375
+    },
+    {
+      "first_name": "Chase",
+      "state": "FL",
+      "city": "Orange Park",
+      "county": "Clay",
+      "amount": 5000.0,
+      "lat": 30.156,
+      "lng": -81.7366
+    },
+    {
+      "first_name": "Domenic",
+      "state": "FL",
+      "city": "West Palm Beach",
+      "county": "Palm Beach",
+      "amount": 6000.0,
+      "lat": 26.7121,
+      "lng": -80.0974
+    },
+    {
+      "first_name": "Donna",
+      "state": "FL",
+      "city": "Dunnellon",
+      "county": "Citrus",
+      "amount": 3000.0,
+      "lat": 29.0557,
+      "lng": -82.4557
+    },
+    {
+      "first_name": "Geoffrey",
+      "state": "FL",
+      "city": "Holiday",
+      "county": "Pasco",
+      "amount": 3500.0,
+      "lat": 28.1902,
+      "lng": -82.7395
+    },
+    {
+      "first_name": "Jean",
+      "state": "FL",
+      "city": "Cocoa",
+      "county": "Brevard",
+      "amount": 5000.0,
+      "lat": 28.3898,
+      "lng": -80.7693
+    },
+    {
+      "first_name": "Jeannette",
+      "state": "FL",
+      "city": "Pahokee",
+      "county": "Palm Beach",
+      "amount": 5000.0,
+      "lat": 26.8142,
+      "lng": -80.6629
+    },
+    {
+      "first_name": "Jomo",
+      "state": "FL",
+      "city": "Valrico",
+      "county": "Hillsborough",
+      "amount": 10000.0,
+      "lat": 27.9237,
+      "lng": -82.2405
+    },
+    {
+      "first_name": "juan",
+      "state": "FL",
+      "city": "Fort Lauderdale",
+      "county": "Broward",
+      "amount": 8500.0,
+      "lat": 26.1276,
+      "lng": -80.2122
+    },
+    {
+      "first_name": "Keonna",
+      "state": "FL",
+      "city": "Miami",
+      "county": "Miami-Dade",
+      "amount": 3000.0,
+      "lat": 25.769,
+      "lng": -80.2586
+    },
+    {
+      "first_name": "Kevin",
+      "state": "FL",
+      "city": "Orlando",
+      "county": "Orange",
+      "amount": 3000.0,
+      "lat": 28.5178,
+      "lng": -81.3075
+    },
+    {
+      "first_name": "Kimberly",
+      "state": "FL",
+      "city": "Lake Mary",
+      "county": "Seminole",
+      "amount": 8500.0,
+      "lat": 28.7512,
+      "lng": -81.287
+    },
+    {
+      "first_name": "Kyle",
+      "state": "FL",
+      "city": "Fort Myers",
+      "county": "Polk",
+      "amount": 3000.0,
+      "lat": 26.5619,
+      "lng": -81.8527
+    },
+    {
+      "first_name": "Laudhenia",
+      "state": "FL",
+      "city": "Orlando",
+      "county": "Orange",
+      "amount": 10000.0,
+      "lat": 28.5178,
+      "lng": -81.3075
+    },
+    {
+      "first_name": "Melissa",
+      "state": "FL",
+      "city": "Fort Myers",
+      "county": "Lee",
+      "amount": 5750.0,
+      "lat": 26.5619,
+      "lng": -81.8527
+    },
+    {
+      "first_name": "Omar",
+      "state": "FL",
+      "city": "Clermont",
+      "county": "Polk",
+      "amount": 5000.0,
+      "lat": 28.5377,
+      "lng": -81.763
+    },
+    {
+      "first_name": "Sabrina",
+      "state": "FL",
+      "city": "Oviedo",
+      "county": "Seminole",
+      "amount": 5000.0,
+      "lat": 28.6856,
+      "lng": -81.1811
+    },
+    {
+      "first_name": "Saintelise",
+      "state": "FL",
+      "city": "Clermont",
+      "county": "Lake",
+      "amount": 3000.0,
+      "lat": 28.5377,
+      "lng": -81.763
+    },
+    {
+      "first_name": "Shayla",
+      "state": "FL",
+      "city": "Vero Beach",
+      "county": "Indian River",
+      "amount": 5000.0,
+      "lat": 27.6449,
+      "lng": -80.4321
+    },
+    {
+      "first_name": "Timothy",
+      "state": "FL",
+      "city": "Hollywood",
+      "county": "Broward",
+      "amount": 3750.0,
+      "lat": 26.0089,
+      "lng": -80.2171
+    },
+    {
+      "first_name": "Walter",
+      "state": "FL",
+      "city": "Hobe Sound",
+      "county": "Martin",
+      "amount": 5000.0,
+      "lat": 27.0704,
+      "lng": -80.1436
+    },
+    {
+      "first_name": "Aiesha",
+      "state": "GA",
+      "city": "Lula",
+      "county": "Hall",
+      "amount": 5750.0,
+      "lat": 34.3876,
+      "lng": -83.6663
+    },
+    {
+      "first_name": "Brian",
+      "state": "GA",
+      "city": "Braselton",
+      "county": "Jackson",
+      "amount": 5000.0,
+      "lat": 34.1389,
+      "lng": -83.7812
+    },
+    {
+      "first_name": "Brittany",
+      "state": "GA",
+      "city": "Duluth",
+      "county": "Gwinnett",
       "amount": 6250.0,
-      "lat": 25.7972,
-      "lng": -80.1378
+      "lat": 33.9912,
+      "lng": -84.1146
     },
     {
-      "first_name": "ANDREA",
+      "first_name": "Daniel",
       "state": "GA",
-      "city": "West Green",
-      "county": "Coffee",
-      "amount": 7000.0,
-      "lat": 31.6143,
-      "lng": -82.7243
+      "city": "Portal",
+      "county": "Bulloch",
+      "amount": 8000.0,
+      "lat": 32.555,
+      "lng": -81.9123
     },
     {
-      "first_name": "Clarissa",
+      "first_name": "Elijah",
       "state": "GA",
-      "city": "Savannah",
-      "county": "Chatham",
+      "city": "Alapaha",
+      "county": "Berrien",
       "amount": 7500.0,
-      "lat": 32.0178,
-      "lng": -81.0942
+      "lat": 31.394,
+      "lng": -83.2132
     },
     {
-      "first_name": "Deidra",
+      "first_name": "Erica",
       "state": "GA",
-      "city": "Lithonia",
-      "county": "DeKalb",
-      "amount": 5500.0,
-      "lat": 33.709,
-      "lng": -84.1309
-    },
-    {
-      "first_name": "Michael",
-      "state": "GA",
-      "city": "Decatur",
-      "county": "DeKalb",
+      "city": "Smyrna",
+      "county": "Cobb",
       "amount": 5000.0,
-      "lat": 33.7588,
-      "lng": -84.274
+      "lat": 33.8672,
+      "lng": -84.5837
     },
     {
-      "first_name": "Pamela",
-      "state": "GA",
-      "city": "Jonesboro",
-      "county": "Clayton",
-      "amount": 3250.0,
-      "lat": 33.5064,
-      "lng": -84.3633
-    },
-    {
-      "first_name": "Redetrious",
-      "state": "GA",
-      "city": "Locust Grove",
-      "county": "Henry",
-      "amount": 9000.0,
-      "lat": 33.3449,
-      "lng": -84.0982
-    },
-    {
-      "first_name": "SHELBY",
-      "state": "GA",
-      "city": "Blackshear",
-      "county": "Pierce",
-      "amount": 5000.0,
-      "lat": 31.2931,
-      "lng": -82.2617
-    },
-    {
-      "first_name": "Sykiera",
-      "state": "GA",
-      "city": "Richland",
-      "county": "Stewart",
-      "amount": 3250.0,
-      "lat": 32.0846,
-      "lng": -84.6667
-    },
-    {
-      "first_name": "Tashima",
-      "state": "GA",
-      "city": "Saint Marys",
-      "county": "Camden",
-      "amount": 3250.0,
-      "lat": 30.7305,
-      "lng": -81.5465
-    },
-    {
-      "first_name": "Taylor",
-      "state": "GA",
-      "city": "Meansville",
-      "county": "Pike",
-      "amount": 3250.0,
-      "lat": 33.0134,
-      "lng": -84.3169
-    },
-    {
-      "first_name": "Thedy",
+      "first_name": "Kayln",
       "state": "GA",
       "city": "Eastman",
       "county": "Dodge",
@@ -601,52 +556,106 @@
       "lng": -83.186
     },
     {
-      "first_name": "Yadira",
+      "first_name": "Martha",
       "state": "GA",
-      "city": "Acworth",
-      "county": "Cobb",
+      "city": "Decatur",
+      "county": "DeKalb",
+      "amount": 6500.0,
+      "lat": 33.7588,
+      "lng": -84.274
+    },
+    {
+      "first_name": "Nathaniel",
+      "state": "GA",
+      "city": "Bonaire",
+      "county": "Houston",
+      "amount": 3250.0,
+      "lat": 32.546,
+      "lng": -83.6047
+    },
+    {
+      "first_name": "Preston",
+      "state": "GA",
+      "city": "Adel",
+      "county": "Cook",
+      "amount": 4000.0,
+      "lat": 31.1251,
+      "lng": -83.4213
+    },
+    {
+      "first_name": "Stephanie",
+      "state": "GA",
+      "city": "Warner Robins",
+      "county": "Houston",
+      "amount": 3250.0,
+      "lat": 32.5964,
+      "lng": -83.6352
+    },
+    {
+      "first_name": "Tonia",
+      "state": "GA",
+      "city": "Jonesboro",
+      "county": "Clayton",
       "amount": 8000.0,
-      "lat": 34.0731,
-      "lng": -84.6185
+      "lat": 33.5064,
+      "lng": -84.3633
     },
     {
-      "first_name": "Delios",
+      "first_name": "Winston",
+      "state": "GA",
+      "city": "Jonesboro",
+      "county": "Clayton",
+      "amount": 5000.0,
+      "lat": 33.5064,
+      "lng": -84.3633
+    },
+    {
+      "first_name": "Zyria",
+      "state": "GA",
+      "city": "Atlanta",
+      "county": "DeKalb",
+      "amount": 5000.0,
+      "lat": 33.8171,
+      "lng": -84.3802
+    },
+    {
+      "first_name": "Becke",
       "state": "IA",
-      "city": "Des Moines",
-      "county": "Polk",
+      "city": "Honey Creek",
+      "county": "Pottawattamie",
       "amount": 3000.0,
-      "lat": 41.6503,
-      "lng": -93.586
+      "lat": 41.463,
+      "lng": -95.8802
     },
     {
-      "first_name": "Jacob",
+      "first_name": "Jared",
       "state": "IA",
-      "city": "West Liberty",
-      "county": "Muscatine",
-      "amount": 5500.0,
-      "lat": 41.5701,
-      "lng": -91.2668
+      "city": "Brighton",
+      "county": "Washington",
+      "amount": 5000.0,
+      "lat": 41.1543,
+      "lng": -91.8284
     },
     {
-      "first_name": "Rachel",
+      "first_name": "Tyler",
       "state": "IA",
-      "city": "Ankeny",
-      "county": "Polk",
-      "amount": 3500.0,
-      "lat": 41.7203,
-      "lng": -93.5974
-    },
-    {
-      "first_name": "Selena",
-      "state": "IA",
-      "city": "Webster City",
-      "county": "Hamilton",
+      "city": "Fort Dodge",
+      "county": "Webster",
       "amount": 6000.0,
-      "lat": 42.4657,
-      "lng": -93.8262
+      "lat": 42.5088,
+      "lng": -94.1807
     },
     {
-      "first_name": "Blase",
+      "first_name": "Sara",
+      "state": "ID",
+      "city": "Rigby",
+      "county": "Jefferson",
+      "amount": 7000.0,
+      "lat": 43.6715,
+      "lng": -111.9005
+    },
+    {
+      "first_name": "Cedric",
       "state": "IL",
       "city": "Chicago",
       "county": "Cook",
@@ -655,70 +664,16 @@
       "lng": -87.6761
     },
     {
-      "first_name": "Celina",
+      "first_name": "Cody",
       "state": "IL",
-      "city": "Elgin",
-      "county": "Kane",
-      "amount": 7500.0,
-      "lat": 42.0419,
-      "lng": -88.308
-    },
-    {
-      "first_name": "Daniel",
-      "state": "IL",
-      "city": "Berwyn",
-      "county": "Cook",
-      "amount": 8000.0,
-      "lat": 41.8347,
-      "lng": -87.7914
-    },
-    {
-      "first_name": "Gunbileg",
-      "state": "IL",
-      "city": "Lisle",
+      "city": "Lemont",
       "county": "DuPage",
-      "amount": 5750.0,
-      "lat": 41.7862,
-      "lng": -88.0879
-    },
-    {
-      "first_name": "Hanna",
-      "state": "IL",
-      "city": "Charleston",
-      "county": "Coles",
       "amount": 3000.0,
-      "lat": 39.4869,
-      "lng": -88.1761
+      "lat": 41.7074,
+      "lng": -87.9756
     },
     {
-      "first_name": "Jennifer",
-      "state": "IL",
-      "city": "Galesburg",
-      "county": "Knox",
-      "amount": 7000.0,
-      "lat": 40.95,
-      "lng": -90.3705
-    },
-    {
-      "first_name": "Jessica",
-      "state": "IL",
-      "city": "Davis Junction",
-      "county": "Ogle",
-      "amount": 5000.0,
-      "lat": 42.0979,
-      "lng": -89.0838
-    },
-    {
-      "first_name": "JOSEPH",
-      "state": "IL",
-      "city": "Chicago",
-      "county": "Cook",
-      "amount": 3500.0,
-      "lat": 41.8542,
-      "lng": -87.6761
-    },
-    {
-      "first_name": "Keyner",
+      "first_name": "Davion",
       "state": "IL",
       "city": "Chicago",
       "county": "Cook",
@@ -727,565 +682,439 @@
       "lng": -87.6761
     },
     {
-      "first_name": "Margaret",
+      "first_name": "Heather",
       "state": "IL",
-      "city": "Alton",
-      "county": "Madison",
+      "city": "Tamms",
+      "county": "Alexander",
       "amount": 3000.0,
-      "lat": 38.9087,
-      "lng": -90.1568
+      "lat": 37.2345,
+      "lng": -89.2763
     },
     {
-      "first_name": "olivia",
+      "first_name": "Nicholas",
       "state": "IL",
-      "city": "Evergreen Park",
+      "city": "Chicago",
       "county": "Cook",
-      "amount": 4750.0,
-      "lat": 41.722,
-      "lng": -87.7024
+      "amount": 3000.0,
+      "lat": 41.8542,
+      "lng": -87.6761
+    },
+    {
+      "first_name": "Peter",
+      "state": "IL",
+      "city": "Chicago",
+      "county": "Cook",
+      "amount": 8500.0,
+      "lat": 41.8542,
+      "lng": -87.6761
+    },
+    {
+      "first_name": "Tanesha",
+      "state": "IL",
+      "city": "Chicago",
+      "county": "Cook",
+      "amount": 4250.0,
+      "lat": 41.8542,
+      "lng": -87.6761
     },
     {
       "first_name": "William",
       "state": "IL",
-      "city": "Wheaton",
-      "county": "DuPage",
-      "amount": 10000.0,
-      "lat": 41.856,
-      "lng": -88.1005
-    },
-    {
-      "first_name": "Ashleigh",
-      "state": "IN",
-      "city": "Peru",
-      "county": "Miami",
-      "amount": 4000.0,
-      "lat": 40.7492,
-      "lng": -86.068
-    },
-    {
-      "first_name": "Jason",
-      "state": "IN",
-      "city": "Petersburg",
-      "county": "Pike",
-      "amount": 4000.0,
-      "lat": 38.4789,
-      "lng": -87.2883
-    },
-    {
-      "first_name": "Kara",
-      "state": "IN",
-      "city": "Greenfield",
-      "county": "Hancock",
-      "amount": 4250.0,
-      "lat": 39.7902,
-      "lng": -85.8141
-    },
-    {
-      "first_name": "Kevin",
-      "state": "IN",
-      "city": "Columbus",
-      "county": "Bartholomew",
-      "amount": 4250.0,
-      "lat": 39.2123,
-      "lng": -85.9129
-    },
-    {
-      "first_name": "Phillip",
-      "state": "IN",
-      "city": "Winchester",
-      "county": "Randolph",
+      "city": "Joliet",
+      "county": "Will",
       "amount": 3000.0,
-      "lat": 40.1696,
-      "lng": -85.0044
+      "lat": 41.5133,
+      "lng": -88.0707
     },
     {
-      "first_name": "Robert",
+      "first_name": "Alexandria",
+      "state": "IN",
+      "city": "Frankfort",
+      "county": "Clinton",
+      "amount": 3000.0,
+      "lat": 40.3044,
+      "lng": -86.4689
+    },
+    {
+      "first_name": "Gary",
       "state": "IN",
       "city": "Indianapolis",
       "county": "Marion",
-      "amount": 4250.0,
+      "amount": 3000.0,
       "lat": 39.8003,
       "lng": -86.1362
     },
     {
-      "first_name": "Samantha",
+      "first_name": "Gregory",
       "state": "IN",
-      "city": "Fairland",
-      "county": "Shelby",
+      "city": "Noblesville",
+      "county": "Hamilton",
       "amount": 3000.0,
-      "lat": 39.6295,
-      "lng": -85.8913
+      "lat": 40.0635,
+      "lng": -86.0414
     },
     {
-      "first_name": "Terri",
+      "first_name": "James",
       "state": "IN",
-      "city": "Fremont",
-      "county": "Steuben",
-      "amount": 3000.0,
-      "lat": 41.7331,
-      "lng": -84.9452
-    },
-    {
-      "first_name": "Thomas",
-      "state": "IN",
-      "city": "Lafayette",
-      "county": "Tippecanoe",
+      "city": "Salem",
+      "county": "Washington",
       "amount": 4250.0,
-      "lat": 40.3769,
-      "lng": -86.8716
+      "lat": 38.6071,
+      "lng": -86.0787
     },
     {
-      "first_name": "Michael",
+      "first_name": "John",
+      "state": "IN",
+      "city": "Hartford City",
+      "county": "Blackford",
+      "amount": 3750.0,
+      "lat": 40.4541,
+      "lng": -85.3758
+    },
+    {
+      "first_name": "Kimberly",
+      "state": "IN",
+      "city": "Indianapolis",
+      "county": "Marion",
+      "amount": 3000.0,
+      "lat": 39.8003,
+      "lng": -86.1362
+    },
+    {
+      "first_name": "Steven",
+      "state": "IN",
+      "city": "Brownsburg",
+      "county": "Hendricks",
+      "amount": 3000.0,
+      "lat": 39.8466,
+      "lng": -86.3869
+    },
+    {
+      "first_name": "tiffany",
+      "state": "IN",
+      "city": "Switz City",
+      "county": "Greene",
+      "amount": 4000.0,
+      "lat": 39.0369,
+      "lng": -87.0502
+    },
+    {
+      "first_name": "Tonya",
+      "state": "IN",
+      "city": "Osceola",
+      "county": "St. Joseph",
+      "amount": 4250.0,
+      "lat": 41.6695,
+      "lng": -86.087
+    },
+    {
+      "first_name": "Andrew",
       "state": "KS",
-      "city": "Garden City",
-      "county": "Finney",
-      "amount": 7000.0,
-      "lat": 37.9769,
-      "lng": -100.8621
+      "city": "Arkansas City",
+      "county": "Cowley",
+      "amount": 10000.0,
+      "lat": 37.0676,
+      "lng": -97.0357
     },
     {
-      "first_name": "Charles",
+      "first_name": "Jessica",
+      "state": "KS",
+      "city": "Prairie Village",
+      "county": "Johnson",
+      "amount": 3000.0,
+      "lat": 38.9917,
+      "lng": -94.6336
+    },
+    {
+      "first_name": "Brandi",
       "state": "KY",
       "city": "Louisville",
       "county": "Jefferson",
-      "amount": 3000.0,
+      "amount": 5000.0,
       "lat": 38.2084,
       "lng": -85.6963
     },
     {
-      "first_name": "Darian",
+      "first_name": "Clifford",
+      "state": "KY",
+      "city": "Earlington",
+      "county": "Hopkins",
+      "amount": 3000.0,
+      "lat": 37.2742,
+      "lng": -87.5119
+    },
+    {
+      "first_name": "JACQUELYN",
+      "state": "KY",
+      "city": "Crofton",
+      "county": "Christian",
+      "amount": 3000.0,
+      "lat": 37.0344,
+      "lng": -87.4891
+    },
+    {
+      "first_name": "Kimberly",
+      "state": "KY",
+      "city": "Water Valley",
+      "county": "Graves",
+      "amount": 3000.0,
+      "lat": 36.5694,
+      "lng": -88.8084
+    },
+    {
+      "first_name": "Reena",
       "state": "KY",
       "city": "Louisville",
       "county": "Jefferson",
-      "amount": 3000.0,
+      "amount": 5000.0,
       "lat": 38.2084,
       "lng": -85.6963
-    },
-    {
-      "first_name": "Joanna",
-      "state": "KY",
-      "city": "Clearfield",
-      "county": "Rowan",
-      "amount": 3000.0,
-      "lat": 38.1287,
-      "lng": -83.4425
-    },
-    {
-      "first_name": "Sharline",
-      "state": "KY",
-      "city": "Berea",
-      "county": "Madison",
-      "amount": 3000.0,
-      "lat": 37.5743,
-      "lng": -84.2856
     },
     {
       "first_name": "Shelby",
       "state": "KY",
-      "city": "Harrodsburg",
-      "county": "Mercer",
-      "amount": 3000.0,
-      "lat": 37.8033,
-      "lng": -84.8607
-    },
-    {
-      "first_name": "Sherry",
-      "state": "KY",
       "city": "Louisville",
       "county": "Jefferson",
-      "amount": 5000.0,
+      "amount": 3000.0,
       "lat": 38.2084,
       "lng": -85.6963
     },
     {
-      "first_name": "Taylor",
+      "first_name": "Tony",
       "state": "KY",
-      "city": "Prestonsburg",
-      "county": "Floyd",
+      "city": "Lexington",
+      "county": "Fayette",
       "amount": 5000.0,
-      "lat": 37.661,
-      "lng": -82.7636
+      "lat": 38.0296,
+      "lng": -84.4849
     },
     {
-      "first_name": "Thomas",
-      "state": "KY",
-      "city": "Stearns",
-      "county": "McCreary",
-      "amount": 5000.0,
-      "lat": 36.7082,
-      "lng": -84.5165
-    },
-    {
-      "first_name": "amber",
+      "first_name": "Antonia",
       "state": "MO",
-      "city": "Independence",
-      "county": "Jackson",
+      "city": "Perryville",
+      "county": "Perry",
       "amount": 5000.0,
-      "lat": 39.0962,
-      "lng": -94.4053
+      "lat": 37.7174,
+      "lng": -89.8737
     },
     {
-      "first_name": "David",
+      "first_name": "HUNTER",
       "state": "MO",
       "city": "Kansas City",
-      "county": "Clay",
-      "amount": 5000.0,
+      "county": "Jackson",
+      "amount": 3000.0,
       "lat": 39.1174,
       "lng": -94.5672
     },
     {
-      "first_name": "Kaitlin",
+      "first_name": "Martha",
       "state": "MO",
-      "city": "Springfield",
-      "county": "Greene",
+      "city": "Forsyth",
+      "county": "Taney",
       "amount": 3000.0,
-      "lat": 37.2156,
-      "lng": -93.3026
+      "lat": 36.6955,
+      "lng": -93.115
     },
     {
-      "first_name": "Amee",
+      "first_name": "Tori",
+      "state": "MO",
+      "city": "O Fallon",
+      "county": "Saint Charles",
+      "amount": 8500.0,
+      "lat": 38.7876,
+      "lng": -90.7362
+    },
+    {
+      "first_name": "Tobin",
       "state": "MT",
-      "city": "Laurel",
-      "county": "Yellowstone",
-      "amount": 5000.0,
-      "lat": 45.6745,
-      "lng": -108.769
+      "city": "Bozeman",
+      "county": "Gallatin",
+      "amount": 3500.0,
+      "lat": 45.659,
+      "lng": -111.0458
     },
     {
-      "first_name": "Courtney",
-      "state": "MT",
-      "city": "Great Falls",
-      "county": "Cascade",
-      "amount": 3250.0,
-      "lat": 47.527,
-      "lng": -111.2808
-    },
-    {
-      "first_name": "Oceana",
-      "state": "MT",
-      "city": "Great Falls",
-      "county": "Cascade",
-      "amount": 3000.0,
-      "lat": 47.527,
-      "lng": -111.2808
-    },
-    {
-      "first_name": "Steven",
-      "state": "MT",
-      "city": "Billings",
-      "county": "Yellowstone",
-      "amount": 10000.0,
-      "lat": 45.7968,
-      "lng": -108.516
-    },
-    {
-      "first_name": "Aaron",
+      "first_name": "Allen",
       "state": "NC",
-      "city": "Moyock",
-      "county": "Currituck",
+      "city": "Kannapolis",
+      "county": "Cabarrus",
+      "amount": 3000.0,
+      "lat": 35.4444,
+      "lng": -80.5928
+    },
+    {
+      "first_name": "Angela",
+      "state": "NC",
+      "city": "Morganton",
+      "county": "Burke",
       "amount": 6000.0,
-      "lat": 36.4871,
-      "lng": -76.1146
+      "lat": 35.7426,
+      "lng": -81.6997
     },
     {
-      "first_name": "Asia",
+      "first_name": "Caitlyn",
       "state": "NC",
-      "city": "Zebulon",
-      "county": "Wake",
+      "city": "Wallace",
+      "county": "Duplin",
       "amount": 3000.0,
-      "lat": 35.8321,
-      "lng": -78.3174
+      "lat": 34.7542,
+      "lng": -77.9429
     },
     {
-      "first_name": "Betty",
+      "first_name": "Coty",
       "state": "NC",
-      "city": "Monroe",
-      "county": "Union",
-      "amount": 6000.0,
-      "lat": 34.9745,
-      "lng": -80.55
-    },
-    {
-      "first_name": "Calvin",
-      "state": "NC",
-      "city": "Asheville",
-      "county": "Buncombe",
+      "city": "Charlotte",
+      "county": "Mecklenburg",
       "amount": 5000.0,
-      "lat": 35.6004,
-      "lng": -82.5443
+      "lat": 35.2288,
+      "lng": -80.8237
     },
     {
-      "first_name": "Gregory",
+      "first_name": "Demarkus",
       "state": "NC",
-      "city": "Oak Island",
-      "county": "Brunswick",
+      "city": "Hillsborough",
+      "county": "Orange",
       "amount": 5000.0,
-      "lat": 33.9161,
-      "lng": -78.1255
+      "lat": 36.0756,
+      "lng": -79.0914
     },
     {
-      "first_name": "Heather",
+      "first_name": "fredrick",
       "state": "NC",
-      "city": "Siler City",
-      "county": "Chatham",
-      "amount": 5000.0,
-      "lat": 35.7354,
-      "lng": -79.4566
-    },
-    {
-      "first_name": "Jasmine",
-      "state": "NC",
-      "city": "Raleigh",
-      "county": "Wake",
-      "amount": 4250.0,
-      "lat": 35.8088,
-      "lng": -78.6336
-    },
-    {
-      "first_name": "Jonathan",
-      "state": "NC",
-      "city": "Haw River",
-      "county": "Alamance",
+      "city": "Concord",
+      "county": "Cabarrus",
       "amount": 3000.0,
-      "lat": 36.0915,
-      "lng": -79.3642
+      "lat": 35.3773,
+      "lng": -80.5624
     },
     {
       "first_name": "Karen",
       "state": "NC",
-      "city": "King",
-      "county": "Stokes",
-      "amount": 3750.0,
-      "lat": 36.295,
-      "lng": -80.356
+      "city": "Troy",
+      "county": "Montgomery",
+      "amount": 3000.0,
+      "lat": 35.3777,
+      "lng": -79.9093
+    },
+    {
+      "first_name": "Krystle",
+      "state": "NC",
+      "city": "Raleigh",
+      "county": "Wake",
+      "amount": 3000.0,
+      "lat": 35.8088,
+      "lng": -78.6336
     },
     {
       "first_name": "Laura",
       "state": "NC",
-      "city": "Randleman",
-      "county": "Randolph",
-      "amount": 4500.0,
-      "lat": 35.8488,
-      "lng": -79.8018
-    },
-    {
-      "first_name": "Melonie",
-      "state": "NC",
-      "city": "Bunnlevel",
-      "county": "Harnett",
+      "city": "Mebane",
+      "county": "Alamance",
       "amount": 3000.0,
-      "lat": 35.3119,
-      "lng": -78.8405
+      "lat": 36.0979,
+      "lng": -79.2719
     },
     {
-      "first_name": "Sarah",
+      "first_name": "Monae",
       "state": "NC",
-      "city": "Monroe",
-      "county": "Union",
-      "amount": 5500.0,
-      "lat": 34.9745,
-      "lng": -80.55
-    },
-    {
-      "first_name": "Stoney",
-      "state": "NC",
-      "city": "Hickory",
-      "county": "Catawba",
+      "city": "Rocky Mount",
+      "county": "Edgecombe",
       "amount": 3000.0,
-      "lat": 35.7086,
-      "lng": -81.3258
+      "lat": 35.9381,
+      "lng": -77.8034
     },
     {
-      "first_name": "Thomas",
-      "state": "NC",
-      "city": "Brasstown",
-      "county": "Clay",
-      "amount": 5000.0,
-      "lat": 35.0261,
-      "lng": -83.9567
-    },
-    {
-      "first_name": "Jennifer",
+      "first_name": "Alan",
       "state": "ND",
-      "city": "Grand Forks",
-      "county": "Grand Forks",
-      "amount": 3000.0,
-      "lat": 47.9209,
-      "lng": -97.0473
+      "city": "Valley City",
+      "county": "Barnes",
+      "amount": 5000.0,
+      "lat": 46.9268,
+      "lng": -98.0033
     },
     {
-      "first_name": "Terri",
-      "state": "ND",
-      "city": "Rolla",
-      "county": "Rolette",
+      "first_name": "Angel",
+      "state": "NM",
+      "city": "Albuquerque",
+      "county": "Bernalillo",
       "amount": 5000.0,
-      "lat": 48.8594,
-      "lng": -99.6134
+      "lat": 35.0773,
+      "lng": -106.6448
+    },
+    {
+      "first_name": "Jarvis",
+      "state": "NM",
+      "city": "Albuquerque",
+      "county": "Bernalillo",
+      "amount": 5000.0,
+      "lat": 35.0773,
+      "lng": -106.6448
+    },
+    {
+      "first_name": "Angela",
+      "state": "OH",
+      "city": "Cincinnati",
+      "county": "Hamilton",
+      "amount": 3000.0,
+      "lat": 39.1705,
+      "lng": -84.5045
     },
     {
       "first_name": "Jason",
-      "state": "NH",
-      "city": "Concord",
-      "county": "Merrimack",
+      "state": "OH",
+      "city": "Loveland",
+      "county": "Clermont",
+      "amount": 3000.0,
+      "lat": 39.2445,
+      "lng": -84.2588
+    },
+    {
+      "first_name": "Jason",
+      "state": "OH",
+      "city": "Kent",
+      "county": "Portage",
+      "amount": 3750.0,
+      "lat": 41.1487,
+      "lng": -81.3497
+    },
+    {
+      "first_name": "Jeremey",
+      "state": "OH",
+      "city": "Logan",
+      "county": "Hocking",
       "amount": 5000.0,
-      "lat": 43.256,
-      "lng": -71.5918
+      "lat": 39.5372,
+      "lng": -82.4126
     },
     {
-      "first_name": "Sarah",
-      "state": "NH",
-      "city": "Pittsfield",
-      "county": "Merrimack",
+      "first_name": "Kayleigh",
+      "state": "OH",
+      "city": "Fostoria",
+      "county": "Seneca",
       "amount": 3000.0,
-      "lat": 43.2874,
-      "lng": -71.333
+      "lat": 41.1623,
+      "lng": -83.4139
     },
     {
-      "first_name": "Carlos",
-      "state": "NM",
-      "city": "Albuquerque",
-      "county": "Bernalillo",
+      "first_name": "Michele",
+      "state": "OH",
+      "city": "Martinsburg",
+      "county": "Knox",
       "amount": 5000.0,
-      "lat": 35.0773,
-      "lng": -106.6448
+      "lat": 40.268,
+      "lng": -82.3567
     },
     {
-      "first_name": "Danny",
-      "state": "NM",
-      "city": "Albuquerque",
-      "county": "Bernalillo",
-      "amount": 3000.0,
-      "lat": 35.0773,
-      "lng": -106.6448
-    },
-    {
-      "first_name": "Frederick",
-      "state": "NM",
-      "city": "Albuquerque",
-      "county": "Bernalillo",
-      "amount": 5000.0,
-      "lat": 35.0773,
-      "lng": -106.6448
-    },
-    {
-      "first_name": "Patrick",
-      "state": "NM",
-      "city": "Rio Rancho",
-      "county": "Sandoval",
-      "amount": 3000.0,
-      "lat": 35.2059,
-      "lng": -106.6882
-    },
-    {
-      "first_name": "Adreanna",
+      "first_name": "Ryan",
       "state": "OH",
-      "city": "Dayton",
-      "county": "Montgomery",
-      "amount": 5000.0,
-      "lat": 39.7466,
-      "lng": -84.1995
-    },
-    {
-      "first_name": "Amanda",
-      "state": "OH",
-      "city": "Graytown",
-      "county": "Ottawa",
-      "amount": 3000.0,
-      "lat": 41.5647,
-      "lng": -83.2613
-    },
-    {
-      "first_name": "Crystal",
-      "state": "OH",
-      "city": "Dover",
-      "county": "Tuscarawas",
-      "amount": 3000.0,
-      "lat": 40.5343,
-      "lng": -81.4763
-    },
-    {
-      "first_name": "Dustin",
-      "state": "OH",
-      "city": "Newark",
-      "county": "Licking",
-      "amount": 5000.0,
-      "lat": 40.0752,
-      "lng": -82.4295
-    },
-    {
-      "first_name": "Hallie",
-      "state": "OH",
-      "city": "Cincinnati",
-      "county": "Hamilton",
-      "amount": 3000.0,
-      "lat": 39.1705,
-      "lng": -84.5045
-    },
-    {
-      "first_name": "Lillie",
-      "state": "OH",
-      "city": "South Webster",
-      "county": "Scioto",
-      "amount": 5000.0,
-      "lat": 38.82,
-      "lng": -82.7202
-    },
-    {
-      "first_name": "Melissa",
-      "state": "OH",
-      "city": "Columbus",
-      "county": "Franklin",
-      "amount": 3000.0,
-      "lat": 39.9923,
-      "lng": -82.9919
-    },
-    {
-      "first_name": "Mryah",
-      "state": "OH",
-      "city": "Cleveland",
-      "county": "Cuyahoga",
-      "amount": 3000.0,
-      "lat": 41.5231,
-      "lng": -81.6554
-    },
-    {
-      "first_name": "Nathaniel",
-      "state": "OH",
-      "city": "Toledo",
-      "county": "Lucas",
-      "amount": 3000.0,
-      "lat": 41.6756,
-      "lng": -83.5306
-    },
-    {
-      "first_name": "Raymond",
-      "state": "OH",
-      "city": "Akron",
-      "county": "Summit",
-      "amount": 3000.0,
-      "lat": 41.0794,
-      "lng": -81.5285
-    },
-    {
-      "first_name": "scott",
-      "state": "OH",
-      "city": "Eastlake",
+      "city": "Painesville",
       "county": "Lake",
-      "amount": 4000.0,
-      "lat": 41.6563,
-      "lng": -81.4475
+      "amount": 3000.0,
+      "lat": 41.7079,
+      "lng": -81.199
     },
     {
-      "first_name": "Serena",
-      "state": "OH",
-      "city": "Portsmouth",
-      "county": "Scioto",
-      "amount": 5000.0,
-      "lat": 38.7932,
-      "lng": -82.9306
-    },
-    {
-      "first_name": "Stephanie",
+      "first_name": "Trista",
       "state": "OH",
       "city": "Cincinnati",
       "county": "Hamilton",
@@ -1294,313 +1123,223 @@
       "lng": -84.5045
     },
     {
-      "first_name": "Traci",
+      "first_name": "Zachary",
       "state": "OH",
-      "city": "Cleves",
-      "county": "Hamilton",
-      "amount": 5000.0,
-      "lat": 39.1937,
-      "lng": -84.734
+      "city": "Powell",
+      "county": "Delaware",
+      "amount": 3000.0,
+      "lat": 40.1834,
+      "lng": -83.0912
     },
     {
-      "first_name": "Desiree",
+      "first_name": "Brittany",
+      "state": "OK",
+      "city": "Mcalester",
+      "county": "Pittsburg",
+      "amount": 3000.0,
+      "lat": 34.9298,
+      "lng": -95.7645
+    },
+    {
+      "first_name": "Carolyn",
+      "state": "OK",
+      "city": "Bartlesville",
+      "county": "Washington",
+      "amount": 3500.0,
+      "lat": 36.7348,
+      "lng": -95.948
+    },
+    {
+      "first_name": "James",
+      "state": "OK",
+      "city": "Clinton",
+      "county": "Custer",
+      "amount": 3500.0,
+      "lat": 35.5115,
+      "lng": -98.9795
+    },
+    {
+      "first_name": "Nathan",
+      "state": "OK",
+      "city": "Lawton",
+      "county": "Comanche",
+      "amount": 3000.0,
+      "lat": 34.6147,
+      "lng": -98.4125
+    },
+    {
+      "first_name": "Trey",
       "state": "OK",
       "city": "Oklahoma City",
       "county": "Oklahoma",
-      "amount": 7000.0,
-      "lat": 35.495,
-      "lng": -97.4886
-    },
-    {
-      "first_name": "Gayla",
-      "state": "OK",
-      "city": "Tuttle",
-      "county": "Grady",
-      "amount": 5000.0,
-      "lat": 35.2674,
-      "lng": -97.7446
-    },
-    {
-      "first_name": "Matthew",
-      "state": "OK",
-      "city": "Oklahoma City",
-      "county": "Cleveland",
-      "amount": 3500.0,
-      "lat": 35.495,
-      "lng": -97.4886
-    },
-    {
-      "first_name": "Paula",
-      "state": "OK",
-      "city": "Tuttle",
-      "county": "Grady",
       "amount": 3000.0,
-      "lat": 35.2674,
-      "lng": -97.7446
+      "lat": 35.495,
+      "lng": -97.4886
     },
     {
-      "first_name": "Brayden",
+      "first_name": "Christina",
       "state": "OR",
       "city": "Portland",
-      "county": "Washington",
+      "county": "Multnomah",
       "amount": 5000.0,
       "lat": 45.5194,
       "lng": -122.6644
     },
     {
-      "first_name": "Breanna",
+      "first_name": "Melissa",
       "state": "OR",
-      "city": "South Beach",
-      "county": "Lincoln",
-      "amount": 10000.0,
-      "lat": 44.5712,
-      "lng": -124.06
+      "city": "Woodburn",
+      "county": "Marion",
+      "amount": 3000.0,
+      "lat": 45.1446,
+      "lng": -122.8583
     },
     {
-      "first_name": "Michelle",
+      "first_name": "Salena",
       "state": "OR",
-      "city": "North Bend",
-      "county": "Coos",
-      "amount": 3000.0,
-      "lat": 43.4327,
-      "lng": -124.2131
-    },
-    {
-      "first_name": "Deonta",
-      "state": "SC",
-      "city": "Rock Hill",
-      "county": "York",
-      "amount": 6250.0,
-      "lat": 34.9722,
-      "lng": -81.1196
-    },
-    {
-      "first_name": "Devin",
-      "state": "SC",
-      "city": "Blythewood",
-      "county": "Richland",
-      "amount": 3000.0,
-      "lat": 34.1911,
-      "lng": -80.9758
-    },
-    {
-      "first_name": "KEVIN",
-      "state": "SC",
-      "city": "Wedgefield",
-      "county": "Sumter",
+      "city": "Terrebonne",
+      "county": "Deschutes",
       "amount": 5000.0,
-      "lat": 33.8953,
-      "lng": -80.498
+      "lat": 44.3909,
+      "lng": -121.2379
     },
     {
-      "first_name": "Miguel Alfredo",
-      "state": "SC",
-      "city": "Myrtle Beach",
-      "county": "Horry",
+      "first_name": "Tyler",
+      "state": "OR",
+      "city": "Portland",
+      "county": "Multnomah",
       "amount": 10000.0,
-      "lat": 33.701,
-      "lng": -78.9445
+      "lat": 45.5194,
+      "lng": -122.6644
     },
     {
-      "first_name": "Miranda",
+      "first_name": "Carol",
       "state": "SC",
-      "city": "Elgin",
-      "county": "Kershaw",
-      "amount": 3000.0,
-      "lat": 34.162,
-      "lng": -80.8113
-    },
-    {
-      "first_name": "Shaquan",
-      "state": "SC",
-      "city": "Chesterfield",
-      "county": "Chesterfield",
-      "amount": 3000.0,
-      "lat": 34.7278,
-      "lng": -80.0958
-    },
-    {
-      "first_name": "Shiloh",
-      "state": "SC",
-      "city": "Greer",
+      "city": "Greenville",
       "county": "Greenville",
       "amount": 5000.0,
-      "lat": 34.9269,
-      "lng": -82.2385
+      "lat": 34.8551,
+      "lng": -82.4125
     },
     {
-      "first_name": "Mikayla",
-      "state": "SD",
-      "city": "Rapid City",
-      "county": "Pennington",
-      "amount": 6250.0,
-      "lat": 44.0673,
-      "lng": -103.2644
+      "first_name": "Christopher",
+      "state": "SC",
+      "city": "Columbia",
+      "county": "Richland",
+      "amount": 7000.0,
+      "lat": 34.0161,
+      "lng": -81.0077
     },
     {
-      "first_name": "Renee",
-      "state": "SD",
-      "city": "Sturgis",
-      "county": "Meade",
-      "amount": 5000.0,
-      "lat": 44.3692,
-      "lng": -103.3617
-    },
-    {
-      "first_name": "Alan",
-      "state": "TX",
-      "city": "Austin",
-      "county": "Travis",
+      "first_name": "Joshua",
+      "state": "SC",
+      "city": "Greenville",
+      "county": "Greenville",
       "amount": 3000.0,
-      "lat": 30.3094,
-      "lng": -97.7623
+      "lat": 34.8551,
+      "lng": -82.4125
     },
     {
-      "first_name": "Andres",
-      "state": "TX",
-      "city": "Tyler",
-      "county": "Smith",
+      "first_name": "Leland",
+      "state": "SC",
+      "city": "Charleston",
+      "county": "Charleston",
       "amount": 3000.0,
-      "lat": 32.3689,
-      "lng": -95.2891
+      "lat": 32.8252,
+      "lng": -79.9283
     },
     {
-      "first_name": "Anissa",
-      "state": "TX",
-      "city": "San Antonio",
-      "county": "Bexar",
-      "amount": 4500.0,
-      "lat": 29.4647,
-      "lng": -98.4984
+      "first_name": "Paul",
+      "state": "SC",
+      "city": "Richburg",
+      "county": "Chester",
+      "amount": 7500.0,
+      "lat": 34.6822,
+      "lng": -80.9891
     },
     {
-      "first_name": "Anthony",
-      "state": "TX",
-      "city": "Kerrville",
-      "county": "Kerr",
+      "first_name": "ROBERT",
+      "state": "SC",
+      "city": "North Augusta",
+      "county": "Aiken",
       "amount": 3000.0,
-      "lat": 30.0374,
-      "lng": -99.1409
+      "lat": 33.5432,
+      "lng": -81.9598
     },
     {
-      "first_name": "Bradley",
+      "first_name": "Tiffany",
+      "state": "SC",
+      "city": "Sumter",
+      "county": "Sumter",
+      "amount": 10000.0,
+      "lat": 33.9101,
+      "lng": -80.363
+    },
+    {
+      "first_name": "Traci",
+      "state": "SC",
+      "city": "Williston",
+      "county": "Barnwell",
+      "amount": 3000.0,
+      "lat": 33.3926,
+      "lng": -81.4161
+    },
+    {
+      "first_name": "Aimarwin",
       "state": "TX",
-      "city": "Pattonville",
-      "county": "Lamar",
-      "amount": 4500.0,
-      "lat": 33.5702,
-      "lng": -95.3908
+      "city": "Fort Worth",
+      "county": "Tarrant",
+      "amount": 3000.0,
+      "lat": 32.7602,
+      "lng": -97.3149
+    },
+    {
+      "first_name": "Antonio",
+      "state": "TX",
+      "city": "Abilene",
+      "county": "Taylor",
+      "amount": 4000.0,
+      "lat": 32.4466,
+      "lng": -99.7394
     },
     {
       "first_name": "Brandon",
       "state": "TX",
-      "city": "North Richland Hills",
-      "county": "Tarrant",
+      "city": "Corpus Christi",
+      "county": "Nueces",
       "amount": 3000.0,
-      "lat": 32.8614,
-      "lng": -97.2174
+      "lat": 27.7624,
+      "lng": -97.4348
     },
     {
-      "first_name": "Comazell",
+      "first_name": "CARLI",
       "state": "TX",
-      "city": "Houston",
-      "county": "Harris",
+      "city": "College Station",
+      "county": "Brazos",
+      "amount": 3000.0,
+      "lat": 30.6075,
+      "lng": -96.3299
+    },
+    {
+      "first_name": "Carmen",
+      "state": "TX",
+      "city": "Whitesboro",
+      "county": "Grayson",
       "amount": 4500.0,
-      "lat": 29.7979,
-      "lng": -95.4191
+      "lat": 33.659,
+      "lng": -96.879
     },
     {
-      "first_name": "Corey",
+      "first_name": "Christopher",
       "state": "TX",
-      "city": "Mckinney",
-      "county": "Collin",
-      "amount": 3000.0,
-      "lat": 33.1976,
-      "lng": -96.6153
-    },
-    {
-      "first_name": "Douglas",
-      "state": "TX",
-      "city": "Spring",
-      "county": "Harris",
-      "amount": 3000.0,
-      "lat": 30.1258,
-      "lng": -95.4606
-    },
-    {
-      "first_name": "Georgina",
-      "state": "TX",
-      "city": "Lubbock",
-      "county": "Lubbock",
-      "amount": 3000.0,
-      "lat": 33.5743,
-      "lng": -101.8711
-    },
-    {
-      "first_name": "Gilberto",
-      "state": "TX",
-      "city": "Mission",
-      "county": "Hidalgo",
-      "amount": 3000.0,
-      "lat": 26.2762,
-      "lng": -98.3321
-    },
-    {
-      "first_name": "Hezekiah",
-      "state": "TX",
-      "city": "Grapeland",
-      "county": "Houston",
-      "amount": 3000.0,
-      "lat": 31.4972,
-      "lng": -95.4447
-    },
-    {
-      "first_name": "Jeffrey",
-      "state": "TX",
-      "city": "Temple",
+      "city": "Killeen",
       "county": "Bell",
-      "amount": 3000.0,
-      "lat": 31.0685,
-      "lng": -97.3802
-    },
-    {
-      "first_name": "Jonah",
-      "state": "TX",
-      "city": "San Antonio",
-      "county": "Bexar",
-      "amount": 3250.0,
-      "lat": 29.4647,
-      "lng": -98.4984
-    },
-    {
-      "first_name": "Joshua",
-      "state": "TX",
-      "city": "Houston",
-      "county": "Harris",
       "amount": 4500.0,
-      "lat": 29.7979,
-      "lng": -95.4191
+      "lat": 31.0853,
+      "lng": -97.7284
     },
     {
-      "first_name": "Joylinder",
-      "state": "TX",
-      "city": "Webster",
-      "county": "Harris",
-      "amount": 3250.0,
-      "lat": 29.5564,
-      "lng": -95.144
-    },
-    {
-      "first_name": "Kristopher",
-      "state": "TX",
-      "city": "Silsbee",
-      "county": "Hardin",
-      "amount": 3000.0,
-      "lat": 30.3244,
-      "lng": -94.1907
-    },
-    {
-      "first_name": "Marcus",
+      "first_name": "Colby",
       "state": "TX",
       "city": "San Antonio",
       "county": "Bexar",
@@ -1609,97 +1348,178 @@
       "lng": -98.4984
     },
     {
-      "first_name": "Miriam",
+      "first_name": "Daryl",
       "state": "TX",
-      "city": "Plano",
-      "county": "Collin",
+      "city": "North Zulch",
+      "county": "Madison",
       "amount": 4500.0,
-      "lat": 33.0384,
-      "lng": -96.7192
+      "lat": 30.9285,
+      "lng": -96.0925
     },
     {
-      "first_name": "Olivia",
+      "first_name": "Daryl",
       "state": "TX",
-      "city": "Ennis",
-      "county": "Ellis",
+      "city": "Kingsville",
+      "county": "Kleberg",
       "amount": 4500.0,
-      "lat": 32.3334,
-      "lng": -96.6279
+      "lat": 27.4694,
+      "lng": -97.8484
     },
     {
-      "first_name": "Patricia",
+      "first_name": "Deana",
       "state": "TX",
-      "city": "Alice",
-      "county": "Jim Wells",
-      "amount": 3250.0,
-      "lat": 27.7477,
-      "lng": -98.0767
-    },
-    {
-      "first_name": "Phillip",
-      "state": "TX",
-      "city": "Keller",
-      "county": "Tarrant",
-      "amount": 4500.0,
-      "lat": 32.9293,
-      "lng": -97.2666
-    },
-    {
-      "first_name": "Richard",
-      "state": "TX",
-      "city": "Amarillo",
-      "county": "Potter",
-      "amount": 3500.0,
-      "lat": 35.2535,
-      "lng": -101.8657
-    },
-    {
-      "first_name": "Rodrigo",
-      "state": "TX",
-      "city": "El Paso",
-      "county": "El Paso",
+      "city": "Roanoke",
+      "county": "Denton",
       "amount": 3000.0,
-      "lat": 31.7223,
-      "lng": -106.3431
+      "lat": 33.0211,
+      "lng": -97.2127
     },
     {
-      "first_name": "Seth",
+      "first_name": "Desiree",
       "state": "TX",
-      "city": "Ben Wheeler",
-      "county": "Van Zandt",
+      "city": "Magnolia",
+      "county": "Montgomery",
       "amount": 3000.0,
-      "lat": 32.4126,
-      "lng": -95.6371
+      "lat": 30.2008,
+      "lng": -95.6804
     },
     {
-      "first_name": "Shikha",
+      "first_name": "Edward",
       "state": "TX",
       "city": "Dallas",
       "county": "Dallas",
-      "amount": 3500.0,
+      "amount": 4500.0,
       "lat": 32.7886,
       "lng": -96.7872
     },
     {
-      "first_name": "Stacy",
+      "first_name": "Herman",
       "state": "TX",
-      "city": "Farmersville",
-      "county": "Collin",
+      "city": "Howe",
+      "county": "Grayson",
       "amount": 4500.0,
-      "lat": 33.1659,
-      "lng": -96.3686
+      "lat": 33.5311,
+      "lng": -96.6777
     },
     {
-      "first_name": "Stephen",
+      "first_name": "Israel",
       "state": "TX",
-      "city": "Mabank",
-      "county": "Kaufman",
-      "amount": 4250.0,
-      "lat": 32.3328,
-      "lng": -96.0934
+      "city": "El Paso",
+      "county": "El Paso",
+      "amount": 4500.0,
+      "lat": 31.7223,
+      "lng": -106.3431
     },
     {
-      "first_name": "Taylor",
+      "first_name": "Jerome",
+      "state": "TX",
+      "city": "San Antonio",
+      "county": "Bexar",
+      "amount": 4000.0,
+      "lat": 29.4647,
+      "lng": -98.4984
+    },
+    {
+      "first_name": "Joanne",
+      "state": "TX",
+      "city": "Houston",
+      "county": "Harris",
+      "amount": 4000.0,
+      "lat": 29.7979,
+      "lng": -95.4191
+    },
+    {
+      "first_name": "Johnathan",
+      "state": "TX",
+      "city": "Arlington",
+      "county": "Tarrant",
+      "amount": 3250.0,
+      "lat": 32.7196,
+      "lng": -97.1604
+    },
+    {
+      "first_name": "Joshua",
+      "state": "TX",
+      "city": "Longview",
+      "county": "Gregg",
+      "amount": 4500.0,
+      "lat": 32.51,
+      "lng": -94.7648
+    },
+    {
+      "first_name": "Juan",
+      "state": "TX",
+      "city": "Santa Anna",
+      "county": "Coleman",
+      "amount": 4500.0,
+      "lat": 31.7215,
+      "lng": -99.3212
+    },
+    {
+      "first_name": "Kevin",
+      "state": "TX",
+      "city": "Pearland",
+      "county": "Brazoria",
+      "amount": 4500.0,
+      "lat": 29.5383,
+      "lng": -95.2824
+    },
+    {
+      "first_name": "Kiyah",
+      "state": "TX",
+      "city": "Cedar Park",
+      "county": "Williamson",
+      "amount": 3000.0,
+      "lat": 30.5052,
+      "lng": -97.8203
+    },
+    {
+      "first_name": "LaCher",
+      "state": "TX",
+      "city": "Royse City",
+      "county": "Rockwall",
+      "amount": 4500.0,
+      "lat": 32.9628,
+      "lng": -96.3648
+    },
+    {
+      "first_name": "Lisa",
+      "state": "TX",
+      "city": "Monahans",
+      "county": "Ward",
+      "amount": 4500.0,
+      "lat": 31.5813,
+      "lng": -102.9003
+    },
+    {
+      "first_name": "Marcus",
+      "state": "TX",
+      "city": "Midland",
+      "county": "Midland",
+      "amount": 4500.0,
+      "lat": 31.9392,
+      "lng": -102.067
+    },
+    {
+      "first_name": "Markus",
+      "state": "TX",
+      "city": "Somerset",
+      "county": "Bexar",
+      "amount": 4500.0,
+      "lat": 29.2205,
+      "lng": -98.6678
+    },
+    {
+      "first_name": "Marva",
+      "state": "TX",
+      "city": "Denton",
+      "county": "Denton",
+      "amount": 4500.0,
+      "lat": 33.2054,
+      "lng": -97.1196
+    },
+    {
+      "first_name": "Nathaniel",
       "state": "TX",
       "city": "Fort Worth",
       "county": "Tarrant",
@@ -1708,148 +1528,265 @@
       "lng": -97.3149
     },
     {
-      "first_name": "Tiffany",
-      "state": "TX",
-      "city": "Baytown",
-      "county": "Chambers",
-      "amount": 3000.0,
-      "lat": 29.7555,
-      "lng": -94.9433
-    },
-    {
-      "first_name": "Willie",
-      "state": "TX",
-      "city": "Mount Pleasant",
-      "county": "Titus",
-      "amount": 3000.0,
-      "lat": 33.165,
-      "lng": -94.9689
-    },
-    {
-      "first_name": "Zachary",
-      "state": "TX",
-      "city": "Flower Mound",
-      "county": "Denton",
-      "amount": 4500.0,
-      "lat": 33.0908,
-      "lng": -97.1034
-    },
-    {
-      "first_name": "Marissa",
-      "state": "UT",
-      "city": "Draper",
-      "county": "Salt Lake",
-      "amount": 10000.0,
-      "lat": 40.5046,
-      "lng": -111.881
-    },
-    {
-      "first_name": "Franklin",
-      "state": "VA",
-      "city": "Ashburn",
-      "county": "Loudoun",
-      "amount": 8500.0,
-      "lat": 39.0451,
-      "lng": -77.5354
-    },
-    {
-      "first_name": "JAMES",
-      "state": "VA",
-      "city": "Salem",
-      "county": "Salem (city)",
-      "amount": 3000.0,
-      "lat": 37.2874,
-      "lng": -80.0678
-    },
-    {
-      "first_name": "Maria",
-      "state": "VA",
-      "city": "Herndon",
-      "county": "Fairfax",
-      "amount": 3500.0,
-      "lat": 38.936,
-      "lng": -77.3643
-    },
-    {
-      "first_name": "MICHAEL",
-      "state": "VA",
-      "city": "Virginia Beach",
-      "county": "Virginia Beach (city)",
-      "amount": 7250.0,
-      "lat": 36.8105,
-      "lng": -76.0536
-    },
-    {
-      "first_name": "Shannon",
-      "state": "VA",
-      "city": "Winchester",
-      "county": "Frederick",
-      "amount": 5000.0,
-      "lat": 39.1919,
-      "lng": -78.2048
-    },
-    {
-      "first_name": "Amanda",
-      "state": "WI",
-      "city": "Sussex",
-      "county": "Waukesha",
-      "amount": 10000.0,
-      "lat": 43.1441,
-      "lng": -88.2271
-    },
-    {
-      "first_name": "joseph",
-      "state": "WI",
-      "city": "Racine",
-      "county": "Racine",
-      "amount": 3250.0,
-      "lat": 42.731,
-      "lng": -87.777
-    },
-    {
-      "first_name": "Justin",
-      "state": "WI",
-      "city": "La Crosse",
-      "county": "La Crosse",
-      "amount": 4500.0,
-      "lat": 43.8518,
-      "lng": -91.2112
-    },
-    {
-      "first_name": "Mia",
-      "state": "WI",
-      "city": "Bloomer",
-      "county": "Chippewa",
-      "amount": 3250.0,
-      "lat": 45.1025,
-      "lng": -91.49
-    },
-    {
-      "first_name": "Michael",
-      "state": "WI",
-      "city": "Whitewater",
-      "county": "Walworth",
-      "amount": 6000.0,
-      "lat": 42.8272,
-      "lng": -88.7429
-    },
-    {
       "first_name": "Nicole",
-      "state": "WI",
-      "city": "Neenah",
-      "county": "Winnebago",
-      "amount": 8000.0,
-      "lat": 44.1835,
-      "lng": -88.4709
+      "state": "TX",
+      "city": "Smithville",
+      "county": "Bastrop",
+      "amount": 3000.0,
+      "lat": 30.0178,
+      "lng": -97.1494
     },
     {
-      "first_name": "Troy",
+      "first_name": "Oziel",
+      "state": "TX",
+      "city": "Deer Park",
+      "county": "Harris",
+      "amount": 3000.0,
+      "lat": 29.6826,
+      "lng": -95.1222
+    },
+    {
+      "first_name": "Patricia",
+      "state": "TX",
+      "city": "Bandera",
+      "county": "Bandera",
+      "amount": 3000.0,
+      "lat": 29.7276,
+      "lng": -99.0453
+    },
+    {
+      "first_name": "Patricia",
+      "state": "TX",
+      "city": "New Boston",
+      "county": "Bowie",
+      "amount": 4500.0,
+      "lat": 33.4619,
+      "lng": -94.4375
+    },
+    {
+      "first_name": "Roberto",
+      "state": "TX",
+      "city": "Richmond",
+      "county": "Fort Bend",
+      "amount": 3000.0,
+      "lat": 29.6191,
+      "lng": -95.7527
+    },
+    {
+      "first_name": "Rojelio",
+      "state": "TX",
+      "city": "Pecos",
+      "county": "Reeves",
+      "amount": 4500.0,
+      "lat": 31.4467,
+      "lng": -103.5791
+    },
+    {
+      "first_name": "Seth",
+      "state": "TX",
+      "city": "Irving",
+      "county": "Dallas",
+      "amount": 4500.0,
+      "lat": 32.8496,
+      "lng": -96.9338
+    },
+    {
+      "first_name": "Stacy",
+      "state": "TX",
+      "city": "Ennis",
+      "county": "Ellis",
+      "amount": 4500.0,
+      "lat": 32.3334,
+      "lng": -96.6279
+    },
+    {
+      "first_name": "Tashia",
+      "state": "TX",
+      "city": "Seabrook",
+      "county": "Harris",
+      "amount": 3000.0,
+      "lat": 29.5832,
+      "lng": -95.037
+    },
+    {
+      "first_name": "Toya",
+      "state": "TX",
+      "city": "Katy",
+      "county": "Harris",
+      "amount": 3000.0,
+      "lat": 29.7929,
+      "lng": -95.7963
+    },
+    {
+      "first_name": "Tyler",
+      "state": "TX",
+      "city": "Silsbee",
+      "county": "Hardin",
+      "amount": 3500.0,
+      "lat": 30.3244,
+      "lng": -94.1907
+    },
+    {
+      "first_name": "Victoria",
+      "state": "TX",
+      "city": "Harker Heights",
+      "county": "Bell",
+      "amount": 3000.0,
+      "lat": 31.0286,
+      "lng": -97.6115
+    },
+    {
+      "first_name": "Yafama",
+      "state": "TX",
+      "city": "Tyler",
+      "county": "Smith",
+      "amount": 4500.0,
+      "lat": 32.3689,
+      "lng": -95.2891
+    },
+    {
+      "first_name": "Aaron",
+      "state": "VA",
+      "city": "Hampton",
+      "county": "Hampton (city)",
+      "amount": 6000.0,
+      "lat": 37.0479,
+      "lng": -76.3589
+    },
+    {
+      "first_name": "Drema",
+      "state": "VA",
+      "city": "Newport News",
+      "county": "Newport News (city)",
+      "amount": 5000.0,
+      "lat": 37.1189,
+      "lng": -76.5024
+    },
+    {
+      "first_name": "Grayson",
+      "state": "VA",
+      "city": "Maidens",
+      "county": "Goochland",
+      "amount": 5000.0,
+      "lat": 37.7126,
+      "lng": -77.8315
+    },
+    {
+      "first_name": "James",
+      "state": "VA",
+      "city": "Newport News",
+      "county": "Newport News (city)",
+      "amount": 3000.0,
+      "lat": 37.1189,
+      "lng": -76.5024
+    },
+    {
+      "first_name": "Lynne",
+      "state": "VA",
+      "city": "Midlothian",
+      "county": "Chesterfield",
+      "amount": 8500.0,
+      "lat": 37.4745,
+      "lng": -77.6464
+    },
+    {
+      "first_name": "Regeaux",
+      "state": "VA",
+      "city": "Franklin",
+      "county": "Franklin (city)",
+      "amount": 3000.0,
+      "lat": 36.6786,
+      "lng": -76.9391
+    },
+    {
+      "first_name": "Rena",
+      "state": "VA",
+      "city": "Ruther Glen",
+      "county": "Caroline",
+      "amount": 5000.0,
+      "lat": 37.9451,
+      "lng": -77.4714
+    },
+    {
+      "first_name": "Russell",
+      "state": "VA",
+      "city": "Bristol",
+      "county": "Bristol (city)",
+      "amount": 3000.0,
+      "lat": 36.6134,
+      "lng": -82.1908
+    },
+    {
+      "first_name": "Tiffany",
+      "state": "VA",
+      "city": "Chesterfield",
+      "county": "Chesterfield",
+      "amount": 6250.0,
+      "lat": 37.3628,
+      "lng": -77.6005
+    },
+    {
+      "first_name": "Timothy",
+      "state": "VA",
+      "city": "Strasburg",
+      "county": "Shenandoah",
+      "amount": 3000.0,
+      "lat": 39.0346,
+      "lng": -78.3649
+    },
+    {
+      "first_name": "Vidal",
+      "state": "VA",
+      "city": "Hampton",
+      "county": "Hampton (city)",
+      "amount": 6000.0,
+      "lat": 37.0479,
+      "lng": -76.3589
+    },
+    {
+      "first_name": "Jessica",
       "state": "WI",
-      "city": "Durand",
-      "county": "Pepin",
-      "amount": 6500.0,
-      "lat": 44.63,
-      "lng": -91.9295
+      "city": "Milwaukee",
+      "county": "Milwaukee",
+      "amount": 5000.0,
+      "lat": 43.0498,
+      "lng": -87.9529
+    },
+    {
+      "first_name": "Maurice",
+      "state": "WI",
+      "city": "Milwaukee",
+      "county": "Milwaukee",
+      "amount": 5500.0,
+      "lat": 43.0498,
+      "lng": -87.9529
+    },
+    {
+      "first_name": "Sabrina",
+      "state": "WI",
+      "city": "Madison",
+      "county": "Dane",
+      "amount": 3250.0,
+      "lat": 43.0724,
+      "lng": -89.4023
+    },
+    {
+      "first_name": "Brandi",
+      "state": "WY",
+      "city": "Rock Springs",
+      "county": "Sweetwater",
+      "amount": 3000.0,
+      "lat": 41.5968,
+      "lng": -109.2165
+    },
+    {
+      "first_name": "Renee",
+      "state": "WY",
+      "city": "Rock Springs",
+      "county": "Sweetwater",
+      "amount": 3000.0,
+      "lat": 41.5968,
+      "lng": -109.2165
     }
   ]
 }
