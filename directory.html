@@ -9,11 +9,11 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&family=Orbitron:wght@500;600;700;800&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="style.css?v=1778710397">
-<link rel="stylesheet" href="quiet-tokens.css?v=1778710397">
-<link rel="stylesheet" href="quiet.css?v=1778710397">
-<link rel="stylesheet" href="quiet-extras.css?v=1778710397">
-<link rel="stylesheet" href="quiet-legacy.css?v=1778710397">
+<link rel="stylesheet" href="style.css?v=1778711753">
+<link rel="stylesheet" href="quiet-tokens.css?v=1778711753">
+<link rel="stylesheet" href="quiet.css?v=1778711753">
+<link rel="stylesheet" href="quiet-extras.css?v=1778711753">
+<link rel="stylesheet" href="quiet-legacy.css?v=1778711753">
 <style>
   .dir-section { max-width: 1080px; margin: 0 auto; padding: 24px 0 48px; }
   @media (max-width: 800px) { .dir-section { padding: 2px 0 32px; } }
@@ -1065,7 +1065,7 @@
 
 <header class="qb-topbar">
   <a class="qb-brand" href="index.html" aria-label="TogetherBOOK — home">
-    <img class="qb-brand-logo" src="togetherbook-logo.png?v=1778710397" alt="TogetherBOOK">
+    <img class="qb-brand-logo" src="togetherbook-logo.png?v=1778711753" alt="TogetherBOOK">
   </a>
   <button class="qb-hamburger" aria-label="Toggle navigation menu" aria-expanded="false"
           onclick="document.body.classList.toggle('nav-open');this.setAttribute('aria-expanded',document.body.classList.contains('nav-open'))">
@@ -1982,9 +1982,14 @@
   function dirPhotoKey(email) {
     return (email || "").toString().trim().toLowerCase().replace(/@/g, "_at_");
   }
+  // Session-only cache of locally-read photo dataURLs. Populated by the
+  // upload flow so the just-uploaded image shows immediately, bridging the
+  // ~30-60s gap before GitHub Pages publishes the committed file.
+  const localPhotoPreview = new Map();
   function dirPhotoUrl(u) {
     if (!u) return "";
     const email = (u.email || "").toLowerCase();
+    if (localPhotoPreview.has(email)) return localPhotoPreview.get(email);
     const ann = annotationsMap[email];
     if (ann && ann.directory_photo_uploaded_at) {
       return `assets/photos/${dirPhotoKey(email)}.jpg?v=${encodeURIComponent(ann.directory_photo_uploaded_at)}`;
@@ -3553,13 +3558,13 @@
       } catch (e) { console.warn("photo annotation save failed", e); }
       const cur = annotationsMap[(u.email || "").toLowerCase()] || {};
       annotationsMap[(u.email || "").toLowerCase()] = { ...cur, directory_photo_uploaded_at: ts };
-      // Instant preview: swap the modal photo to the local FileReader result
-      // while we wait for GitHub Pages to deploy the committed file.
-      const modal = document.getElementById("dirModal");
-      const img = modal && modal.querySelector(".dir-photo");
-      if (img && previewDataUrl) img.src = previewDataUrl;
+      // Stash the locally-read JPEG so every render this session uses it
+      // directly — bridges the ~30-60s gap before GitHub Pages publishes the
+      // committed file, and survives card close+reopen.
+      if (previewDataUrl) localPhotoPreview.set((u.email || "").toLowerCase(), previewDataUrl);
+      openCard(entryKey(entry));
       renderGrid();
-      showModalBanner("Photo uploaded. It will appear on every page within ~30s once GitHub Pages publishes.", "success");
+      showModalBanner("Photo uploaded. Visible to everyone else within ~30s once GitHub Pages publishes.", "success");
     } catch (err) {
       showModalBanner(`Photo upload failed: ${err.message || err}`, "error");
     }
@@ -3580,6 +3585,7 @@
       const cur = annotationsMap[(u.email || "").toLowerCase()] || {};
       delete cur.directory_photo_uploaded_at;
       annotationsMap[(u.email || "").toLowerCase()] = cur;
+      localPhotoPreview.delete((u.email || "").toLowerCase());
       openCard(entryKey(entry));
       renderGrid();
       showModalBanner("Photo removed — card reverts to the Workspace photo (or initials).", "success");
