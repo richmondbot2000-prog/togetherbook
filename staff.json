@@ -1,6 +1,6 @@
 {
   "schema_version": 2,
-  "updated_at": "2026-05-13T18:05:05.289065Z",
+  "updated_at": "2026-05-13T18:33:08.275030Z",
   "snapshot_date": "2026-05-13",
   "domain": "letme.co.uk",
   "tenants": [
@@ -9,7 +9,7 @@
       "domain": "letme.co.uk",
       "delegate": "james.benamor@letme.co.uk",
       "users": 66,
-      "suspended_hidden": 4,
+      "suspended_hidden": 3,
       "error": null
     },
     {
@@ -23,7 +23,7 @@
   ],
   "totals": {
     "users": 194,
-    "suspended_hidden": 5,
+    "suspended_hidden": 4,
     "by_department": {
       "(unspecified)": 194
     },
@@ -463,11 +463,11 @@
     },
     {
       "id": "100275908615248107596",
-      "email": "zara.benamor.parked.1778682691@letme.com",
+      "email": "zara.benamor@letme.com",
       "aliases": [
+        "zara.benamor.parked.1778682691@letme.com",
         "zara.benamor@grenwich-clearloans.com",
         "zara.benamor@letme.co.uk",
-        "zara.benamor@letme.com",
         "zara.benamor@mail.amigohome.co.uk",
         "zara.benamor@mail.letme.co.uk",
         "zara.benamor@rgroup.co.uk"
@@ -478,7 +478,7 @@
       "title": "",
       "department": "",
       "photo_url": "https://lh3.googleusercontent.com/a-/ALV-UjUbqFgqRfXPlHglsTjGqMUztmtAY-p1Mum81O16lkADE2PQrNtx=s96-c",
-      "suspended": true,
+      "suspended": false,
       "admin": false,
       "deletion_time": "",
       "tenant": "letme.co.uk",
