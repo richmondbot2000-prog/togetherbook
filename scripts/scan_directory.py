@@ -177,16 +177,21 @@ def main() -> None:
             continue
 
         users = [normalize(u, tenant=name) for u in raw]
-        active = [u for u in users if not u['suspended']]
-        suspended_hidden = len(users) - len(active)
-        suspended_total += suspended_hidden
+        # Keep everyone — active, suspended AND recently-deleted. The Directory
+        # page sorts suspended to the bottom (greyed) and deleted to the very
+        # bottom (red, recoverable for 20 days). Filtering them out here hid
+        # leavers entirely, which broke the per-seat-billing-visibility goal.
+        suspended_count = sum(1 for u in users if u['suspended'])
+        deleted_count = sum(1 for u in users if u.get('deletion_time'))
+        suspended_total += suspended_count
 
         per_tenant_counts[name] = {
-            'users': len(active),
-            'suspended_hidden': suspended_hidden,
+            'users': len(users),
+            'suspended_hidden': suspended_count,   # name kept for output back-compat; not actually hidden any more
+            'deleted': deleted_count,
         }
-        all_users.extend(active)
-        print(f"#   {name}: {len(active)} active ({suspended_hidden} suspended hidden)", flush=True)
+        all_users.extend(users)
+        print(f"#   {name}: {len(users)} total ({suspended_count} suspended, {deleted_count} deleted)", flush=True)
 
     # Dedupe by email — if a person has accounts in two tenants we keep one,
     # but record both tenants on the kept row so the UI can show that.
