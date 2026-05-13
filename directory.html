@@ -9,11 +9,11 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&family=Orbitron:wght@500;600;700;800&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="style.css?v=1778677131">
-<link rel="stylesheet" href="quiet-tokens.css?v=1778677131">
-<link rel="stylesheet" href="quiet.css?v=1778677131">
-<link rel="stylesheet" href="quiet-extras.css?v=1778677131">
-<link rel="stylesheet" href="quiet-legacy.css?v=1778677131">
+<link rel="stylesheet" href="style.css?v=1778677604">
+<link rel="stylesheet" href="quiet-tokens.css?v=1778677604">
+<link rel="stylesheet" href="quiet.css?v=1778677604">
+<link rel="stylesheet" href="quiet-extras.css?v=1778677604">
+<link rel="stylesheet" href="quiet-legacy.css?v=1778677604">
 <style>
   .dir-section { max-width: 1080px; margin: 0 auto; padding: 24px 0 48px; }
   @media (max-width: 800px) { .dir-section { padding: 2px 0 32px; } }
@@ -557,8 +557,11 @@
     letter-spacing: 0.06em;
     color: var(--muted);
   }
-  .dir-form-row input {
-    background: var(--bg-soft-2);
+  /* INPUTS — every input + textarea in the card looks the same: white
+     background, thin grey border, ink text. Distinct from buttons. */
+  .dir-form-row input,
+  .dir-form-row textarea {
+    background: #fff;
     border: 1px solid var(--border);
     color: var(--ink);
     padding: 8px 12px;
@@ -566,13 +569,16 @@
     font: 500 0.9rem 'Inter', sans-serif;
     width: 100%;
     box-sizing: border-box;
+    resize: vertical;
   }
-  .dir-form-row input:focus {
+  .dir-form-row input:focus,
+  .dir-form-row textarea:focus {
     outline: none;
     border-color: var(--accent);
     box-shadow: 0 0 8px rgba(0, 212, 255, 0.18);
   }
-  .dir-form-row input.dir-input-invalid {
+  .dir-form-row input.dir-input-invalid,
+  .dir-form-row textarea.dir-input-invalid {
     border-color: var(--manuscript-red, #B23A48);
     box-shadow: 0 0 0 2px rgba(178, 58, 72, 0.25);
   }
@@ -842,30 +848,32 @@
     gap: 8px;
     margin-top: 4px;
   }
+  /* PRIMARY BUTTONS — solid filled, white text, no border. Visually
+     distinct from inputs so users can't mistake one for the other. */
   .dir-manage-actions button {
     flex: 1 1 auto;
-    background: var(--bg-soft-2);
-    border: 1px solid var(--border);
-    color: var(--ink);
-    font: 600 0.85rem 'Inter', sans-serif;
-    padding: 10px 14px;
+    background: var(--ink, #11192E);
+    border: 1px solid var(--ink, #11192E);
+    color: #fff;
+    font: 600 0.9rem 'Inter', sans-serif;
+    padding: 10px 16px;
     border-radius: 8px;
     cursor: pointer;
-    transition: border-color 0.15s, background 0.15s, color 0.15s;
+    transition: background 0.15s, border-color 0.15s, opacity 0.15s;
   }
-  .dir-manage-actions button:hover { border-color: var(--accent); }
+  .dir-manage-actions button:hover { opacity: 0.85; }
   .dir-manage-actions button.danger {
-    border-color: var(--warn, #c54c4c);
-    color: var(--warn, #c54c4c);
-  }
-  .dir-manage-actions button.danger:hover {
-    background: var(--warn, #c54c4c);
+    background: var(--manuscript-red, #B23A48);
+    border-color: var(--manuscript-red, #B23A48);
     color: #fff;
   }
+  .dir-manage-actions button.danger:hover { opacity: 0.85; }
   .dir-manage-actions button:disabled {
     opacity: 0.5;
     cursor: wait;
   }
+  /* Secondary text-link actions are styled via .dir-link-btn (defined
+     above near .dir-payroll-link-row). */
 
   /* Inline confirmation strip — shows after clicking Suspend/Delete. */
   .dir-confirm {
@@ -965,7 +973,7 @@
 
 <header class="qb-topbar">
   <a class="qb-brand" href="index.html" aria-label="TogetherBOOK — home">
-    <img class="qb-brand-logo" src="togetherbook-logo.png?v=1778677131" alt="TogetherBOOK">
+    <img class="qb-brand-logo" src="togetherbook-logo.png?v=1778677604" alt="TogetherBOOK">
   </a>
   <button class="qb-hamburger" aria-label="Toggle navigation menu" aria-expanded="false"
           onclick="document.body.classList.toggle('nav-open');this.setAttribute('aria-expanded',document.body.classList.contains('nav-open'))">
@@ -1914,36 +1922,44 @@
       checkLiveForwarding(entry);
     }
 
-    const saveBtn = modal.querySelector("[data-save]");
-    if (saveBtn) {
-      saveBtn.addEventListener("click", async () => {
-        const phone = (modal.querySelector('input[name="phone"]').value || "").trim();
-        const address = (modal.querySelector('textarea[name="address"]').value || "").trim();
-        const toast = modal.querySelector("[data-toast]");
-        saveBtn.disabled = true;
-        if (toast) { toast.textContent = "Saving…"; toast.classList.remove("error"); }
-        try {
-          await saveAnnotationRemote(key, phone, "", { address });
-          if (toast) toast.textContent = "Saved to the team directory.";
-          renderGrid();
-        } catch (err) {
-          if (toast) {
-            toast.textContent = "Save failed — " + (err.message || err);
-            toast.classList.add("error");
-          }
-        } finally {
-          saveBtn.disabled = false;
-        }
-      });
-    }
+    // Capture the initial Notes values so closeCard() can compute whether
+    // anything actually changed before writing back to annotations.json.
+    const phoneInput = modal.querySelector('input[name="phone"]');
+    const addressInput = modal.querySelector('textarea[name="address"]');
+    if (phoneInput) phoneInput.dataset.initialValue = phoneInput.value;
+    if (addressInput) addressInput.dataset.initialValue = addressInput.value;
+    modal.dataset.notesKey = key;
+  }
+
+  // Auto-save Notes (phone + address) if the values changed. Fire-and-forget;
+  // we don't block the close on the network call.
+  function autoSaveNotesIfChanged() {
+    const modal = document.getElementById("dirModal");
+    if (!modal) return;
+    const key = modal.dataset.notesKey;
+    if (!key) return;
+    const phoneInput = modal.querySelector('input[name="phone"]');
+    const addressInput = modal.querySelector('textarea[name="address"]');
+    if (!phoneInput && !addressInput) return;
+    const phone = phoneInput ? (phoneInput.value || "").trim() : "";
+    const address = addressInput ? (addressInput.value || "").trim() : "";
+    const phoneChanged = phoneInput && phone !== (phoneInput.dataset.initialValue || "").trim();
+    const addressChanged = addressInput && address !== (addressInput.dataset.initialValue || "").trim();
+    if (!phoneChanged && !addressChanged) return;
+    saveAnnotationRemote(key, phone, "", { address })
+      .then(() => renderGrid())
+      .catch(err => console.warn("annotation auto-save failed", err));
   }
 
   function closeCard() {
+    autoSaveNotesIfChanged();
     const backdrop = document.getElementById("dirModalBackdrop");
     backdrop.classList.remove("open");
     backdrop.setAttribute("aria-hidden", "true");
     document.body.classList.remove("dir-modal-open");
-    document.getElementById("dirModal").innerHTML = "";
+    const modal = document.getElementById("dirModal");
+    modal.innerHTML = "";
+    delete modal.dataset.notesKey;
   }
 
   // Render a chronological audit-history block for a suspended user.
@@ -2268,12 +2284,7 @@
           <label for="dirAddress">Address</label>
           <textarea id="dirAddress" name="address" rows="2" placeholder="${escapeHtml((payrollFor(entry)?.address) || "Home address")}">${escapeHtml(ann.address || "")}</textarea>
         </div>
-        <div class="dir-modal-actions">
-          ${mailto ? `<a class="dir-modal-btn" href="mailto:${escapeHtml(mailto)}" title="${mailtoIsForward ? `Goes to the forwarded target ${escapeHtml(mailto)} — original mailbox is suspended` : `mailto: ${escapeHtml(mailto)}`}">Email${mailtoIsForward ? " (via forward)" : ""}</a>` : ""}
-          <button type="button" class="primary" data-save>Save</button>
-        </div>
-        <p class="dir-modal-toast" data-toast></p>
-        <p class="dir-modal-saved-hint">Saving writes <code>annotations.json</code> in the repo (everyone sees it).</p>
+        <p class="dir-modal-saved-hint">Changes are saved to <code>annotations.json</code> automatically when you close this card.</p>
       </div>
     `;
   }
