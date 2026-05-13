@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "updated_at": "2026-05-13T20:28:32.507Z",
+  "updated_at": "2026-05-13T20:28:34.209Z",
   "actions": [
     {
       "ts": "2026-05-13T20:27:39.210Z",
@@ -69,6 +69,13 @@
       "ts": "2026-05-13T20:28:32.507Z",
       "actor": "james.benamor@letme.com",
       "action": "get-forwarding",
+      "target": "mourad.malki@clearloans.com.au",
+      "ok": true
+    },
+    {
+      "ts": "2026-05-13T20:28:34.209Z",
+      "actor": "james.benamor@letme.com",
+      "action": "admin-add",
       "target": "mourad.malki@clearloans.com.au",
       "ok": true
     }
