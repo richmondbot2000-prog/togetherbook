@@ -343,17 +343,29 @@ async function doConvertToGroup(token, body) {
   if (!local || !domain) return { ok: false, error: "email parse failed" };
   const parkedEmail = `${local}.parked.${Math.floor(Date.now() / 1000)}@${domain}`;
 
-  // 1. Rename
+  // 1. Look up the immutable user id (we need it for the delete step,
+  //    because the renamed primary email isn't immediately queryable due
+  //    to propagation lag).
+  let userId = body.user_id || null;
+  if (!userId) {
+    const fetched = await adminApi(token, "GET", `users/${encodeURIComponent(body.email)}`);
+    if (!fetched.ok) return { ok: false, error: "fetch user (to capture id): " + fetched.error };
+    userId = fetched.data && fetched.data.id;
+    if (!userId) return { ok: false, error: "user record has no immutable id — can't proceed safely" };
+  }
+
+  // 2. Rename
   const ren = await adminApi(token, "PUT", `users/${encodeURIComponent(body.email)}`, {
     primaryEmail: parkedEmail,
   });
   if (!ren.ok) return { ok: false, error: "rename user: " + ren.error };
 
-  // 2. Delete the renamed user (parked address goes into 20-day lockout, but
-  //    we don't need it back; the original-email alias is released immediately).
-  const del = await adminApi(token, "DELETE", `users/${encodeURIComponent(parkedEmail)}`);
+  // 3. Delete the renamed user BY IMMUTABLE ID (the new primary isn't
+  //    queryable yet). 20-day lockout applies to the parked primary; the
+  //    original-email alias is released immediately.
+  const del = await adminApi(token, "DELETE", `users/${encodeURIComponent(userId)}`);
   if (!del.ok) {
-    return { ok: false, error: "delete parked user (renamed to " + parkedEmail + "): " + del.error };
+    return { ok: false, error: "delete parked user (id=" + userId + ", renamed to " + parkedEmail + "): " + del.error };
   }
 
   // 3. Create the Group at the freed original address.
