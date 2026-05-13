@@ -9,11 +9,11 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&family=Orbitron:wght@500;600;700;800&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="style.css?v=1778702822">
-<link rel="stylesheet" href="quiet-tokens.css?v=1778702822">
-<link rel="stylesheet" href="quiet.css?v=1778702822">
-<link rel="stylesheet" href="quiet-extras.css?v=1778702822">
-<link rel="stylesheet" href="quiet-legacy.css?v=1778702822">
+<link rel="stylesheet" href="style.css?v=1778703273">
+<link rel="stylesheet" href="quiet-tokens.css?v=1778703273">
+<link rel="stylesheet" href="quiet.css?v=1778703273">
+<link rel="stylesheet" href="quiet-extras.css?v=1778703273">
+<link rel="stylesheet" href="quiet-legacy.css?v=1778703273">
 <style>
   .dir-section { max-width: 1080px; margin: 0 auto; padding: 24px 0 48px; }
   @media (max-width: 800px) { .dir-section { padding: 2px 0 32px; } }
@@ -1065,7 +1065,7 @@
 
 <header class="qb-topbar">
   <a class="qb-brand" href="index.html" aria-label="TogetherBOOK — home">
-    <img class="qb-brand-logo" src="togetherbook-logo.png?v=1778702822" alt="TogetherBOOK">
+    <img class="qb-brand-logo" src="togetherbook-logo.png?v=1778703273" alt="TogetherBOOK">
   </a>
   <button class="qb-hamburger" aria-label="Toggle navigation menu" aria-expanded="false"
           onclick="document.body.classList.toggle('nav-open');this.setAttribute('aria-expanded',document.body.classList.contains('nav-open'))">
@@ -1090,6 +1090,7 @@
       <h1>Directory</h1>
       <p class="lead">Every Workspace account, plus everyone who's written into the Central Services platform in the last 60 days. Sorted by which tenant they work on most.</p>
       <p class="dir-meta" id="dirMeta">Loading…</p>
+      <p class="dir-meta" id="dirWhoami" hidden></p>
 
       <div class="dir-health-panel" id="dirHealthPanel" hidden></div>
 
@@ -1204,6 +1205,14 @@
     // Hide the global "+ New user" button from non-admins.
     const newBtn = document.getElementById("dirNewBtn");
     if (newBtn) newBtn.hidden = !viewerIsAdmin;
+    // Surface "Signed in as X · admin" so the viewer can see their own
+    // identity + status. Helps debug when admin controls are missing.
+    const wn = document.getElementById("dirWhoami");
+    if (wn && viewerEmail) {
+      const role = viewerIsOwner ? "owner" : viewerIsAdmin ? "admin" : "read-only (not an admin)";
+      wn.textContent = `Signed in as ${viewerEmail} · ${role}`;
+      wn.hidden = false;
+    }
     const modal = document.getElementById("dirModal");
     if (modal && modal.dataset.notesKey) {
       // Re-open the active card so admin-only UI appears now we know identity.
