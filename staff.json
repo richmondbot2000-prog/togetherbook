@@ -1,6 +1,6 @@
 {
   "schema_version": 2,
-  "updated_at": "2026-05-13T09:59:49.677916Z",
+  "updated_at": "2026-05-13T10:01:15.388029Z",
   "snapshot_date": "2026-05-13",
   "domain": "letme.co.uk",
   "tenants": [
@@ -8,8 +8,8 @@
       "name": "letme.co.uk",
       "domain": "letme.co.uk",
       "delegate": "james.benamor@letme.co.uk",
-      "users": 0,
-      "suspended_hidden": 0,
+      "users": 66,
+      "suspended_hidden": 6,
       "error": null
     },
     {
@@ -18,21 +18,1612 @@
       "delegate": "ben.gardner@rgroup.co.uk",
       "users": 0,
       "suspended_hidden": 0,
-      "error": "<HttpError 403 when requesting https://admin.googleapis.com/admin/directory/v1/users?customer=my_customer&maxResults=500&orderBy=email&projection=full&viewType=admin_view&showDeleted=true&alt=json ret"
+      "error": "<HttpError 403 when requesting https://admin.googleapis.com/admin/directory/v1/users?customer=my_customer&maxResults=500&orderBy=email&projection=full&viewType=admin_view&showDeleted=false&alt=json re"
     }
   ],
   "totals": {
-    "users": 0,
-    "suspended_hidden": 0,
-    "by_department": {},
-    "by_tenant": {}
+    "users": 66,
+    "suspended_hidden": 6,
+    "by_department": {
+      "(unspecified)": 66
+    },
+    "by_tenant": {
+      "letme.co.uk": 66
+    }
   },
   "fetch_errors": [
     {
       "tenant": "rgroup.co.uk",
       "domain": "rgroup.co.uk",
-      "error": "<HttpError 403 when requesting https://admin.googleapis.com/admin/directory/v1/users?customer=my_customer&maxResults=500&orderBy=email&projection=full&viewType=admin_view&showDeleted=true&alt=json returned \"Not Authorized to access this resource/api\". Details: \"[{'message': 'Not Authorized to access"
+      "error": "<HttpError 403 when requesting https://admin.googleapis.com/admin/directory/v1/users?customer=my_customer&maxResults=500&orderBy=email&projection=full&viewType=admin_view&showDeleted=false&alt=json returned \"Not Authorized to access this resource/api\". Details: \"[{'message': 'Not Authorized to acces"
     }
   ],
-  "users": []
+  "users": [
+    {
+      "id": "113424855468675771982",
+      "email": "azure@letme.com",
+      "aliases": [
+        "azure@grenwich-clearloans.com",
+        "azure@letme.co.uk",
+        "azure@mail.amigohome.co.uk",
+        "azure@mail.letme.co.uk",
+        "azure@rgroup.co.uk"
+      ],
+      "name": "Azure Account",
+      "given": "Azure",
+      "family": "Account",
+      "title": "",
+      "department": "",
+      "photo_url": "",
+      "suspended": false,
+      "admin": false,
+      "deletion_time": "",
+      "tenant": "letme.co.uk",
+      "tenants": [
+        "letme.co.uk"
+      ]
+    },
+    {
+      "id": "116730741991770005277",
+      "email": "leticia.alexandre@letme.com",
+      "aliases": [],
+      "name": "Leticia Alexandre",
+      "given": "Leticia",
+      "family": "Alexandre",
+      "title": "",
+      "department": "",
+      "photo_url": "https://lh3.googleusercontent.com/a-/ALV-UjUdOpVbvfmtl7pCOOZNck3_3_-9HuBOrNX3rmNLQD_CmacUqdWP=s96-c",
+      "suspended": false,
+      "admin": false,
+      "deletion_time": "",
+      "tenant": "letme.co.uk",
+      "tenants": [
+        "letme.co.uk"
+      ]
+    },
+    {
+      "id": "114290408268659127125",
+      "email": "autobots@rapida.bg",
+      "aliases": [
+        "rapida.collections@mail.rapida.bg",
+        "rapida.collections@rapida.bg",
+        "rapida.payout@mail.rapida.bg",
+        "rapida.payout@rapida.bg"
+      ],
+      "name": "Bulgaria Autobots",
+      "given": "Bulgaria",
+      "family": "Autobots",
+      "title": "",
+      "department": "",
+      "photo_url": "",
+      "suspended": false,
+      "admin": false,
+      "deletion_time": "",
+      "tenant": "letme.co.uk",
+      "tenants": [
+        "letme.co.uk"
+      ]
+    },
+    {
+      "id": "101521104788722573768",
+      "email": "autobots@clearloans.com.au",
+      "aliases": [
+        "automessaging@clearloans.com.au",
+        "cash.payments@clearloans.com.au",
+        "collections@clearloans.com.au",
+        "communications.collector@clearloans.com.au",
+        "help@grenwich-clearloans.com",
+        "help@letme.co.uk",
+        "help@mail.amigohome.co.uk",
+        "help@mail.letme.co.uk",
+        "help@rgroup.co.uk",
+        "makeacomplaint@grenwich-clearloans.com",
+        "makeacomplaint@letme.co.uk",
+        "makeacomplaint@mail.amigohome.co.uk",
+        "makeacomplaint@mail.letme.co.uk",
+        "makeacomplaint@rgroup.co.uk",
+        "noreply@clearloans.com.au"
+      ],
+      "name": "Clearloans Autobots",
+      "given": "Clearloans",
+      "family": "Autobots",
+      "title": "",
+      "department": "",
+      "photo_url": "",
+      "suspended": false,
+      "admin": false,
+      "deletion_time": "",
+      "tenant": "letme.co.uk",
+      "tenants": [
+        "letme.co.uk"
+      ]
+    },
+    {
+      "id": "110199835426365112017",
+      "email": "lmautomessagingarchive@letme.com",
+      "aliases": [],
+      "name": "Lending Mate Automessaging Archive",
+      "given": "Lending Mate",
+      "family": "Automessaging Archive",
+      "title": "",
+      "department": "",
+      "photo_url": "",
+      "suspended": false,
+      "admin": false,
+      "deletion_time": "",
+      "tenant": "letme.co.uk",
+      "tenants": [
+        "letme.co.uk"
+      ]
+    },
+    {
+      "id": "110501113601945405352",
+      "email": "kyle.barrett@letme.com",
+      "aliases": [
+        "kyle.barret@letme.com"
+      ],
+      "name": "Kyle Barrett",
+      "given": "Kyle",
+      "family": "Barrett",
+      "title": "",
+      "department": "",
+      "photo_url": "",
+      "suspended": false,
+      "admin": false,
+      "deletion_time": "",
+      "tenant": "letme.co.uk",
+      "tenants": [
+        "letme.co.uk"
+      ]
+    },
+    {
+      "id": "111909488788943120208",
+      "email": "daniel.bartlett@letme.com",
+      "aliases": [],
+      "name": "Daniel Bartlett",
+      "given": "Daniel",
+      "family": "Bartlett",
+      "title": "",
+      "department": "",
+      "photo_url": "",
+      "suspended": false,
+      "admin": false,
+      "deletion_time": "",
+      "tenant": "letme.co.uk",
+      "tenants": [
+        "letme.co.uk"
+      ]
+    },
+    {
+      "id": "105699055280704464982",
+      "email": "james.benamor@letme.com",
+      "aliases": [
+        "james.b@letme.com",
+        "james.benamor@grenwich-clearloans.com",
+        "james.benamor@letme.co.uk",
+        "james.benamor@mail.amigohome.co.uk",
+        "james.benamor@mail.letme.co.uk",
+        "james.benamor@memini.co.uk",
+        "james.benamor@rgroup.co.uk",
+        "paul.benamor@grenwich-clearloans.com",
+        "paul.benamor@letme.co.uk",
+        "paul.benamor@letme.com",
+        "paul.benamor@mail.amigohome.co.uk",
+        "paul.benamor@mail.letme.co.uk",
+        "paul.benamor@rgroup.co.uk"
+      ],
+      "name": "James Benamor",
+      "given": "James",
+      "family": "Benamor",
+      "title": "",
+      "department": "",
+      "photo_url": "https://lh3.googleusercontent.com/a/ACg8ocLBKolneK43dqPG956vMwdslyMLyiXQe1901SPGTCXB4YnCIJ0=s96-c",
+      "suspended": false,
+      "admin": true,
+      "deletion_time": "",
+      "tenant": "letme.co.uk",
+      "tenants": [
+        "letme.co.uk"
+      ]
+    },
+    {
+      "id": "115520467375685595911",
+      "email": "lucas.benamor@letme.co.uk",
+      "aliases": [
+        "lucas.benamor@grenwich-clearloans.com",
+        "lucas.benamor@mail.amigohome.co.uk",
+        "lucas.benamor@mail.letme.co.uk",
+        "lucas.benamor@rgroup.co.uk"
+      ],
+      "name": "Lucas Benamor",
+      "given": "Lucas",
+      "family": "Benamor",
+      "title": "",
+      "department": "",
+      "photo_url": "",
+      "suspended": true,
+      "admin": false,
+      "deletion_time": "",
+      "tenant": "letme.co.uk",
+      "tenants": [
+        "letme.co.uk"
+      ]
+    },
+    {
+      "id": "103394639471044980563",
+      "email": "tarek.benamor@letme.com",
+      "aliases": [
+        "tarek.benamor@grenwich-clearloans.com",
+        "tarek.benamor@letme.co.uk",
+        "tarek.benamor@mail.amigohome.co.uk",
+        "tarek.benamor@mail.letme.co.uk",
+        "tarek.benamor@rgroup.co.uk"
+      ],
+      "name": "Tarek Benamor",
+      "given": "Tarek",
+      "family": "Benamor",
+      "title": "",
+      "department": "",
+      "photo_url": "",
+      "suspended": false,
+      "admin": false,
+      "deletion_time": "",
+      "tenant": "letme.co.uk",
+      "tenants": [
+        "letme.co.uk"
+      ]
+    },
+    {
+      "id": "100275908615248107596",
+      "email": "zara.benamor@letme.com",
+      "aliases": [
+        "zara.benamor@grenwich-clearloans.com",
+        "zara.benamor@letme.co.uk",
+        "zara.benamor@mail.amigohome.co.uk",
+        "zara.benamor@mail.letme.co.uk",
+        "zara.benamor@rgroup.co.uk"
+      ],
+      "name": "Zara Benamor",
+      "given": "Zara",
+      "family": "Benamor",
+      "title": "",
+      "department": "",
+      "photo_url": "https://lh3.googleusercontent.com/a-/ALV-UjUbqFgqRfXPlHglsTjGqMUztmtAY-p1Mum81O16lkADE2PQrNtx=s96-c",
+      "suspended": true,
+      "admin": false,
+      "deletion_time": "",
+      "tenant": "letme.co.uk",
+      "tenants": [
+        "letme.co.uk"
+      ]
+    },
+    {
+      "id": "105702000376357597854",
+      "email": "dan.bennett@clearloans.com.au",
+      "aliases": [
+        "dan.bennett@alerts.clearloans.com.au",
+        "dan.bennett@grenwich-clearloans.com",
+        "dan.bennett@letme.co.uk",
+        "dan.bennett@letme.com",
+        "dan.bennett@mail.amigohome.co.uk",
+        "dan.bennett@mail.letme.co.uk",
+        "dan.bennett@rgroup.co.uk"
+      ],
+      "name": "Dan Bennett",
+      "given": "Dan",
+      "family": "Bennett",
+      "title": "",
+      "department": "",
+      "photo_url": "",
+      "suspended": false,
+      "admin": false,
+      "deletion_time": "",
+      "tenant": "letme.co.uk",
+      "tenants": [
+        "letme.co.uk"
+      ]
+    },
+    {
+      "id": "107819692622868905972",
+      "email": "kelly.black@letme.com",
+      "aliases": [
+        "alexandra.wellings@grenwich-clearloans.com",
+        "alexandra.wellings@letme.co.uk",
+        "alexandra.wellings@letme.com",
+        "alexandra.wellings@mail.amigohome.co.uk",
+        "alexandra.wellings@mail.letme.co.uk",
+        "alexandra.wellings@rgroup.co.uk",
+        "kelly.black@grenwich-clearloans.com",
+        "kelly.black@letme.co.uk",
+        "kelly.black@mail.amigohome.co.uk",
+        "kelly.black@mail.letme.co.uk",
+        "kelly.black@rgroup.co.uk",
+        "liam.keighley@grenwich-clearloans.com",
+        "liam.keighley@letme.co.uk",
+        "liam.keighley@mail.amigohome.co.uk",
+        "liam.keighley@mail.letme.co.uk",
+        "liam.keighley@rgroup.co.uk"
+      ],
+      "name": "Kelly Black",
+      "given": "Kelly",
+      "family": "Black",
+      "title": "",
+      "department": "",
+      "photo_url": "",
+      "suspended": false,
+      "admin": true,
+      "deletion_time": "",
+      "tenant": "letme.co.uk",
+      "tenants": [
+        "letme.co.uk"
+      ]
+    },
+    {
+      "id": "111751094558994475944",
+      "email": "noreply@togetherbook.net",
+      "aliases": [],
+      "name": "Richmond Bot",
+      "given": "Richmond",
+      "family": "Bot",
+      "title": "",
+      "department": "",
+      "photo_url": "",
+      "suspended": false,
+      "admin": false,
+      "deletion_time": "",
+      "tenant": "letme.co.uk",
+      "tenants": [
+        "letme.co.uk"
+      ]
+    },
+    {
+      "id": "113760324715875998727",
+      "email": "murray.breingan@letme.com",
+      "aliases": [],
+      "name": "Murray Breingan",
+      "given": "Murray",
+      "family": "Breingan",
+      "title": "",
+      "department": "",
+      "photo_url": "",
+      "suspended": true,
+      "admin": false,
+      "deletion_time": "",
+      "tenant": "letme.co.uk",
+      "tenants": [
+        "letme.co.uk"
+      ]
+    },
+    {
+      "id": "112264535615091634163",
+      "email": "david.byatt@letme.com",
+      "aliases": [
+        "david.byatt@grenwich-clearloans.com",
+        "david.byatt@letme.co.uk",
+        "david.byatt@mail.amigohome.co.uk",
+        "david.byatt@mail.letme.co.uk",
+        "david.byatt@rgroup.co.uk"
+      ],
+      "name": "David Byatt",
+      "given": "David",
+      "family": "Byatt",
+      "title": "",
+      "department": "",
+      "photo_url": "",
+      "suspended": false,
+      "admin": false,
+      "deletion_time": "",
+      "tenant": "letme.co.uk",
+      "tenants": [
+        "letme.co.uk"
+      ]
+    },
+    {
+      "id": "106527320841852358251",
+      "email": "joshua.carless@letme.co.uk",
+      "aliases": [
+        "joshua.carless@grenwich-clearloans.com",
+        "joshua.carless@mail.amigohome.co.uk",
+        "joshua.carless@mail.letme.co.uk",
+        "joshua.carless@rgroup.co.uk"
+      ],
+      "name": "Joshua Carless",
+      "given": "Joshua",
+      "family": "Carless",
+      "title": "",
+      "department": "",
+      "photo_url": "",
+      "suspended": false,
+      "admin": false,
+      "deletion_time": "",
+      "tenant": "letme.co.uk",
+      "tenants": [
+        "letme.co.uk"
+      ]
+    },
+    {
+      "id": "105363356389193359005",
+      "email": "laura.chadbourne@letme.co.uk",
+      "aliases": [
+        "laura.chadbourne@grenwich-clearloans.com",
+        "laura.chadbourne@letme.com",
+        "laura.chadbourne@mail.amigohome.co.uk",
+        "laura.chadbourne@mail.letme.co.uk",
+        "laura.chadbourne@rgroup.co.uk"
+      ],
+      "name": "Laura Chadbourne",
+      "given": "Laura",
+      "family": "Chadbourne",
+      "title": "",
+      "department": "",
+      "photo_url": "",
+      "suspended": false,
+      "admin": false,
+      "deletion_time": "",
+      "tenant": "letme.co.uk",
+      "tenants": [
+        "letme.co.uk"
+      ]
+    },
+    {
+      "id": "106050670120855478090",
+      "email": "amber.cole@letme.com",
+      "aliases": [
+        "amber.cole@grenwich-clearloans.com",
+        "amber.cole@letme.co.uk",
+        "amber.cole@mail.amigohome.co.uk",
+        "amber.cole@mail.letme.co.uk",
+        "amber.cole@rgroup.co.uk",
+        "femi.omotoso@grenwich-clearloans.com",
+        "femi.omotoso@letme.co.uk",
+        "femi.omotoso@letme.com",
+        "femi.omotoso@mail.amigohome.co.uk",
+        "femi.omotoso@mail.letme.co.uk",
+        "femi.omotoso@rgroup.co.uk"
+      ],
+      "name": "Amber Cole",
+      "given": "Amber",
+      "family": "Cole",
+      "title": "",
+      "department": "",
+      "photo_url": "",
+      "suspended": false,
+      "admin": true,
+      "deletion_time": "",
+      "tenant": "letme.co.uk",
+      "tenants": [
+        "letme.co.uk"
+      ]
+    },
+    {
+      "id": "106753340400099412808",
+      "email": "joshua.cole@letme.com",
+      "aliases": [],
+      "name": "Joshua Cole",
+      "given": "Joshua",
+      "family": "Cole",
+      "title": "",
+      "department": "",
+      "photo_url": "",
+      "suspended": false,
+      "admin": false,
+      "deletion_time": "",
+      "tenant": "letme.co.uk",
+      "tenants": [
+        "letme.co.uk"
+      ]
+    },
+    {
+      "id": "110269542055160513589",
+      "email": "clementia.dsouza@letme.com",
+      "aliases": [
+        "clementia.dsouza@grenwich-clearloans.com",
+        "clementia.dsouza@letme.co.uk",
+        "clementia.dsouza@mail.amigohome.co.uk",
+        "clementia.dsouza@mail.letme.co.uk",
+        "clementia.dsouza@rgroup.co.uk"
+      ],
+      "name": "Clementia Dsouza",
+      "given": "Clementia",
+      "family": "Dsouza",
+      "title": "",
+      "department": "",
+      "photo_url": "https://lh3.googleusercontent.com/a-/ALV-UjXCCDp1HiD2Pwalgh4_m8xmYKhVFu-oCloKjxiTBm4MRkLKUEg=s96-c",
+      "suspended": false,
+      "admin": false,
+      "deletion_time": "",
+      "tenant": "letme.co.uk",
+      "tenants": [
+        "letme.co.uk"
+      ]
+    },
+    {
+      "id": "117245693863726277658",
+      "email": "max.dynowski@letme.co.uk",
+      "aliases": [
+        "max.dynowski@grenwich-clearloans.com",
+        "max.dynowski@mail.amigohome.co.uk",
+        "max.dynowski@mail.letme.co.uk",
+        "max.dynowski@rgroup.co.uk"
+      ],
+      "name": "Max Dynowski",
+      "given": "Max",
+      "family": "Dynowski",
+      "title": "",
+      "department": "",
+      "photo_url": "",
+      "suspended": false,
+      "admin": false,
+      "deletion_time": "",
+      "tenant": "letme.co.uk",
+      "tenants": [
+        "letme.co.uk"
+      ]
+    },
+    {
+      "id": "111861738852277054573",
+      "email": "raveeha.ejaz@letme.com",
+      "aliases": [
+        "raveeha.ejaz@grenwich-clearloans.com",
+        "raveeha.ejaz@letme.co.uk",
+        "raveeha.ejaz@mail.amigohome.co.uk",
+        "raveeha.ejaz@mail.letme.co.uk",
+        "raveeha.ejaz@rgroup.co.uk",
+        "raveeha@letme.com"
+      ],
+      "name": "Raveeha Ejaz",
+      "given": "Raveeha",
+      "family": "Ejaz",
+      "title": "",
+      "department": "",
+      "photo_url": "",
+      "suspended": false,
+      "admin": false,
+      "deletion_time": "",
+      "tenant": "letme.co.uk",
+      "tenants": [
+        "letme.co.uk"
+      ]
+    },
+    {
+      "id": "110620037653367576452",
+      "email": "candidate.email@letme.co.uk",
+      "aliases": [
+        "candidate.email@grenwich-clearloans.com",
+        "candidate.email@mail.amigohome.co.uk",
+        "candidate.email@mail.letme.co.uk",
+        "candidate.email@rgroup.co.uk"
+      ],
+      "name": "Candidate Email",
+      "given": "Candidate",
+      "family": "Email",
+      "title": "",
+      "department": "",
+      "photo_url": "",
+      "suspended": false,
+      "admin": false,
+      "deletion_time": "",
+      "tenant": "letme.co.uk",
+      "tenants": [
+        "letme.co.uk"
+      ]
+    },
+    {
+      "id": "104681426858454099901",
+      "email": "historic@letme.co.uk",
+      "aliases": [
+        "adrianna.przybylska@letme.com",
+        "adrianna.przybylska@rapidamoney.pl",
+        "elliott.santana@grenwich-clearloans.com",
+        "elliott.santana@letme.co.uk",
+        "elliott.santana@letme.com",
+        "elliott.santana@mail.amigohome.co.uk",
+        "elliott.santana@mail.letme.co.uk",
+        "elliott.santana@rgroup.co.uk",
+        "historic@grenwich-clearloans.com",
+        "historic@mail.amigohome.co.uk",
+        "historic@mail.letme.co.uk",
+        "historic@rgroup.co.uk",
+        "irena.lipinska@grenwich-clearloans.com",
+        "irena.lipinska@letme.co.uk",
+        "irena.lipinska@letme.com",
+        "irena.lipinska@mail.amigohome.co.uk",
+        "irena.lipinska@mail.letme.co.uk",
+        "irena.lipinska@mail.rapidamoney.pl",
+        "irena.lipinska@rgroup.co.uk",
+        "patryk.brandeburski@grenwich-clearloans.com",
+        "patryk.brandeburski@letme.co.uk",
+        "patryk.brandeburski@letme.com",
+        "patryk.brandeburski@mail.amigohome.co.uk",
+        "patryk.brandeburski@mail.letme.co.uk",
+        "patryk.brandeburski@rapidamoney.bg",
+        "patryk.brandeburski@rapidamoney.pl",
+        "patryk.brandeburski@rgroup.co.uk",
+        "sam.lissen@grenwich-clearloans.com",
+        "sam.lissen@letme.co.uk",
+        "sam.lissen@letme.com",
+        "sam.lissen@mail.amigohome.co.uk",
+        "sam.lissen@mail.letme.co.uk",
+        "sam.lissen@rgroup.co.uk",
+        "shelby.barefoot@grenwich-clearloans.com",
+        "shelby.barefoot@letme.co.uk",
+        "shelby.barefoot@mail.amigohome.co.uk",
+        "shelby.barefoot@mail.letme.co.uk",
+        "shelby.barefoot@rgroup.co.uk"
+      ],
+      "name": "Historic Emails",
+      "given": "Historic",
+      "family": "Emails",
+      "title": "",
+      "department": "",
+      "photo_url": "",
+      "suspended": false,
+      "admin": false,
+      "deletion_time": "",
+      "tenant": "letme.co.uk",
+      "tenants": [
+        "letme.co.uk"
+      ]
+    },
+    {
+      "id": "118187969088259504651",
+      "email": "kieran.feltham@letme.co.uk",
+      "aliases": [
+        "kieran.feltham@grenwich-clearloans.com",
+        "kieran.feltham@letme.com",
+        "kieran.feltham@mail.amigohome.co.uk",
+        "kieran.feltham@mail.letme.co.uk",
+        "kieran.feltham@rgroup.co.uk"
+      ],
+      "name": "kieran feltham",
+      "given": "kieran",
+      "family": "feltham",
+      "title": "",
+      "department": "",
+      "photo_url": "",
+      "suspended": true,
+      "admin": false,
+      "deletion_time": "",
+      "tenant": "letme.co.uk",
+      "tenants": [
+        "letme.co.uk"
+      ]
+    },
+    {
+      "id": "110645217769063068120",
+      "email": "joseph.foard@letme.com",
+      "aliases": [
+        "joseph.foard@grenwich-clearloans.com",
+        "joseph.foard@letme.co.uk",
+        "joseph.foard@mail.amigohome.co.uk",
+        "joseph.foard@mail.letme.co.uk",
+        "joseph.foard@rgroup.co.uk"
+      ],
+      "name": "Joseph Foard",
+      "given": "Joseph",
+      "family": "Foard",
+      "title": "",
+      "department": "",
+      "photo_url": "",
+      "suspended": false,
+      "admin": true,
+      "deletion_time": "",
+      "tenant": "letme.co.uk",
+      "tenants": [
+        "letme.co.uk"
+      ]
+    },
+    {
+      "id": "110972972073302316605",
+      "email": "julian.foster@letme.co.uk",
+      "aliases": [
+        "andrew.allen@grenwich-clearloans.com",
+        "andrew.allen@letme.co.uk",
+        "andrew.allen@letme.com",
+        "andrew.allen@mail.amigohome.co.uk",
+        "andrew.allen@mail.letme.co.uk",
+        "andrew.allen@rgroup.co.uk",
+        "julian.foster@grenwich-clearloans.com",
+        "julian.foster@mail.amigohome.co.uk",
+        "julian.foster@mail.letme.co.uk",
+        "julian.foster@rgroup.co.uk",
+        "julian@grenwich-clearloans.com",
+        "julian@letme.co.uk",
+        "julian@mail.amigohome.co.uk",
+        "julian@mail.letme.co.uk",
+        "julian@rgroup.co.uk",
+        "properties@grenwich-clearloans.com",
+        "properties@letme.co.uk",
+        "properties@letme.com",
+        "properties@mail.amigohome.co.uk",
+        "properties@mail.letme.co.uk",
+        "properties@rgroup.co.uk",
+        "sian.burton@grenwich-clearloans.com",
+        "sian.burton@letme.co.uk",
+        "sian.burton@letme.com",
+        "sian.burton@mail.amigohome.co.uk",
+        "sian.burton@mail.letme.co.uk",
+        "sian.burton@rgroup.co.uk"
+      ],
+      "name": "Julian Foster",
+      "given": "Julian",
+      "family": "Foster",
+      "title": "",
+      "department": "",
+      "photo_url": "https://lh3.googleusercontent.com/a-/ALV-UjXj-cvyuvjGosE6zCXJMb9EfSEiOv1XdWxn_YbFqTwhHH2Z-jw=s96-c",
+      "suspended": false,
+      "admin": false,
+      "deletion_time": "",
+      "tenant": "letme.co.uk",
+      "tenants": [
+        "letme.co.uk"
+      ]
+    },
+    {
+      "id": "109761736920936875974",
+      "email": "ben.gardner@letme.com",
+      "aliases": [
+        "ben.gardner@grenwich-clearloans.com",
+        "ben.gardner@letme.co.uk",
+        "ben.gardner@mail.amigohome.co.uk",
+        "ben.gardner@mail.letme.co.uk",
+        "ben.gardner@rgroup.co.uk",
+        "richmondgroup@letme.com"
+      ],
+      "name": "Ben Gardner",
+      "given": "Ben",
+      "family": "Gardner",
+      "title": "",
+      "department": "",
+      "photo_url": "https://lh3.googleusercontent.com/a-/ALV-UjWY88TEkkdW_i2ZWGmnCmYQh-l3y4wn71H3LAx3mAxYQz6jxmEH=s96-c",
+      "suspended": false,
+      "admin": false,
+      "deletion_time": "",
+      "tenant": "letme.co.uk",
+      "tenants": [
+        "letme.co.uk"
+      ]
+    },
+    {
+      "id": "108120010068571921474",
+      "email": "adam.grigg@letme.co.uk",
+      "aliases": [
+        "adam.grigg@grenwich-clearloans.com",
+        "adam.grigg@letme.com",
+        "adam.grigg@mail.amigohome.co.uk",
+        "adam.grigg@mail.letme.co.uk",
+        "adam.grigg@rgroup.co.uk"
+      ],
+      "name": "Adam Grigg",
+      "given": "Adam",
+      "family": "Grigg",
+      "title": "",
+      "department": "",
+      "photo_url": "",
+      "suspended": true,
+      "admin": false,
+      "deletion_time": "",
+      "tenant": "letme.co.uk",
+      "tenants": [
+        "letme.co.uk"
+      ]
+    },
+    {
+      "id": "109468241062845904285",
+      "email": "brogan.hackley@letme.com",
+      "aliases": [],
+      "name": "Brogan Hackley",
+      "given": "Brogan",
+      "family": "Hackley",
+      "title": "",
+      "department": "",
+      "photo_url": "",
+      "suspended": false,
+      "admin": false,
+      "deletion_time": "",
+      "tenant": "letme.co.uk",
+      "tenants": [
+        "letme.co.uk"
+      ]
+    },
+    {
+      "id": "115204447757688611598",
+      "email": "edward.heaney@letme.com",
+      "aliases": [
+        "edward.heaney@grenwich-clearloans.com",
+        "edward.heaney@letme.co.uk",
+        "edward.heaney@mail.amigohome.co.uk",
+        "edward.heaney@mail.letme.co.uk",
+        "edward.heaney@rgroup.co.uk"
+      ],
+      "name": "Edward Heaney",
+      "given": "Edward",
+      "family": "Heaney",
+      "title": "",
+      "department": "",
+      "photo_url": "",
+      "suspended": false,
+      "admin": false,
+      "deletion_time": "",
+      "tenant": "letme.co.uk",
+      "tenants": [
+        "letme.co.uk"
+      ]
+    },
+    {
+      "id": "116466709071637107951",
+      "email": "victor.igbaifua@letme.com",
+      "aliases": [
+        "victor.igbaifua@grenwich-clearloans.com",
+        "victor.igbaifua@letme.co.uk",
+        "victor.igbaifua@mail.amigohome.co.uk",
+        "victor.igbaifua@mail.letme.co.uk",
+        "victor.igbaifua@rgroup.co.uk"
+      ],
+      "name": "Victor Igbaifua",
+      "given": "Victor",
+      "family": "Igbaifua",
+      "title": "",
+      "department": "",
+      "photo_url": "",
+      "suspended": false,
+      "admin": true,
+      "deletion_time": "",
+      "tenant": "letme.co.uk",
+      "tenants": [
+        "letme.co.uk"
+      ]
+    },
+    {
+      "id": "114555894528298177800",
+      "email": "katarzyna.jiddou@letme.com",
+      "aliases": [],
+      "name": "Katarzyna Jiddou",
+      "given": "Katarzyna",
+      "family": "Jiddou",
+      "title": "",
+      "department": "",
+      "photo_url": "",
+      "suspended": false,
+      "admin": false,
+      "deletion_time": "",
+      "tenant": "letme.co.uk",
+      "tenants": [
+        "letme.co.uk"
+      ]
+    },
+    {
+      "id": "103279667696622395464",
+      "email": "kamran.kamaei@letme.com",
+      "aliases": [
+        "kamran.kamaei@grenwich-clearloans.com",
+        "kamran.kamaei@letme.co.uk",
+        "kamran.kamaei@mail.amigohome.co.uk",
+        "kamran.kamaei@mail.letme.co.uk",
+        "kamran.kamaei@rgroup.co.uk"
+      ],
+      "name": "Kamran Kamaei",
+      "given": "Kamran",
+      "family": "Kamaei",
+      "title": "",
+      "department": "",
+      "photo_url": "https://lh3.googleusercontent.com/a-/ALV-UjX9aeoH_xQ0EbsxpcPZPdRljnoOj3g65e12EwJMR4v8SCfL8Aw=s96-c",
+      "suspended": false,
+      "admin": false,
+      "deletion_time": "",
+      "tenant": "letme.co.uk",
+      "tenants": [
+        "letme.co.uk"
+      ]
+    },
+    {
+      "id": "103375098837239046480",
+      "email": "dorota.kazmierczyk@letme.com",
+      "aliases": [
+        "adrianna.gostol@letme.com",
+        "adrianna.gostol@mail.rapidamoney.pl",
+        "adrianna.gostol@rapidamoney.pl",
+        "dorota.kazmierczyk@mail.rapidamoney.pl",
+        "dorota.kazmierczyk@rapidamoney.pl",
+        "elzbieta.olender@letme.com",
+        "elzbieta.olender@mail.rapidamoney.pl",
+        "elzbieta.olender@rapidamoney.pl",
+        "kamen.totev@grenwich-clearloans.com",
+        "kamen.totev@letme.co.uk",
+        "kamen.totev@mail.amigohome.co.uk",
+        "kamen.totev@mail.letme.co.uk",
+        "kamen.totev@rapidamoney.pl",
+        "kamen.totev@rgroup.co.uk",
+        "modesta.przybylek@rapidamoney.pl",
+        "radoslaw.wojnarski@letme.com",
+        "radoslaw.wojnarski@rapidamoney.pl",
+        "ugoda@rapidamoney.pl",
+        "wniosek@rapidamoney.pl"
+      ],
+      "name": "Dorota Kazmierczyk",
+      "given": "Dorota",
+      "family": "Kazmierczyk",
+      "title": "",
+      "department": "",
+      "photo_url": "",
+      "suspended": false,
+      "admin": false,
+      "deletion_time": "",
+      "tenant": "letme.co.uk",
+      "tenants": [
+        "letme.co.uk"
+      ]
+    },
+    {
+      "id": "113607232122014102212",
+      "email": "morgan.smith@letme.com",
+      "aliases": [
+        "jade.reynolds@grenwich-clearloans.com",
+        "jade.reynolds@letme.co.uk",
+        "jade.reynolds@letme.com",
+        "jade.reynolds@mail.amigohome.co.uk",
+        "jade.reynolds@mail.letme.co.uk",
+        "jade.reynolds@rgroup.co.uk",
+        "morgan.smith@grenwich-clearloans.com",
+        "morgan.smith@letme.co.uk",
+        "morgan.smith@mail.amigohome.co.uk",
+        "morgan.smith@mail.letme.co.uk",
+        "morgan.smith@rgroup.co.uk"
+      ],
+      "name": "Morgan Kennedy-Smith",
+      "given": "Morgan",
+      "family": "Kennedy-Smith",
+      "title": "",
+      "department": "",
+      "photo_url": "https://lh3.googleusercontent.com/a-/ALV-UjV8OQomsiOYz2Ofc3ZdR-WjkDoY403_Fw4uc_UQkwI-7h_wkjg=s96-c",
+      "suspended": false,
+      "admin": true,
+      "deletion_time": "",
+      "tenant": "letme.co.uk",
+      "tenants": [
+        "letme.co.uk"
+      ]
+    },
+    {
+      "id": "116189954939786043330",
+      "email": "igor.kravcov@letme.com",
+      "aliases": [
+        "igor.kravcov@grenwich-clearloans.com",
+        "igor.kravcov@letme.co.uk",
+        "igor.kravcov@mail.amigohome.co.uk",
+        "igor.kravcov@mail.letme.co.uk",
+        "igor.kravcov@rgroup.co.uk"
+      ],
+      "name": "Igor Kravcov",
+      "given": "Igor",
+      "family": "Kravcov",
+      "title": "",
+      "department": "",
+      "photo_url": "https://lh3.googleusercontent.com/a-/ALV-UjXhODrZkvTuRyEukJNy2IxNlLM7FxS1ecDeadZ-n-79Z0rLEj8=s96-c",
+      "suspended": false,
+      "admin": true,
+      "deletion_time": "",
+      "tenant": "letme.co.uk",
+      "tenants": [
+        "letme.co.uk"
+      ]
+    },
+    {
+      "id": "103776442811957865496",
+      "email": "finance@letme.com",
+      "aliases": [],
+      "name": "Finance Letme",
+      "given": "Finance",
+      "family": "Letme",
+      "title": "",
+      "department": "",
+      "photo_url": "",
+      "suspended": false,
+      "admin": false,
+      "deletion_time": "",
+      "tenant": "letme.co.uk",
+      "tenants": [
+        "letme.co.uk"
+      ]
+    },
+    {
+      "id": "104190118159899568028",
+      "email": "customer.letters@letme.co.uk",
+      "aliases": [
+        "customer.letters@grenwich-clearloans.com",
+        "customer.letters@mail.amigohome.co.uk",
+        "customer.letters@mail.letme.co.uk",
+        "customer.letters@rgroup.co.uk"
+      ],
+      "name": "customer letters",
+      "given": "customer",
+      "family": "letters",
+      "title": "",
+      "department": "",
+      "photo_url": "",
+      "suspended": false,
+      "admin": false,
+      "deletion_time": "",
+      "tenant": "letme.co.uk",
+      "tenants": [
+        "letme.co.uk"
+      ]
+    },
+    {
+      "id": "104166103111841098877",
+      "email": "cyrus.leung@letme.com",
+      "aliases": [
+        "cyrus.leung@grenwich-clearloans.com",
+        "cyrus.leung@letme.co.uk",
+        "cyrus.leung@mail.amigohome.co.uk",
+        "cyrus.leung@mail.letme.co.uk",
+        "cyrus.leung@rgroup.co.uk"
+      ],
+      "name": "Cyrus Leung",
+      "given": "Cyrus",
+      "family": "Leung",
+      "title": "",
+      "department": "",
+      "photo_url": "",
+      "suspended": false,
+      "admin": false,
+      "deletion_time": "",
+      "tenant": "letme.co.uk",
+      "tenants": [
+        "letme.co.uk"
+      ]
+    },
+    {
+      "id": "115609090358962571924",
+      "email": "cherry.liu@letme.com",
+      "aliases": [
+        "cherry.liu@grenwich-clearloans.com",
+        "cherry.liu@letme.co.uk",
+        "cherry.liu@mail.amigohome.co.uk",
+        "cherry.liu@mail.letme.co.uk",
+        "cherry.liu@rgroup.co.uk"
+      ],
+      "name": "Cherry Liu",
+      "given": "Cherry",
+      "family": "Liu",
+      "title": "",
+      "department": "",
+      "photo_url": "",
+      "suspended": false,
+      "admin": false,
+      "deletion_time": "",
+      "tenant": "letme.co.uk",
+      "tenants": [
+        "letme.co.uk"
+      ]
+    },
+    {
+      "id": "115694002885929634843",
+      "email": "mourad.malki@clearloans.com.au",
+      "aliases": [
+        "mourad.malki@mail.clearloans.com.au"
+      ],
+      "name": "Mourad Malki",
+      "given": "Mourad",
+      "family": "Malki",
+      "title": "",
+      "department": "",
+      "photo_url": "",
+      "suspended": false,
+      "admin": false,
+      "deletion_time": "",
+      "tenant": "letme.co.uk",
+      "tenants": [
+        "letme.co.uk"
+      ]
+    },
+    {
+      "id": "116986735020048199063",
+      "email": "mourad.malki@letme.com",
+      "aliases": [
+        "mourad.malki@grenwich-clearloans.com",
+        "mourad.malki@letme.co.uk",
+        "mourad.malki@mail.amigohome.co.uk",
+        "mourad.malki@mail.letme.co.uk",
+        "mourad.malki@mail.rapidamoney.pl",
+        "mourad.malki@rapidamoney.pl",
+        "mourad.malki@rgroup.co.uk"
+      ],
+      "name": "Mourad Malki",
+      "given": "Mourad",
+      "family": "Malki",
+      "title": "",
+      "department": "",
+      "photo_url": "",
+      "suspended": false,
+      "admin": false,
+      "deletion_time": "",
+      "tenant": "letme.co.uk",
+      "tenants": [
+        "letme.co.uk"
+      ]
+    },
+    {
+      "id": "117003124095610824696",
+      "email": "office@letme.com",
+      "aliases": [],
+      "name": "Letme Office",
+      "given": "Letme",
+      "family": "Office",
+      "title": "",
+      "department": "",
+      "photo_url": "",
+      "suspended": false,
+      "admin": false,
+      "deletion_time": "",
+      "tenant": "letme.co.uk",
+      "tenants": [
+        "letme.co.uk"
+      ]
+    },
+    {
+      "id": "106930276362880780041",
+      "email": "phil.oneill@letme.co.uk",
+      "aliases": [
+        "phil.oneill@grenwich-clearloans.com",
+        "phil.oneill@mail.amigohome.co.uk",
+        "phil.oneill@mail.letme.co.uk",
+        "phil.oneill@rgroup.co.uk",
+        "phil.oniell@grenwich-clearloans.com",
+        "phil.oniell@letme.co.uk",
+        "phil.oniell@mail.amigohome.co.uk",
+        "phil.oniell@mail.letme.co.uk",
+        "phil.oniell@rgroup.co.uk"
+      ],
+      "name": "phil oneill",
+      "given": "phil",
+      "family": "oneill",
+      "title": "",
+      "department": "",
+      "photo_url": "",
+      "suspended": false,
+      "admin": false,
+      "deletion_time": "",
+      "tenant": "letme.co.uk",
+      "tenants": [
+        "letme.co.uk"
+      ]
+    },
+    {
+      "id": "108294034980135133708",
+      "email": "skanpoczta@rapidamoney.pl",
+      "aliases": [],
+      "name": "Rapida Poat-Scanning",
+      "given": "Rapida",
+      "family": "Poat-Scanning",
+      "title": "",
+      "department": "",
+      "photo_url": "",
+      "suspended": false,
+      "admin": false,
+      "deletion_time": "",
+      "tenant": "letme.co.uk",
+      "tenants": [
+        "letme.co.uk"
+      ]
+    },
+    {
+      "id": "112205747177330625876",
+      "email": "printer@letme.co.uk",
+      "aliases": [
+        "printer@grenwich-clearloans.com",
+        "printer@mail.amigohome.co.uk",
+        "printer@mail.letme.co.uk",
+        "printer@rgroup.co.uk"
+      ],
+      "name": "Office Printer",
+      "given": "Office",
+      "family": "Printer",
+      "title": "",
+      "department": "",
+      "photo_url": "",
+      "suspended": false,
+      "admin": false,
+      "deletion_time": "",
+      "tenant": "letme.co.uk",
+      "tenants": [
+        "letme.co.uk"
+      ]
+    },
+    {
+      "id": "115419598021076459859",
+      "email": "mark.prior@letme.co.uk",
+      "aliases": [
+        "mark.prior@grenwich-clearloans.com",
+        "mark.prior@mail.amigohome.co.uk",
+        "mark.prior@mail.letme.co.uk",
+        "mark.prior@rgroup.co.uk"
+      ],
+      "name": "Mark Prior",
+      "given": "Mark",
+      "family": "Prior",
+      "title": "",
+      "department": "",
+      "photo_url": "",
+      "suspended": true,
+      "admin": false,
+      "deletion_time": "",
+      "tenant": "letme.co.uk",
+      "tenants": [
+        "letme.co.uk"
+      ]
+    },
+    {
+      "id": "107978071039475235497",
+      "email": "mike.pursey@letme.com",
+      "aliases": [
+        "mike.pursey@grenwich-clearloans.com",
+        "mike.pursey@letme.co.uk",
+        "mike.pursey@mail.amigohome.co.uk",
+        "mike.pursey@mail.letme.co.uk",
+        "mike.pursey@rgroup.co.uk"
+      ],
+      "name": "Mike Pursey",
+      "given": "Mike",
+      "family": "Pursey",
+      "title": "",
+      "department": "",
+      "photo_url": "",
+      "suspended": false,
+      "admin": false,
+      "deletion_time": "",
+      "tenant": "letme.co.uk",
+      "tenants": [
+        "letme.co.uk"
+      ]
+    },
+    {
+      "id": "115532116418714524086",
+      "email": "autobots@rapidamoney.pl",
+      "aliases": [
+        "communications.collector@rapidamoney.pl",
+        "contracts@rapidamoney.pl",
+        "customers.letters.generator@rapidamoney.pl",
+        "rapida.windykacja@rapidamoney.pl"
+      ],
+      "name": "autobots Rapida",
+      "given": "autobots",
+      "family": "Rapida",
+      "title": "",
+      "department": "",
+      "photo_url": "",
+      "suspended": false,
+      "admin": false,
+      "deletion_time": "",
+      "tenant": "letme.co.uk",
+      "tenants": [
+        "letme.co.uk"
+      ]
+    },
+    {
+      "id": "117543541633393000619",
+      "email": "reservation@letme.com",
+      "aliases": [],
+      "name": "Letme Reservations",
+      "given": "Letme",
+      "family": "Reservations",
+      "title": "",
+      "department": "",
+      "photo_url": "",
+      "suspended": false,
+      "admin": false,
+      "deletion_time": "",
+      "tenant": "letme.co.uk",
+      "tenants": [
+        "letme.co.uk"
+      ]
+    },
+    {
+      "id": "105860758388691187197",
+      "email": "george.roche@letme.co.uk",
+      "aliases": [
+        "george.roche@grenwich-clearloans.com",
+        "george.roche@letme.com",
+        "george.roche@mail.amigohome.co.uk",
+        "george.roche@mail.letme.co.uk",
+        "george.roche@rgroup.co.uk"
+      ],
+      "name": "George Roche",
+      "given": "George",
+      "family": "Roche",
+      "title": "",
+      "department": "",
+      "photo_url": "",
+      "suspended": false,
+      "admin": false,
+      "deletion_time": "",
+      "tenant": "letme.co.uk",
+      "tenants": [
+        "letme.co.uk"
+      ]
+    },
+    {
+      "id": "115236271889144824150",
+      "email": "dan.sanders@letme.com",
+      "aliases": [],
+      "name": "Dan Sanders",
+      "given": "Dan",
+      "family": "Sanders",
+      "title": "",
+      "department": "",
+      "photo_url": "",
+      "suspended": false,
+      "admin": false,
+      "deletion_time": "",
+      "tenant": "letme.co.uk",
+      "tenants": [
+        "letme.co.uk"
+      ]
+    },
+    {
+      "id": "101102571840058915094",
+      "email": "nikolay.savov@rapida.bg",
+      "aliases": [],
+      "name": "Nikolay Savov",
+      "given": "Nikolay",
+      "family": "Savov",
+      "title": "",
+      "department": "",
+      "photo_url": "",
+      "suspended": false,
+      "admin": false,
+      "deletion_time": "",
+      "tenant": "letme.co.uk",
+      "tenants": [
+        "letme.co.uk"
+      ]
+    },
+    {
+      "id": "107982969430981490382",
+      "email": "tomasz.schwertner@letme.com",
+      "aliases": [
+        "tomasz.schwertner@rapidamoney.pl"
+      ],
+      "name": "Tomasz Schwertner",
+      "given": "Tomasz",
+      "family": "Schwertner",
+      "title": "",
+      "department": "",
+      "photo_url": "",
+      "suspended": false,
+      "admin": false,
+      "deletion_time": "",
+      "tenant": "letme.co.uk",
+      "tenants": [
+        "letme.co.uk"
+      ]
+    },
+    {
+      "id": "102786219171134666755",
+      "email": "tom.slaughter@letme.com",
+      "aliases": [
+        "tom.slaughter@grenwich-clearloans.com",
+        "tom.slaughter@letme.co.uk",
+        "tom.slaughter@mail.amigohome.co.uk",
+        "tom.slaughter@mail.letme.co.uk",
+        "tom.slaughter@rgroup.co.uk"
+      ],
+      "name": "Tom Slaughter",
+      "given": "Tom",
+      "family": "Slaughter",
+      "title": "",
+      "department": "",
+      "photo_url": "",
+      "suspended": false,
+      "admin": false,
+      "deletion_time": "",
+      "tenant": "letme.co.uk",
+      "tenants": [
+        "letme.co.uk"
+      ]
+    },
+    {
+      "id": "106087258855057480382",
+      "email": "jamie.stevens@letme.com",
+      "aliases": [],
+      "name": "Jamie Stevens",
+      "given": "Jamie",
+      "family": "Stevens",
+      "title": "",
+      "department": "",
+      "photo_url": "",
+      "suspended": false,
+      "admin": false,
+      "deletion_time": "",
+      "tenant": "letme.co.uk",
+      "tenants": [
+        "letme.co.uk"
+      ]
+    },
+    {
+      "id": "114890135673193102189",
+      "email": "lucian.teodoroiu@letme.co.uk",
+      "aliases": [
+        "lucian.teodoroiu@grenwich-clearloans.com",
+        "lucian.teodoroiu@letme.com",
+        "lucian.teodoroiu@mail.amigohome.co.uk",
+        "lucian.teodoroiu@mail.letme.co.uk",
+        "lucian.teodoroiu@rgroup.co.uk"
+      ],
+      "name": "Lucian Teodoroiu",
+      "given": "Lucian",
+      "family": "Teodoroiu",
+      "title": "",
+      "department": "",
+      "photo_url": "",
+      "suspended": false,
+      "admin": false,
+      "deletion_time": "",
+      "tenant": "letme.co.uk",
+      "tenants": [
+        "letme.co.uk"
+      ]
+    },
+    {
+      "id": "107201626699585246635",
+      "email": "adnan.turken@letme.co.uk",
+      "aliases": [
+        "adnan.turken@grenwich-clearloans.com",
+        "adnan.turken@letme.com",
+        "adnan.turken@mail.amigohome.co.uk",
+        "adnan.turken@mail.letme.co.uk",
+        "adnan.turken@rgroup.co.uk"
+      ],
+      "name": "Adnan Türken",
+      "given": "Adnan",
+      "family": "Türken",
+      "title": "",
+      "department": "",
+      "photo_url": "",
+      "suspended": false,
+      "admin": false,
+      "deletion_time": "",
+      "tenant": "letme.co.uk",
+      "tenants": [
+        "letme.co.uk"
+      ]
+    },
+    {
+      "id": "111912978155005037669",
+      "email": "sophia.ugwunne@letme.com",
+      "aliases": [
+        "sophia.ugwunne@grenwich-clearloans.com",
+        "sophia.ugwunne@letme.co.uk",
+        "sophia.ugwunne@mail.amigohome.co.uk",
+        "sophia.ugwunne@mail.letme.co.uk",
+        "sophia.ugwunne@rgroup.co.uk"
+      ],
+      "name": "Sophia Ugwunne",
+      "given": "Sophia",
+      "family": "Ugwunne",
+      "title": "",
+      "department": "",
+      "photo_url": "",
+      "suspended": false,
+      "admin": false,
+      "deletion_time": "",
+      "tenant": "letme.co.uk",
+      "tenants": [
+        "letme.co.uk"
+      ]
+    },
+    {
+      "id": "105391363163869972833",
+      "email": "esther.uwadione@letme.com",
+      "aliases": [
+        "esther.uwadione@grenwich-clearloans.com",
+        "esther.uwadione@letme.co.uk",
+        "esther.uwadione@mail.amigohome.co.uk",
+        "esther.uwadione@mail.letme.co.uk",
+        "esther.uwadione@rgroup.co.uk"
+      ],
+      "name": "Esther Uwadione",
+      "given": "Esther",
+      "family": "Uwadione",
+      "title": "",
+      "department": "",
+      "photo_url": "https://lh3.googleusercontent.com/a-/ALV-UjX8WFa91gM8QeEu82S4ocfdPpOw6Y0gi773zjM6CcLe5yrtuKc=s96-c",
+      "suspended": false,
+      "admin": false,
+      "deletion_time": "",
+      "tenant": "letme.co.uk",
+      "tenants": [
+        "letme.co.uk"
+      ]
+    },
+    {
+      "id": "105874186229839063517",
+      "email": "james.webster@letme.co.uk",
+      "aliases": [
+        "james.webster@grenwich-clearloans.com",
+        "james.webster@letme.com",
+        "james.webster@mail.amigohome.co.uk",
+        "james.webster@mail.letme.co.uk",
+        "james.webster@rgroup.co.uk"
+      ],
+      "name": "James Webster",
+      "given": "James",
+      "family": "Webster",
+      "title": "",
+      "department": "",
+      "photo_url": "https://lh3.googleusercontent.com/a-/ALV-UjVwpY_O3pVJecQJHEwr7YwaK1z9lL4aFHA-cp0lAORYB4MQ3kw=s96-c",
+      "suspended": false,
+      "admin": false,
+      "deletion_time": "",
+      "tenant": "letme.co.uk",
+      "tenants": [
+        "letme.co.uk"
+      ]
+    },
+    {
+      "id": "114352222652755540625",
+      "email": "matthew.wood@letme.co.uk",
+      "aliases": [
+        "matthew.wood@grenwich-clearloans.com",
+        "matthew.wood@letme.com",
+        "matthew.wood@mail.amigohome.co.uk",
+        "matthew.wood@mail.letme.co.uk",
+        "matthew.wood@rgroup.co.uk"
+      ],
+      "name": "matthew wood",
+      "given": "matthew",
+      "family": "wood",
+      "title": "",
+      "department": "",
+      "photo_url": "",
+      "suspended": false,
+      "admin": false,
+      "deletion_time": "",
+      "tenant": "letme.co.uk",
+      "tenants": [
+        "letme.co.uk"
+      ]
+    },
+    {
+      "id": "113422273442191742197",
+      "email": "natasha.wright@letme.co.uk",
+      "aliases": [
+        "natasha.wright@grenwich-clearloans.com",
+        "natasha.wright@mail.amigohome.co.uk",
+        "natasha.wright@mail.letme.co.uk",
+        "natasha.wright@rgroup.co.uk"
+      ],
+      "name": "Natasha Wright",
+      "given": "Natasha",
+      "family": "Wright",
+      "title": "",
+      "department": "",
+      "photo_url": "",
+      "suspended": false,
+      "admin": true,
+      "deletion_time": "",
+      "tenant": "letme.co.uk",
+      "tenants": [
+        "letme.co.uk"
+      ]
+    },
+    {
+      "id": "117443980387998175468",
+      "email": "ekrem.yurtman@letme.com",
+      "aliases": [],
+      "name": "Ekrem Yurtman",
+      "given": "Ekrem",
+      "family": "Yurtman",
+      "title": "",
+      "department": "",
+      "photo_url": "",
+      "suspended": false,
+      "admin": false,
+      "deletion_time": "",
+      "tenant": "letme.co.uk",
+      "tenants": [
+        "letme.co.uk"
+      ]
+    }
+  ]
 }
