@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "updated_at": "2026-05-13T20:42:07.100Z",
+  "updated_at": "2026-05-13T20:42:46.127Z",
   "actions": [
     {
       "ts": "2026-05-13T20:27:39.210Z",
@@ -250,6 +250,14 @@
       "action": "get-forwarding",
       "target": "alerts@togetherloans.com",
       "ok": true
+    },
+    {
+      "ts": "2026-05-13T20:42:46.127Z",
+      "actor": "james.benamor@letme.com",
+      "action": "group-member-remove",
+      "target": "alert@togetherloans.com",
+      "ok": true,
+      "member_email": "james.benamor@rgroup.co.uk"
     }
   ]
 }
