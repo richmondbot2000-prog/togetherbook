@@ -9,11 +9,11 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&family=Orbitron:wght@500;600;700;800&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="style.css?v=1778711753">
-<link rel="stylesheet" href="quiet-tokens.css?v=1778711753">
-<link rel="stylesheet" href="quiet.css?v=1778711753">
-<link rel="stylesheet" href="quiet-extras.css?v=1778711753">
-<link rel="stylesheet" href="quiet-legacy.css?v=1778711753">
+<link rel="stylesheet" href="style.css?v=1778712083">
+<link rel="stylesheet" href="quiet-tokens.css?v=1778712083">
+<link rel="stylesheet" href="quiet.css?v=1778712083">
+<link rel="stylesheet" href="quiet-extras.css?v=1778712083">
+<link rel="stylesheet" href="quiet-legacy.css?v=1778712083">
 <style>
   .dir-section { max-width: 1080px; margin: 0 auto; padding: 24px 0 48px; }
   @media (max-width: 800px) { .dir-section { padding: 2px 0 32px; } }
@@ -460,6 +460,96 @@
     padding: 16px;
   }
   .dir-modal-backdrop.open { display: flex; }
+
+  /* Photo crop overlay — sits above the user-detail modal so the user can
+     drag-pan + zoom an uploaded image to taste before it's committed. The
+     circular mask (radial gradient) hints at the cropped region; the saved
+     JPEG is a 400x400 square that the card-renderer then circular-masks via
+     border-radius. */
+  .dir-photo-crop-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(11, 14, 28, 0.7);
+    z-index: 3000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 16px;
+  }
+  .dir-photo-crop-modal {
+    background: var(--bg-soft);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 20px;
+    max-width: 420px;
+    box-shadow: 0 10px 40px rgba(0,0,0,0.4);
+  }
+  .dir-photo-crop-header {
+    margin: 0 0 12px;
+  }
+  .dir-photo-crop-header h4 {
+    margin: 0 0 4px;
+    font: 700 1rem 'Inter', sans-serif;
+    color: var(--ink);
+  }
+  .dir-photo-crop-stage {
+    position: relative;
+    width: 360px;
+    height: 360px;
+    margin: 0 auto;
+    background: #000;
+    cursor: grab;
+    border-radius: 8px;
+    overflow: hidden;
+    touch-action: none;
+  }
+  .dir-photo-crop-stage:active { cursor: grabbing; }
+  .dir-photo-crop-stage canvas { display: block; }
+  .dir-photo-crop-mask {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    background: radial-gradient(
+      circle at center,
+      transparent 0,
+      transparent 178px,
+      rgba(11, 14, 28, 0.55) 180px
+    );
+    border-radius: 8px;
+  }
+  .dir-photo-crop-controls {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-top: 14px;
+  }
+  .dir-photo-crop-controls label {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.82rem;
+    color: var(--ink-soft);
+  }
+  .dir-photo-crop-controls input[type="range"] { flex: 1; }
+  .dir-photo-crop-controls button {
+    background: var(--bg-soft-2);
+    border: 1px solid var(--border);
+    color: var(--ink);
+    font: 600 0.85rem 'Inter', sans-serif;
+    padding: 7px 14px;
+    border-radius: 6px;
+    cursor: pointer;
+  }
+  .dir-photo-crop-controls button.confirm {
+    background: var(--accent);
+    border-color: var(--accent);
+    color: #fff;
+  }
+  .dir-photo-crop-controls button:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
   .dir-modal {
     background: var(--bg-soft);
     border: 1px solid var(--accent);
@@ -1065,7 +1155,7 @@
 
 <header class="qb-topbar">
   <a class="qb-brand" href="index.html" aria-label="TogetherBOOK — home">
-    <img class="qb-brand-logo" src="togetherbook-logo.png?v=1778711753" alt="TogetherBOOK">
+    <img class="qb-brand-logo" src="togetherbook-logo.png?v=1778712083" alt="TogetherBOOK">
   </a>
   <button class="qb-hamburger" aria-label="Toggle navigation menu" aria-expanded="false"
           onclick="document.body.classList.toggle('nav-open');this.setAttribute('aria-expanded',document.body.classList.contains('nav-open'))">
@@ -3516,20 +3606,9 @@
       reader.onload = () => {
         const img = new Image();
         img.onload = () => {
-          // Resize so the longest side is at most 400px. Center-crop to a
-          // square so the result is always 400x400 — keeps cards uniform.
-          const size = 400;
-          const canvas = document.createElement("canvas");
-          canvas.width = size;
-          canvas.height = size;
-          const ctx = canvas.getContext("2d");
-          const minSide = Math.min(img.width, img.height);
-          const sx = (img.width - minSide) / 2;
-          const sy = (img.height - minSide) / 2;
-          ctx.drawImage(img, sx, sy, minSide, minSide, 0, 0, size, size);
-          const dataUrl = canvas.toDataURL("image/jpeg", 0.85);
-          const b64 = dataUrl.split(",")[1] || "";
-          runPhotoUpload(entry, b64, dataUrl);
+          // Show the crop / pan / zoom overlay. Caller wires the Save button
+          // to ship the cropped JPEG via runPhotoUpload().
+          openPhotoCropper(img, (b64, dataUrl) => runPhotoUpload(entry, b64, dataUrl));
         };
         img.onerror = () => showModalBanner("Couldn't read that image — try a different file.", "error");
         img.src = reader.result;
@@ -3538,6 +3617,141 @@
       reader.readAsDataURL(file);
     });
     input.click();
+  }
+
+  // Drag-pan + scroll/slider-zoom photo cropper. Modal sits above the user
+  // detail card. The visible 360x360 stage is rescaled to 400x400 on Save so
+  // every Directory photo is the same dimensions. The card renders the JPEG
+  // inside a circular border-radius mask, so we expose a circular hint on
+  // the stage (radial-gradient .dir-photo-crop-mask) to show what the crop
+  // will look like rendered.
+  function openPhotoCropper(img, onCommit) {
+    const overlay = document.createElement("div");
+    overlay.className = "dir-photo-crop-overlay";
+    overlay.innerHTML = `
+      <div class="dir-photo-crop-modal" role="dialog" aria-label="Adjust photo">
+        <div class="dir-photo-crop-header">
+          <h4>Adjust photo</h4>
+          <p class="dir-modal-saved-hint" style="text-align:left;margin:0;">Drag to position. Scroll or use the slider to zoom. The circle is what the card will show.</p>
+        </div>
+        <div class="dir-photo-crop-stage">
+          <canvas width="360" height="360"></canvas>
+          <div class="dir-photo-crop-mask"></div>
+        </div>
+        <div class="dir-photo-crop-controls">
+          <label>Zoom <input type="range" min="100" max="400" value="100" data-crop-zoom></label>
+          <button type="button" data-crop-cancel>Cancel</button>
+          <button type="button" class="confirm" data-crop-save>Save</button>
+        </div>
+      </div>`;
+    document.body.appendChild(overlay);
+
+    const stageSize = 360;
+    const canvas = overlay.querySelector("canvas");
+    const ctx = canvas.getContext("2d");
+    const zoomEl = overlay.querySelector("[data-crop-zoom]");
+    const cancelBtn = overlay.querySelector("[data-crop-cancel]");
+    const saveBtn = overlay.querySelector("[data-crop-save]");
+    const stage = overlay.querySelector(".dir-photo-crop-stage");
+
+    // minScale = the zoom level at which the image's smaller side fits the
+    // stage with no gap. At zoom = 1 the image covers the stage fully; the
+    // user can zoom up to 4x to crop tightly.
+    const minScale = Math.max(stageSize / img.width, stageSize / img.height);
+    let zoom = 1;
+    let offsetX = 0;
+    let offsetY = 0;
+
+    function clampOffsets() {
+      const scale = minScale * zoom;
+      const drawW = img.width * scale;
+      const drawH = img.height * scale;
+      const maxX = Math.max(0, (drawW - stageSize) / 2);
+      const maxY = Math.max(0, (drawH - stageSize) / 2);
+      if (offsetX > maxX) offsetX = maxX;
+      if (offsetX < -maxX) offsetX = -maxX;
+      if (offsetY > maxY) offsetY = maxY;
+      if (offsetY < -maxY) offsetY = -maxY;
+    }
+    function draw() {
+      const scale = minScale * zoom;
+      const drawW = img.width * scale;
+      const drawH = img.height * scale;
+      ctx.fillStyle = "#000";
+      ctx.fillRect(0, 0, stageSize, stageSize);
+      const cx = (stageSize - drawW) / 2 + offsetX;
+      const cy = (stageSize - drawH) / 2 + offsetY;
+      ctx.drawImage(img, cx, cy, drawW, drawH);
+    }
+    draw();
+
+    // Drag to pan
+    let dragging = false;
+    let dsx = 0, dsy = 0, ox0 = 0, oy0 = 0;
+    function onPointerDown(e) {
+      dragging = true;
+      const p = e.touches ? e.touches[0] : e;
+      dsx = p.clientX;
+      dsy = p.clientY;
+      ox0 = offsetX;
+      oy0 = offsetY;
+    }
+    function onPointerMove(e) {
+      if (!dragging) return;
+      const p = e.touches ? e.touches[0] : e;
+      offsetX = ox0 + (p.clientX - dsx);
+      offsetY = oy0 + (p.clientY - dsy);
+      clampOffsets();
+      draw();
+    }
+    function onPointerUp() { dragging = false; }
+    stage.addEventListener("mousedown", onPointerDown);
+    window.addEventListener("mousemove", onPointerMove);
+    window.addEventListener("mouseup", onPointerUp);
+    stage.addEventListener("touchstart", onPointerDown, { passive: true });
+    stage.addEventListener("touchmove", onPointerMove, { passive: true });
+    stage.addEventListener("touchend", onPointerUp);
+
+    // Wheel zoom
+    stage.addEventListener("wheel", e => {
+      e.preventDefault();
+      zoom = Math.max(1, Math.min(4, zoom - e.deltaY * 0.003));
+      zoomEl.value = Math.round(zoom * 100);
+      clampOffsets();
+      draw();
+    }, { passive: false });
+
+    // Slider zoom
+    zoomEl.addEventListener("input", () => {
+      zoom = parseInt(zoomEl.value, 10) / 100;
+      clampOffsets();
+      draw();
+    });
+
+    // Close handlers
+    function close() {
+      window.removeEventListener("mousemove", onPointerMove);
+      window.removeEventListener("mouseup", onPointerUp);
+      overlay.remove();
+    }
+    cancelBtn.addEventListener("click", close);
+    overlay.addEventListener("click", e => { if (e.target === overlay) close(); });
+    window.addEventListener("keydown", function esc(e) {
+      if (e.key === "Escape") { close(); window.removeEventListener("keydown", esc); }
+    });
+
+    saveBtn.addEventListener("click", () => {
+      // Rescale the stage to 400x400 — what gets stored. The card's CSS
+      // border-radius circular-masks at render time.
+      const out = document.createElement("canvas");
+      out.width = 400; out.height = 400;
+      const octx = out.getContext("2d");
+      octx.drawImage(canvas, 0, 0, stageSize, stageSize, 0, 0, 400, 400);
+      const dataUrl = out.toDataURL("image/jpeg", 0.85);
+      const b64 = dataUrl.split(",")[1] || "";
+      close();
+      onCommit(b64, dataUrl);
+    });
   }
 
   async function runPhotoUpload(entry, b64, previewDataUrl) {
