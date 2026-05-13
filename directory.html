@@ -9,11 +9,11 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&family=Orbitron:wght@500;600;700;800&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="style.css?v=1778662530">
-<link rel="stylesheet" href="quiet-tokens.css?v=1778662530">
-<link rel="stylesheet" href="quiet.css?v=1778662530">
-<link rel="stylesheet" href="quiet-extras.css?v=1778662530">
-<link rel="stylesheet" href="quiet-legacy.css?v=1778662530">
+<link rel="stylesheet" href="style.css?v=1778663309">
+<link rel="stylesheet" href="quiet-tokens.css?v=1778663309">
+<link rel="stylesheet" href="quiet.css?v=1778663309">
+<link rel="stylesheet" href="quiet-extras.css?v=1778663309">
+<link rel="stylesheet" href="quiet-legacy.css?v=1778663309">
 <style>
   .dir-section { max-width: 1080px; margin: 0 auto; padding: 24px 0 48px; }
   @media (max-width: 800px) { .dir-section { padding: 2px 0 32px; } }
@@ -917,7 +917,7 @@
 
 <header class="qb-topbar">
   <a class="qb-brand" href="index.html" aria-label="TogetherBOOK — home">
-    <img class="qb-brand-logo" src="togetherbook-logo.png?v=1778662530" alt="TogetherBOOK">
+    <img class="qb-brand-logo" src="togetherbook-logo.png?v=1778663309" alt="TogetherBOOK">
   </a>
   <button class="qb-hamburger" aria-label="Toggle navigation menu" aria-expanded="false"
           onclick="document.body.classList.toggle('nav-open');this.setAttribute('aria-expanded',document.body.classList.contains('nav-open'))">
@@ -1007,6 +1007,9 @@
           <button class="dir-new-btn" id="dirNewGroupBtn" type="button">+ New group</button>
         </div>
         <p class="dir-groups-blurb">Group emails (e.g. <code>finance@rgroup.co.uk</code>) deliver to every listed member. Groups are free — they don't consume Workspace seats.</p>
+        <div class="dir-search-row" style="margin-bottom: 16px;">
+          <input type="search" class="dir-search" id="dirGroupSearch" placeholder="Filter groups by name, email, or member email…">
+        </div>
         <div class="dir-list" id="dirGroupList"></div>
       </div>
     </section>
@@ -1286,7 +1289,19 @@
       }
     }
 
+    // Stale payroll data — HR is meant to refresh monthly; over 40 days old
+    // suggests a missed cycle (or the cron-mail wasn't acted on).
+    let payrollAgeDays = null;
+    if (payrollData && payrollData.updated_at) {
+      const updated = new Date(payrollData.updated_at).getTime();
+      if (!isNaN(updated)) {
+        payrollAgeDays = Math.floor((Date.now() - updated) / 86400000);
+      }
+    }
     const lines = [];
+    if (payrollAgeDays !== null && payrollAgeDays > 40) {
+      lines.push(`<div class="dir-health-row"><span class="dir-health-count">${payrollAgeDays}d</span><span><strong>Payroll data is ${payrollAgeDays} days old</strong> — HR is supposed to refresh monthly. The 1st-of-month reminder went to <code>Payroll@letme.com</code>; chase it up, then paste a fresh JSON into <code>PAYROLL_KV</code>.</span></div>`);
+    }
     if (suspendedNoRoute.length) {
       lines.push(`<div class="dir-health-row"><span class="dir-health-count">${suspendedNoRoute.length}</span><span>suspended Workspace account${suspendedNoRoute.length === 1 ? "" : "s"} with <strong>no recorded forwarding target</strong> — mail to ${suspendedNoRoute.length === 1 ? "this address" : "these addresses"} may be going into a black hole. <button data-health="suspended-no-route">Show them</button></span></div>`);
     }
@@ -1990,15 +2005,19 @@
                </div>
                <p class="dir-modal-saved-hint">${forwardTo ? `Currently forwards to <code>${escapeHtml(forwardTo)}</code>. ` : ""}Unsuspending re-enables direct mailbox delivery and disables the forward.${memberOf.length ? ` Leavers should typically be removed from all groups too — ${memberOf.length} membership${memberOf.length === 1 ? "" : "s"} still active.` : ""}</p>`;
               })()
-            : `<div class="dir-form-row">
+            : (() => {
+                const memberOf = groupsForUser(u);
+                return `<div class="dir-form-row">
                  <label for="dirRouteTo">Forward mail to</label>
                  <input id="dirRouteTo" name="route_to" type="email" placeholder="Type a colleague's email" list="dirRouteOptions" autocomplete="off">
                  <datalist id="dirRouteOptions">${adminEmailOptions()}</datalist>
                </div>
                <div class="dir-manage-actions">
                  <button type="button" class="danger" data-action="suspend-and-route">Suspend + route</button>
+                 ${memberOf.length ? `<button type="button" class="danger" data-action="leaver-full">Suspend + route + remove from ${memberOf.length} group${memberOf.length === 1 ? "" : "s"}</button>` : ""}
                </div>
-               <p class="dir-modal-saved-hint">Suspends the Workspace seat (no per-seat fee on Flex) and sets the mailbox to auto-forward to the address above. Logged to <code>workspace-actions.json</code>.</p>`}
+               <p class="dir-modal-saved-hint">Suspends the Workspace seat (no per-seat fee on Flex) and sets the mailbox to auto-forward to the address above. Logged to <code>workspace-actions.json</code>.${memberOf.length ? ` The 'Suspend + route + remove' button also revokes the ${memberOf.length} group membership${memberOf.length === 1 ? "" : "s"} this person has — the full leaver workflow in one click.` : ""}</p>`;
+              })()}
           <div class="dir-confirm-slot"></div>
         </div>` : ""}
 
@@ -2072,6 +2091,35 @@
       return;
     }
 
+    if (action === "leaver-full") {
+      const routeInput = modal.querySelector('input[name="route_to"]');
+      const routeTo = (routeInput && routeInput.value || "").trim();
+      if (!routeTo || !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(routeTo)) {
+        if (routeInput) {
+          routeInput.classList.add("dir-input-invalid");
+          routeInput.focus();
+          routeInput.addEventListener("input", () => routeInput.classList.remove("dir-input-invalid"), { once: true });
+        }
+        slot.innerHTML = "";
+        return;
+      }
+      const memberOf = groupsForUser(u);
+      slot.innerHTML = `
+        <div class="dir-confirm">
+          <div class="dir-confirm-text">
+            <strong>Full leaver workflow for ${escapeHtml(u.email)}?</strong><br>
+            <span class="dir-modal-saved-hint" style="text-align:left;margin:0;">Will: (1) auto-forward mail to <code>${escapeHtml(routeTo)}</code>, (2) suspend the Workspace seat, (3) remove the user from ${memberOf.length} group${memberOf.length === 1 ? "" : "s"} (${memberOf.map(g => escapeHtml(g.email)).join(", ")}).</span>
+          </div>
+          <div class="dir-confirm-actions">
+            <button type="button" data-cancel>Cancel</button>
+            <button type="button" class="confirm" data-confirm>Run full leaver workflow</button>
+          </div>
+        </div>`;
+      slot.querySelector("[data-cancel]").addEventListener("click", () => { slot.innerHTML = ""; });
+      slot.querySelector("[data-confirm]").addEventListener("click", () => runLeaverFull(entry, u, routeTo, memberOf, slot));
+      return;
+    }
+
     if (action === "suspend-and-route") {
       const routeInput = modal.querySelector('input[name="route_to"]');
       const routeTo = (routeInput && routeInput.value || "").trim();
@@ -2141,6 +2189,57 @@
     } catch (err) {
       showModalBanner(`${verbLabel.replace(/ing$/, "")} failed — ${err.message || err}`, "error");
       modal.querySelectorAll("[data-action], [data-confirm]").forEach(b => b.disabled = false);
+    }
+  }
+
+  // Combined leaver workflow: suspend+route + remove from every group.
+  // Runs the suspend first so the seat fee stops as soon as possible, then
+  // best-effort purges groups. Banner summarises wins + failures.
+  async function runLeaverFull(entry, u, routeTo, memberOf, slot) {
+    const modal = document.getElementById("dirModal");
+    modal.querySelectorAll("[data-action], [data-confirm]").forEach(b => b.disabled = true);
+    showModalBanner(`Running full leaver workflow for ${u.email}…`, "info");
+
+    let suspendOk = false;
+    try {
+      await workspaceAction("suspend-and-route", { email: u.email, route_to: routeTo });
+      u.suspended = true;
+      forwardingByEmail[u.email.toLowerCase()] = routeTo;
+      suspendOk = true;
+    } catch (err) {
+      showModalBanner(`Suspend failed — ${err.message || err}. Group removals not attempted.`, "error");
+      modal.querySelectorAll("[data-action], [data-confirm]").forEach(b => b.disabled = false);
+      return;
+    }
+
+    let removed = 0;
+    const failures = [];
+    for (const g of memberOf) {
+      const candidates = [u.email, ...(u.aliases || [])].filter(Boolean).map(s => s.toLowerCase());
+      const memberEmail = (g.members || []).find(m => candidates.includes((m.email || "").toLowerCase()))?.email || u.email;
+      try {
+        await workspaceAction("group-member-remove", { group_email: g.email, member_email: memberEmail });
+        g.members = (g.members || []).filter(m => m.email !== memberEmail);
+        g.member_count = g.members.length;
+        removed++;
+      } catch (err) {
+        failures.push(`${g.email}: ${err.message || err}`);
+      }
+    }
+
+    buildGroupMembershipIndex();
+    renderGroupsSection();
+    renderBillingSummary();
+    renderStatusPills();
+    renderHealth();
+    if (slot) slot.innerHTML = "";
+    renderGrid();
+    openCard(entryKey(entry));
+
+    if (failures.length === 0) {
+      showModalBanner(`Leaver workflow complete: ${u.email} suspended, mail forwards to ${routeTo}, removed from ${removed} group${removed === 1 ? "" : "s"}.`, "success");
+    } else {
+      showModalBanner(`Leaver workflow partial: suspended OK, mail forwards to ${routeTo}. Removed from ${removed} group${removed === 1 ? "" : "s"}; ${failures.length} group removal${failures.length === 1 ? "" : "s"} failed: ${failures.join("; ")}`, "error");
     }
   }
 
@@ -2223,22 +2322,34 @@
     return out;
   }
 
+  let groupSearchTerm = "";
+
   function renderGroupsSection() {
     const section = document.getElementById("dirGroupsSection");
     const list = document.getElementById("dirGroupList");
     if (!allGroups.length) {
-      section.hidden = false;   // still show the +New button + empty hint
+      section.hidden = false;
       list.innerHTML = `<div class="dir-empty" style="margin-top:8px;">No groups yet. Click <strong>+ New group</strong> to create one.</div>`;
       document.getElementById("dirGroupsMeta").textContent = "0 groups";
       return;
     }
     section.hidden = false;
+    const totalMembers = allGroups.reduce((n, g) => n + (g.member_count || 0), 0);
     document.getElementById("dirGroupsMeta").textContent =
-      `${allGroups.length} group${allGroups.length === 1 ? "" : "s"} · ${allGroups.reduce((n, g) => n + (g.member_count || 0), 0)} membership${allGroups.reduce((n, g) => n + (g.member_count || 0), 0) === 1 ? "" : "s"}`;
-    const rows = [...allGroups]
+      `${allGroups.length} group${allGroups.length === 1 ? "" : "s"} · ${totalMembers} membership${totalMembers === 1 ? "" : "s"}`;
+    const term = (groupSearchTerm || "").toLowerCase().trim();
+    const matches = term
+      ? allGroups.filter(g => {
+          const hay = (g.name || "").toLowerCase() + " " + (g.email || "").toLowerCase() + " " + (g.description || "").toLowerCase() + " " + (g.members || []).map(m => (m.email || "").toLowerCase()).join(" ");
+          return hay.includes(term);
+        })
+      : allGroups;
+    const rows = [...matches]
       .sort((a, b) => (a.name || a.email).localeCompare(b.name || b.email))
       .map(renderGroupRow);
-    list.innerHTML = rows.join("");
+    list.innerHTML = rows.length
+      ? rows.join("")
+      : `<div class="dir-empty" style="margin-top:8px;">No groups match "<strong>${escapeHtml(term)}</strong>".</div>`;
   }
 
   function renderGroupRow(g) {
@@ -2610,6 +2721,10 @@
   document.getElementById("dirNewBtn").addEventListener("click", openCreateModal);
   // "+ New group" button -> open the create-group modal.
   document.getElementById("dirNewGroupBtn").addEventListener("click", openCreateGroupModal);
+  document.getElementById("dirGroupSearch").addEventListener("input", e => {
+    groupSearchTerm = e.target.value || "";
+    renderGroupsSection();
+  });
   // Click outside the modal to close.
   document.getElementById("dirModalBackdrop").addEventListener("click", e => {
     if (e.target === e.currentTarget) closeCard();
