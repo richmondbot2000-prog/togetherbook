@@ -9,11 +9,11 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&family=Orbitron:wght@500;600;700;800&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="style.css?v=1778661907">
-<link rel="stylesheet" href="quiet-tokens.css?v=1778661907">
-<link rel="stylesheet" href="quiet.css?v=1778661907">
-<link rel="stylesheet" href="quiet-extras.css?v=1778661907">
-<link rel="stylesheet" href="quiet-legacy.css?v=1778661907">
+<link rel="stylesheet" href="style.css?v=1778662193">
+<link rel="stylesheet" href="quiet-tokens.css?v=1778662193">
+<link rel="stylesheet" href="quiet.css?v=1778662193">
+<link rel="stylesheet" href="quiet-extras.css?v=1778662193">
+<link rel="stylesheet" href="quiet-legacy.css?v=1778662193">
 <style>
   .dir-section { max-width: 1080px; margin: 0 auto; padding: 24px 0 48px; }
   @media (max-width: 800px) { .dir-section { padding: 2px 0 32px; } }
@@ -871,7 +871,7 @@
 
 <header class="qb-topbar">
   <a class="qb-brand" href="index.html" aria-label="TogetherBOOK — home">
-    <img class="qb-brand-logo" src="togetherbook-logo.png?v=1778661907" alt="TogetherBOOK">
+    <img class="qb-brand-logo" src="togetherbook-logo.png?v=1778662193" alt="TogetherBOOK">
   </a>
   <button class="qb-hamburger" aria-label="Toggle navigation menu" aria-expanded="false"
           onclick="document.body.classList.toggle('nav-open');this.setAttribute('aria-expanded',document.body.classList.contains('nav-open'))">
@@ -918,7 +918,7 @@
 
       <div class="dir-controls" id="dirControls" hidden>
         <div class="dir-search-row">
-          <input type="search" class="dir-search" id="dirSearch" placeholder="Search by name, email, title, department, or warehouse username…">
+          <input type="search" class="dir-search" id="dirSearch" placeholder="Search name, email, alias, title, department, payroll fields…">
           <button type="button" class="dir-new-btn" id="dirNewBtn" title="Create a new Google Workspace user">+ New user</button>
         </div>
         <div class="dir-filter-row" id="dirStatusRow">
@@ -1308,9 +1308,17 @@
     if (searchTerm) {
       const u = entry.user;
       const a = entry.activity;
-      const haystack = entry.type === "staff"
-        ? ((u.name || "") + " " + (u.email || "") + " " + (u.title || "") + " " + (u.department || "")).toLowerCase()
-        : (a?.username || "").toLowerCase();
+      let haystack;
+      if (entry.type === "staff") {
+        const aliases = (u.aliases || []).join(" ");
+        const payroll = payrollFor(entry);
+        const payrollBits = payroll
+          ? [payroll.first_name, payroll.last_name, payroll.email, payroll.mobile, payroll.address, payroll.employee_number].filter(Boolean).join(" ")
+          : "";
+        haystack = [u.name, u.email, aliases, u.title, u.department, payrollBits].filter(Boolean).join(" ").toLowerCase();
+      } else {
+        haystack = (a?.username || "").toLowerCase();
+      }
       if (!haystack.includes(searchTerm)) return false;
     }
     return true;
@@ -1726,7 +1734,12 @@
     };
     const yesno = v => v ? "yes" : "no";
     const tenantList = u ? (u.tenants || (u.tenant ? [u.tenant] : [])) : [];
-    const mailto = u ? u.email : (a.username || "");
+    // For suspended users, the Email button should target the forwarding
+    // address (the original mailbox is dead — clicking the original goes
+    // nowhere). Falls back to the original when no forward is recorded.
+    const suspendedFwd = u && u.suspended ? forwardingByEmail[(u.email || "").toLowerCase()] : null;
+    const mailto = u ? (suspendedFwd || u.email) : (a.username || "");
+    const mailtoIsForward = !!suspendedFwd;
 
     // Collect every email address belonging to this person:
     //   1. primary email on this Workspace account
@@ -1863,7 +1876,7 @@
           <input id="dirStart" name="start_date" type="date" value="${escapeHtml(ann.start_date || (payrollFor(entry)?.start_date) || "")}">
         </div>
         <div class="dir-modal-actions">
-          ${mailto ? `<a class="dir-modal-btn" href="mailto:${escapeHtml(mailto)}">Email</a>` : ""}
+          ${mailto ? `<a class="dir-modal-btn" href="mailto:${escapeHtml(mailto)}" title="${mailtoIsForward ? `Goes to the forwarded target ${escapeHtml(mailto)} — original mailbox is suspended` : `mailto: ${escapeHtml(mailto)}`}">Email${mailtoIsForward ? " (via forward)" : ""}</a>` : ""}
           <button type="button" class="primary" data-save>Save</button>
         </div>
         <p class="dir-modal-toast" data-toast></p>
