@@ -110,9 +110,21 @@ export default {
     try { body = await req.json(); }
     catch { return json({ error: "invalid JSON body" }, 400, req); }
 
+    // Tenant-aware impersonation: the page sends body.tenant for any
+    // user-targeting action. Together Loans uses a different super-admin
+    // because each Workspace customer has its own admin set. SA is shared.
+    const tenant = (body.tenant || "").toLowerCase();
+    let impersonate = env.IMPERSONATE_USER;
+    if (tenant === "togetherloans") {
+      if (!env.IMPERSONATE_USER_TOGETHERLOANS) {
+        return json({ error: "IMPERSONATE_USER_TOGETHERLOANS var not configured (needed for Together Loans actions)" }, 500, req);
+      }
+      impersonate = env.IMPERSONATE_USER_TOGETHERLOANS;
+    }
+
     let adminToken;
-    try { adminToken = await getGoogleAccessToken(env, env.IMPERSONATE_USER, ADMIN_SCOPES); }
-    catch (e) { return json({ error: "google admin token exchange failed: " + e.message }, 502, req); }
+    try { adminToken = await getGoogleAccessToken(env, impersonate, ADMIN_SCOPES); }
+    catch (e) { return json({ error: "google admin token exchange failed (impersonating " + impersonate + "): " + e.message }, 502, req); }
 
     let result;
     try {

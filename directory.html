@@ -9,11 +9,11 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&family=Orbitron:wght@500;600;700;800&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="style.css?v=1778682527">
-<link rel="stylesheet" href="quiet-tokens.css?v=1778682527">
-<link rel="stylesheet" href="quiet.css?v=1778682527">
-<link rel="stylesheet" href="quiet-extras.css?v=1778682527">
-<link rel="stylesheet" href="quiet-legacy.css?v=1778682527">
+<link rel="stylesheet" href="style.css?v=1778684440">
+<link rel="stylesheet" href="quiet-tokens.css?v=1778684440">
+<link rel="stylesheet" href="quiet.css?v=1778684440">
+<link rel="stylesheet" href="quiet-extras.css?v=1778684440">
+<link rel="stylesheet" href="quiet-legacy.css?v=1778684440">
 <style>
   .dir-section { max-width: 1080px; margin: 0 auto; padding: 24px 0 48px; }
   @media (max-width: 800px) { .dir-section { padding: 2px 0 32px; } }
@@ -341,6 +341,22 @@
     height: 22px;
     margin-top: 6px;
     display: block;
+  }
+  /* Together Loans tenant: blue background behind the Google logo / wordmark
+     so TL accounts are visually distinct from RG accounts at a glance. */
+  .dir-gws-icon[data-tenant="togetherloans"] {
+    background: #1f4f99;
+    border-radius: 3px;
+    padding: 2px;
+    box-sizing: content-box;
+    width: 14px;
+    height: 14px;
+  }
+  .dir-modal-gws-wordmark[data-tenant="togetherloans"] {
+    background: #1f4f99;
+    padding: 4px 8px;
+    border-radius: 4px;
+    height: 16px;
   }
 
   .dir-row--external { opacity: 0.92; }
@@ -973,7 +989,7 @@
 
 <header class="qb-topbar">
   <a class="qb-brand" href="index.html" aria-label="TogetherBOOK — home">
-    <img class="qb-brand-logo" src="togetherbook-logo.png?v=1778682527" alt="TogetherBOOK">
+    <img class="qb-brand-logo" src="togetherbook-logo.png?v=1778684440" alt="TogetherBOOK">
   </a>
   <button class="qb-hamburger" aria-label="Toggle navigation menu" aria-expanded="false"
           onclick="document.body.classList.toggle('nav-open');this.setAttribute('aria-expanded',document.body.classList.contains('nav-open'))">
@@ -1145,7 +1161,11 @@
         const g = (u.given || "").trim().toLowerCase();
         const f = (u.family || "").trim().toLowerCase();
         if (!g || !f) { orphan.push(u); continue; }   // no name -> can't merge safely
-        const key = `${g}|${f}`;
+        // Include tenant in the merge key so seats in DIFFERENT Workspace
+        // customers DON'T merge (e.g. James Benamor on letme + Together
+        // Loans renders as two separate rows). Same person on multiple
+        // domains within ONE customer still merges.
+        const key = `${(u.tenant || "").toLowerCase()}|${g}|${f}`;
         if (!personGroups.has(key)) personGroups.set(key, []);
         personGroups.get(key).push(u);
       }
@@ -1697,8 +1717,9 @@
       : "";
 
     const isDeleted = !!u.deletion_time;
+    const tenantTag = (u.tenant || "").toLowerCase();
     const liveGws = !u.suspended && !isDeleted
-      ? `<img class="dir-gws-icon" src="assets/google-workspace-icon.svg?v=1" alt="Google Workspace account active" title="Google Workspace account active">`
+      ? `<img class="dir-gws-icon" data-tenant="${escapeHtml(tenantTag)}" src="assets/google-workspace-icon.svg?v=1" alt="Google Workspace account active" title="Google Workspace${tenantTag === "togetherloans" ? " (Together Loans)" : ""} account active">`
       : "";
 
     // Visual states (most-severe-wins):
@@ -2103,8 +2124,14 @@
     const norm = s => (s || "").toLowerCase().trim();
     const wantG = norm(u.given);
     const wantF = norm(u.family);
+    const wantTenant = norm(u.tenant);
     return allEntries
-      .filter(e => e.type === "staff" && e.user && norm(e.user.given) === wantG && norm(e.user.family) === wantF)
+      .filter(e =>
+        e.type === "staff" && e.user
+        && norm(e.user.given) === wantG
+        && norm(e.user.family) === wantF
+        && norm(e.user.tenant) === wantTenant   // never merge across tenants
+      )
       .map(e => e.user);
   }
 
@@ -2204,7 +2231,7 @@
     ` : "";
 
     const liveGwsWordmark = (u && !u.suspended)
-      ? `<img class="dir-modal-gws-wordmark" src="assets/google-workspace-wordmark.svg?v=1" alt="Google Workspace account active">`
+      ? `<img class="dir-modal-gws-wordmark" data-tenant="${escapeHtml((u.tenant || "").toLowerCase())}" src="assets/google-workspace-wordmark.svg?v=1" alt="Google Workspace${(u.tenant || "").toLowerCase() === "togetherloans" ? " (Together Loans)" : ""} account active">`
       : "";
     const suspendedBadge = (u && u.suspended)
       ? `<span class="dir-suspended-badge" title="This Workspace account is currently suspended — no email/Drive access, no billing on Flex plan">Workspace account suspended</span>`
@@ -2321,6 +2348,20 @@
   const WORKSPACE_API = "/api/workspace";   // book.togetherbook.net Worker route
 
   async function workspaceAction(action, body) {
+    // Auto-inject the tenant tag from the staff.json entry matching body.email.
+    // Worker uses it to pick the right impersonate-user (RG vs Together Loans).
+    if (body && body.email && !body.tenant) {
+      const lc = (body.email || "").toLowerCase();
+      const match = allEntries.find(e =>
+        e.type === "staff" && e.user
+        && ((e.user.email || "").toLowerCase() === lc
+            || (e.user.aliases || []).some(a => (a || "").toLowerCase() === lc)
+            || (e.accounts || []).some(s => (s.email || "").toLowerCase() === lc))
+      );
+      if (match && match.user && match.user.tenant) {
+        body = { ...body, tenant: match.user.tenant };
+      }
+    }
     const res = await fetch(`${WORKSPACE_API}/${action}`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
