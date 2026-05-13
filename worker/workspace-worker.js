@@ -40,7 +40,14 @@ const ADMIN_SCOPES = [
 // Gmail settings scope — needed for forwardingAddresses + autoForwarding.
 // The Worker impersonates the *target user* (not the admin) for these calls
 // because mailbox-settings APIs run as the mailbox owner under DWD.
-const GMAIL_SCOPES = "https://www.googleapis.com/auth/gmail.settings.sharing";
+// Both .basic and .sharing are needed: .sharing for write operations on
+// forwardingAddresses + autoForwarding; .basic for reads of the same. Google's
+// docs say .sharing covers GET too but in practice the GET returns 403 without
+// .basic — so we request both in the JWT.
+const GMAIL_SCOPES = [
+  "https://www.googleapis.com/auth/gmail.settings.basic",
+  "https://www.googleapis.com/auth/gmail.settings.sharing",
+].join(" ");
 
 export default {
   async fetch(req, env) {
