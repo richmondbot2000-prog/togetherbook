@@ -9,11 +9,11 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&family=Orbitron:wght@500;600;700;800&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="style.css?v=1778746967">
-<link rel="stylesheet" href="quiet-tokens.css?v=1778746967">
-<link rel="stylesheet" href="quiet.css?v=1778746967">
-<link rel="stylesheet" href="quiet-extras.css?v=1778746967">
-<link rel="stylesheet" href="quiet-legacy.css?v=1778746967">
+<link rel="stylesheet" href="style.css?v=1778753361">
+<link rel="stylesheet" href="quiet-tokens.css?v=1778753361">
+<link rel="stylesheet" href="quiet.css?v=1778753361">
+<link rel="stylesheet" href="quiet-extras.css?v=1778753361">
+<link rel="stylesheet" href="quiet-legacy.css?v=1778753361">
 <style>
   .dir-section { max-width: 1080px; margin: 0 auto; padding: 24px 0 48px; }
   @media (max-width: 800px) { .dir-section { padding: 2px 0 32px; } }
@@ -1155,7 +1155,7 @@
 
 <header class="qb-topbar">
   <a class="qb-brand" href="index.html" aria-label="TogetherBOOK — home">
-    <img class="qb-brand-logo" src="togetherbook-logo.png?v=1778746967" alt="TogetherBOOK">
+    <img class="qb-brand-logo" src="togetherbook-logo.png?v=1778753361" alt="TogetherBOOK">
   </a>
   <button class="qb-hamburger" aria-label="Toggle navigation menu" aria-expanded="false"
           onclick="document.body.classList.toggle('nav-open');this.setAttribute('aria-expanded',document.body.classList.contains('nav-open'))">
@@ -1195,24 +1195,13 @@
           <button type="button" class="dir-new-btn" id="dirNewBtn" title="Create a new Google Workspace user">+ New user</button>
         </div>
         <div class="dir-filter-stack" id="dirFilterStack" hidden>
-          <div class="dir-filter-row" id="dirStatusRow">
-            <span class="dir-filter-label">Status</span>
-            <button class="dir-pill dir-pill--status active" data-value="all">All <span class="dir-pill-count" id="dirStatusCountAll">0</span></button>
-            <button class="dir-pill dir-pill--status" data-value="active">Active <span class="dir-pill-count" id="dirStatusCountActive">0</span></button>
-            <button class="dir-pill dir-pill--status" data-value="suspended">Suspended <span class="dir-pill-count" id="dirStatusCountSuspended">0</span></button>
-            <button class="dir-pill dir-pill--status" data-value="deleted">Deleted <span class="dir-pill-count" id="dirStatusCountDeleted">0</span></button>
-          </div>
-          <div class="dir-filter-row" id="dirTenantRow">
-            <span class="dir-filter-label">Tenant</span>
-            <button class="dir-pill dir-pill--tenant active" data-value="all">All <span class="dir-pill-count" id="dirTenantCountAll">0</span></button>
-          </div>
-          <div class="dir-filter-row" id="dirWorkspaceRow" hidden>
-            <span class="dir-filter-label">Workspace</span>
-            <button class="dir-pill dir-pill--workspace active" data-value="all">All <span class="dir-pill-count" id="dirWorkspaceCountAll">0</span></button>
-          </div>
-          <div class="dir-filter-row" id="dirDeptRow">
-            <span class="dir-filter-label">Department</span>
-            <button class="dir-pill dir-pill--dept active" data-value="all">All <span class="dir-pill-count" id="dirCountAll">0</span></button>
+          <div class="dir-filter-row" id="dirGroupRow">
+            <span class="dir-filter-label">Filter</span>
+            <button class="dir-pill dir-pill--group active" data-value="all">All <span class="dir-pill-count" id="dirGroupCountAll">0</span></button>
+            <button class="dir-pill dir-pill--group" data-value="letme">@letme <span class="dir-pill-count" id="dirGroupCountLetme">0</span></button>
+            <button class="dir-pill dir-pill--group" data-value="togetherloans">@togetherloans <span class="dir-pill-count" id="dirGroupCountTL">0</span></button>
+            <button class="dir-pill dir-pill--group" data-value="crm">CRM only <span class="dir-pill-count" id="dirGroupCountCrm">0</span></button>
+            <button class="dir-pill dir-pill--group" data-value="suspended">Suspended <span class="dir-pill-count" id="dirGroupCountSuspended">0</span></button>
           </div>
         </div>
       </div>
@@ -1250,10 +1239,15 @@
   // Each entry is { type: 'staff'|'external', user: {…} | null, activity: {…} | null }.
   // Staff entries always have user; external entries always have activity.
   let allEntries = [];
-  let activeDept = "all";
-  let activeTenant = "all";
-  let activeWorkspace = "all";   // Google Workspace tenant (letme.co.uk vs rgroup vs etc.)
-  let activeStatus = "all";       // all | active | suspended
+  // One filter axis with 5 mutually-exclusive options:
+  //   all            — everyone
+  //   letme          — primary or alias email contains @letme. (covers
+  //                    letme.com + letme.co.uk + the alias domains under
+  //                    the LetMe Workspace tenant)
+  //   togetherloans  — primary or alias email at togetherloans.com
+  //   crm            — warehouse-only entries (no Workspace account)
+  //   suspended      — Workspace accounts currently in suspended state
+  let activeGroup = "all";
   let searchTerm = "";
 
   // Viewer identity, learned from /api/workspace/whoami on page load. Until
@@ -1516,43 +1510,7 @@
         : `Updated ${updated} · ${allWorkspaceUsers.length} accounts (activity data not yet available)`;
       document.getElementById("dirMeta").textContent = meta;
 
-      // Department pills count Workspace staff only.
-      const byDept = {};
-      for (const e of allEntries) {
-        if (e.type !== "staff") continue;
-        const d = e.user.department || "(unspecified)";
-        byDept[d] = (byDept[d] || 0) + 1;
-      }
-      // Tenant pills count both staff and external active people.
-      const byTenant = {};
-      for (const e of allEntries) {
-        const t = e.activity?.primary_tenant;
-        if (!t) continue;
-        byTenant[t] = (byTenant[t] || 0) + 1;
-      }
-      // Workspace pills count per Workspace email-domain — derived from the
-      // primary email and any aliases. So a person with a single Workspace
-      // account but accounts on multiple alias-domains (letme.com,
-      // letme.co.uk, rgroup.co.uk, ...) gets counted on each domain. Useful
-      // for "show me everyone reachable on @rgroup.co.uk".
-      const byWorkspace = {};
-      for (const e of allEntries) {
-        if (e.type !== "staff" || !e.user) continue;
-        const seen = new Set();
-        const collect = email => {
-          const dom = (email || "").split("@")[1];
-          if (!dom) return;
-          if (seen.has(dom)) return;
-          seen.add(dom);
-          byWorkspace[dom] = (byWorkspace[dom] || 0) + 1;
-        };
-        collect(e.user.email);
-        for (const a of (e.user.aliases || [])) collect(a);
-      }
-      buildDeptPills(byDept);
-      buildTenantPills(byTenant);
-      buildWorkspacePills(byWorkspace);
-      renderStatusPills();
+      renderGroupPills();
       renderBillingSummary();
       renderHealth();
       document.getElementById("dirControls").hidden = allEntries.length === 0;
@@ -1585,85 +1543,43 @@
       document.getElementById("dirEmpty").hidden = false;
     });
 
-  function buildDeptPills(byDept) {
-    const row = document.getElementById("dirDeptRow");
-    document.getElementById("dirCountAll").textContent = allEntries.length;
-    Object.entries(byDept)
-      .sort((a, b) => b[1] - a[1])
-      .forEach(([name, n]) => {
-        const btn = document.createElement("button");
-        btn.className = "dir-pill dir-pill--dept";
-        btn.dataset.value = name;
-        btn.innerHTML = `${escapeHtml(name)} <span class="dir-pill-count">${n}</span>`;
-        row.appendChild(btn);
-      });
-    document.querySelectorAll(".dir-pill--dept").forEach(p => {
-      p.addEventListener("click", () => {
-        document.querySelectorAll(".dir-pill--dept").forEach(b => b.classList.remove("active"));
-        p.classList.add("active");
-        activeDept = p.dataset.value;
-        renderGrid();
-      });
-    });
-    document.getElementById("dirSearch").addEventListener("input", e => {
-      searchTerm = e.target.value.trim().toLowerCase();
-      renderGrid();
-    });
-  }
-
-  function buildTenantPills(byTenant) {
-    const row = document.getElementById("dirTenantRow");
-    document.getElementById("dirTenantCountAll").textContent = allEntries.length;
-    // Sort by tenant priority then name so the buckets render in the same
-    // order as the cards themselves.
-    Object.entries(byTenant)
-      .sort((a, b) => {
-        const r = tenantRank(a[0]) - tenantRank(b[0]);
-        if (r !== 0) return r;
-        return a[0].localeCompare(b[0]);
-      })
-      .forEach(([name, n]) => {
-        const btn = document.createElement("button");
-        btn.className = "dir-pill dir-pill--tenant";
-        btn.dataset.value = name;
-        btn.innerHTML = `${escapeHtml(name)} <span class="dir-pill-count">${n}</span>`;
-        row.appendChild(btn);
-      });
-    document.querySelectorAll(".dir-pill--tenant").forEach(p => {
-      p.addEventListener("click", () => {
-        document.querySelectorAll(".dir-pill--tenant").forEach(b => b.classList.remove("active"));
-        p.classList.add("active");
-        activeTenant = p.dataset.value;
-        renderGrid();
-      });
-    });
-  }
-
-  // Per-seat billing summary card. Reads staff.json + workspace-actions.json
-  // to count live vs suspended seats and price the live ones at the configured
-  // per-seat rate. Suspended-on-Flex don't cost — that's the dual-purpose
-  // visibility ("did we actually stop the bill when so-and-so left?").
-  function renderStatusPills() {
-    const staffEntries = allEntries.filter(e => e.type === "staff" && e.user);
-    const active = staffEntries.filter(e => !e.user.suspended && !e.user.deletion_time).length;
-    const suspended = staffEntries.filter(e => e.user.suspended && !e.user.deletion_time).length;
-    const deleted = staffEntries.filter(e => e.user.deletion_time).length;
-    document.getElementById("dirStatusCountAll").textContent = allEntries.length;
-    document.getElementById("dirStatusCountActive").textContent = active;
-    document.getElementById("dirStatusCountSuspended").textContent = suspended;
-    document.getElementById("dirStatusCountDeleted").textContent = deleted;
-    document.querySelectorAll(".dir-pill--status").forEach(p => {
-      p.classList.toggle("active", p.dataset.value === activeStatus);
-      // Avoid attaching duplicate handlers across re-renders
+  // Single filter row driving the entire `visible()` switch. Counts each
+  // mutually-exclusive bucket so the pill chips show how many records each
+  // filter would surface.
+  function renderGroupPills() {
+    const counts = {
+      all: allEntries.length,
+      letme: allEntries.filter(entryHasLetmeAddress).length,
+      togetherloans: allEntries.filter(entryHasTogetherloansAddress).length,
+      crm: allEntries.filter(entryIsCrmOnly).length,
+      suspended: allEntries.filter(entryIsSuspended).length,
+    };
+    document.getElementById("dirGroupCountAll").textContent       = counts.all;
+    document.getElementById("dirGroupCountLetme").textContent     = counts.letme;
+    document.getElementById("dirGroupCountTL").textContent        = counts.togetherloans;
+    document.getElementById("dirGroupCountCrm").textContent       = counts.crm;
+    document.getElementById("dirGroupCountSuspended").textContent = counts.suspended;
+    document.querySelectorAll(".dir-pill--group").forEach(p => {
+      p.classList.toggle("active", p.dataset.value === activeGroup);
       if (p.dataset.wired) return;
       p.dataset.wired = "1";
       p.addEventListener("click", () => {
-        document.querySelectorAll(".dir-pill--status").forEach(b => b.classList.remove("active"));
+        document.querySelectorAll(".dir-pill--group").forEach(b => b.classList.remove("active"));
         p.classList.add("active");
-        activeStatus = p.dataset.value;
+        activeGroup = p.dataset.value;
         renderGrid();
       });
     });
+    // Wire the search input once (used to live in buildDeptPills which we
+    // just deleted).
+    const search = document.getElementById("dirSearch");
+    if (search && !search.dataset.wired) {
+      search.dataset.wired = "1";
+      search.addEventListener("input", e => {
+        searchTerm = e.target.value.trim().toLowerCase();
+        renderGrid();
+      });
+    }
   }
 
   // Compute + render the data-quality health panel. Three lines:
@@ -1744,10 +1660,10 @@
       btn.addEventListener("click", () => {
         const kind = btn.dataset.health;
         if (kind === "suspended-no-route") {
-          activeStatus = "suspended";
+          activeGroup = "suspended";
           searchTerm = "";
           document.getElementById("dirSearch").value = "";
-          document.querySelectorAll(".dir-pill--status").forEach(p => p.classList.toggle("active", p.dataset.value === "suspended"));
+          document.querySelectorAll(".dir-pill--group").forEach(p => p.classList.toggle("active", p.dataset.value === "suspended"));
           renderGrid();
         } else if (kind === "suspended-in-groups") {
           showHealthDialog("Suspended Workspace accounts still in groups",
@@ -1793,35 +1709,6 @@
     line.hidden = false;
   }
 
-  function buildWorkspacePills(byWorkspace) {
-    const row = document.getElementById("dirWorkspaceRow");
-    const distinct = Object.keys(byWorkspace);
-    if (distinct.length < 2) {
-      row.hidden = true;
-      return;   // single-tenant — don't bother showing a one-option filter
-    }
-    row.hidden = false;
-    const total = Object.values(byWorkspace).reduce((a, b) => a + b, 0);
-    document.getElementById("dirWorkspaceCountAll").textContent = total;
-    Object.entries(byWorkspace)
-      .sort((a, b) => -a[1] + b[1] || a[0].localeCompare(b[0]))
-      .forEach(([name, n]) => {
-        const btn = document.createElement("button");
-        btn.className = "dir-pill dir-pill--workspace";
-        btn.dataset.value = name;
-        btn.innerHTML = `${escapeHtml(name)} <span class="dir-pill-count">${n}</span>`;
-        row.appendChild(btn);
-      });
-    document.querySelectorAll(".dir-pill--workspace").forEach(p => {
-      p.addEventListener("click", () => {
-        document.querySelectorAll(".dir-pill--workspace").forEach(b => b.classList.remove("active"));
-        p.classList.add("active");
-        activeWorkspace = p.dataset.value;
-        renderGrid();
-      });
-    });
-  }
-
   function renderGrid() {
     const grid = document.getElementById("dirGrid");
     const empty = document.getElementById("dirEmpty");
@@ -1838,42 +1725,31 @@
     grid.innerHTML = items.map(renderCard).join("");
   }
 
+  // Helpers used by the single filter axis.
+  function entryHasLetmeAddress(entry) {
+    if (entry.type !== "staff" || !entry.user) return false;
+    const all = [entry.user.email, ...(entry.user.aliases || [])];
+    return all.some(a => /@letme\./i.test(a || ""));
+  }
+  function entryHasTogetherloansAddress(entry) {
+    if (entry.type !== "staff" || !entry.user) return false;
+    const all = [entry.user.email, ...(entry.user.aliases || [])];
+    return all.some(a => /@togetherloans\./i.test(a || ""));
+  }
+  function entryIsCrmOnly(entry) {
+    return entry.type !== "staff" || !entry.user;
+  }
+  function entryIsSuspended(entry) {
+    return entry.type === "staff" && entry.user && !!entry.user.suspended && !entry.user.deletion_time;
+  }
+
   function visible(entry) {
-    if (activeStatus !== "all") {
-      if (entry.type !== "staff" || !entry.user) return false;
-      const isSusp = !!entry.user.suspended;
-      const isDel = !!entry.user.deletion_time;
-      if (activeStatus === "deleted" && !isDel) return false;
-      if (activeStatus === "suspended" && (!isSusp || isDel)) return false;
-      if (activeStatus === "active" && (isSusp || isDel)) return false;
-    }
-    if (activeTenant !== "all") {
-      // Tenant filter applies to anyone with activity data, staff or external.
-      if (!entry.activity || entry.activity.primary_tenant !== activeTenant) return false;
-    }
-    // Workspace filter: staff-only (external users have no Google account).
-    // "All" means "any Workspace tenant" — it must still require a Workspace
-    // account, otherwise warehouse-only people leak through.
-    if (document.getElementById("dirWorkspaceRow") && !document.getElementById("dirWorkspaceRow").hidden) {
-      if (entry.type !== "staff" || !entry.user) return false;
-      if (activeWorkspace !== "all") {
-        // Match against email-domain of primary OR any alias.
-        const domains = new Set();
-        const primaryDom = (entry.user.email || "").split("@")[1];
-        if (primaryDom) domains.add(primaryDom);
-        for (const a of (entry.user.aliases || [])) {
-          const d = (a || "").split("@")[1];
-          if (d) domains.add(d);
-        }
-        if (!domains.has(activeWorkspace)) return false;
-      }
-    }
-    if (activeDept !== "all") {
-      // The dept filter is for Workspace staff; external entries are excluded
-      // from the filter view entirely (they don't have a department).
-      if (entry.type !== "staff") return false;
-      const dept = entry.user.department || "(unspecified)";
-      if (dept !== activeDept) return false;
+    switch (activeGroup) {
+      case "letme":         if (!entryHasLetmeAddress(entry)) return false; break;
+      case "togetherloans": if (!entryHasTogetherloansAddress(entry)) return false; break;
+      case "crm":           if (!entryIsCrmOnly(entry)) return false; break;
+      case "suspended":     if (!entryIsSuspended(entry)) return false; break;
+      case "all":           default: /* no filter */ break;
     }
     if (searchTerm) {
       const u = entry.user;
@@ -3045,7 +2921,7 @@
     if (slot) slot.innerHTML = "";
     renderGrid();
     renderBillingSummary();
-    renderStatusPills();
+    renderGroupPills();
     renderHealth();
     openCard(entryKey(entry));
 
@@ -3100,7 +2976,7 @@
     buildGroupMembershipIndex();
     renderGroupsSection();
     renderBillingSummary();
-    renderStatusPills();
+    renderGroupPills();
     renderHealth();
     if (slot) slot.innerHTML = "";
     renderGrid();
@@ -3186,7 +3062,7 @@
       buildGroupMembershipIndex();
       renderGroupsSection();
       renderBillingSummary();
-      renderStatusPills();
+      renderGroupPills();
       renderHealth();
       renderGrid();
       const days = Math.max(0, Math.ceil((new Date(scheduledFor).getTime() - Date.now()) / 86400000));
@@ -3227,7 +3103,7 @@
       buildGroupMembershipIndex();
       renderGroupsSection();
       renderBillingSummary();
-      renderStatusPills();
+      renderGroupPills();
       renderHealth();
       renderGrid();
       // No card to re-open (user is gone). Close the modal.
@@ -3368,7 +3244,7 @@
     if (slot) slot.innerHTML = "";
     renderGrid();
     renderBillingSummary();
-    renderStatusPills();
+    renderGroupPills();
     renderHealth();
     openCard(entryKey(entry));
     if (failures.length === 0) {
