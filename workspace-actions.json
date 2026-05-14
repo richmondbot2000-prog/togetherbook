@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "updated_at": "2026-05-14T06:59:47.909Z",
+  "updated_at": "2026-05-14T07:00:08.023Z",
   "actions": [
     {
       "ts": "2026-05-13T20:27:39.210Z",
@@ -769,6 +769,13 @@
       "actor": "james.benamor@letme.com",
       "action": "get-forwarding",
       "target": "sophie.polychronopulos@togetherloans.com",
+      "ok": true
+    },
+    {
+      "ts": "2026-05-14T07:00:08.023Z",
+      "actor": "james.benamor@letme.com",
+      "action": "get-forwarding",
+      "target": "sophie.james@togetherloans.com",
       "ok": true
     }
   ]
