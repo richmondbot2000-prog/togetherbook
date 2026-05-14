@@ -104,6 +104,23 @@ TASK_FALLBACK_LABELS: dict[int, str] = {
 CLUSTER_WINDOW_S = 90
 CLUSTER_MIN_TASKS = 4
 
+# LeadOutcomes type → human label. CLAUDE.md §5 confirmed with Kelly Black
+# 2026-05-12 that this is the canonical Whitebox-driven funnel log; using
+# it as a primary event source means GT-passed / GT-VC / paid-out land in
+# the timeline even when Tasks rows are missing or attributed unexpectedly.
+LEAD_OUTCOME_LABELS: dict[int, str] = {
+    1: "Apply 1 completed",
+    2: "Soft-pull credit check passed",
+    3: "BRW ID verified",
+    4: "BRW signed contract — GT invited",
+    5: "GT accepted — passed credit / bank / ID checks",
+    6: "GT verbal contract (VC) completed",
+    7: "Payout approved",
+    8: "Paid out",
+    9: "Application declined",
+    10: "Application cancelled",
+}
+
 
 # ───────────────────── connection helpers ─────────────────────────────
 
@@ -900,6 +917,61 @@ def main() -> None:
 
     for aref in list(interactions.keys()):
         interactions[aref] = collapse_clusters(interactions[aref])
+
+    # ──────────── (d.5) LeadOutcomes — canonical funnel milestones ─────
+    # The Whitebox /UpdateStatus pipeline writes one row per funnel
+    # milestone to dbo.LeadOutcomes (LeadId, LeadOutcomeTypeId, DateTimeUtc).
+    # Confirmed authoritative with Kelly Black 2026-05-12 — recorded
+    # alongside (sometimes instead of) Tasks rows, so pulling them here
+    # closes the gap where Tasks attribution misses a GT-side event.
+    try:
+        lo_cols = discover_columns(cur, "LeadOutcomes")
+        lo_lead = pick(lo_cols, "LeadID", "LeadId")
+        lo_type = pick(lo_cols, "LeadOutcomeTypeID", "LeadOutcomeTypeId")
+        lo_dt   = pick(lo_cols, "DateTimeUtc", "DateTimeUTC", "DateCreatedUtc", "DateCreatedUTC")
+        if lo_lead and lo_type and lo_dt:
+            # Build LeadId → ARef from the application data we already pulled.
+            leadid_to_aref: dict[int, str] = {}
+            for aref in family_arefs:
+                info = aref_to_app.get(aref) or {}
+                lid = info.get("lead_id")
+                if lid is not None:
+                    leadid_to_aref[int(lid)] = aref
+            if leadid_to_aref:
+                print(f"# pulling LeadOutcomes for {len(leadid_to_aref)} LeadIds…", flush=True)
+                n_recorded = 0
+                for chunk in chunked(list(leadid_to_aref.keys()), 1500):
+                    ph = ",".join(["?"] * len(chunk))
+                    cur.execute(
+                        f"""
+                        SELECT [{lo_lead}], [{lo_type}], [{lo_dt}]
+                        FROM dbo.LeadOutcomes
+                        WHERE [{lo_lead}] IN ({ph})
+                          AND [{lo_dt}] IS NOT NULL
+                        """,
+                        chunk,
+                    )
+                    for lid, ttype, dt in cur.fetchall():
+                        aref = leadid_to_aref.get(int(lid))
+                        if not aref:
+                            continue
+                        try:
+                            ttype_i = int(ttype)
+                        except (TypeError, ValueError):
+                            continue
+                        label_stem = LEAD_OUTCOME_LABELS.get(ttype_i, f"Milestone type {ttype_i}")
+                        record(aref, {
+                            "kind": "milestone",
+                            "at": iso(dt),
+                            "label": label_stem,
+                            "outcome_type_id": ttype_i,
+                        })
+                        n_recorded += 1
+                print(f"# recorded {n_recorded} LeadOutcome milestones across the family", flush=True)
+        else:
+            print(f"# LeadOutcomes columns not all present (lead={lo_lead} type={lo_type} dt={lo_dt}) — skipping", flush=True)
+    except Exception as e:
+        print(f"# LeadOutcomes block skipped: {e}", flush=True)
 
     # ──────────── (e) ESignatures via Apps.BrwEsignatureId / GtEsignatureId
     es_id_col = pick(es_cols, "EsignatureId", "ESignatureId")

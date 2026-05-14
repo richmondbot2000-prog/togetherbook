@@ -335,6 +335,15 @@
     background: rgba(190, 60, 50, 0.06);
   }
   .pl-event.cluster .pl-event-kind { color: var(--red-500); }
+  /* Milestones (LeadOutcomes — GT passed, GT VC, paid out, etc.) read as
+     funnel signposts; tinted sage-green so they pop against tasks/messages. */
+  .pl-event.milestone {
+    background: rgba(95, 140, 90, 0.10);
+    border-left: 3px solid var(--sage-600, #5f9e4d);
+    padding-left: 9px;
+  }
+  .pl-event.milestone .pl-event-kind { color: var(--sage-600, #5f9e4d); font-weight: 600; }
+  .pl-event.milestone .pl-event-body { color: var(--ink-900); }
   .pl-event-channel {
     font: 500 10px/1.2 var(--font-mono);
     color: var(--ink-500);
@@ -1006,6 +1015,10 @@
         break;
       case "signature":
         cls = "sig"; kindLabel = "Signature"; body = escapeHtml(e.label || "Signature"); break;
+      case "milestone":
+        cls = "milestone"; kindLabel = "Milestone";
+        body = `<strong>${escapeHtml(e.label || "Milestone")}</strong>`;
+        break;
       case "web_visit":
         cls = "web"; kindLabel = "Web"; body = escapeHtml(e.label || "Web visit"); break;
       case "message_in":
