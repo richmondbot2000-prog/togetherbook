@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "updated_at": "2026-05-14T09:39:45.666Z",
+  "updated_at": "2026-05-14T10:26:47.716Z",
   "actions": [
     {
       "ts": "2026-05-13T20:27:39.210Z",
@@ -2023,6 +2023,13 @@
       "actor": "amber.cole@letme.com",
       "action": "get-forwarding",
       "target": "kyle.barrett@letme.com",
+      "ok": true
+    },
+    {
+      "ts": "2026-05-14T10:26:47.716Z",
+      "actor": "berginie.botero@togetherloans.com",
+      "action": "get-forwarding",
+      "target": "dan.bennett@clearloans.com.au",
       "ok": true
     }
   ]
