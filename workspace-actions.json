@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "updated_at": "2026-05-14T16:34:17.781Z",
+  "updated_at": "2026-05-14T16:36:29.631Z",
   "actions": [
     {
       "ts": "2026-05-13T20:27:39.210Z",
@@ -2292,6 +2292,13 @@
       "target": "WorkPlace@letme.com",
       "ok": true,
       "member_email": "james.benamor@letme.com"
+    },
+    {
+      "ts": "2026-05-14T16:36:29.631Z",
+      "actor": "amber.cole@letme.com",
+      "action": "get-forwarding",
+      "target": "matthew.wood@letme.co.uk",
+      "ok": true
     }
   ]
 }
