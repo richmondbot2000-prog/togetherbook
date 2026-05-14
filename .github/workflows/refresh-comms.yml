@@ -46,9 +46,9 @@ jobs:
 
       - name: Scan
         env:
-          FABRIC_SQL_ENDPOINT: ${{ secrets.FABRIC_SQL_ENDPOINT }}
-          FABRIC_TENANT_ID:    ${{ secrets.FABRIC_TENANT_ID }}
-          FABRIC_CLIENT_ID:    ${{ secrets.FABRIC_CLIENT_ID }}
+          FABRIC_SQL_ENDPOINT: d76gbn5gtayeppltcrsxsvkluq-ruqkpz7fkwpelmnjh4kbg2lqpi.datawarehouse.fabric.microsoft.com
+          FABRIC_TENANT_ID:    b760fc1f-98a6-4730-bd73-146579554ba4
+          FABRIC_CLIENT_ID:    b8fb2709-6e42-4a1e-91e6-8a3807a9884d
           FABRIC_CLIENT_SECRET: ${{ secrets.FABRIC_CLIENT_SECRET }}
         run: python scripts/scan_comms_response.py
 
