@@ -326,30 +326,66 @@ def fetch_contact_to_aref() -> tuple[dict[str, str], dict[str, str]]:
 
 
 def fetch_aref_to_loanbook() -> dict[str, str]:
-    """ARef -> latest LoanbookId. Customers in Loanbook reference their loan
-    via Loanbook.Loan.LoanbookId; we link back to the Applications ARef via
-    Loan.ARef. Take the lexicographically max LoanbookId per ARef when a
-    customer has multiple loans — bucketing uses the LATEST loan's state."""
+    """ARef -> latest LoanbookId. The ARef ↔ LoanbookId link lives in different
+    tables depending on warehouse vintage:
+      - dbo.Loan in ReportingLoanbook may carry ARef (informational copy)
+      - dbo.ESignatures in ReportingApplications carries LoanbookId (written
+        back at payout)
+      - dbo.Applications.LoanbookId may exist directly
+
+    Try the Loanbook side first; if no ARef column there, fall back to the
+    Applications side. Take lexicographically max LoanbookId per ARef so we
+    bucket against the LATEST loan."""
     print("[loanbook] building ARef -> LoanbookId map…", flush=True)
-    cn = pyodbc.connect(conn_str("ReportingLoanbook"), timeout=30)
     aref_to_lb: dict[str, str] = {}
+
+    # Try Loanbook.dbo.Loan.ARef
+    cn = pyodbc.connect(conn_str("ReportingLoanbook"), timeout=30)
     try:
         cur = cn.cursor()
-        cur.execute("""
-            SELECT ARef, LoanbookId
-            FROM dbo.Loan
-            WHERE ARef IS NOT NULL
-              AND LoanbookId IS NOT NULL
-        """)
-        for aref, lb in cur.fetchall():
-            aref = (aref or "").strip()
-            lb = (lb or "").strip()
-            if not (aref and lb): continue
-            if lb > (aref_to_lb.get(aref) or ""):
-                aref_to_lb[aref] = lb
+        loan_aref = pick_column(cur, "dbo", "Loan", "ARef", "Aref")
+        loan_lb = pick_column(cur, "dbo", "Loan", "LoanbookId", "LoanBookId", "LoanbookID")
+        if loan_aref and loan_lb:
+            cur.execute(f"""
+                SELECT [{loan_aref}], [{loan_lb}]
+                FROM dbo.Loan
+                WHERE [{loan_aref}] IS NOT NULL AND [{loan_lb}] IS NOT NULL
+            """)
+            for aref, lb in cur.fetchall():
+                aref = (aref or "").strip()
+                lb = (lb or "").strip()
+                if not (aref and lb): continue
+                if lb > (aref_to_lb.get(aref) or ""):
+                    aref_to_lb[aref] = lb
+            print(f"  via Loanbook.Loan: {len(aref_to_lb)} mappings", flush=True)
     finally:
         cn.close()
-    print(f"[loanbook] {len(aref_to_lb)} ARef -> LoanbookId mappings", flush=True)
+
+    # Fall back to / supplement with Applications.ESignatures.LoanbookId
+    if not aref_to_lb:
+        cn = pyodbc.connect(conn_str("ReportingApplications"), timeout=30)
+        try:
+            cur = cn.cursor()
+            es_lb = pick_column(cur, "dbo", "ESignatures", "LoanbookId", "LoanBookId", "LoanbookID")
+            if es_lb:
+                # ESignatures has CustomerId; Customers has ARef. Join through.
+                cur.execute(f"""
+                    SELECT c.ARef, e.[{es_lb}]
+                    FROM dbo.ESignatures e
+                    JOIN dbo.Customers c ON c.CustomerId = e.CustomerId
+                    WHERE c.ARef IS NOT NULL AND e.[{es_lb}] IS NOT NULL
+                """)
+                for aref, lb in cur.fetchall():
+                    aref = (aref or "").strip()
+                    lb = (lb or "").strip()
+                    if not (aref and lb): continue
+                    if lb > (aref_to_lb.get(aref) or ""):
+                        aref_to_lb[aref] = lb
+                print(f"  via Applications.ESignatures: {len(aref_to_lb)} mappings", flush=True)
+        finally:
+            cn.close()
+
+    print(f"[loanbook] {len(aref_to_lb)} ARef -> LoanbookId mappings total", flush=True)
     return aref_to_lb
 
 
