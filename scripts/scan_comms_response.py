@@ -110,6 +110,7 @@ SELECT
     i.LoanbookId,
     i.UTCTime AS DateReceivedUtc,
     i.Channel,
+    i.ExternalAddress,
     -- Minutes to first non-MessageFactory reply within 14 days
     (
         SELECT TOP 1 DATEDIFF(MINUTE, i.UTCTime, o.UTCTime)
@@ -159,8 +160,9 @@ def fetch_inbound_paired():
             "LoanbookId":      (r[2] or "").strip() if r[2] else "",
             "DateReceivedUtc": r[3],
             "Channel":         r[4],
-            "ReplyMinAll":     r[5],
-            "ReplyMinHuman":   r[6],
+            "ExternalAddress": (r[5] or "").strip() if r[5] else "",
+            "ReplyMinAll":     r[6],
+            "ReplyMinHuman":   r[7],
         })
     print(f"[comms] {len(out)} inbound rows", flush=True)
     return out
@@ -672,32 +674,12 @@ def main() -> None:
     phone_map, email_map = fetch_contact_to_aref()
     aref_to_lb = fetch_aref_to_loanbook()
     augmented = 0
-    # The first SQL pass didn't pull ExternalAddress (it wasn't needed for
-    # pairing). Pull it now only for ARef-less rows so we can do contact
-    # lookup without re-running the heavy CROSS APPLY.
-    print("[comms] re-fetching ExternalAddress for ARef-less inbounds…", flush=True)
-    needed_ids = [i["MessageId"] for i in inbounds if not i["ARef"]]
-    ext_by_msg: dict[int, str] = {}
-    if needed_ids:
-        cn = pyodbc.connect(conn_str("ReportingCommunications"), timeout=30)
-        try:
-            cur = cn.cursor()
-            for chunk in chunked(needed_ids, 1500):
-                ph = ",".join("?" * len(chunk))
-                cur.execute(
-                    f"SELECT MessageId, ExternalAddress FROM dbo.Messages WHERE MessageId IN ({ph})",
-                    list(chunk),
-                )
-                for mid, ext in cur.fetchall():
-                    ext_by_msg[mid] = (ext or "").strip()
-        finally:
-            cn.close()
-    print(f"[comms] got ExternalAddress for {len(ext_by_msg)} ARef-less rows", flush=True)
-
-    for ext_msg in inbounds:
-        if ext_msg["ARef"]:
+    needed = 0
+    for msg in inbounds:
+        if msg["ARef"]:
             continue
-        ext = ext_by_msg.get(ext_msg["MessageId"], "")
+        needed += 1
+        ext = msg.get("ExternalAddress", "")
         if not ext: continue
         derived_aref = None
         if "@" in ext:
@@ -705,14 +687,14 @@ def main() -> None:
         else:
             derived_aref = phone_map.get(normalise_phone(ext))
         if not derived_aref: continue
-        ext_msg["ARef"] = derived_aref
-        if not ext_msg["LoanbookId"]:
+        msg["ARef"] = derived_aref
+        if not msg["LoanbookId"]:
             lb = aref_to_lb.get(derived_aref)
-            if lb: ext_msg["LoanbookId"] = lb
+            if lb: msg["LoanbookId"] = lb
         augmented += 1
     print(
-        f"[augment] back-filled ARef on {augmented} of {len(needed_ids)} ARef-less "
-        f"inbounds ({(augmented*100)//max(len(needed_ids),1)}%)",
+        f"[augment] back-filled ARef on {augmented} of {needed} ARef-less "
+        f"inbounds ({(augmented*100)//max(needed,1)}%)",
         flush=True,
     )
 
