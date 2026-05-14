@@ -254,9 +254,24 @@ def fetch_signed_gt(arefs: set[str]) -> set[str]:
     cn = pyodbc.connect(conn_str("ReportingApplications"), timeout=30)
     try:
         cur = cn.cursor()
-        # The ARef ↔ ESignature link lives on dbo.Applications (BrwEsignatureId
-        # / GtEsignatureId), not on dbo.Customers. We only care about the GT
-        # signature for the "signed-not-rejected guarantor" check.
+        # Discover the relevant columns on dbo.Applications + dbo.ESignatures.
+        # Warehouse vintages drift; in particular dbo.Applications.GtEsignatureId
+        # is not always present. When the join column is missing we degrade
+        # gracefully — every ARef just stays in 'applicant' for the bucket
+        # classifier and v1 still works.
+        gt_es_col = pick_column(cur, "dbo", "Applications",
+                                "GtEsignatureId", "GtESignatureId", "GTEsignatureId")
+        gt_ref_col = pick_column(cur, "dbo", "Applications", "GtRef")
+        es_id_col = pick_column(cur, "dbo", "ESignatures", "EsignatureId", "ESignatureId")
+        es_signed_col = pick_column(cur, "dbo", "ESignatures",
+                                    "DateSignedUtc", "DateSignedUTC", "SignedDateUtc")
+        if not (gt_es_col and gt_ref_col and es_id_col and es_signed_col):
+            print(f"  signed-GT columns not present "
+                  f"(gt_es={gt_es_col}, gt_ref={gt_ref_col}, "
+                  f"es_id={es_id_col}, es_signed={es_signed_col}); "
+                  f"skipping the check — every ARef will fall back to 'applicant'",
+                  flush=True)
+            return set()
         flag_list = ",".join(str(f) for f in ARREARS_FLAG_TYPES)
         result: set[str] = set()
         for chunk in chunked(arefs, 1500):
@@ -266,15 +281,15 @@ def fetch_signed_gt(arefs: set[str]) -> set[str]:
                 SELECT DISTINCT a.ARef
                 FROM dbo.Applications a
                 JOIN dbo.ESignatures e
-                  ON e.EsignatureId = a.GtEsignatureId
+                  ON e.[{es_id_col}] = a.[{gt_es_col}]
                 WHERE a.ARef IN ({ph})
-                  AND a.GtRef IS NOT NULL
-                  AND a.GtEsignatureId IS NOT NULL
-                  AND e.DateSignedUtc IS NOT NULL
+                  AND a.[{gt_ref_col}] IS NOT NULL
+                  AND a.[{gt_es_col}] IS NOT NULL
+                  AND e.[{es_signed_col}] IS NOT NULL
                   AND NOT EXISTS (
                       SELECT 1 FROM dbo.Flags f
                       WHERE f.ARef = a.ARef
-                        AND f.GtRef = a.GtRef
+                        AND f.GtRef = a.[{gt_ref_col}]
                         AND f.FlagTypeId IN ({flag_list})
                         AND f.DateRemovedUtc IS NULL
                   );
