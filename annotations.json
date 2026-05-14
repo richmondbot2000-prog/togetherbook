@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "updated_at": "2026-05-14T08:31:07.719Z",
+  "updated_at": "2026-05-14T08:52:13.976Z",
   "annotations": {
     "adnan.turken@letme.co.uk": {
       "directory_photo_uploaded_at": "2026-05-14T09:09:07+01:00"
@@ -179,6 +179,9 @@
     },
     "victor.igbaifua@letme.com": {
       "directory_photo_uploaded_at": "2026-05-14T07:52:25+01:00"
+    },
+    "clementia.dsouza@letme.com": {
+      "forward_to": "clementia.dsouza@togetherloans.com"
     }
   }
 }
