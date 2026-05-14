@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "updated_at": "2026-05-14T16:33:35.141Z",
+  "updated_at": "2026-05-14T16:34:03.105Z",
   "actions": [
     {
       "ts": "2026-05-13T20:27:39.210Z",
@@ -2277,6 +2277,13 @@
       "target": "matthew.wood@letme.co.uk",
       "ok": false,
       "error": "gmail get failed: token exchange 400: {\n  \"error\": \"invalid_grant\",\n  \"error_description\": \"Invalid email or User ID\"\n}"
+    },
+    {
+      "ts": "2026-05-14T16:34:03.105Z",
+      "actor": "james.benamor@letme.com",
+      "action": "group-create",
+      "target": "WorkPlace@letme.com",
+      "ok": true
     }
   ]
 }
