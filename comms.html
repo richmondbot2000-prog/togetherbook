@@ -1,0 +1,433 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>TogetherBOOK — Comms response time</title>
+<link rel="icon" type="image/png" href="site-icon.png">
+<link rel="apple-touch-icon" href="site-icon.png">
+<link rel="stylesheet" href="quiet-tokens.css?v=1778743524">
+<link rel="stylesheet" href="quiet.css?v=1778743524">
+<link rel="stylesheet" href="quiet-extras.css?v=1778743524">
+<style>
+  .cm-section { max-width: 1080px; margin: 0 auto; padding: 24px 0 48px; }
+  @media (max-width: 800px) { .cm-section { padding: 2px 0 32px; } }
+  .cm-section h1 {
+    font: 400 56px/1.05 var(--font-display);
+    color: var(--ink-900);
+    letter-spacing: -0.018em;
+    margin: 8px 0 12px;
+    text-wrap: balance;
+  }
+  .cm-section .lead {
+    font: 400 17px/1.55 var(--font-display);
+    color: var(--ink-700);
+    margin: 0 0 6px; max-width: 720px;
+    text-wrap: pretty;
+  }
+  .cm-meta {
+    color: var(--ink-500);
+    font: 500 11px/1 var(--font-mono);
+    letter-spacing: 0.04em; margin: 8px 0 18px;
+  }
+
+  /* Filter bar — two checkboxes on a paper plate */
+  .cm-filters {
+    display: flex; flex-wrap: wrap; gap: 18px;
+    padding: 12px 16px;
+    background: var(--paper-50);
+    border: 1px solid var(--paper-300);
+    margin: 8px 0 18px;
+    align-items: center;
+  }
+  .cm-filters label {
+    display: inline-flex; align-items: center; gap: 8px;
+    cursor: pointer; user-select: none;
+    font: 500 14px/1.2 var(--font-display);
+    color: var(--ink-700);
+  }
+  .cm-filters input[type="checkbox"] {
+    accent-color: var(--brass-600);
+    width: 16px; height: 16px;
+  }
+  .cm-filter-sub {
+    color: var(--ink-500);
+    font-size: 12px;
+    font-style: italic;
+    margin-left: 4px;
+  }
+
+  /* Chart */
+  .cm-chart-wrap {
+    position: relative;
+    background: var(--paper-50);
+    border: 1px solid var(--paper-300);
+    padding: 28px 24px 18px;
+    margin: 0 0 14px;
+  }
+  .cm-chart-wrap::before {
+    content: ""; position: absolute; inset: 4px;
+    border: 1px solid var(--brass-300); opacity: 0.35; pointer-events: none;
+  }
+  .cm-chart-title {
+    font: 500 22px/1.2 var(--font-display);
+    color: var(--ink-900);
+    margin: 0 0 4px;
+  }
+  .cm-chart-sub {
+    font: 400 14px/1.45 var(--font-display);
+    color: var(--ink-600);
+    margin: 0 0 16px;
+    max-width: 720px;
+  }
+  .cm-chart-svg {
+    width: 100%; height: auto; display: block;
+  }
+  .cm-grid { stroke: var(--paper-300); stroke-width: 0.6; }
+  .cm-axis { stroke: var(--ink-700); stroke-width: 1; }
+  .cm-axis-tick { font: 400 10px var(--font-mono); fill: var(--ink-500); }
+  .cm-axis-label { font: 500 11px var(--font-display); fill: var(--ink-600); }
+  .cm-x-label   { font: 400 10px var(--font-mono); fill: var(--ink-500); }
+  .cm-line      { fill: none; stroke-width: 1.6; }
+  .cm-line-unknown   { stroke: #888; }
+  .cm-line-applicant { stroke: #2c6cb8; }
+  .cm-line-live_loan { stroke: #2c8a4a; }
+  .cm-line-arrears   { stroke: #c54c4c; }
+  .cm-dot { stroke: white; stroke-width: 1; }
+
+  /* Legend */
+  .cm-legend {
+    display: flex; flex-wrap: wrap; gap: 16px;
+    margin: 0 0 12px;
+  }
+  .cm-legend-item {
+    display: inline-flex; align-items: center; gap: 8px;
+    font: 500 13px var(--font-display);
+    color: var(--ink-700);
+  }
+  .cm-legend-swatch {
+    display: inline-block; width: 22px; height: 3px; border-radius: 2px;
+  }
+  .cm-swatch-unknown   { background: #888; }
+  .cm-swatch-applicant { background: #2c6cb8; }
+  .cm-swatch-live_loan { background: #2c8a4a; }
+  .cm-swatch-arrears   { background: #c54c4c; }
+
+  .cm-empty {
+    padding: 28px; text-align: center;
+    color: var(--ink-500); font-style: italic;
+  }
+
+  /* Summary cards row */
+  .cm-totals { display: flex; flex-wrap: wrap; gap: 12px; margin: 8px 0 18px; }
+  .cm-totals-card {
+    flex: 1 1 200px;
+    padding: 12px 14px;
+    background: var(--paper-50);
+    border: 1px solid var(--paper-300);
+  }
+  .cm-totals-card .lab {
+    font: 500 11px/1 var(--font-display);
+    color: var(--ink-500);
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    margin-bottom: 6px;
+  }
+  .cm-totals-card .val {
+    font: 600 22px/1.1 var(--font-display);
+    color: var(--ink-900);
+  }
+  .cm-totals-card .sub {
+    font: 400 12px/1.4 var(--font-display);
+    color: var(--ink-500);
+    margin-top: 2px;
+  }
+</style>
+</head>
+<body>
+
+<header class="qb-topbar">
+  <a class="qb-brand" href="index.html" aria-label="TogetherBOOK — home">
+    <img class="qb-brand-logo" src="togetherbook-logo.png?v=1778743524" alt="TogetherBOOK">
+  </a>
+  <button class="qb-hamburger" aria-label="Toggle navigation menu" aria-expanded="false"
+          onclick="document.body.classList.toggle('nav-open');this.setAttribute('aria-expanded',document.body.classList.contains('nav-open'))">
+    <span></span><span></span><span></span>
+  </button>
+  <nav class="qb-nav">
+    <a class="qb-nav-link" href="index.html">About our systems</a>
+    <a class="qb-nav-link" href="yesterday.html">Yesterday</a>
+    <a class="qb-nav-link" href="brandwatch.html">Brandwatch</a>
+    <a class="qb-nav-link" href="1stcontact.html">1stContact</a>
+    <a class="qb-nav-link" href="directory.html">Directory</a>
+    <a class="qb-nav-link" href="topups.html">TopUps</a>
+    <a class="qb-nav-link" href="pipeline.html">Pipeline</a>
+    <a class="qb-nav-link" href="brokers.html">Brokers</a>
+    <a class="qb-nav-link is-active" href="comms.html">Comms</a>
+    <a class="qb-nav-link" href="database.html">Schema</a>
+    <a class="qb-nav-link" href="stats.html">Code</a>
+  </nav>
+</header>
+<div class="qb-nav-backdrop" onclick="document.body.classList.remove('nav-open')"></div>
+
+<main class="qb-page">
+  <section class="cm-section">
+    <h1>Comms response time</h1>
+    <p class="lead">When a customer messages us by SMS or email, how long do they wait for our next message back on the same channel? Each daily point is the <strong>mean response time</strong> across messages the customer sent that day. <em>Message Factory</em> sends are excluded from counting as a reply (they're broadcast campaigns, not actual replies). Replies more than 14 days later are treated as "no reply within 14 days".</p>
+    <p class="lead">The four lines split by the sender's state <em>at the moment they sent the message</em>: no ARef yet ("unknown"), have an ARef but no live loan ("applicant"), live loan and not in arrears ("live loan"), or live loan in arrears.</p>
+    <p class="cm-meta" id="cmMeta">Loading…</p>
+
+    <div class="cm-filters">
+      <label>
+        <input type="checkbox" id="cmExcludeRR">
+        Exclude <strong>Reply Robot</strong> replies
+        <span class="cm-filter-sub">(only count human-agent replies)</span>
+      </label>
+      <label>
+        <input type="checkbox" id="cmIncludeNoReply">
+        Include <strong>no-reply</strong> messages, capped at 14 days
+        <span class="cm-filter-sub">(treats unreplied as 14 d to weight down slow days)</span>
+      </label>
+    </div>
+
+    <div class="cm-totals" id="cmTotals"></div>
+
+    <div class="cm-chart-wrap">
+      <h2 class="cm-chart-title">2026 daily mean response time</h2>
+      <p class="cm-chart-sub">Y-axis auto-scales (minutes / hours / days). Hover a point for that day's mean + sample size. Days with no qualifying messages in a bucket are gaps in the line.</p>
+      <div class="cm-legend">
+        <span class="cm-legend-item"><span class="cm-legend-swatch cm-swatch-unknown"></span>Unknown sender</span>
+        <span class="cm-legend-item"><span class="cm-legend-swatch cm-swatch-applicant"></span>Applicant</span>
+        <span class="cm-legend-item"><span class="cm-legend-swatch cm-swatch-live_loan"></span>Live loan</span>
+        <span class="cm-legend-item"><span class="cm-legend-swatch cm-swatch-arrears"></span>Arrears</span>
+      </div>
+      <div id="cmChart"></div>
+    </div>
+  </section>
+</main>
+
+<script>
+  const BUCKETS = ["unknown", "applicant", "live_loan", "arrears"];
+  const BUCKET_LABEL = {
+    unknown:   "Unknown sender",
+    applicant: "Applicant",
+    live_loan: "Live loan",
+    arrears:   "Arrears",
+  };
+  const MAX_REPLY_MINUTES_DEFAULT = 14 * 24 * 60;
+
+  let dataset = null;
+
+  fetch("comms.json", { cache: "no-store" })
+    .then(r => r.ok ? r.json() : Promise.reject("comms.json HTTP " + r.status))
+    .then(d => { dataset = d; renderAll(); })
+    .catch(err => {
+      document.getElementById("cmChart").innerHTML =
+        `<div class="cm-empty">No data yet. The <code>refresh-comms</code> workflow will populate <code>comms.json</code> on its next run. (${err})</div>`;
+      document.getElementById("cmMeta").textContent = "comms.json not loaded — " + err;
+    });
+
+  document.getElementById("cmExcludeRR").addEventListener("change", renderAll);
+  document.getElementById("cmIncludeNoReply").addEventListener("change", renderAll);
+
+  function renderAll() {
+    if (!dataset) return;
+    const updated = (dataset.updated_at || "").replace("T", " ").slice(0, 19) + " UTC";
+    document.getElementById("cmMeta").textContent =
+      `Year ${dataset.year} · ${dataset.channels.join(" + ")} · 14-day reply window · updated ${updated}`;
+    const excludeRR = document.getElementById("cmExcludeRR").checked;
+    const includeNoReply = document.getElementById("cmIncludeNoReply").checked;
+    const series = computeSeries(dataset, excludeRR, includeNoReply);
+    drawChart(series);
+    drawTotals(dataset, excludeRR, includeNoReply);
+  }
+
+  // For each bucket, build an array of { date, meanMinutes, n }.
+  // The "mean" depends on filters:
+  //   excludeRR=false, includeNoReply=false → sum_reply_all / n_reply_all
+  //   excludeRR=true,  includeNoReply=false → sum_reply_human / n_reply_human
+  //   excludeRR=false, includeNoReply=true  → (sum_reply_all   + (n_total - n_reply_all)   * MAX) / n_total
+  //   excludeRR=true,  includeNoReply=true  → (sum_reply_human + (n_total - n_reply_human) * MAX) / n_total
+  function computeSeries(d, excludeRR, includeNoReply) {
+    const MAX = d.max_reply_minutes || MAX_REPLY_MINUTES_DEFAULT;
+    const out = {};
+    for (const bucket of BUCKETS) {
+      const days = (d.series && d.series[bucket]) || {};
+      const arr = [];
+      Object.keys(days).sort().forEach(date => {
+        const v = days[date];
+        const n_reply = excludeRR ? v.n_reply_human : v.n_reply_all;
+        const sum_reply = excludeRR ? v.sum_reply_human : v.sum_reply_all;
+        let mean = null, n = 0;
+        if (includeNoReply) {
+          const total = v.n_total;
+          if (total > 0) {
+            const noReply = Math.max(0, total - n_reply);
+            mean = (sum_reply + noReply * MAX) / total;
+            n = total;
+          }
+        } else {
+          if (n_reply > 0) {
+            mean = sum_reply / n_reply;
+            n = n_reply;
+          }
+        }
+        if (mean != null) arr.push({ date, mean, n });
+      });
+      out[bucket] = arr;
+    }
+    return out;
+  }
+
+  function drawTotals(d, excludeRR, includeNoReply) {
+    const cards = [];
+    for (const bucket of BUCKETS) {
+      const t = (d.totals_by_bucket && d.totals_by_bucket[bucket]) || { n_total: 0, n_reply_all: 0, n_reply_human: 0 };
+      const replied = excludeRR ? t.n_reply_human : t.n_reply_all;
+      const total = t.n_total;
+      const pct = total > 0 ? Math.round(100 * replied / total) : 0;
+      cards.push(`
+        <div class="cm-totals-card">
+          <div class="lab">${escapeHtml(BUCKET_LABEL[bucket])}</div>
+          <div class="val">${formatNumber(total)} <span style="font-size:12px;color:var(--ink-500);">messages</span></div>
+          <div class="sub">${formatNumber(replied)} got a reply within 14 d (${pct}%)</div>
+        </div>`);
+    }
+    document.getElementById("cmTotals").innerHTML = cards.join("");
+  }
+
+  function drawChart(series) {
+    const dates = collectDates(series);
+    if (!dates.length) {
+      document.getElementById("cmChart").innerHTML = `<div class="cm-empty">No data in this filter combination.</div>`;
+      return;
+    }
+
+    const W = 1040, H = 460;
+    const PAD = { top: 24, right: 56, bottom: 56, left: 70 };
+    const innerW = W - PAD.left - PAD.right;
+    const innerH = H - PAD.top - PAD.bottom;
+
+    // Compute global max across visible series (in minutes).
+    let maxMin = 0;
+    for (const b of BUCKETS) for (const p of series[b]) maxMin = Math.max(maxMin, p.mean);
+    if (maxMin <= 0) maxMin = 60;
+    const { unit, divisor, label: unitLabel } = pickUnit(maxMin);
+    const yMax = niceCeil(maxMin / divisor);
+    const yScale = v => PAD.top + innerH - (v / yMax) * innerH;
+
+    // X scale: linear across the day index for 2026 (Jan 1 .. Dec 31 = 365 days).
+    const yearStart = new Date(`${(window.__year || 2026)}-01-01T00:00:00Z`).getTime();
+    const yearEnd   = new Date(`${(window.__year || 2026)}-12-31T00:00:00Z`).getTime();
+    const totalDays = Math.max(1, Math.round((yearEnd - yearStart) / 86400000));
+    const xScale = iso => {
+      const t = new Date(iso + "T00:00:00Z").getTime();
+      const dayIdx = Math.max(0, Math.min(totalDays, Math.round((t - yearStart) / 86400000)));
+      return PAD.left + (dayIdx / totalDays) * innerW;
+    };
+
+    const svg = [];
+    svg.push(`<svg class="cm-chart-svg" viewBox="0 0 ${W} ${H}" preserveAspectRatio="xMidYMid meet" role="img" aria-label="Daily mean response time by customer state">`);
+
+    // Y gridlines + ticks
+    const yTicks = 5;
+    for (let i = 0; i <= yTicks; i++) {
+      const v = yMax * i / yTicks;
+      const y = yScale(v);
+      svg.push(`<line class="cm-grid" x1="${PAD.left}" x2="${W - PAD.right}" y1="${y}" y2="${y}"/>`);
+      svg.push(`<text class="cm-axis-tick" x="${PAD.left - 8}" y="${y + 3}" text-anchor="end">${formatTick(v)}</text>`);
+    }
+
+    // X month labels
+    const monthLabels = [
+      ["01", "Jan"], ["02", "Feb"], ["03", "Mar"], ["04", "Apr"],
+      ["05", "May"], ["06", "Jun"], ["07", "Jul"], ["08", "Aug"],
+      ["09", "Sep"], ["10", "Oct"], ["11", "Nov"], ["12", "Dec"],
+    ];
+    monthLabels.forEach(([mm, label]) => {
+      const x = xScale(`${dataset.year}-${mm}-01`);
+      svg.push(`<text class="cm-x-label" x="${x.toFixed(1)}" y="${(PAD.top + innerH + 16).toFixed(1)}" text-anchor="start">${label}</text>`);
+      svg.push(`<line class="cm-grid" x1="${x}" x2="${x}" y1="${PAD.top}" y2="${PAD.top + innerH}" opacity="0.4"/>`);
+    });
+
+    // Axis lines
+    svg.push(`<line class="cm-axis" x1="${PAD.left}" x2="${W - PAD.right}" y1="${PAD.top + innerH}" y2="${PAD.top + innerH}"/>`);
+    svg.push(`<line class="cm-axis" x1="${PAD.left}" x2="${PAD.left}" y1="${PAD.top}" y2="${PAD.top + innerH}"/>`);
+    svg.push(`<text class="cm-axis-label" transform="translate(${PAD.left - 52} ${PAD.top + innerH / 2}) rotate(-90)" text-anchor="middle">mean response time (${unitLabel})</text>`);
+
+    // Lines per bucket
+    for (const bucket of BUCKETS) {
+      const points = series[bucket];
+      if (!points.length) continue;
+      const linePts = points.map(p => `${xScale(p.date).toFixed(1)},${yScale(p.mean / divisor).toFixed(1)}`).join(" ");
+      svg.push(`<polyline class="cm-line cm-line-${bucket}" points="${linePts}"/>`);
+      // Dots — small; full data in <title> for hover.
+      const stroke = lineColor(bucket);
+      points.forEach(p => {
+        const cx = xScale(p.date), cy = yScale(p.mean / divisor);
+        svg.push(`<circle class="cm-dot" cx="${cx.toFixed(1)}" cy="${cy.toFixed(1)}" r="2.5" fill="${stroke}"><title>${p.date} · ${BUCKET_LABEL[bucket]}: ${formatGap(p.mean)} (n=${p.n})</title></circle>`);
+      });
+    }
+
+    svg.push(`</svg>`);
+    document.getElementById("cmChart").innerHTML = svg.join("");
+  }
+
+  function collectDates(series) {
+    const s = new Set();
+    for (const b of BUCKETS) for (const p of (series[b] || [])) s.add(p.date);
+    return Array.from(s).sort();
+  }
+
+  function lineColor(bucket) {
+    return ({
+      unknown:   "#888",
+      applicant: "#2c6cb8",
+      live_loan: "#2c8a4a",
+      arrears:   "#c54c4c",
+    })[bucket];
+  }
+
+  function pickUnit(maxMinutes) {
+    if (maxMinutes >= 48 * 60)      return { unit: "days",    divisor: 1440, label: "days" };
+    if (maxMinutes >= 120)          return { unit: "hours",   divisor: 60,   label: "hours" };
+    return                                 { unit: "minutes", divisor: 1,    label: "minutes" };
+  }
+
+  function niceCeil(v) {
+    if (v <= 1) return 1;
+    const mag = Math.pow(10, Math.floor(Math.log10(v)));
+    const norm = v / mag;
+    let nice;
+    if (norm <= 1)      nice = 1;
+    else if (norm <= 2) nice = 2;
+    else if (norm <= 5) nice = 5;
+    else                nice = 10;
+    return nice * mag;
+  }
+
+  function formatTick(v) {
+    if (v >= 1000) return v.toLocaleString("en-GB", { maximumFractionDigits: 1 });
+    if (v >= 10) return Math.round(v).toString();
+    return v.toFixed(1).replace(/\.0$/, "");
+  }
+
+  function formatGap(minutes) {
+    if (minutes < 60) return `${Math.round(minutes)} min`;
+    if (minutes < 24 * 60) return `${(minutes / 60).toFixed(1)} h`;
+    return `${(minutes / 1440).toFixed(1)} d`;
+  }
+
+  function formatNumber(n) {
+    return (n == null) ? "—" : Number(n).toLocaleString("en-GB");
+  }
+
+  function escapeHtml(s) {
+    return String(s == null ? "" : s)
+      .replaceAll("&", "&amp;").replaceAll("<", "&lt;").replaceAll(">", "&gt;")
+      .replaceAll('"', "&quot;").replaceAll("'", "&#39;");
+  }
+</script>
+
+</body>
+</html>

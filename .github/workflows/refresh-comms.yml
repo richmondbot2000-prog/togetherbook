@@ -1,0 +1,70 @@
+name: Refresh comms response times
+
+# Pulls the daily mean response-time stats (per customer-state bucket) and
+# commits comms.json back to main so comms.html stays current.
+#
+# Hourly :05; the underlying query joins Communications.Messages with
+# Loanbook.LoanHistory and Applications.* so we let it run with a 30-min
+# timeout. Standard guard/retry-on-rebase pattern.
+
+on:
+  schedule:
+    - cron: '5 6-23 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: refresh-comms
+  cancel-in-progress: false
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install MS ODBC driver 18
+        run: |
+          set -euo pipefail
+          curl https://packages.microsoft.com/keys/microsoft.asc | sudo tee /etc/apt/trusted.gpg.d/microsoft.asc >/dev/null
+          curl https://packages.microsoft.com/config/ubuntu/24.04/prod.list | sudo tee /etc/apt/sources.list.d/mssql-release.list >/dev/null
+          sudo apt-get update -qq
+          sudo ACCEPT_EULA=Y apt-get install -y -qq msodbcsql18 unixodbc-dev
+
+      - name: Install Python deps
+        run: pip install --quiet 'pyodbc>=5.0'
+
+      - name: Scan
+        env:
+          FABRIC_SQL_ENDPOINT: ${{ secrets.FABRIC_SQL_ENDPOINT }}
+          FABRIC_TENANT_ID:    ${{ secrets.FABRIC_TENANT_ID }}
+          FABRIC_CLIENT_ID:    ${{ secrets.FABRIC_CLIENT_ID }}
+          FABRIC_CLIENT_SECRET: ${{ secrets.FABRIC_CLIENT_SECRET }}
+        run: python scripts/scan_comms_response.py
+
+      - name: Commit if comms.json changed
+        run: |
+          set -euo pipefail
+          git add comms.json
+          if git diff --cached --quiet -- comms.json; then
+            echo "no changes — nothing to commit"
+            exit 0
+          fi
+          git config user.name  "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git commit -m "Refresh comms: daily response-time stats"
+          for attempt in 1 2 3; do
+            if git push; then break; fi
+            if [ "$attempt" -eq 3 ]; then echo "::error::Push failed"; exit 1; fi
+            git fetch origin main && git rebase origin/main
+          done
