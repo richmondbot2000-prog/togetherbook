@@ -78,21 +78,27 @@ DECLARE @from datetime2 = '{YEAR}-01-01';
 DECLARE @to   datetime2 = '{YEAR+1}-01-01';
 DECLARE @maxMinutes int = {MAX_REPLY_MINUTES};
 
+-- Warehouse-actual schema (NOT the wiki's logical view):
+--   dbo.Messages.Description is an INT enum: 0=SMS-in, 1=Email-in, 2=Call-in,
+--   3+ = outbound (different subtype per channel). UTCTime is the single
+--   timestamp column (no separate Received/Sent). Channel of outbound is
+--   inferred by ExternalAddress shape — same address used for inbound +
+--   outbound, so pairing by ExternalAddress is implicitly channel-equivalent.
 WITH inbound AS (
     SELECT
         m.MessageId,
         m.ARef,
         m.LoanbookId,
         m.ExternalAddress,
-        m.DateReceivedUtc,
+        m.UTCTime,
         CASE
-            WHEN m.Description = 'InboundSMS'   THEN 'SMS'
-            WHEN m.Description = 'InboundEmail' THEN 'Email'
+            WHEN m.Description = 0 THEN 'SMS'
+            WHEN m.Description = 1 THEN 'Email'
         END AS Channel
     FROM dbo.Messages m
-    WHERE m.Description IN ('InboundSMS', 'InboundEmail')
-      AND m.DateReceivedUtc >= @from
-      AND m.DateReceivedUtc <  @to
+    WHERE m.Description IN (0, 1)
+      AND m.UTCTime >= @from
+      AND m.UTCTime <  @to
       AND m.ExternalAddress IS NOT NULL
       AND m.ExternalAddress <> ''
 )
@@ -100,33 +106,27 @@ SELECT
     i.MessageId,
     i.ARef,
     i.LoanbookId,
-    i.DateReceivedUtc,
+    i.UTCTime AS DateReceivedUtc,
     i.Channel,
     -- Minutes to first non-MessageFactory reply within 14 days
     (
-        SELECT TOP 1 DATEDIFF(MINUTE, i.DateReceivedUtc, o.DateSentUtc)
+        SELECT TOP 1 DATEDIFF(MINUTE, i.UTCTime, o.UTCTime)
         FROM dbo.Messages o
         WHERE o.ExternalAddress = i.ExternalAddress
-          AND o.Description = CASE i.Channel
-                                  WHEN 'SMS'   THEN 'OutboundSMS'
-                                  WHEN 'Email' THEN 'OutboundEmail'
-                              END
-          AND o.DateSentUtc >  i.DateReceivedUtc
-          AND o.DateSentUtc <= DATEADD(MINUTE, @maxMinutes, i.DateReceivedUtc)
+          AND o.Description >= 3
+          AND o.UTCTime >  i.UTCTime
+          AND o.UTCTime <= DATEADD(MINUTE, @maxMinutes, i.UTCTime)
           AND (o.ClientType IS NULL OR o.ClientType <> 'MessageFactory')
-        ORDER BY o.DateSentUtc ASC
+        ORDER BY o.UTCTime ASC
     ) AS ReplyMinAll,
     -- Same but additionally excluding Reply Robot (ClientType LIKE '%Responder%')
     (
-        SELECT TOP 1 DATEDIFF(MINUTE, i.DateReceivedUtc, o.DateSentUtc)
+        SELECT TOP 1 DATEDIFF(MINUTE, i.UTCTime, o.UTCTime)
         FROM dbo.Messages o
         WHERE o.ExternalAddress = i.ExternalAddress
-          AND o.Description = CASE i.Channel
-                                  WHEN 'SMS'   THEN 'OutboundSMS'
-                                  WHEN 'Email' THEN 'OutboundEmail'
-                              END
-          AND o.DateSentUtc >  i.DateReceivedUtc
-          AND o.DateSentUtc <= DATEADD(MINUTE, @maxMinutes, i.DateReceivedUtc)
+          AND o.Description >= 3
+          AND o.UTCTime >  i.UTCTime
+          AND o.UTCTime <= DATEADD(MINUTE, @maxMinutes, i.UTCTime)
           AND (
               o.ClientType IS NULL
               OR (
@@ -134,7 +134,7 @@ SELECT
                   AND o.ClientType NOT LIKE '%Responder%'
               )
           )
-        ORDER BY o.DateSentUtc ASC
+        ORDER BY o.UTCTime ASC
     ) AS ReplyMinHuman
 FROM inbound i;
 """
@@ -164,31 +164,77 @@ def fetch_inbound_paired():
     return out
 
 
+def chunked(seq, n):
+    """Yield n-sized chunks from seq."""
+    seq = list(seq)
+    for i in range(0, len(seq), n):
+        yield seq[i:i + n]
+
+
+def pick_column(cur, schema: str, table: str, *candidates: str) -> str | None:
+    """Return the first column name from `candidates` that exists on the
+    given table (case-insensitive). The Fabric warehouse has multiple
+    schema vintages; column names drift (e.g. `DateTimeUtc` vs `DateTUtc`).
+    """
+    cur.execute(
+        """
+        SELECT COLUMN_NAME FROM INFORMATION_SCHEMA.COLUMNS
+        WHERE TABLE_SCHEMA = ? AND TABLE_NAME = ?
+        """,
+        (schema, table),
+    )
+    cols = {r[0].lower(): r[0] for r in cur.fetchall()}
+    for c in candidates:
+        if c.lower() in cols:
+            return cols[c.lower()]
+    return None
+
+
 def fetch_loan_history(loanbook_ids: set[str]) -> dict[str, list]:
-    """For each LoanbookId observed, fetch all LoanHistory snapshots so the
-    Python code can find the latest one ≤ each message's timestamp."""
+    """For each LoanbookId observed, fetch all Loan_History snapshots so the
+    Python code can find the latest one ≤ each message's timestamp.
+
+    Columns are discovered via INFORMATION_SCHEMA.COLUMNS because the
+    warehouse has multiple schema vintages. Loan_History is huge so we chunk
+    the LoanbookId list and accumulate rows."""
     if not loanbook_ids:
         return {}
-    print(f"[loanbook] fetching LoanHistory for {len(loanbook_ids)} loans…", flush=True)
+    print(f"[loanbook] fetching Loan_History for {len(loanbook_ids)} loans…", flush=True)
     cn = pyodbc.connect(conn_str("ReportingLoanbook"), timeout=30)
     try:
         cur = cn.cursor()
-        # Stream the LoanbookId list via a TVP-equivalent temp table — pyodbc
-        # 'IN (...)' for >1000 values would hit the SQL Server limit.
-        cur.execute("CREATE TABLE #LoanIds (LoanbookId NVARCHAR(10) PRIMARY KEY);")
-        # Insert in batches; fast_executemany speeds up the round-trips.
-        cur.fast_executemany = True
-        rows = [(lb,) for lb in loanbook_ids]
-        cur.executemany("INSERT INTO #LoanIds (LoanbookId) VALUES (?);", rows)
-        cur.execute("""
-            SELECT lh.LoanbookId, lh.DateTimeUtc, lh.CurrentBalance, lh.Arrears, lh.DateInArrearsLocal
-            FROM dbo.LoanHistory lh
-            JOIN #LoanIds ids ON ids.LoanbookId = lh.LoanbookId
-            ORDER BY lh.LoanbookId, lh.DateTimeUtc;
-        """)
-        history = defaultdict(list)
-        for lb, dt, bal, arr, dia in cur.fetchall():
-            history[lb].append((dt, float(bal or 0.0), float(arr or 0.0), dia))
+        ts_col = pick_column(cur, "dbo", "Loan_History",
+                             "DateTimeUtc", "DateTUtc", "DateTimeUTC")
+        bal_col = pick_column(cur, "dbo", "Loan_History",
+                              "CurrentBalance", "Balance", "OutstandingBalance")
+        arr_col = pick_column(cur, "dbo", "Loan_History",
+                              "Arrears", "TotalInArrears", "CurrentArrears")
+        dia_col = pick_column(cur, "dbo", "Loan_History",
+                              "DateInArrearsLocal", "DateInArrearsUTC", "DateInArrearsUtc")
+        if not (ts_col and bal_col):
+            sys.exit(f"error: couldn't find required columns on Loan_History "
+                     f"(ts={ts_col}, balance={bal_col})")
+        arr_sql = f"[{arr_col}]" if arr_col else "NULL"
+        dia_sql = f"[{dia_col}]" if dia_col else "NULL"
+
+        history: dict[str, list] = defaultdict(list)
+        for chunk in chunked(loanbook_ids, 1500):
+            ph = ",".join("?" * len(chunk))
+            cur.execute(
+                f"""
+                SELECT LoanbookId, [{ts_col}], [{bal_col}], {arr_sql}, {dia_sql}
+                FROM dbo.Loan_History
+                WHERE LoanbookId IN ({ph})
+                """,
+                list(chunk),
+            )
+            for lb, dt, bal, arr, dia in cur.fetchall():
+                history[lb].append((dt, float(bal or 0.0), float(arr or 0.0), dia))
+
+        # Sort each loan's history by timestamp so loan_state_at can scan
+        # forward.
+        for lb in history:
+            history[lb].sort(key=lambda r: r[0])
     finally:
         cn.close()
     total = sum(len(v) for v in history.values())
@@ -197,13 +243,10 @@ def fetch_loan_history(loanbook_ids: set[str]) -> dict[str, list]:
 
 
 def fetch_signed_gt(arefs: set[str]) -> set[str]:
-    """Return the set of (ARef) for which a guarantor was signed (ESignatures
+    """Return the set of ARefs for which a guarantor was signed (ESignatures
     with GtRef NOT NULL) and not currently rejected (no active Decline / DNL /
     Cancelled / FraudRisk flag). Point-in-time accuracy is approximated to
     'now' — see module docstring for a v1 trade-off note.
-
-    A more faithful implementation would also stream signed-at + flag history
-    so each message gets its own as-of check. Punted to v1.5.
     """
     if not arefs:
         return set()
@@ -211,28 +254,31 @@ def fetch_signed_gt(arefs: set[str]) -> set[str]:
     cn = pyodbc.connect(conn_str("ReportingApplications"), timeout=30)
     try:
         cur = cn.cursor()
-        cur.execute("CREATE TABLE #ARefs (ARef NVARCHAR(22) PRIMARY KEY);")
-        cur.fast_executemany = True
-        rows = [(a,) for a in arefs]
-        cur.executemany("INSERT INTO #ARefs (ARef) VALUES (?);", rows)
         flag_list = ",".join(str(f) for f in ARREARS_FLAG_TYPES)
-        cur.execute(f"""
-            SELECT DISTINCT c.ARef
-            FROM dbo.Customers c
-            JOIN dbo.ESignatures e
-              ON e.EsignatureId = c.EsignatureId
-            JOIN #ARefs a ON a.ARef = c.ARef
-            WHERE c.GtRef IS NOT NULL
-              AND e.DateSignedUtc IS NOT NULL
-              AND NOT EXISTS (
-                  SELECT 1 FROM dbo.Flags f
-                  WHERE f.ARef = c.ARef
-                    AND f.GtRef = c.GtRef
-                    AND f.FlagTypeId IN ({flag_list})
-                    AND f.DateRemovedUtc IS NULL
-              );
-        """)
-        result = {r[0].strip() for r in cur.fetchall() if r[0]}
+        result: set[str] = set()
+        for chunk in chunked(arefs, 1500):
+            ph = ",".join("?" * len(chunk))
+            cur.execute(
+                f"""
+                SELECT DISTINCT c.ARef
+                FROM dbo.Customers c
+                JOIN dbo.ESignatures e
+                  ON e.EsignatureId = c.EsignatureId
+                WHERE c.ARef IN ({ph})
+                  AND c.GtRef IS NOT NULL
+                  AND e.DateSignedUtc IS NOT NULL
+                  AND NOT EXISTS (
+                      SELECT 1 FROM dbo.Flags f
+                      WHERE f.ARef = c.ARef
+                        AND f.GtRef = c.GtRef
+                        AND f.FlagTypeId IN ({flag_list})
+                        AND f.DateRemovedUtc IS NULL
+                  );
+                """,
+                list(chunk),
+            )
+            for r in cur.fetchall():
+                if r[0]: result.add(r[0].strip())
     finally:
         cn.close()
     print(f"[apps] {len(result)} ARefs have a signed-not-rejected guarantor", flush=True)
