@@ -82,12 +82,13 @@ The site is a flat set of HTML files. **No router, no SPA, no build step.** Each
 | **TopUps** | `/topups.html` | 24-month chart of distinct Transform Credit (LenderId 6) live loans split Primary / Top-Up, with a TUE-eligible-count line overlay; "last refreshed" badge | `topups.json` |
 | **Pipeline** | `/pipeline.html` | March-cohort application-pipeline analysis with two d3-sankey diagrams (Lead funnel + Application progression), per-stage drop-off table, and click-to-expand sampled customer timelines per dead-end endpoint. All PII masked server-side. | `pipeline.json` + `pipeline-samples.json` |
 | **Brokers** | `/brokers.html` | Per-Broker funnel scorecard PLUS three Source-quality analysis sections — (a) Sources to consider blocking, (b) Blocked Sources to consider re-enabling, (c) Sources where we overpay. KPI band, two top-10 leaderboards (volume + paid), worst-quality leaderboard (ghost rate), sortable table with inline mini-funnel. Click row to expand stage-by-stage detail + top rejection reasons. | `brokers.json` + `source-quality.json` |
+| **Comms** | `/comms.html` | Daily inbound→reply response-time tracker. Weekly Monday-anchored line chart × 4 customer-state buckets (unknown / applicant / live_loan / arrears), fixed 0-336 h Y-axis, two filter checkboxes (Exclude Robot Responder / Exclude no-reply at 14 d cap), 14-day data-maturity cutoff. Includes a sample-messages panel: 100 redacted (inbound, reply) pairs per bucket randomly drawn on every page load. | `comms.json` |
 | **Schema** | `/database.html` | Full DB schema (renders `database.md` via marked.js + mermaid theme), plus per-table row counts as flipboards | `row-counts.json` + `database.md` |
 | **Code** | `/stats.html` | Codebase size dashboard (Solari split-flap digits) + by-language and by-repo tables | inline manual snapshot (live refresh pending Azure access) |
 | _(unlinked)_ | `/apis.html` | Per-helper detail page — kept for any deep-link bookmarks; not in nav | inline |
 | _(unlinked)_ | `/robots.html` | Per-robot list page — kept for any deep-link bookmarks; not in nav | inline |
 
-**Topbar nav (every page):** `About our systems · Yesterday · Brandwatch · 1stContact · Directory · TopUps · Pipeline · Brokers · Schema · Code`. Plus a hamburger drawer ≤960px viewport.
+**Topbar nav (every page):** `About our systems · Yesterday · Brandwatch · 1stContact · Directory · TopUps · Pipeline · Brokers · Comms · Schema · Code`. Plus a hamburger drawer ≤960px viewport.
 
 ---
 
@@ -142,6 +143,7 @@ All refresh workflows live in `.github/workflows/refresh-*.yml`. They share a co
 | `refresh-topups.yml` | hourly :30 | `topups.json` | Fabric warehouse | `FABRIC_*` secrets |
 | `refresh-brokers.yml` | hourly :35 | `brokers.json` | Fabric warehouse (`Leads` × `Brokers.Campaigns` × `Brokers.Sources`) | `FABRIC_*` secrets |
 | `refresh-pipeline.yml` | hourly :45 | `pipeline.json` | Fabric warehouse | `FABRIC_*` secrets |
+| `refresh-comms.yml` | hourly :05 | `comms.json` | Fabric warehouse (Communications + Loanbook + Applications) | `FABRIC_*` secrets. ~10-14 min/run; pulls inbound + paired reply variants, augments missing ARefs by phone/email lookup, samples redacted (message, reply) pairs. |
 | `refresh-pipeline-samples.yml` | hourly :50 | `pipeline-samples.json` | Fabric warehouse (PII-masked output) | `FABRIC_*` secrets |
 | `refresh-source-quality.yml` | daily 07:05 | `source-quality.json` | Fabric warehouse (heavy join over 60d of Leads) | `FABRIC_*` secrets. Daily not hourly — analysis takes ~3-5 min and the underlying signal is stable over a day. 45-min timeout configured. |
 | `refresh-telegram.yml` | hourly :40 | `telegram-mentions.json` | Public Telegram channels via Telethon | `TG_API_ID`, `TG_API_HASH`, `TG_SESSION_B64` (dormant until set) |
@@ -498,25 +500,42 @@ The health panel checks four things; when all are zero, the panel turns green wi
 4. Payroll records with no matched Workspace user (leaver-on-the-books or contractor).
 Plus a stale-payroll warning when `payrollData.updated_at` is over 40 days old — HR refreshes monthly, so 40+ days means the 1st-of-month cron reminder wasn't acted on.
 
-**Filter rows** (below the search input):
+**Filter row** (`#dirGroupRow`) — single mutually-exclusive axis, always visible (no toggle button):
+- `all` — everyone (default)
+- `@letme` — primary OR alias email matches `@letme.*`
+- `@togetherloans` — primary OR alias email matches `@togetherloans.*`
+- `CRM only` — warehouse-only entries (no Workspace account)
+- `Suspended` — Workspace accounts currently suspended (excludes deleted)
 
-- **Status** (`#dirStatusRow`): All / Active / Suspended. The Suspended pill is the one-click route to leaver review.
-- **Tenant** (`#dirTenantRow`): activity-tenant pills (transform / letme / rgroup / etc.) — counts derived from `staff-activity.primary_tenant`.
-- **Workspace** (`#dirWorkspaceRow`): per email-domain pills (letme.com, letme.co.uk, rgroup.co.uk, …). Counts include the user's primary email **and any alias** so a person with a `@rgroup.co.uk` alias counts under that pill. Hidden when only one domain exists.
-- **Department** (`#dirDeptRow`): Workspace department pills.
+Counts per pill are computed inline (`renderGroupPills`). The old multi-axis Status × Tenant × Workspace × Department filter stack was retired 2026-05-14 — too many dimensions, almost no users used them.
+
+**Sort row** (`#dirSortRow`) — single axis driving `sortEntries()`:
+- `Surname` (default)
+- `Start date (newest first)` — payroll start_date
+- `Last seen (most recent first)` — max of Workspace `last_login` (Gmail / sign-in) and warehouse `last_active_utc` (DB write). The list cell and the sort key both call `entryLastSeen()` so they always agree.
+
+Within any sort, **Deleted always sink to the bottom** and **Suspended sit after Live** — these are stability rules that aren't user-overridable.
 
 **Row form**: `[44px avatar] [name · GW icon · title · email + activity meta] [department + workspace chips]`. Activity meta surfaces last-seen + tenants + warehouse, plus phone + start_date — these last two can come from an annotation OR (fallback) from the matched payroll record. When the source is payroll rather than a saved annotation, the row meta appends ` (payroll)` so the source is obvious.
 
-**Suspended-row styling**: `.dir-row--suspended` drops opacity to 0.55, the email is strikethrough, and a brass `→ <forward-target>` chip is appended (read from `workspace-actions.json`).
-
-**Sort** (top to bottom):
-1. **Suspended last** (greyed, opacity 0.55) — leavers stay visible forever so we can audit billing.
-2. Within non-suspended: active (has DB writes in 60d) first.
-3. Within active: `primary_tenant` priority — `transform/together` (0), `rgroup/rgdc/letme` (1), other (2).
-4. Within tenant: `writes_60d` desc.
-5. Inactive Workspace accounts at the end (still above suspended), alphabetical.
+**Suspended-row styling**: `.dir-row--suspended` drops opacity to 0.55, the email is strikethrough, and a brass `→ <forward-target>` chip is appended (read from `annotations.forward_to` with fallback to `workspace-actions.json`).
 
 **Search** (`#dirSearch`) covers name, email, every alias, title, department, plus payroll fields (first/last name in payroll, mobile, address, employee number). Single search box matches across all of them.
+
+**Workspace edit card** surfaces (admin-only flags marked *):
+- Email + Rename primary* link
+- Other emails + Convert one to a group* link
+- Full name, Department, Workspace tenant
+- **Last login** — Google `lastLoginTime` (renders "never" for the epoch sentinel)
+- Suspended (only when true), Google super-admin (only when true), TogetherBook Admin row (admin viewers only) with Make admin / Remove admin link
+
+**Profile photo upload (admin-only).** A small Upload / Change / Remove link sits under the photo. Click → file picker → cropper modal opens with the chosen image:
+- Drag-pan, scroll/slider zoom (100–400 %)
+- Circular fade hint on the 360×360 stage
+- Save rescales to 400×400 JPEG, ships to `directory-photo-upload`, commits to `assets/photos/<email-safe>.jpg`
+- `directory_photo_uploaded_at` annotation is the cache-bust
+- Locally-read JPEG is held in `localPhotoPreview` so the photo shows immediately while GitHub Pages publishes (~30-60 s)
+- Override is **page-only** — it does NOT touch the user's real Workspace photo (deliberate)
 
 #### 11.1.7 Workspace admin actions (the full verb set)
 
@@ -1025,6 +1044,58 @@ For the three deferred items: each needs either a new data source or a substanti
 March-cohort application-pipeline analysis with two d3-sankey diagrams (Lead funnel + Application progression). Powered by `scan_pipeline.py` + `scan_pipeline_samples.py`.
 
 Per dead-end endpoint, the samples scanner pulls 25 random ARefs with their full interaction timeline (Tasks, Events, Messages, ESignatures). Identity-links by `(FirstName, Surname, DOB)` so the timeline spans every application the same person made. **All PII masked server-side** — ARefs to last-5, surnames to `******`, DOB to `****-**-**`, addresses to state only, plus email/phone/SSN/card redaction in message bodies.
+
+### 11.7 Comms response time (`comms.html`)
+
+Tracks how long customers wait for our reply across SMS and Email, split into four buckets by the customer's state **at the moment they sent the message**:
+
+- `unknown` — sender has no ARef on the inbound row AND no phone/email match in the Customers table
+- `applicant` — ARef set; no live loan; no signed-not-rejected guarantor at message time
+- `live_loan` — LoanbookId tracks to a loan with balance > $10 and no arrears at the LoanHistory snapshot immediately before the message
+- `arrears` — LoanbookId tracks to a loan with balance > $10 and arrears at the snapshot
+
+The scanner: `scripts/scan_comms_response.py`. Workflow: `.github/workflows/refresh-comms.yml` (hourly :05).
+
+**Identity back-fill — the load-bearing trick.** Inbound SMS/Email rows on `Communications.Messages` usually carry no ARef (the IMAP/SMS poller only extracts one if it can scrape the subject line). v1 of this scanner had 98% of inbounds collapsing into `unknown`. The fix: build phone→ARef + email→ARef maps from `Applications.Telephones` + `Applications.Emails` (~19 M phones, ~18 M emails) joined to `Customers.ARef`, then for every ARef-less inbound look the sender's ExternalAddress up. ~97% match rate. Phone matching uses last-10-digits to fold US country-code variants together.
+
+**Reply pairing.** For each inbound, the scanner finds the first `Description >= 3` (outbound) on `dbo.Messages` to the same `ExternalAddress` within 14 days. Two variants captured:
+- `reply_all` — first non-MessageFactory reply (could be RR or human)
+- `reply_human` — first reply that is non-MF AND non-Responder (`ClientType NOT LIKE '%Responder%'` — catches RobotResponder, AiResponder, etc.)
+
+Beyond 14 days is treated as "no reply".
+
+**Output schema (`comms.json`):**
+```jsonc
+{
+  "year": 2026, "channels": ["SMS","Email"], "max_reply_minutes": 20160,
+  "buckets": ["unknown","applicant","live_loan","arrears"],
+  "totals_by_bucket": { "unknown": { "n_total", "n_reply_all", "n_reply_human" }, ... },
+  "series": { "<bucket>": { "YYYY-MM-DD": { "n_total","n_reply_all","sum_reply_all","n_reply_human","sum_reply_human" } } },
+  "samples": { "<bucket>": [ { "aref_last5","channel","received_at","message",
+                                "reply_all": {"at","response_minutes","client_type","body"}|null,
+                                "reply_human": {...}|null } ] }
+}
+```
+
+**Chart UI:**
+- Weekly Monday-anchored aggregation — daily noise (evenings, weekends) gets folded into one number per week.
+- Y-axis **locked** to 0–336 h with 48-h tick increments. No auto-rescale on filter toggle, so visual comparisons across filter states are honest.
+- Last 3 weeks hidden by default — replies can land up to 14 days late, so a week's stats only stabilise once every message in it is 14 d+ old.
+- 4 line colours match the totals-card left borders: grey / blue / green / red.
+
+**Two filter checkboxes drive the chart AND the sample list:**
+- `Exclude Robot Responder` — chart uses `n_reply_human` / `sum_reply_human`; sample list shows `reply_human` (or "no human reply within 14 d")
+- `Exclude messages that get no reply` (default ON) — chart drops unreplied; when unchecked, unreplied messages are capped at 14 d for the mean. Sample list applies the same filter.
+
+**Sample messages.** Scanner picks 100 random inbounds per bucket from the FULL pool (replied + unreplied), redacts customer first/last names (looked up via Customers.ARef) plus regex scrubs for ARef-shape / LoanbookId-shape / phone / SSN / card / email. Only the last 5 chars of ARef are exposed. Page randomly picks 10 of the 100 on every load and on Shuffle click — no warehouse round-trip.
+
+**Multi-database query plan.** Fabric warehouse items are separate connections so the scanner hits all three sequentially:
+1. `ReportingCommunications` — single CTE pulls inbound + paired reply variants (~30 s for ~1 M rows).
+2. `ReportingApplications` — phone/email→ARef maps + signed-GT check.
+3. `ReportingLoanbook` — `dbo.Loan_History` for point-in-time loan state, chunked by LoanbookId.
+4. `ReportingCommunications` again — sample bodies (one query for inbound bodies, 100×4×2 sequential reply lookups).
+
+Total run-time ~10–14 min. The scanner's main performance trap (pulled out 2026-05-14) was re-fetching ExternalAddress per ARef-less message in chunks of 1500 — that took 26 minutes and busted the 30-min workflow timeout. Now ExternalAddress is in the first SELECT.
 
 ---
 
