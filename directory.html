@@ -413,6 +413,22 @@
     padding: 1px 6px;
     border-radius: 3px;
   }
+  /* Shown on rows where Drive+Mail migration is in flight ahead of the
+     final delete. Pulses to communicate "active background work". */
+  .dir-pending-chip {
+    display: inline-block;
+    font: 500 11px/1.4 var(--font-mono, "JetBrains Mono", ui-monospace, monospace);
+    color: var(--manuscript-red, #B23A48);
+    background: #FFF6E5;
+    border: 1px solid var(--manuscript-red, #B23A48);
+    padding: 1px 6px;
+    border-radius: 3px;
+    animation: dir-pending-pulse 2s ease-in-out infinite;
+  }
+  @keyframes dir-pending-pulse {
+    0%, 100% { opacity: 1; }
+    50%      { opacity: 0.55; }
+  }
 
   @media (max-width: 700px) {
     .dir-row { grid-template-columns: 44px minmax(0, 1fr); }
@@ -1329,12 +1345,28 @@
     // Groups list (group emails + members). Optional — the section just stays
     // hidden if the file's absent.
     fetch("groups.json", { cache: "no-store" }).then(r => r.ok ? r.json() : null).catch(() => null),
+    // In-flight Drive + Mail transfers queued by Delete + transfer actions.
+    // Rows whose email matches a pending entry render the ⏳ hourglass +
+    // "Transferring + Deleting" badge. File maintained by Worker (writes
+    // on queue) + scripts/process_pending_transfers.py (clears on completion).
+    fetch("pending-transfers.json", { cache: "no-store" }).then(r => r.ok ? r.json() : null).catch(() => null),
   ])
-    .then(([staff, activity, annotationsFile, payrollFile, workspaceActions, groupsFile]) => {
+    .then(([staff, activity, annotationsFile, payrollFile, workspaceActions, groupsFile, pendingTransfersFile]) => {
       annotationsMap = (annotationsFile && annotationsFile.annotations && typeof annotationsFile.annotations === "object")
         ? annotationsFile.annotations
         : {};
       payrollData = payrollFile && (payrollFile.by_email || payrollFile.by_name) ? payrollFile : null;
+      // pendingTransfersByEmail: lowercase email -> pending entry. Drives the
+      // "Transferring + Deleting" hourglass badge on rows whose Drive + Mail
+      // migration is in flight via process_pending_transfers.py.
+      pendingTransfersByEmail = {};
+      const pending = pendingTransfersFile && pendingTransfersFile.entries;
+      if (Array.isArray(pending)) {
+        for (const p of pending) {
+          const k = (p.source_email || "").toLowerCase();
+          if (k) pendingTransfersByEmail[k] = p;
+        }
+      }
       // Build per-email indexes from the audit log:
       //   - forwardingByEmail: target -> current forward address (or undefined if unsuspended)
       //   - auditByEmail: target -> chronological list of every successful action
@@ -1937,6 +1969,21 @@
     const forwardChip = forwardTo
       ? `<span class="dir-forward-chip" title="Suspended — mail forwards to ${escapeHtml(forwardTo)}">→ ${escapeHtml(forwardTo)}</span>`
       : "";
+    // In-flight transfer chip: Drive ownership change + Gmail migration are
+    // running in the background; the user will be deleted once Gmail is done.
+    // Matches against either the merged primary email or any of the underlying
+    // seat emails so multi-seat people still light up.
+    const pending = (() => {
+      const checks = [(u.email || "").toLowerCase()];
+      for (const acc of (u.accounts_emails || [])) checks.push((acc || "").toLowerCase());
+      for (const k of checks) {
+        if (k && pendingTransfersByEmail[k]) return pendingTransfersByEmail[k];
+      }
+      return null;
+    })();
+    const pendingChip = pending
+      ? `<span class="dir-pending-chip" title="Drive + Mail transferring to ${escapeHtml(pending.target_email || "?")} — account will be deleted once migration finishes (started ${escapeHtml(pending.started_at || "")}).">⏳ Transferring + Deleting${pending.stage ? ` · ${escapeHtml(pending.stage)}` : ""}</span>`
+      : "";
 
     return `
       <button type="button" class="dir-row${stateClass}" data-key="${escapeHtml(u.email)}" title="View details for ${escapeHtml(u.name || u.email)}">
@@ -1949,6 +1996,7 @@
             ${emailHtml}
             ${stateChip}
             ${forwardChip}
+            ${pendingChip}
           </div>
           ${rowMetaHtml(a, u.email, entry)}
         </div>
@@ -1995,6 +2043,7 @@
   let payrollData = null;                               // null until /api/workspace/payroll returns
   let forwardingByEmail = {};                           // email -> route_to (suspended-and-routed users)
   let auditByEmail = {};                                // email -> chronological [{ts, actor, action, ok, route_to?, member_email?, ...}]
+  let pendingTransfersByEmail = {};                     // email -> pending-transfer entry (Drive+Mail migration in flight before final delete)
   let allGroups = [];                                   // [{ email, name, description, members:[…], … }]
   let groupsByMemberEmail = {};                         // memberEmail -> [group, …]
 
@@ -2887,15 +2936,27 @@
     }
 
     if (action === "delete-account") {
-      // Actually deletes the Workspace user — only path that stops the seat
-      // charge (suspended accounts keep billing at full price). Mail bounces
-      // during the 20-day Google recovery window; admin.google.com can
-      // restore within that window if this was a mistake.
+      // Two-mode delete:
+      //
+      // 1. Plain delete (transfer field blank) — Worker immediately DELETEs
+      //    the user. Free the seat now; mailbox + Drive recoverable for 20 d.
+      // 2. Delete + transfer (transfer field filled) — Worker queues a Drive
+      //    ownership transfer to the target + writes a pending-transfers
+      //    entry. Deletion is deferred; a background scanner walks Gmail
+      //    messages source → target, then calls delete-account to finish.
+      //    The row shows an hourglass + "Transferring + Deleting" badge
+      //    while the bg job runs (driven off pending-transfers.json).
       slot.innerHTML = `
         <div class="dir-confirm">
           <div class="dir-confirm-text">
             <strong>Delete ${escapeHtml(u.email)}?</strong><br>
-            <span class="dir-modal-saved-hint" style="text-align:left;margin:0;">Frees the £11/mo seat immediately and locks the account. Mail to this address will bounce. The account stays recoverable from admin.google.com for 20 days, after which Google permanently deletes the mailbox + Drive + everything.</span>
+            <span class="dir-modal-saved-hint" style="text-align:left;margin:0;">Frees the £11/mo seat and locks the account. Without a transfer target the mailbox + Drive go to the 20-day Google recovery state and are then permanently deleted. With a transfer target, the leaver's Drive ownership + Gmail messages are first copied to the colleague (background job; can take hours for large mailboxes), then the account is deleted.</span>
+            <div class="dir-form-row" style="margin-top:10px;">
+              <label for="dirTransferTarget">Transfer Drive + Mail to (optional)</label>
+              <input id="dirTransferTarget" name="transfer_target" type="email" placeholder="Colleague's email — leave blank to skip transfer" list="dirRouteOptions" autocomplete="off">
+              <datalist id="dirRouteOptions">${adminEmailOptions()}</datalist>
+            </div>
+            <span class="dir-modal-saved-hint" style="text-align:left;margin:6px 0 0;">If filled: this row will show <em>Transferring + Deleting</em> with an hourglass until the bg job finishes the Gmail migration and runs the final delete. If blank: account is deleted immediately, no migration.</span>
           </div>
           <div class="dir-confirm-actions">
             <button type="button" data-cancel>Cancel</button>
@@ -2903,7 +2964,19 @@
           </div>
         </div>`;
       slot.querySelector("[data-cancel]").addEventListener("click", () => { slot.innerHTML = ""; });
-      slot.querySelector("[data-confirm]").addEventListener("click", () => runAction(entry, "delete-account", slot, {}));
+      slot.querySelector("[data-confirm]").addEventListener("click", () => {
+        const transferInput = slot.querySelector("[name=transfer_target]");
+        const target = (transferInput && transferInput.value || "").trim();
+        if (target && !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(target)) {
+          transferInput.classList.add("dir-input-invalid");
+          transferInput.focus();
+          transferInput.addEventListener("input", () => transferInput.classList.remove("dir-input-invalid"), { once: true });
+          return;
+        }
+        // Two action paths: plain delete vs queue-transfer-then-delete.
+        runAction(entry, target ? "queue-transfer-and-delete" : "delete-account", slot,
+                  target ? { target_email: target } : {});
+      });
       return;
     }
 
@@ -2971,7 +3044,9 @@
       ? "Suspending + routing"
       : action === "delete-account"
         ? "Deleting"
-        : (action[0].toUpperCase() + action.slice(1) + "ing");
+        : action === "queue-transfer-and-delete"
+          ? "Queuing Drive + Mail transfer"
+          : (action[0].toUpperCase() + action.slice(1) + "ing");
     toast.textContent = `${verbLabel} ${seats.length > 1 ? `${seats.length} seats for ` : ""}${u.email}…`;
     modal.querySelectorAll("[data-action], [data-confirm]").forEach(b => b.disabled = true);
 
@@ -2982,6 +3057,15 @@
         await workspaceAction(action, { email: seat.email, ...(extras || {}) });
         if (action === "suspend-and-route") seat.suspended = true;
         if (action === "delete-account") seat.deletion_time = new Date().toISOString();
+        if (action === "queue-transfer-and-delete") {
+          // Pending — bg scanner will do Gmail migration then call
+          // delete-account. Mark seat for hourglass rendering this session.
+          seat.pending_transfer = {
+            target_email: (extras && extras.target_email) || "",
+            started_at: new Date().toISOString(),
+            stage: "queued",
+          };
+        }
         if (action === "unsuspend") seat.suspended = false;
         const lcEmail = (seat.email || "").toLowerCase();
         // Persist forwarding state into annotations.json (the reliable
@@ -3019,7 +3103,9 @@
           ? `Unsuspended ${okCount} seat${okCount === 1 ? "" : "s"} for ${u.name || u.email}. Forwarding turned off.`
           : action === "delete-account"
             ? `Deleted ${okCount} seat${okCount === 1 ? "" : "s"} for ${u.name || u.email}. Account recoverable from admin.google.com for the next 20 days; mail bounces in the meantime.`
-            : `${u.email} — ${action.replace(/-/g, " ")} succeeded.`;
+            : action === "queue-transfer-and-delete"
+              ? `Queued Drive + Mail transfer to ${extras && extras.target_email ? extras.target_email : "the target"} for ${u.name || u.email}. Row will show "Transferring + Deleting" until the background scanner finishes the migration (next run within the hour) and runs the final delete.`
+              : `${u.email} — ${action.replace(/-/g, " ")} succeeded.`;
       showModalBanner(successText, "success");
     } else {
       showModalBanner(`${okCount}/${seats.length} seat${seats.length === 1 ? "" : "s"} actioned; failures: ${failures.join("; ")}`, okCount > 0 ? "success" : "error");

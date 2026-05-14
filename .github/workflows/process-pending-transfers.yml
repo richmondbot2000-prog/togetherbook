@@ -1,0 +1,69 @@
+name: Process pending Drive + Mail transfers
+
+# Hourly job that drives the background half of the Directory page's
+# Delete + transfer flow:
+#   1. Reads pending-transfers.json (written by the workspace Worker when an
+#      admin clicks Delete with a transfer target on the Directory page).
+#   2. For each entry: migrates Gmail messages source → target via the Gmail
+#      API, then deletes the source user via Admin SDK.
+#   3. Commits the updated pending-transfers.json so the Directory page's
+#      "Transferring + Deleting" hourglass clears once the migration is done.
+#
+# Long timeout because a mailbox of tens of thousands of messages can take
+# ~hour at Google's per-user Gmail API rate limit (~10 messages/sec).
+
+on:
+  schedule:
+    - cron: '40 * * * *'   # every hour at :40 — between the directory refresh (:05)
+                           #                       and groups refresh (:20) so we
+                           #                       don't fight for the worker.
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: process-pending-transfers
+  cancel-in-progress: false
+
+jobs:
+  process:
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install deps
+        run: pip install --quiet 'google-api-python-client>=2.100' 'google-auth>=2.30'
+
+      - name: Run
+        env:
+          WORKSPACE_SERVICE_ACCOUNT_JSON:                ${{ secrets.WORKSPACE_SERVICE_ACCOUNT_JSON }}
+          WORKSPACE_DELEGATE_USER:                       ${{ secrets.WORKSPACE_DELEGATE_USER }}
+          WORKSPACE_SERVICE_ACCOUNT_JSON_TOGETHERLOANS:  ${{ secrets.WORKSPACE_SERVICE_ACCOUNT_JSON_TOGETHERLOANS }}
+          WORKSPACE_DELEGATE_USER_TOGETHERLOANS:         ${{ secrets.WORKSPACE_DELEGATE_USER_TOGETHERLOANS }}
+        run: python scripts/process_pending_transfers.py
+
+      - name: Commit if pending-transfers.json changed
+        run: |
+          set -euo pipefail
+          git add pending-transfers.json
+          if git diff --cached --quiet -- pending-transfers.json; then
+            echo "no changes — nothing to commit"
+            exit 0
+          fi
+          git config user.name  "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git commit -m "Process pending Drive + Mail transfers"
+          for attempt in 1 2 3; do
+            if git push; then break; fi
+            if [ "$attempt" -eq 3 ]; then echo "::error::Push failed"; exit 1; fi
+            git fetch origin main && git rebase origin/main
+          done

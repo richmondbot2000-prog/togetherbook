@@ -29,6 +29,7 @@
 
 const REPO = "richmondbot2000-prog/togetherbook";
 const AUDIT_PATH = "workspace-actions.json";
+const PENDING_TRANSFERS_PATH = "pending-transfers.json";
 const ADMINS_PATH = "admins.json";
 const BRANCH = "main";
 
@@ -52,6 +53,8 @@ const OWNER_PROTECTED_ACTIONS = new Set([
   "suspend-and-route",
   "suspend-no-forward",
   "delete-account",
+  "data-transfer",
+  "queue-transfer-and-delete",
   "reset-password",
   "admin-add",
   "admin-remove",
@@ -62,6 +65,11 @@ const ADMIN_SCOPES = [
   "https://www.googleapis.com/auth/admin.directory.group",
   "https://www.googleapis.com/auth/admin.directory.group.member",
   "https://www.googleapis.com/auth/apps.licensing",
+  // Drive/Calendar data transfer (used before user deletion to preserve a
+  // colleague's access to documents). Requires this scope to also be added
+  // in admin.google.com → Security → API controls → Domain-wide delegation
+  // → edit the existing service account Client ID → add this scope.
+  "https://www.googleapis.com/auth/admin.datatransfer",
 ].join(" ");
 // Gmail settings scope — needed for forwardingAddresses + autoForwarding.
 // The Worker impersonates the *target user* (not the admin) for these calls
@@ -243,6 +251,8 @@ export default {
         case "create-forwarding-group": result = await doCreateForwardingGroup(adminToken, body); break;
         case "suspend-no-forward":   result = await doSuspendNoForward(adminToken, body); break;
         case "delete-account":       result = await doDelete(adminToken, body); break;
+        case "data-transfer":        result = await doDataTransfer(adminToken, body); break;
+        case "queue-transfer-and-delete": result = await doQueueTransferAndDelete(env, adminToken, body); break;
         case "create":               result = await doCreate(adminToken, body); break;
         case "group-create":         result = await doGroupCreate(adminToken, body); break;
         case "group-delete":         result = await doGroupDelete(adminToken, body); break;
@@ -536,6 +546,133 @@ async function doSuspendNoForward(token, body) {
 async function doDelete(token, body) {
   if (!body.email) return { ok: false, error: "missing email" };
   return adminApi(token, "DELETE", `users/${encodeURIComponent(body.email)}`);
+}
+
+// Transfer a user's Drive ownership to another user via the Admin SDK Data
+// Transfer API. Called BEFORE deletion when the admin wants to preserve a
+// colleague's access to the leaver's documents.
+//
+// Asynchronous: returns a transfer id immediately. The actual ownership
+// change happens in the background and can take hours/days for large drives.
+// It's safe to delete the source user immediately after this returns —
+// Google completes the queued transfer regardless of source deletion.
+//
+// Requires the admin.datatransfer scope in ADMIN_SCOPES *and* in the
+// Workspace DWD allowlist (admin.google.com → API controls).
+async function doDataTransfer(token, body) {
+  if (!body.email) return { ok: false, error: "missing email (source)" };
+  if (!body.target_email) return { ok: false, error: "missing target_email" };
+
+  const src = await adminApi(token, "GET", `users/${encodeURIComponent(body.email)}`);
+  if (!src.ok) return { ok: false, error: "source user fetch: " + src.error };
+  if (!src.data || !src.data.id) return { ok: false, error: "source user has no immutable id" };
+
+  const tgt = await adminApi(token, "GET", `users/${encodeURIComponent(body.target_email)}`);
+  if (!tgt.ok) return { ok: false, error: "target user fetch: " + tgt.error };
+  if (!tgt.data || !tgt.data.id) return { ok: false, error: "target user has no immutable id" };
+  if (tgt.data.suspended) return { ok: false, error: "target user is suspended — they cannot receive transferred Drive ownership" };
+
+  // Look up Drive's application id dynamically. Hard-coding (55656082996)
+  // would also work but discovery is robust against any future change.
+  const appsRes = await fetch("https://admin.googleapis.com/admin/datatransfer/v1/applications", {
+    headers: { "Authorization": `Bearer ${token}` },
+  });
+  if (!appsRes.ok) {
+    const txt = await appsRes.text();
+    return {
+      ok: false,
+      error: "list datatransfer apps: HTTP " + appsRes.status + " " + txt.slice(0, 200) +
+        " — if 403, the admin.datatransfer scope is missing from Domain-wide delegation in admin.google.com.",
+    };
+  }
+  const appsBody = await appsRes.json();
+  const driveApp = (appsBody.applications || []).find(a => (a.name || "").toLowerCase().includes("drive"));
+  if (!driveApp) return { ok: false, error: "datatransfer applications list did not include Drive" };
+
+  const insertRes = await fetch("https://admin.googleapis.com/admin/datatransfer/v1/transfers", {
+    method: "POST",
+    headers: { "Authorization": `Bearer ${token}`, "Content-Type": "application/json" },
+    body: JSON.stringify({
+      oldOwnerUserId: src.data.id,
+      newOwnerUserId: tgt.data.id,
+      applicationDataTransfers: [
+        // Omitting applicationTransferParams transfers the default set of
+        // owned files. PRIVACY_LEVEL params (PRIVATE / SHARED) could restrict
+        // scope; we transfer everything by default which matches what an
+        // admin actually wants when off-boarding a leaver.
+        { applicationId: driveApp.id, applicationTransferParams: [] },
+      ],
+    }),
+  });
+  if (!insertRes.ok) {
+    const txt = await insertRes.text();
+    return { ok: false, error: "insert transfer: HTTP " + insertRes.status + " " + txt.slice(0, 300) };
+  }
+  const tr = await insertRes.json();
+  return {
+    ok: true,
+    data: {
+      transfer_id: tr.id || "",
+      status: tr.overallTransferStatusCode || "inProgress",
+      source: body.email,
+      target: body.target_email,
+      message: "Drive transfer queued (id " + (tr.id || "?") + "). Continues in background — safe to delete the source user now.",
+    },
+  };
+}
+
+// One-shot deletion path that preserves the leaver's data:
+//   1. Initiate the Drive transfer (Admin SDK Data Transfer API). Async —
+//      Google completes it in the background even after the source user is
+//      deleted.
+//   2. Append an entry to pending-transfers.json so the Directory page
+//      can render the "⏳ Transferring + Deleting" badge on the row AND so
+//      the background scanner (scripts/process_pending_transfers.py) can
+//      pick the entry up to do Gmail message migration, then call
+//      delete-account, then clear the entry.
+//   3. Return — does NOT delete the source user here. Deletion happens
+//      after Gmail migration finishes, otherwise we lose access to the
+//      mailbox we're trying to migrate from.
+async function doQueueTransferAndDelete(env, token, body) {
+  if (!body.email) return { ok: false, error: "missing email (source)" };
+  if (!body.target_email) return { ok: false, error: "missing target_email" };
+
+  // Reuse doDataTransfer for the Drive part — same code path, same error
+  // surface. Failures here abort the queue (we don't want to claim the user
+  // is being processed if step 1 didn't succeed).
+  const dt = await doDataTransfer(token, body);
+  if (!dt.ok) return dt;
+
+  // Append a pending entry. The bg scanner is the authority for clearing it.
+  const entry = {
+    source_email: body.email,
+    target_email: body.target_email,
+    drive_transfer_id: dt.data && dt.data.transfer_id || "",
+    queued_at: new Date().toISOString(),
+    stage: "queued",   // queued -> migrating-mail -> deleting -> done (then removed)
+    tenant: (body.tenant || "").toLowerCase(),
+    queued_by: body.actor || "",
+  };
+  try {
+    await appendPendingTransfer(env, entry);
+  } catch (e) {
+    return {
+      ok: false,
+      error: "Drive transfer queued (id " + entry.drive_transfer_id + ") but pending-transfers.json append failed: " + (e.message || e) +
+        ". Mail migration + delete will NOT run automatically. Inspect manually.",
+    };
+  }
+
+  return {
+    ok: true,
+    data: {
+      stage: "queued",
+      drive_transfer_id: entry.drive_transfer_id,
+      source: body.email,
+      target: body.target_email,
+      message: "Drive transfer queued. The hourly background job will migrate Gmail messages source → target then delete the source user.",
+    },
+  };
 }
 
 async function doCreateForwardingGroup(token, body) {
@@ -1045,6 +1182,63 @@ async function modifyAdminList(env, action, targetRaw, actor) {
     return { ok: false, error: `failed to commit admins.json (${putRes.status}): ${detail}` };
   }
   return { ok: true, admins, target, action };
+}
+
+/* ----------- Pending Drive + Mail transfers ----------- */
+
+// Append a single entry to pending-transfers.json. The Directory page reads
+// the file on load to render the in-flight badge; the background scanner
+// (scripts/process_pending_transfers.py) is the authority for clearing
+// entries once the migration + delete completes. Throws on permanent failure
+// so the caller can surface the issue back to the admin (the Drive transfer
+// will already have been queued — they need to know mail migration won't
+// proceed automatically).
+async function appendPendingTransfer(env, entry) {
+  if (!env.GITHUB_TOKEN) {
+    throw new Error("GITHUB_TOKEN not configured on the worker — cannot persist pending-transfers entry");
+  }
+  const ghHeaders = {
+    "Authorization": `Bearer ${env.GITHUB_TOKEN}`,
+    "Accept": "application/vnd.github+json",
+    "User-Agent": "apifk-workspace-worker",
+  };
+  const getRes = await fetch(
+    `https://api.github.com/repos/${REPO}/contents/${PENDING_TRANSFERS_PATH}?ref=${BRANCH}`,
+    { headers: ghHeaders },
+  );
+  let current = { schema_version: 1, updated_at: null, entries: [] };
+  let sha = null;
+  if (getRes.ok) {
+    const data = await getRes.json();
+    sha = data.sha;
+    try { current = JSON.parse(atob(data.content.replace(/\s/g, ""))); }
+    catch (e) { /* fresh file */ }
+  } else if (getRes.status !== 404) {
+    throw new Error(`pending-transfers.json read failed: HTTP ${getRes.status}`);
+  }
+  current.schema_version = 1;
+  current.entries = Array.isArray(current.entries) ? current.entries : [];
+  // Replace any existing entry for this source_email (re-queuing).
+  const srcLc = (entry.source_email || "").toLowerCase();
+  current.entries = current.entries.filter(e => (e.source_email || "").toLowerCase() !== srcLc);
+  current.entries.push(entry);
+  current.updated_at = entry.queued_at;
+  const newContent = b64Encode(JSON.stringify(current, null, 2) + "\n");
+  const msg = `Pending transfer queued: ${entry.source_email} -> ${entry.target_email}`;
+  const putRes = await fetch(`https://api.github.com/repos/${REPO}/contents/${PENDING_TRANSFERS_PATH}`, {
+    method: "PUT",
+    headers: { ...ghHeaders, "Content-Type": "application/json" },
+    body: JSON.stringify({
+      message: msg,
+      content: newContent,
+      branch: BRANCH,
+      sha: sha || undefined,
+    }),
+  });
+  if (!putRes.ok) {
+    const detail = (await putRes.text()).slice(0, 200);
+    throw new Error(`pending-transfers.json commit failed: HTTP ${putRes.status} ${detail}`);
+  }
 }
 
 /* ----------- Audit log ----------- */

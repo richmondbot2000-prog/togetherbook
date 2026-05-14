@@ -445,6 +445,26 @@ A second, equally important purpose: **per-seat billing visibility for leavers**
 1. **Delete account (no forwarding)** — calls `delete-account` on the Worker, which `DELETE`s the user via Admin SDK. Licence freed immediately; mailbox + Drive recoverable from admin.google.com for 20 days, then permanently removed.
 2. **Delete account and forward mail (auto-completes in 21 days)** — calls `convert-to-group`: renames the user to a parked address, deletes the renamed user (freeing the original email's licence), and records a `pending_conversion` annotation. The daily `finalise_pending_conversions.py` cron then auto-creates a forwarding-only Group at the original address once Google's 20-day address-reuse lockout expires. ~20 days of bounced mail during that window, then mail forwards to the target forever at £0/mo.
 
+**Optional pre-deletion transfer** (added 2026-05-14). Both delete actions accept an optional **Transfer Drive + Mail to** target. When supplied, the page calls `queue-transfer-and-delete` on the Worker which:
+
+1. Initiates an Admin SDK Data Transfer of the leaver's Drive ownership → target. Async — Google completes the file ownership change in the background.
+2. Appends an entry to `pending-transfers.json` so the Directory page renders an `⏳ Transferring + Deleting` badge on the row and the bg scanner can pick it up.
+3. Returns — does NOT delete the source user yet (we need the mailbox still alive for the Gmail migration step).
+
+The hourly `process-pending-transfers.yml` workflow runs `scripts/process_pending_transfers.py` which:
+
+1. Walks every Gmail message in the source mailbox via the Gmail API (`messages.list` + `messages.get` format=raw + `messages.insert` on the target with `internalDateSource=dateHeader` so timestamps survive).
+2. Calls Admin SDK `users.delete` on the source once the Gmail migration is complete.
+3. Removes the entry from `pending-transfers.json` (commits the change so the page badge clears).
+
+Required scopes (must be added to **Domain-wide delegation** in admin.google.com → Security → API controls):
+
+| Scope | Used by |
+|---|---|
+| `https://www.googleapis.com/auth/admin.datatransfer` | Worker — Drive ownership transfer queue |
+| `https://www.googleapis.com/auth/gmail.readonly` | Scanner — read source mailbox |
+| `https://www.googleapis.com/auth/gmail.insert` | Scanner — insert messages into target mailbox |
+
 The legacy **Suspend** actions in the Worker (`suspend-and-route`, `suspend-no-forward`) remain wired but are no longer surfaced from the page — they exist only so historical audit-log entries still resolve, and so already-suspended accounts can still be `unsuspend`'d or transitioned to a delete.
 
 #### 11.1.2 Data sources and refresh cadence
