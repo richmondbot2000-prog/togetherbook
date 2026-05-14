@@ -59,6 +59,18 @@ ARREARS_FLAG_TYPES = (2, 3, 4, 6)  # Decline, DNL, Cancelled, FraudRisk
 # warehouse but are out of scope. See SPEC.md §0.5.
 LENDER_ID = 6
 
+# Description enum on dbo.Messages — an INT, not a string. Inbound side is
+# documented in scan_pipeline_samples.py (0/1/2 = SMS/Email/Call in). Outbound
+# enum values are derived empirically by the diagnostic at the top of the
+# scan; until it confirms, this is the best-guess mapping:
+#   3 = OutboundSMS, 4 = OutboundEmail, 5 = OutboundCall, 6 = OutboundLetter, 7 = OutboundPush
+# We pair only SMS→SMS and Email→Email — calls / letters / push notifications
+# are NOT replies for this analysis, even if they go to the same address.
+DESC_INBOUND_SMS    = 0
+DESC_INBOUND_EMAIL  = 1
+DESC_OUTBOUND_SMS   = 3
+DESC_OUTBOUND_EMAIL = 4
+
 
 def env(name: str) -> str:
     v = os.environ.get(name)
@@ -100,6 +112,7 @@ WITH inbound AS (
         m.LoanbookId,
         m.ExternalAddress,
         m.UTCTime,
+        m.Description AS InboundDesc,
         CASE
             WHEN m.Description = 0 THEN 'SMS'
             WHEN m.Description = 1 THEN 'Email'
@@ -125,7 +138,7 @@ SELECT
         FROM dbo.Messages o
         WHERE o.ExternalAddress = i.ExternalAddress
           AND o.LenderId = @lender
-          AND o.Description >= 3
+          AND o.Description = CASE i.InboundDesc WHEN 0 THEN 3 WHEN 1 THEN 4 END
           AND o.UTCTime >  i.UTCTime
           AND o.UTCTime <= DATEADD(MINUTE, @maxMinutes, i.UTCTime)
           AND (o.ClientType IS NULL OR o.ClientType <> 'MessageFactory')
@@ -137,7 +150,7 @@ SELECT
         FROM dbo.Messages o
         WHERE o.ExternalAddress = i.ExternalAddress
           AND o.LenderId = @lender
-          AND o.Description >= 3
+          AND o.Description = CASE i.InboundDesc WHEN 0 THEN 3 WHEN 1 THEN 4 END
           AND o.UTCTime >  i.UTCTime
           AND o.UTCTime <= DATEADD(MINUTE, @maxMinutes, i.UTCTime)
           AND (
@@ -404,30 +417,43 @@ def fetch_aref_to_loanbook() -> dict[str, str]:
 
 
 def print_outbound_clienttype_diagnostic() -> None:
-    """One-shot: for every 2026 outbound message that was a plausible reply
-    to a customer (Description >= 3, within an inbound's 14-day window),
-    report the distinct ClientType values with count + mean response minutes.
-    Helps verify the Reply-Robot filter is matching what we think it is."""
-    print("[diag] outbound ClientType breakdown 2026…", flush=True)
+    """One-shot: dump every (Description, ClientType) pair on outbound rows
+    so we can verify the Description→channel integer mapping. Also reports
+    counts by Description alone so the int enum is visible at a glance.
+    Helps catch cases like the OutboundCall transcript being mistaken for
+    an SMS reply (fix shipped 2026-05-14)."""
+    print("[diag] 2026 message Description enum distribution (LenderId 6)…", flush=True)
     cn = pyodbc.connect(conn_str("ReportingCommunications"), timeout=30)
     try:
         cur = cn.cursor()
         cur.execute(f"""
             DECLARE @from datetime2 = '{YEAR}-01-01';
             DECLARE @to   datetime2 = '{YEAR+1}-01-01';
-            SELECT
-                ISNULL(ClientType, '(null)') AS ct,
-                COUNT(*) AS n
+            SELECT Description, COUNT(*) AS n
+            FROM dbo.Messages
+            WHERE LenderId = {LENDER_ID}
+              AND UTCTime >= @from
+              AND UTCTime <  @to
+            GROUP BY Description
+            ORDER BY Description
+        """)
+        for desc, n in cur.fetchall():
+            print(f"  Description={desc}  n={n}", flush=True)
+        print("[diag] 2026 outbound (Description, ClientType) cross-tab (LenderId 6)…", flush=True)
+        cur.execute(f"""
+            DECLARE @from datetime2 = '{YEAR}-01-01';
+            DECLARE @to   datetime2 = '{YEAR+1}-01-01';
+            SELECT Description, ISNULL(ClientType, '(null)') AS ct, COUNT(*) AS n
             FROM dbo.Messages
             WHERE Description >= 3
               AND LenderId = {LENDER_ID}
               AND UTCTime >= @from
               AND UTCTime <  @to
-            GROUP BY ClientType
-            ORDER BY n DESC
+            GROUP BY Description, ClientType
+            ORDER BY Description, n DESC
         """)
-        for ct, n in cur.fetchall():
-            print(f"  ClientType={ct!r:<40} n={n}", flush=True)
+        for desc, ct, n in cur.fetchall():
+            print(f"  Description={desc}  ClientType={ct!r:<40} n={n}", flush=True)
     finally:
         cn.close()
 
@@ -616,18 +642,18 @@ def sample_messages(inbounds, signed_gt, loan_history) -> dict:
         # 2. Two reply variants per inbound. Sequential queries — slow but
         # bounded (100 × 4 buckets × 2 = 800 queries; ~3 min total).
         for mid, info in inbound_info.items():
-            # 2a. Reply (all) — first non-MF
+            # 2a. Reply (all) — first non-MF same-channel reply
             cur.execute(
                 f"""SELECT TOP 1 UTCTime, MessageBody{subj_sql_sel}, ClientType
                     FROM dbo.Messages
                     WHERE ExternalAddress = ?
                       AND LenderId = {LENDER_ID}
-                      AND Description >= 3
+                      AND Description = CASE WHEN ? = 0 THEN 3 WHEN ? = 1 THEN 4 END
                       AND UTCTime >  ?
                       AND UTCTime <= DATEADD(MINUTE, ?, ?)
                       AND (ClientType IS NULL OR ClientType <> 'MessageFactory')
                     ORDER BY UTCTime ASC""",
-                info["ext"], info["ts"], MAX_REPLY_MINUTES, info["ts"],
+                info["ext"], info["desc"], info["desc"], info["ts"], MAX_REPLY_MINUTES, info["ts"],
             )
             r = cur.fetchone()
             if r:
@@ -635,13 +661,13 @@ def sample_messages(inbounds, signed_gt, loan_history) -> dict:
                     "ts": r[0], "body": r[1] or "",
                     "subj": r[2] or "", "client_type": (r[3] or "").strip(),
                 }
-            # 2b. Reply (human only) — first non-MF non-Responder
+            # 2b. Reply (human only) — first non-MF non-Responder same-channel
             cur.execute(
                 f"""SELECT TOP 1 UTCTime, MessageBody{subj_sql_sel}, ClientType
                     FROM dbo.Messages
                     WHERE ExternalAddress = ?
                       AND LenderId = {LENDER_ID}
-                      AND Description >= 3
+                      AND Description = CASE WHEN ? = 0 THEN 3 WHEN ? = 1 THEN 4 END
                       AND UTCTime >  ?
                       AND UTCTime <= DATEADD(MINUTE, ?, ?)
                       AND (
@@ -652,7 +678,7 @@ def sample_messages(inbounds, signed_gt, loan_history) -> dict:
                           )
                       )
                     ORDER BY UTCTime ASC""",
-                info["ext"], info["ts"], MAX_REPLY_MINUTES, info["ts"],
+                info["ext"], info["desc"], info["desc"], info["ts"], MAX_REPLY_MINUTES, info["ts"],
             )
             r = cur.fetchone()
             if r:
