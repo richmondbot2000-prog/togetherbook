@@ -556,13 +556,14 @@ def redact(body: str, names: set[str]) -> str:
 
 
 def sample_messages(inbounds, signed_gt, loan_history) -> dict:
-    """Pick up to SAMPLES_PER_BUCKET inbounds per bucket where a reply landed
-    in the 14-day window. Fetch each message body + the first reply body in
-    bulk, redact, and return."""
+    """Pick up to SAMPLES_PER_BUCKET inbounds per bucket from the FULL pool
+    (regardless of whether a reply landed). For each, capture both reply
+    variants — first non-MF reply ("all") and first non-MF non-Responder
+    reply ("human") — so the page can filter the sample list by the same
+    two checkboxes that drive the chart, without re-querying."""
     rng = random.Random()  # non-deterministic — pool reshuffles each scan
     pools = defaultdict(list)
     for i in inbounds:
-        if i["ReplyMinAll"] is None: continue
         b = classify(i, loan_history, signed_gt)
         if b in ("unknown", "applicant", "live_loan", "arrears"):
             pools[b].append(i)
@@ -577,9 +578,10 @@ def sample_messages(inbounds, signed_gt, loan_history) -> dict:
         return {b: [] for b in ("unknown", "applicant", "live_loan", "arrears")}
 
     msg_ids = [i["MessageId"] for _, i in flat]
-    print(f"[samples] fetching bodies for {len(msg_ids)} inbound + reply pairs…", flush=True)
+    print(f"[samples] fetching bodies + replies for {len(msg_ids)} inbounds…", flush=True)
     inbound_info = {}
-    reply_info = {}
+    reply_all_info: dict = {}
+    reply_human_info: dict = {}
     cn = pyodbc.connect(conn_str("ReportingCommunications"), timeout=60)
     try:
         cur = cn.cursor()
@@ -587,7 +589,7 @@ def sample_messages(inbounds, signed_gt, loan_history) -> dict:
         subj_col = pick_column(cur, "dbo", "Messages",
                                "Subject", "MessageTitle", "MessageSubject")
         subj_sql_sel = f", [{subj_col}]" if subj_col else ", '' AS Subject"
-        # 1. Inbound rows (body + subject + ExternalAddress + UTCTime + Description)
+        # 1. Inbound rows
         ph = ",".join("?" * len(msg_ids))
         cur.execute(
             f"""SELECT MessageId, UTCTime, ExternalAddress, MessageBody{subj_sql_sel}, Description
@@ -600,8 +602,10 @@ def sample_messages(inbounds, signed_gt, loan_history) -> dict:
                 "body": body or "", "subj": subj or "",
                 "desc": desc,
             }
-        # 2. First reply per inbound — one query each, but only 40 total.
+        # 2. Two reply variants per inbound. Sequential queries — slow but
+        # bounded (100 × 4 buckets × 2 = 800 queries; ~3 min total).
         for mid, info in inbound_info.items():
+            # 2a. Reply (all) — first non-MF
             cur.execute(
                 f"""SELECT TOP 1 UTCTime, MessageBody{subj_sql_sel}, ClientType
                     FROM dbo.Messages
@@ -615,7 +619,31 @@ def sample_messages(inbounds, signed_gt, loan_history) -> dict:
             )
             r = cur.fetchone()
             if r:
-                reply_info[mid] = {
+                reply_all_info[mid] = {
+                    "ts": r[0], "body": r[1] or "",
+                    "subj": r[2] or "", "client_type": (r[3] or "").strip(),
+                }
+            # 2b. Reply (human only) — first non-MF non-Responder
+            cur.execute(
+                f"""SELECT TOP 1 UTCTime, MessageBody{subj_sql_sel}, ClientType
+                    FROM dbo.Messages
+                    WHERE ExternalAddress = ?
+                      AND Description >= 3
+                      AND UTCTime >  ?
+                      AND UTCTime <= DATEADD(MINUTE, ?, ?)
+                      AND (
+                          ClientType IS NULL
+                          OR (
+                              ClientType <> 'MessageFactory'
+                              AND ClientType NOT LIKE '%Responder%'
+                          )
+                      )
+                    ORDER BY UTCTime ASC""",
+                info["ext"], info["ts"], MAX_REPLY_MINUTES, info["ts"],
+            )
+            r = cur.fetchone()
+            if r:
+                reply_human_info[mid] = {
                     "ts": r[0], "body": r[1] or "",
                     "subj": r[2] or "", "client_type": (r[3] or "").strip(),
                 }
@@ -642,26 +670,31 @@ def sample_messages(inbounds, signed_gt, loan_history) -> dict:
             cn.close()
     print(f"[samples] pulled {len(names)} names for redaction", flush=True)
 
+    def fmt_reply(reply, info):
+        if not reply: return None
+        body = (reply["subj"] + " :: " + reply["body"]) if reply["subj"] else reply["body"]
+        gap_min = int((reply["ts"] - info["ts"]).total_seconds() / 60)
+        return {
+            "at": reply["ts"].strftime("%Y-%m-%d %H:%M") if hasattr(reply["ts"], "strftime") else str(reply["ts"]),
+            "response_minutes": gap_min,
+            "client_type": reply["client_type"],
+            "body": redact(body, names),
+        }
+
     out: dict[str, list] = {b: [] for b in ("unknown", "applicant", "live_loan", "arrears")}
     for bucket, i in flat:
         mid = i["MessageId"]
         info = inbound_info.get(mid)
-        reply = reply_info.get(mid)
-        if not info or not reply: continue
+        if not info: continue
         in_body = (info["subj"] + " :: " + info["body"]) if info["subj"] else info["body"]
-        re_body = (reply["subj"] + " :: " + reply["body"]) if reply["subj"] else reply["body"]
-        gap = reply["ts"] - info["ts"]
-        gap_min = int(gap.total_seconds() / 60)
         aref = i["ARef"] or ""
         out[bucket].append({
-            "aref_last5":      aref[-5:] if aref else None,
-            "channel":         "Email" if info["desc"] == 1 else "SMS",
-            "received_at":     info["ts"].strftime("%Y-%m-%d %H:%M") if hasattr(info["ts"], "strftime") else str(info["ts"]),
-            "reply_at":        reply["ts"].strftime("%Y-%m-%d %H:%M") if hasattr(reply["ts"], "strftime") else str(reply["ts"]),
-            "response_minutes": gap_min,
-            "client_type":     reply["client_type"],
-            "message":         redact(in_body, names),
-            "reply":           redact(re_body, names),
+            "aref_last5":  aref[-5:] if aref else None,
+            "channel":     "Email" if info["desc"] == 1 else "SMS",
+            "received_at": info["ts"].strftime("%Y-%m-%d %H:%M") if hasattr(info["ts"], "strftime") else str(info["ts"]),
+            "message":     redact(in_body, names),
+            "reply_all":   fmt_reply(reply_all_info.get(mid), info),
+            "reply_human": fmt_reply(reply_human_info.get(mid), info),
         })
     return out
 

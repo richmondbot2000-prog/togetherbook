@@ -6,9 +6,9 @@
 <title>TogetherBOOK — Comms response time</title>
 <link rel="icon" type="image/png" href="site-icon.png">
 <link rel="apple-touch-icon" href="site-icon.png">
-<link rel="stylesheet" href="quiet-tokens.css?v=1778755449">
-<link rel="stylesheet" href="quiet.css?v=1778755449">
-<link rel="stylesheet" href="quiet-extras.css?v=1778755449">
+<link rel="stylesheet" href="quiet-tokens.css?v=1778765770">
+<link rel="stylesheet" href="quiet.css?v=1778765770">
+<link rel="stylesheet" href="quiet-extras.css?v=1778765770">
 <style>
   .cm-section { max-width: 1080px; margin: 0 auto; padding: 24px 0 48px; }
   @media (max-width: 800px) { .cm-section { padding: 2px 0 32px; } }
@@ -214,7 +214,7 @@
 
 <header class="qb-topbar">
   <a class="qb-brand" href="index.html" aria-label="TogetherBOOK — home">
-    <img class="qb-brand-logo" src="togetherbook-logo.png?v=1778755449" alt="TogetherBOOK">
+    <img class="qb-brand-logo" src="togetherbook-logo.png?v=1778765770" alt="TogetherBOOK">
   </a>
   <button class="qb-hamburger" aria-label="Toggle navigation menu" aria-expanded="false"
           onclick="document.body.classList.toggle('nav-open');this.setAttribute('aria-expanded',document.body.classList.contains('nav-open'))">
@@ -329,34 +329,56 @@
       document.getElementById("cmSamplesBody").innerHTML = `<p class="cm-empty">No samples in this dataset yet.</p>`;
       return;
     }
+    // Mirror the chart's two filter checkboxes onto the sample list:
+    //   * excludeRR=Y  → reply column shows reply_human (or "no human reply")
+    //   * excludeNoReply=Y → pool is filtered to samples whose reply_<active>
+    //                       is non-null (i.e. we know they got a reply)
+    const excludeRR = document.getElementById("cmExcludeRR").checked;
+    const excludeNoReply = document.getElementById("cmExcludeNoReply").checked;
+    const replyKey = excludeRR ? "reply_human" : "reply_all";
+
     const out = [];
     for (const bucket of BUCKETS) {
-      const pool = (dataset.samples[bucket] || []).slice();
+      let pool = (dataset.samples[bucket] || []).slice();
+      // Apply no-reply filter
+      if (excludeNoReply) pool = pool.filter(s => s[replyKey]);
       // Fisher-Yates shuffle, take first 10.
       for (let i = pool.length - 1; i > 0; i--) {
         const j = Math.floor(Math.random() * (i + 1));
         [pool[i], pool[j]] = [pool[j], pool[i]];
       }
       const picked = pool.slice(0, 10);
-      if (!picked.length) continue;
-      out.push(`<h3>${escapeHtml(BUCKET_LABEL[bucket])} <span class="cm-samples-hint">(${picked.length} of ${pool.length} pool)</span></h3>`);
+      const fullPool = (dataset.samples[bucket] || []).length;
+      if (!picked.length) {
+        out.push(`<h3>${escapeHtml(BUCKET_LABEL[bucket])} <span class="cm-samples-hint">(0 of ${fullPool} match current filters)</span></h3>`);
+        continue;
+      }
+      out.push(`<h3>${escapeHtml(BUCKET_LABEL[bucket])} <span class="cm-samples-hint">(${picked.length} of ${fullPool} pool, filtered to ${pool.length})</span></h3>`);
       for (const s of picked) {
         const aref = s.aref_last5 ? `<span class="aref">…${escapeHtml(s.aref_last5)}</span>` : "<em>no ARef</em>";
-        const ct = s.client_type ? `<br>by <code>${escapeHtml(s.client_type)}</code>` : "";
+        const reply = s[replyKey];
+        const ct = (reply && reply.client_type) ? `<br>by <code>${escapeHtml(reply.client_type)}</code>` : "";
+        const gap = reply ? formatGap(reply.response_minutes) : `<span style="color:var(--ink-500);">no ${excludeRR ? "human " : ""}reply</span>`;
+        const replyHeader = reply
+          ? `Replied ${escapeHtml(reply.at)}`
+          : `No ${excludeRR ? "human " : ""}reply within 14 days`;
+        const replyBody = reply
+          ? escapeHtml(reply.body || "(no body)")
+          : `<em style="color:var(--ink-500);">—</em>`;
         out.push(`
           <div class="cm-sample-row">
             <div class="meta">
               ${aref}<br>
               ${escapeHtml(s.channel || "")}<br>
-              ${formatGap(s.response_minutes)}${ct}
+              ${gap}${ct}
             </div>
             <div>
               <div class="col-label">Received ${escapeHtml(s.received_at || "")}</div>
               ${escapeHtml(s.message || "(no body)")}
             </div>
             <div>
-              <div class="col-label">Replied ${escapeHtml(s.reply_at || "")}</div>
-              ${escapeHtml(s.reply || "(no body)")}
+              <div class="col-label">${replyHeader}</div>
+              ${replyBody}
             </div>
           </div>`);
       }
