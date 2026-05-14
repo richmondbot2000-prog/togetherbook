@@ -65,6 +65,7 @@ from googleapiclient.errors import HttpError
 
 
 PENDING_PATH = Path("pending-transfers.json")
+ANNOTATIONS_PATH = Path("annotations.json")
 SCOPES_GMAIL_READ   = ["https://www.googleapis.com/auth/gmail.readonly"]
 SCOPES_GMAIL_INSERT = ["https://www.googleapis.com/auth/gmail.insert"]
 SCOPES_ADMIN_USER   = ["https://www.googleapis.com/auth/admin.directory.user"]
@@ -176,12 +177,59 @@ def delete_user(tenant: str, email: str) -> None:
     svc.users().delete(userKey=email).execute()
 
 
+def convert_user_to_group(tenant: str, email: str) -> str:
+    """Rename the user to a parked address then delete by immutable id.
+    Returns the parked-email used so it can be recorded on the pending
+    entry. Mirrors the Worker's doConvertToGroup but called directly so we
+    don't have to round-trip via Cloudflare Access. The downstream
+    finalise_pending_conversions.py cron will create the Group at the
+    original address once Google's 20-day reuse lockout expires (driven
+    off the pending_conversion annotation written by the Directory page
+    at queue time)."""
+    svc = admin_service(tenant)
+    local, _, domain = email.partition("@")
+    if not local or not domain:
+        raise RuntimeError(f"convert_user_to_group: bad email {email!r}")
+    parked = f"{local}.parked.{int(time.time())}@{domain}"
+    user = svc.users().get(userKey=email).execute()
+    user_id = user.get("id")
+    if not user_id:
+        raise RuntimeError("user has no immutable id — refusing to rename/delete")
+    svc.users().update(userKey=email, body={"primaryEmail": parked}).execute()
+    svc.users().delete(userKey=user_id).execute()
+    return parked
+
+
 def save_pending(data: dict) -> None:
     """Write pending-transfers.json with a stable, indented format so the
     GitHub Contents API diff diff stays small + the workflow's `git add`
     commit catches the change."""
     data["updated_at"] = datetime.datetime.utcnow().isoformat() + "Z"
     PENDING_PATH.write_text(json.dumps(data, indent=2) + "\n", encoding="utf-8")
+
+
+def _write_pending_conversion_annotation(email: str, forward_to: str, parked_at: str, scheduled_for: str) -> None:
+    """Record a pending_conversion entry in annotations.json so the existing
+    finalise_pending_conversions.py daily cron creates the forwarding Group
+    at the original address once Google's 20-day lockout expires."""
+    if not ANNOTATIONS_PATH.exists():
+        data = {"schema_version": 1, "annotations": {}}
+    else:
+        try:
+            data = json.loads(ANNOTATIONS_PATH.read_text(encoding="utf-8"))
+        except Exception:
+            data = {"schema_version": 1, "annotations": {}}
+    annotations = data.setdefault("annotations", {})
+    key = email.lower()
+    entry = annotations.setdefault(key, {})
+    entry["pending_conversion"] = {
+        "forward_to":    forward_to,
+        "parked_at":     parked_at,
+        "scheduled_for": scheduled_for,
+        "deleted_at":    datetime.datetime.utcnow().isoformat() + "Z",
+        "source":        "process_pending_transfers",
+    }
+    ANNOTATIONS_PATH.write_text(json.dumps(data, indent=2) + "\n", encoding="utf-8")
 
 
 def main() -> None:
@@ -219,9 +267,28 @@ def main() -> None:
                 save_pending(data)
 
             if stage == "deleting":
-                print(f"  deleting {src} via Admin SDK…", flush=True)
-                delete_user(tenant, src)
-                print(f"  ✓ deleted {src}", flush=True)
+                fwd = entry.get("convert_to_group_forward_to")
+                if fwd:
+                    print(f"  convert-to-group {src} (forward_to={fwd}) via Admin SDK…", flush=True)
+                    parked = convert_user_to_group(tenant, src)
+                    entry["parked_at"] = parked
+                    # 20-day reuse lockout + 1 hour cushion, in line with the
+                    # Worker's doConvertToGroup.
+                    scheduled_for = (
+                        datetime.datetime.utcnow() + datetime.timedelta(days=20, hours=1)
+                    ).isoformat() + "Z"
+                    entry["group_scheduled_for"] = scheduled_for
+                    # Write the pending_conversion annotation so the existing
+                    # finalise_pending_conversions.py daily cron creates the
+                    # forwarding Group when the lockout expires.
+                    _write_pending_conversion_annotation(
+                        src, forward_to=fwd, parked_at=parked, scheduled_for=scheduled_for,
+                    )
+                    print(f"  ✓ converted {src} to parked {parked}; Group will be created ≥{scheduled_for}", flush=True)
+                else:
+                    print(f"  deleting {src} via Admin SDK…", flush=True)
+                    delete_user(tenant, src)
+                    print(f"  ✓ deleted {src}", flush=True)
                 stage = entry["stage"] = "done"
 
             if stage == "done":

@@ -644,6 +644,10 @@ async function doQueueTransferAndDelete(env, token, body) {
   if (!dt.ok) return dt;
 
   // Append a pending entry. The bg scanner is the authority for clearing it.
+  // convert_to_group_forward_to (optional): when set, the scanner finishes
+  // via convert-to-group (rename + delete + queue group creation) instead
+  // of plain users.delete — so the leaver's email keeps forwarding to a
+  // colleague after the 20-day reuse lockout expires.
   const entry = {
     source_email: body.email,
     target_email: body.target_email,
@@ -652,6 +656,7 @@ async function doQueueTransferAndDelete(env, token, body) {
     stage: "queued",   // queued -> migrating-mail -> deleting -> done (then removed)
     tenant: (body.tenant || "").toLowerCase(),
     queued_by: body.actor || "",
+    convert_to_group_forward_to: body.convert_to_group_forward_to || null,
   };
   try {
     await appendPendingTransfer(env, entry);

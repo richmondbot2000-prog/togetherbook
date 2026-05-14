@@ -3173,6 +3173,16 @@
           <span class="dir-modal-saved-hint" style="text-align:left;margin:6px 0 0;display:block;">
             The Workspace user is deleted, then the address re-emerges as a forwarding-only Group with ${escapeHtml(forwardTo)} as a member. Mailbox content is kept in Vault for 25 days, then unrecoverable. £0/month forever afterwards.
           </span>
+          <div class="dir-form-row" style="margin-top:12px;">
+            <label for="dirConvertTransferTarget">Transfer Drive + Mail to (optional)</label>
+            <input id="dirConvertTransferTarget" name="convert_transfer_target" type="email"
+                   value="${escapeHtml(forwardTo)}"
+                   placeholder="Colleague's email — leave blank to skip transfer"
+                   list="dirRouteOptions" autocomplete="off">
+          </div>
+          <span class="dir-modal-saved-hint" style="text-align:left;margin:6px 0 0;display:block;">
+            <strong>If filled</strong> (defaults to the forward target above): the leaver's Drive ownership + Gmail messages are migrated to this colleague <em>before</em> the user is deleted. The row will show <em>Transferring + Deleting</em> with an hourglass until the background scanner finishes the Gmail migration, then runs the convert-to-group + final delete. <strong>If blank</strong>: the user is deleted immediately and mailbox + Drive go to the standard 25-day Vault retention.
+          </span>
         </div>
         <div class="dir-confirm-actions">
           <button type="button" data-cancel>Cancel</button>
@@ -3180,7 +3190,27 @@
         </div>
       </div>`;
     slot.querySelector("[data-cancel]").addEventListener("click", () => { slot.innerHTML = ""; });
-    slot.querySelector("[data-confirm]").addEventListener("click", () => runConvertToGroupNow(entry, u, forwardTo, slot));
+    slot.querySelector("[data-confirm]").addEventListener("click", () => {
+      const inp = slot.querySelector("[name=convert_transfer_target]");
+      const target = (inp && inp.value || "").trim();
+      if (target && !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(target)) {
+        inp.classList.add("dir-input-invalid");
+        inp.focus();
+        inp.addEventListener("input", () => inp.classList.remove("dir-input-invalid"), { once: true });
+        return;
+      }
+      if (target) {
+        // Deferred path: queue Drive transfer + Gmail migration; bg scanner
+        // will convert-to-group at the end.
+        runAction(entry, "queue-transfer-and-delete", slot, {
+          target_email: target,
+          convert_to_group_forward_to: forwardTo,
+        });
+      } else {
+        // Original immediate path — convert-to-group right now.
+        runConvertToGroupNow(entry, u, forwardTo, slot);
+      }
+    });
   }
 
   async function runConvertToGroupNow(entry, u, forwardTo, slot) {
