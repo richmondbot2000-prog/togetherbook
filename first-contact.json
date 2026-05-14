@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
-  "updated_at": "2026-05-13T08:22:19.729116Z",
-  "snapshot_date": "2026-05-13",
+  "updated_at": "2026-05-14T09:18:31.409080Z",
+  "snapshot_date": "2026-05-14",
   "window_months": 3,
   "totals": {
     "items": 140,
@@ -16,54 +16,62 @@
   "word_cloud": [
     [
       "payment",
-      105
+      109
     ],
     [
       "loan",
-      83
+      82
     ],
     [
       "together",
-      71
-    ],
-    [
-      "loans",
-      67
+      72
     ],
     [
       "account",
-      66
+      69
+    ],
+    [
+      "loans",
+      68
     ],
     [
       "statement",
-      32
+      31
     ],
     [
       "credit",
-      28
+      26
     ],
     [
       "card",
-      21
+      25
+    ],
+    [
+      "bank",
+      20
     ],
     [
       "number",
       20
     ],
     [
-      "transform",
-      19
-    ],
-    [
-      "bank",
-      19
-    ],
-    [
       "ach",
       18
     ],
     [
+      "transform",
+      18
+    ],
+    [
+      "update",
+      17
+    ],
+    [
       "paid",
+      17
+    ],
+    [
+      "date",
       16
     ],
     [
@@ -83,7 +91,7 @@
       15
     ],
     [
-      "update",
+      "payments",
       14
     ],
     [
@@ -91,12 +99,16 @@
       14
     ],
     [
-      "date",
+      "get",
       14
     ],
     [
-      "get",
-      14
+      "method",
+      13
+    ],
+    [
+      "time",
+      13
     ],
     [
       "action",
@@ -107,8 +119,12 @@
       13
     ],
     [
-      "payments",
-      13
+      "app",
+      12
+    ],
+    [
+      "receipt",
+      12
     ],
     [
       "bounced",
@@ -119,23 +135,11 @@
       12
     ],
     [
-      "time",
-      12
-    ],
-    [
-      "email",
-      12
-    ],
-    [
-      "app",
-      12
-    ],
-    [
-      "request",
+      "make",
       11
     ],
     [
-      "receipt",
+      "request",
       11
     ],
     [
@@ -151,6 +155,10 @@
       11
     ],
     [
+      "email",
+      11
+    ],
+    [
       "today",
       11
     ],
@@ -159,19 +167,19 @@
       11
     ],
     [
-      "month",
-      10
-    ],
-    [
-      "make",
-      10
-    ],
-    [
       "mail",
       10
     ],
     [
-      "pay",
+      "message",
+      9
+    ],
+    [
+      "call",
+      9
+    ],
+    [
+      "month",
       9
     ],
     [
@@ -187,8 +195,16 @@
       9
     ],
     [
-      "method",
-      9
+      "secondary",
+      8
+    ],
+    [
+      "debit",
+      8
+    ],
+    [
+      "pay",
+      8
     ],
     [
       "may",
@@ -207,15 +223,7 @@
       8
     ],
     [
-      "call",
-      8
-    ],
-    [
       "friday",
-      8
-    ],
-    [
-      "message",
       8
     ],
     [
@@ -231,11 +239,11 @@
       8
     ],
     [
-      "correct",
+      "via",
       7
     ],
     [
-      "going",
+      "correct",
       7
     ],
     [
@@ -244,10 +252,6 @@
     ],
     [
       "days",
-      7
-    ],
-    [
-      "day",
       7
     ],
     [
@@ -263,8 +267,24 @@
       7
     ],
     [
-      "debit",
-      7
+      "currently",
+      6
+    ],
+    [
+      "see",
+      6
+    ],
+    [
+      "sure",
+      6
+    ],
+    [
+      "take",
+      6
+    ],
+    [
+      "check",
+      6
     ],
     [
       "future",
@@ -272,10 +292,6 @@
     ],
     [
       "changed",
-      6
-    ],
-    [
-      "check",
       6
     ],
     [
@@ -287,15 +303,7 @@
       6
     ],
     [
-      "via",
-      6
-    ],
-    [
-      "sure",
-      6
-    ],
-    [
-      "still",
+      "going",
       6
     ],
     [
@@ -315,6 +323,10 @@
       6
     ],
     [
+      "day",
+      6
+    ],
+    [
       "automatic",
       6
     ],
@@ -323,7 +335,27 @@
       6
     ],
     [
-      "currently",
+      "active",
+      5
+    ],
+    [
+      "sent",
+      5
+    ],
+    [
+      "advise",
+      5
+    ],
+    [
+      "methods",
+      5
+    ],
+    [
+      "someone",
+      5
+    ],
+    [
+      "told",
       5
     ],
     [
@@ -355,7 +387,7 @@
       5
     ],
     [
-      "take",
+      "still",
       5
     ],
     [
@@ -367,15 +399,7 @@
       5
     ],
     [
-      "secondary",
-      5
-    ],
-    [
       "business",
-      5
-    ],
-    [
-      "see",
       5
     ],
     [
@@ -391,7 +415,15 @@
       5
     ],
     [
-      "methods",
+      "use",
+      4
+    ],
+    [
+      "signed",
+      4
+    ],
+    [
+      "signer",
       4
     ],
     [
@@ -411,10 +443,6 @@
       4
     ],
     [
-      "told",
-      4
-    ],
-    [
       "mine",
       4
     ],
@@ -431,15 +459,7 @@
       4
     ],
     [
-      "sent",
-      4
-    ],
-    [
       "regarding",
-      4
-    ],
-    [
-      "principal",
       4
     ],
     [
@@ -467,10 +487,6 @@
       4
     ],
     [
-      "someone",
-      4
-    ],
-    [
       "appreciate",
       4
     ],
@@ -483,15 +499,7 @@
       4
     ],
     [
-      "advise",
-      4
-    ],
-    [
       "coming",
-      4
-    ],
-    [
-      "use",
       4
     ],
     [
@@ -527,6 +535,18 @@
       4
     ],
     [
+      "however",
+      3
+    ],
+    [
+      "always",
+      3
+    ],
+    [
+      "interest",
+      3
+    ],
+    [
       "later",
       3
     ],
@@ -540,10 +560,6 @@
     ],
     [
       "old",
-      3
-    ],
-    [
-      "signed",
       3
     ],
     [
@@ -597,25 +613,45 @@
     [
       "full",
       3
-    ],
-    [
-      "requesting",
-      3
-    ],
-    [
-      "reported",
-      3
-    ],
-    [
-      "done",
-      3
-    ],
-    [
-      "went",
-      3
     ]
   ],
   "items": [
+    {
+      "received_utc": "2026-05-13T15:21:58",
+      "received_date": "2026-05-13",
+      "days_after_payout": 1,
+      "role": "BRW",
+      "lender_name": "Together Loans / TransformCredit",
+      "subject": "Update your secondary method of payment - ****",
+      "body": "The card I gave to you is my debit card and certainly is active! I use it all the time!Sent from my Galaxy -------- Original message --------From: **** Date: 5/13/26 11:18 AM (GMT-05:00) To: **** Subject: Update your secondary method of payment - **** Hi ****, The account you co-signed for **** is currently up to date; however, we can see that you do not have an active card on your account. As the co-signer on this loan, we advise you always to have a card payment method as a preventive measure for the account accumulating extra interest or defaulting after we cannot collect payment from **** payment methods. Please make sure you add a Visa/MasterCard via our app: **** or online: **** Thanks, Together Loans"
+    },
+    {
+      "received_utc": "2026-05-13T15:19:53",
+      "received_date": "2026-05-13",
+      "days_after_payout": 62,
+      "role": "BRW",
+      "lender_name": "Together Loans / TransformCredit",
+      "subject": "Update your secondary method of payment - ****",
+      "body": "Can someone call me, ****. I’ve paid three payments I should not owe any until July."
+    },
+    {
+      "received_utc": "2026-05-13T15:18:19",
+      "received_date": "2026-05-13",
+      "days_after_payout": 30,
+      "role": "BRW",
+      "lender_name": "Together Loans / TransformCredit",
+      "subject": "Your Together Loans Payment Receipt - ****",
+      "body": "You are to take it out his bank"
+    },
+    {
+      "received_utc": "2026-05-13T12:54:13",
+      "received_date": "2026-05-13",
+      "days_after_payout": 33,
+      "role": "BRW",
+      "lender_name": "Together Loans / TransformCredit",
+      "subject": "Unsuccessful ACH payment - ****",
+      "body": "Oh no. I will check on that. He told me that he promised it to be paid by the 15 th. Is this not okay?"
+    },
     {
       "received_utc": "2026-05-12T17:41:03",
       "received_date": "2026-05-12",
@@ -977,15 +1013,6 @@
       "body": "I don’t have a missed payment do i? I have made them all on time? And my account shows it’s up to date. Why is this coming from a collections email? Now I am worried!"
     },
     {
-      "received_utc": "2026-04-28T16:22:51",
-      "received_date": "2026-04-28",
-      "days_after_payout": 74,
-      "role": "BRW",
-      "lender_name": "Together Loans / TransformCredit",
-      "subject": "**** - Your Transform Credit Statement",
-      "body": "The problem I have is **** you add $178 a month for interest, my payment is $198 so I'm barely making a $25 payment on the principal. Is there a way to bypass the credit and use what I pay towards the principal?"
-    },
-    {
       "received_utc": "2026-04-28T14:59:40",
       "received_date": "2026-04-28",
       "days_after_payout": 62,
@@ -1272,15 +1299,6 @@
       "lender_name": "Together Loans / TransformCredit",
       "subject": "Your Together Loans Loan : ****",
       "body": "Good Evening, I believe I already mentioned in one of my Voice Messages to U back when I was trying to reach **** to let him know that the payment date had changed with the new loan. His phone wasn't taking voice messages for \"minute\", but I DID text him his new loan payment was NOT due on the 8th of each month but rather on the 3rd of each month. He then texted me back that his CHIME Bank Account &/or Debit Card had been \"compromised\", a fraudulent charge was on there, so they recommended closing that account/debit card & sending another one out in the mail which would probably take about 7 to 10 business days to receive. Thus he asked me if I could please cover his payment at this time, but he should be back up & running for May's payment. Thank you for assisting us with this transition to a new loan & paying off the old one - this should boost his credit score as well. Sincerely, **** ****, Co Signer for **** ****"
-    },
-    {
-      "received_utc": "2026-04-16T22:56:08",
-      "received_date": "2026-04-16",
-      "days_after_payout": 62,
-      "role": "BRW",
-      "lender_name": "Together Loans / TransformCredit",
-      "subject": "Unsuccessful ACH payment - ****",
-      "body": "Paid please check once"
     },
     {
       "received_utc": "2026-04-16T19:26:55",
@@ -1733,15 +1751,6 @@
       "body": "Good morning, The payment I made today was intended for the March 19th payment, can this be changed? ***** Falana ****, M.Ed., Retired* Physical address: 17650 NW 100th Ave - Reddick, Florida 32686 Mailing address: P O Box 5101 - Ocala, FL **** Cell: **** *“Teaching is not a lost art, but the regard for it is a lost tradition.” ― Jacques Barzun *"
     },
     {
-      "received_utc": "2026-03-16T19:53:09",
-      "received_date": "2026-03-16",
-      "days_after_payout": 31,
-      "role": "BRW",
-      "lender_name": "Together Loans / TransformCredit",
-      "subject": "Your Together Loans Loan : ****",
-      "body": "Yes im not sure if that payment is going to go through or not my app and web browser still say this"
-    },
-    {
       "received_utc": "2026-03-13T00:37:17",
       "received_date": "2026-03-13",
       "days_after_payout": 23,
@@ -1866,15 +1875,6 @@
       "lender_name": "Together Loans / TransformCredit",
       "subject": "Action Required: **** Bounced Loan Payout",
       "body": "I have confirmed the account by attaching the statement and the routing number. ****"
-    },
-    {
-      "received_utc": "2026-02-14T19:44:49",
-      "received_date": "2026-02-14",
-      "days_after_payout": 1,
-      "role": "BRW",
-      "lender_name": "Together Loans / TransformCredit",
-      "subject": "**** ****/ **** ****",
-      "body": "**** **** is the loan holder Birth Day 5/25/1960 Email **** Cosigner **** ****"
     }
   ]
 }
