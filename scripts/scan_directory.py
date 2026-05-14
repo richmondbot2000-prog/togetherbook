@@ -139,6 +139,7 @@ def normalize(u: dict, tenant: str) -> dict:
         'suspended':     bool(u.get('suspended')),
         'admin':         bool(u.get('isAdmin')),
         'deletion_time': u.get('deletionTime') or '',  # ISO timestamp if the account is in the 20-day deleted window
+        'last_login':    u.get('lastLoginTime') or '',  # ISO; '1970-01-01T00:00:00.000Z' = never logged in
         'tenant':        tenant,
     }
 

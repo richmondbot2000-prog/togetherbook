@@ -9,11 +9,11 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&family=Orbitron:wght@500;600;700;800&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="style.css?v=1778753361">
-<link rel="stylesheet" href="quiet-tokens.css?v=1778753361">
-<link rel="stylesheet" href="quiet.css?v=1778753361">
-<link rel="stylesheet" href="quiet-extras.css?v=1778753361">
-<link rel="stylesheet" href="quiet-legacy.css?v=1778753361">
+<link rel="stylesheet" href="style.css?v=1778753647">
+<link rel="stylesheet" href="quiet-tokens.css?v=1778753647">
+<link rel="stylesheet" href="quiet.css?v=1778753647">
+<link rel="stylesheet" href="quiet-extras.css?v=1778753647">
+<link rel="stylesheet" href="quiet-legacy.css?v=1778753647">
 <style>
   .dir-section { max-width: 1080px; margin: 0 auto; padding: 24px 0 48px; }
   @media (max-width: 800px) { .dir-section { padding: 2px 0 32px; } }
@@ -1155,7 +1155,7 @@
 
 <header class="qb-topbar">
   <a class="qb-brand" href="index.html" aria-label="TogetherBOOK — home">
-    <img class="qb-brand-logo" src="togetherbook-logo.png?v=1778753361" alt="TogetherBOOK">
+    <img class="qb-brand-logo" src="togetherbook-logo.png?v=1778753647" alt="TogetherBOOK">
   </a>
   <button class="qb-hamburger" aria-label="Toggle navigation menu" aria-expanded="false"
           onclick="document.body.classList.toggle('nav-open');this.setAttribute('aria-expanded',document.body.classList.contains('nav-open'))">
@@ -2409,12 +2409,22 @@
       tbAdminRow = `<dt>Admin</dt><dd>${isTargetAdmin ? "yes" : "no"}${actionBtn}</dd>`;
     }
 
+    // Last-login chip. Google returns '1970-01-01T00:00:00.000Z' for users
+    // who have never signed in — surface that as "never" rather than the
+    // unhelpful epoch date.
+    const lastLogin = (u && u.last_login) || "";
+    const neverLoggedIn = !lastLogin || lastLogin.startsWith("1970-");
+    const lastLoginCell = u ? (neverLoggedIn
+      ? `<span class="dir-modal-saved-hint" style="display:inline;margin:0;padding:0;">never</span>`
+      : escapeHtml(fmtDateTime(lastLogin))) : "";
+
     const workspaceDl = u ? `
       <dt>Email</dt><dd>${emailDisplay}${renameLink}</dd>
       ${otherEmails.length ? `<dt>Other emails</dt><dd>${otherEmailsCell}</dd>` : ""}
       ${(u.given || u.family) ? `<dt>Full name</dt><dd>${escapeHtml(((u.given || "") + " " + (u.family || "")).trim())}</dd>` : ""}
       ${u.department ? `<dt>Department</dt><dd>${escapeHtml(u.department)}</dd>` : ""}
       ${tenantList.length ? `<dt>Workspace</dt><dd>${tenantList.map(t => escapeHtml(t)).join(", ")}</dd>` : ""}
+      <dt>Last login</dt><dd>${lastLoginCell}</dd>
       ${u.suspended ? `<dt>Suspended</dt><dd>yes</dd>` : ""}
       ${u.admin ? `<dt>Google super-admin</dt><dd>yes</dd>` : ""}
       ${tbAdminRow}
