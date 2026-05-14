@@ -223,6 +223,7 @@ body.nav-open .qb-nav-backdrop {
   gap: 22px;
   flex-wrap: wrap;
   align-items: baseline;
+  justify-content: flex-end;
   padding: 8px 16px;
   position: sticky; top: 72px; z-index: 999;
   background: rgba(251, 246, 233, 0.92);
