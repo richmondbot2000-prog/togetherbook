@@ -6,9 +6,9 @@
 <title>TogetherBOOK — Comms response time</title>
 <link rel="icon" type="image/png" href="site-icon.png">
 <link rel="apple-touch-icon" href="site-icon.png">
-<link rel="stylesheet" href="quiet-tokens.css?v=1778767430">
-<link rel="stylesheet" href="quiet.css?v=1778767430">
-<link rel="stylesheet" href="quiet-extras.css?v=1778767430">
+<link rel="stylesheet" href="quiet-tokens.css?v=1778770753">
+<link rel="stylesheet" href="quiet.css?v=1778770753">
+<link rel="stylesheet" href="quiet-extras.css?v=1778770753">
 <style>
   .cm-section { max-width: 1080px; margin: 0 auto; padding: 24px 0 48px; }
   @media (max-width: 800px) { .cm-section { padding: 2px 0 32px; } }
@@ -145,6 +145,11 @@
     font: 400 13px/1.4 var(--font-body);
     color: var(--ink-700);
   }
+  /* Bucket-coloured left border matching the chart palette + totals cards. */
+  .cm-sample-row--unknown   { border-left: 4px solid #888; }
+  .cm-sample-row--applicant { border-left: 4px solid #2c6cb8; }
+  .cm-sample-row--live_loan { border-left: 4px solid #2c8a4a; }
+  .cm-sample-row--arrears   { border-left: 4px solid #c54c4c; }
   .cm-sample-row .meta {
     font: 500 11px/1.4 var(--font-mono);
     color: var(--ink-500);
@@ -214,7 +219,7 @@
 
 <header class="qb-topbar">
   <a class="qb-brand" href="index.html" aria-label="TogetherBOOK — home">
-    <img class="qb-brand-logo" src="togetherbook-logo.png?v=1778767430" alt="TogetherBOOK">
+    <img class="qb-brand-logo" src="togetherbook-logo.png?v=1778770753" alt="TogetherBOOK">
   </a>
   <button class="qb-hamburger" aria-label="Toggle navigation menu" aria-expanded="false"
           onclick="document.body.classList.toggle('nav-open');this.setAttribute('aria-expanded',document.body.classList.contains('nav-open'))">
@@ -376,7 +381,7 @@
           ? escapeHtml(reply.body || "(no body)")
           : `<em style="color:var(--ink-500);">—</em>`;
         out.push(`
-          <div class="cm-sample-row">
+          <div class="cm-sample-row cm-sample-row--${bucket}">
             <div class="meta">
               ${aref}<br>
               ${escapeHtml(s.channel || "")}<br>
