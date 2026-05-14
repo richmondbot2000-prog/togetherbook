@@ -1269,6 +1269,128 @@ def main() -> None:
         print("# No Campaign metadata available — falling back to (S)/(E) heuristic", flush=True)
     else:
         print(f"# Total campaigns with metadata: {len(campaign_meta)}", flush=True)
+    # ── Build phone+email → ARef map for inbound-message back-fill ─────
+    # Customer-initiated SMS / Email / Call rows usually have NO ARef on
+    # the dbo.Messages row (the IMAP / SMS poller can't extract one) — the
+    # customer is identified only by ExternalAddress (their phone or email).
+    # Without this lookup, the timeline only shows messages WE sent and
+    # the customer's voice disappears entirely.
+    msg_ext = pick(msg_cols, "ExternalAddress", "FromAddress", "ContactAddress")
+    msg_id_col = pick(msg_cols, "MessageId", "MessageID", "Id")
+
+    def _norm_phone(s):
+        d = "".join(c for c in (s or "") if c.isdigit())
+        return d[-10:] if len(d) >= 10 else d
+
+    external_to_aref: dict[str, str] = {}   # normalised key -> ARef
+    if msg_ext:
+        try:
+            apps2 = pyodbc.connect(conn_str("ReportingApplications"), timeout=20)
+            apps2.timeout = QUERY_TIMEOUT
+            ac = apps2.cursor()
+            tel_cols = discover_columns(ac, "Telephones")
+            em_cols = discover_columns(ac, "Emails")
+            tel_num = pick(tel_cols, "PhoneNumber", "Number", "TelephoneNumber", "Telephone", "Phone")
+            tel_cust = pick(tel_cols, "CustomerId", "CustomerID")
+            em_addr = pick(em_cols, "EmailAddress", "Email", "Address")
+            em_cust = pick(em_cols, "CustomerId", "CustomerID")
+            all_cids_for_contact = []
+            cid_to_aref: dict[int, str] = {}
+            for aref, roles in customers_by_aref.items():
+                for v in roles.values():
+                    cid = v.get("customer_id")
+                    if cid is not None:
+                        all_cids_for_contact.append(int(cid))
+                        cid_to_aref[int(cid)] = aref
+            if all_cids_for_contact and tel_num and tel_cust:
+                for chunk in chunked(all_cids_for_contact, 1500):
+                    phc = ",".join(["?"] * len(chunk))
+                    ac.execute(
+                        f"SELECT [{tel_num}], [{tel_cust}] FROM dbo.Telephones WHERE [{tel_cust}] IN ({phc})",
+                        chunk,
+                    )
+                    for num, cid in ac.fetchall():
+                        k = _norm_phone(num)
+                        if k and int(cid) in cid_to_aref:
+                            external_to_aref[k] = cid_to_aref[int(cid)]
+            if all_cids_for_contact and em_addr and em_cust:
+                for chunk in chunked(all_cids_for_contact, 1500):
+                    phc = ",".join(["?"] * len(chunk))
+                    ac.execute(
+                        f"SELECT [{em_addr}], [{em_cust}] FROM dbo.Emails WHERE [{em_cust}] IN ({phc})",
+                        chunk,
+                    )
+                    for em, cid in ac.fetchall():
+                        k = (em or "").strip().lower()
+                        if k and int(cid) in cid_to_aref:
+                            external_to_aref[k] = cid_to_aref[int(cid)]
+            apps2.close()
+            print(f"# external→ARef map built for inbound back-fill: {len(external_to_aref)} entries", flush=True)
+        except Exception as e:
+            print(f"# inbound back-fill skipped (contact-info load failed): {e}", flush=True)
+
+    seen_msg_keys: set = set()   # MessageId (or fallback tuple) for dedup
+
+    def _process_message_row(aref, dt, body, descr, ctype, subj, campaign, camp_id_val, msg_id):
+        # Dedup so the inbound-by-ExternalAddress pass below doesn't double-
+        # count rows that already came through the ARef-IN pass above.
+        key = ("id", msg_id) if msg_id is not None else ("k", aref, str(dt), (body or "")[:40])
+        if key in seen_msg_keys:
+            return
+        seen_msg_keys.add(key)
+
+        ctype_str = (ctype or "").strip()
+        descr_int = int(descr) if descr is not None and str(descr).strip() != "" else None
+        # Description enum: 0/1/2 = inbound (SMS/Email/Call), 5+ = outbound
+        is_inbound = descr_int in (0, 1, 2)
+        channel = {0: "SMS in", 1: "Email in", 2: "Call in"}.get(descr_int)
+        if not channel:
+            channel = "Outbound" + (f" ({ctype_str})" if ctype_str else "")
+        is_robot = (not is_inbound) and (ctype_str in ROBOT_CLIENT_TYPES)
+        msg = {
+            "kind": "message_in" if is_inbound else "message_out",
+            "at": iso(dt),
+            "channel": channel,
+            "client_type": ctype_str or None,
+        }
+        campaign_str = (campaign or "").strip() if campaign else ""
+        campaign_clean, derived_channel = expand_campaign_tokens(campaign_str)
+        meta = None
+        if camp_id_val is not None:
+            try:
+                meta = campaign_meta.get(int(camp_id_val))
+            except (ValueError, TypeError):
+                meta = None
+        authoritative_channel = (meta or {}).get("type")
+        campaign_desc = (meta or {}).get("description")
+        if not is_inbound and (authoritative_channel or derived_channel):
+            msg["channel"] = authoritative_channel or derived_channel
+            msg["channel_kind"] = authoritative_channel or derived_channel
+        elif is_inbound:
+            msg["channel_kind"] = {0: "SMS", 1: "Email", 2: "Call"}.get(descr_int)
+        if is_robot:
+            label = f"Message from {ctype_str}Bot"
+            if campaign_clean:
+                label += f" — {campaign_clean}"
+            if campaign_desc and campaign_desc.lower() not in (campaign_clean or "").lower():
+                label += f" — {campaign_desc}"
+            msg["label"] = label
+            msg["redacted"] = True
+        else:
+            body_text = (body or "").strip() if body else ""
+            if subj:
+                body_text = f"[{subj}] {body_text}".strip()
+            if campaign_clean:
+                body_text = f"({campaign_clean}) {body_text}".strip()
+            if not body_text:
+                body_text = "(empty body)"
+            if len(body_text) > 4000:
+                body_text = body_text[:4000] + " …[truncated]"
+            msg["body"] = body_text
+        record(aref, msg)
+
+    # Pass 1: ARef-IN — catches every outbound (always has ARef) + the small
+    # minority of inbounds whose ARef was set on the row.
     if msg_aref and msg_dt:
         for chunk in chunked(family_arefs, 1500):
             ph = ",".join(["?"] * len(chunk))
@@ -1278,68 +1400,55 @@ def main() -> None:
             subj_sql = f", [{msg_subject}]" if msg_subject else ", NULL"
             camp_sql = f", [{msg_campaign}]" if msg_campaign else ", NULL"
             campid_sql = f", [{msg_camp_id}]" if msg_camp_id else ", NULL"
+            id_sql = f", [{msg_id_col}]" if msg_id_col else ", NULL"
             cur.execute(
                 f"""
-                SELECT [{msg_aref}], [{msg_dt}]{body_sql}{descr_sql}{ctype_sql}{subj_sql}{camp_sql}{campid_sql}
+                SELECT [{msg_aref}], [{msg_dt}]{body_sql}{descr_sql}{ctype_sql}{subj_sql}{camp_sql}{campid_sql}{id_sql}
                 FROM dbo.Messages
                 WHERE [{msg_aref}] IN ({ph})
                   AND [{msg_dt}] IS NOT NULL
                 """,
                 chunk,
             )
-            for aref, dt, body, descr, ctype, subj, campaign, camp_id_val in cur.fetchall():
-                ctype_str = (ctype or "").strip()
-                descr_int = int(descr) if descr is not None and str(descr).strip() != "" else None
-                # Description enum: 0/1/2 = inbound (SMS/Email/Call), 3+ = outbound
-                is_inbound = descr_int in (0, 1, 2)
-                channel = {0: "SMS in", 1: "Email in", 2: "Call in"}.get(descr_int)
-                if not channel:
-                    channel = "Outbound" + (f" ({ctype_str})" if ctype_str else "")
-                is_robot = (not is_inbound) and (ctype_str in ROBOT_CLIENT_TYPES)
-                msg = {
-                    "kind": "message_in" if is_inbound else "message_out",
-                    "at": iso(dt),
-                    "channel": channel,
-                    "client_type": ctype_str or None,
-                }
-                campaign_str = (campaign or "").strip() if campaign else ""
-                campaign_clean, derived_channel = expand_campaign_tokens(campaign_str)
-                # Look up the authoritative MessageType from the Campaigns
-                # table (per wiki §9.1) before falling back to the (S)/(E)
-                # suffix heuristic.
-                meta = None
-                if camp_id_val is not None:
-                    try:
-                        meta = campaign_meta.get(int(camp_id_val))
-                    except (ValueError, TypeError):
-                        meta = None
-                authoritative_channel = (meta or {}).get("type")
-                campaign_desc = (meta or {}).get("description")
-                if not is_inbound and (authoritative_channel or derived_channel):
-                    msg["channel"] = authoritative_channel or derived_channel
-                    msg["channel_kind"] = authoritative_channel or derived_channel
-                elif is_inbound:
-                    msg["channel_kind"] = {0: "SMS", 1: "Email", 2: "Call"}.get(descr_int)
-                if is_robot:
-                    label = f"Message from {ctype_str}Bot"
-                    if campaign_clean:
-                        label += f" — {campaign_clean}"
-                    if campaign_desc and campaign_desc.lower() not in (campaign_clean or "").lower():
-                        label += f" — {campaign_desc}"
-                    msg["label"] = label
-                    msg["redacted"] = True
-                else:
-                    body_text = (body or "").strip() if body else ""
-                    if subj:
-                        body_text = f"[{subj}] {body_text}".strip()
-                    if campaign_clean:
-                        body_text = f"({campaign_clean}) {body_text}".strip()
-                    if not body_text:
-                        body_text = "(empty body)"
-                    if len(body_text) > 4000:
-                        body_text = body_text[:4000] + " …[truncated]"
-                    msg["body"] = body_text
-                record(aref, msg)
+            for aref, dt, body, descr, ctype, subj, campaign, camp_id_val, msg_id in cur.fetchall():
+                _process_message_row(aref, dt, body, descr, ctype, subj, campaign, camp_id_val, msg_id)
+
+    # Pass 2: ExternalAddress-IN — picks up customer-initiated SMS/Email/Call
+    # rows that had no ARef on the source row (~98% of inbounds per the
+    # comms scanner). Without this the timeline shows only our side.
+    if msg_ext and msg_dt and external_to_aref:
+        ext_keys = list(external_to_aref.keys())
+        n_inbound_added = 0
+        for chunk in chunked(ext_keys, 1500):
+            ph = ",".join(["?"] * len(chunk))
+            body_sql = f", [{msg_body}]" if msg_body else ", NULL"
+            descr_sql = f", [{msg_descr}]" if msg_descr else ", NULL"
+            ctype_sql = f", [{msg_ctype}]" if msg_ctype else ", NULL"
+            subj_sql = f", [{msg_subject}]" if msg_subject else ", NULL"
+            camp_sql = f", [{msg_campaign}]" if msg_campaign else ", NULL"
+            campid_sql = f", [{msg_camp_id}]" if msg_camp_id else ", NULL"
+            id_sql = f", [{msg_id_col}]" if msg_id_col else ", NULL"
+            cur.execute(
+                f"""
+                SELECT [{msg_ext}], [{msg_dt}]{body_sql}{descr_sql}{ctype_sql}{subj_sql}{camp_sql}{campid_sql}{id_sql}
+                FROM dbo.Messages
+                WHERE [{msg_ext}] IN ({ph})
+                  AND [{msg_dt}] IS NOT NULL
+                  AND [{msg_descr}] IN (0, 1, 2)
+                """,
+                chunk,
+            )
+            for ext, dt, body, descr, ctype, subj, campaign, camp_id_val, msg_id in cur.fetchall():
+                ext_key = (ext or "").strip().lower() if (ext and "@" in (ext or "")) else _norm_phone(ext)
+                aref = external_to_aref.get(ext_key)
+                if not aref:
+                    continue
+                before = len(seen_msg_keys)
+                _process_message_row(aref, dt, body, descr, ctype, subj, campaign, camp_id_val, msg_id)
+                if len(seen_msg_keys) > before:
+                    n_inbound_added += 1
+        print(f"# back-filled {n_inbound_added} inbound messages by ExternalAddress", flush=True)
+
     comm_conn.close()
 
     # ──────────── Sort + assemble output ───────────────────────────
