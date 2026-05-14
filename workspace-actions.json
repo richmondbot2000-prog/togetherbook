@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "updated_at": "2026-05-14T16:33:14.119Z",
+  "updated_at": "2026-05-14T16:33:21.149Z",
   "actions": [
     {
       "ts": "2026-05-13T20:27:39.210Z",
@@ -2245,6 +2245,14 @@
       "action": "group-delete",
       "target": "all.sof@rapida.bg",
       "ok": true
+    },
+    {
+      "ts": "2026-05-14T16:33:21.149Z",
+      "actor": "amber.cole@letme.com",
+      "action": "delete-account",
+      "target": "matthew.wood@letme.co.uk",
+      "ok": false,
+      "error": "Resource Not Found: userKey"
     }
   ]
 }
