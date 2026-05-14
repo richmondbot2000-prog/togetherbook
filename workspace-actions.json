@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "updated_at": "2026-05-14T09:27:19.375Z",
+  "updated_at": "2026-05-14T09:39:45.666Z",
   "actions": [
     {
       "ts": "2026-05-13T20:27:39.210Z",
@@ -2016,6 +2016,13 @@
       "actor": "james.benamor@letme.com",
       "action": "get-forwarding",
       "target": "tomasz.schwertner@letme.com",
+      "ok": true
+    },
+    {
+      "ts": "2026-05-14T09:39:45.666Z",
+      "actor": "amber.cole@letme.com",
+      "action": "get-forwarding",
+      "target": "kyle.barrett@letme.com",
       "ok": true
     }
   ]
