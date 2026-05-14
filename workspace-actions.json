@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "updated_at": "2026-05-14T12:00:55.774Z",
+  "updated_at": "2026-05-14T12:01:07.948Z",
   "actions": [
     {
       "ts": "2026-05-13T20:27:39.210Z",
@@ -2071,6 +2071,13 @@
       "ts": "2026-05-14T12:00:55.774Z",
       "actor": "amber.cole@letme.com",
       "action": "get-forwarding",
+      "target": "matthew.wood@letme.co.uk",
+      "ok": true
+    },
+    {
+      "ts": "2026-05-14T12:01:07.948Z",
+      "actor": "amber.cole@letme.com",
+      "action": "suspend-no-forward",
       "target": "matthew.wood@letme.co.uk",
       "ok": true
     }
