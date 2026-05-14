@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "updated_at": "2026-05-14T07:49:51.518Z",
+  "updated_at": "2026-05-14T07:50:29.125Z",
   "actions": [
     {
       "ts": "2026-05-13T20:27:39.210Z",
@@ -1322,6 +1322,13 @@
       "actor": "james.benamor@letme.com",
       "action": "get-forwarding",
       "target": "irlendz.arne@togetherloans.com",
+      "ok": true
+    },
+    {
+      "ts": "2026-05-14T07:50:29.125Z",
+      "actor": "james.benamor@letme.com",
+      "action": "get-forwarding",
+      "target": "harriet.gregory@togetherloans.com",
       "ok": true
     }
   ]
