@@ -1,6 +1,6 @@
 {
-  "snapshot_at": "2026-05-13T12:31:47.143504+00:00",
-  "snapshot_date": "2026-05-13",
+  "snapshot_at": "2026-05-14T11:34:58.299435+00:00",
+  "snapshot_date": "2026-05-14",
   "hibp": {
     "breach_count": 0,
     "affected_accounts": 0,
@@ -16,7 +16,7 @@
         "resolves_to": "2.57.91.91",
         "nameservers": "",
         "first_seen": "2026-05-12T12:27:50.087579+00:00",
-        "last_seen": "2026-05-13T12:31:37.768758+00:00",
+        "last_seen": "2026-05-14T11:33:21.376804+00:00",
         "urlscan": "https://urlscan.io/search/#together1oans.com"
       },
       {
@@ -26,27 +26,27 @@
         "resolves_to": "192.64.119.17",
         "nameservers": "",
         "first_seen": "2026-05-12T12:27:50.087579+00:00",
-        "last_seen": "2026-05-13T12:31:37.768758+00:00",
+        "last_seen": "2026-05-14T11:33:21.376804+00:00",
         "urlscan": "https://urlscan.io/search/#together-loans.com"
       },
       {
         "brand": "togetherloans.com",
         "candidate": "togetheloans.com",
         "permutation_type": "omission",
-        "resolves_to": "172.67.156.74,2606:4700:3033::ac43:9c4a",
+        "resolves_to": "104.21.40.185,2606:4700:3033::6815:28b9",
         "nameservers": "",
         "first_seen": "2026-05-12T12:27:50.087579+00:00",
-        "last_seen": "2026-05-13T12:31:37.768758+00:00",
+        "last_seen": "2026-05-14T11:33:21.376804+00:00",
         "urlscan": "https://urlscan.io/search/#togetheloans.com"
       },
       {
         "brand": "togetherloans.com",
         "candidate": "togtherloans.com",
         "permutation_type": "omission",
-        "resolves_to": "104.21.81.246,2606:4700:3030::6815:51f6",
+        "resolves_to": "172.67.166.50,2606:4700:3037::ac43:a632",
         "nameservers": "",
         "first_seen": "2026-05-12T12:27:50.087579+00:00",
-        "last_seen": "2026-05-13T12:31:37.768758+00:00",
+        "last_seen": "2026-05-14T11:33:21.376804+00:00",
         "urlscan": "https://urlscan.io/search/#togtherloans.com"
       },
       {
@@ -56,37 +56,37 @@
         "resolves_to": "162.255.119.104",
         "nameservers": "",
         "first_seen": "2026-05-12T12:27:50.087579+00:00",
-        "last_seen": "2026-05-13T12:31:37.768758+00:00",
+        "last_seen": "2026-05-14T11:33:21.376804+00:00",
         "urlscan": "https://urlscan.io/search/#togethrloans.com"
       },
       {
         "brand": "togetherloans.com",
         "candidate": "togetherlons.com",
         "permutation_type": "omission",
-        "resolves_to": "104.21.67.23,2606:4700:3033::6815:4317",
+        "resolves_to": "172.67.211.144,2606:4700:3030::ac43:d390",
         "nameservers": "",
         "first_seen": "2026-05-12T12:27:50.087579+00:00",
-        "last_seen": "2026-05-13T12:31:37.768758+00:00",
+        "last_seen": "2026-05-14T11:33:21.376804+00:00",
         "urlscan": "https://urlscan.io/search/#togetherlons.com"
       },
       {
         "brand": "togetherloans.com",
         "candidate": "togeterloans.com",
         "permutation_type": "omission",
-        "resolves_to": "45.79.167.180,2600:3c03::f03c:95ff:feed:cf2a",
+        "resolves_to": "96.126.111.165,2600:3c03::f03c:95ff:feed:4d4f",
         "nameservers": "",
         "first_seen": "2026-05-12T12:27:50.087579+00:00",
-        "last_seen": "2026-05-13T12:31:37.768758+00:00",
+        "last_seen": "2026-05-14T11:33:21.376804+00:00",
         "urlscan": "https://urlscan.io/search/#togeterloans.com"
       },
       {
         "brand": "togetherloans.com",
         "candidate": "togetherloas.com",
         "permutation_type": "omission",
-        "resolves_to": "45.79.167.180,2600:3c03::f03c:95ff:feed:cf2a",
+        "resolves_to": "96.126.111.165,2600:3c03::f03c:95ff:fe00:29ca",
         "nameservers": "",
         "first_seen": "2026-05-12T12:27:50.087579+00:00",
-        "last_seen": "2026-05-13T12:31:37.768758+00:00",
+        "last_seen": "2026-05-14T11:33:21.376804+00:00",
         "urlscan": "https://urlscan.io/search/#togetherloas.com"
       },
       {
@@ -96,7 +96,7 @@
         "resolves_to": "76.223.54.146",
         "nameservers": "",
         "first_seen": "2026-05-12T12:27:50.087579+00:00",
-        "last_seen": "2026-05-13T12:31:37.768758+00:00",
+        "last_seen": "2026-05-14T11:33:21.376804+00:00",
         "urlscan": "https://urlscan.io/search/#togetherloan.com"
       },
       {
@@ -106,7 +106,7 @@
         "resolves_to": "216.198.79.1",
         "nameservers": "",
         "first_seen": "2026-05-12T12:27:50.087579+00:00",
-        "last_seen": "2026-05-13T12:31:37.768758+00:00",
+        "last_seen": "2026-05-14T11:33:21.376804+00:00",
         "urlscan": "https://urlscan.io/search/#togethersloans.com"
       },
       {
@@ -116,7 +116,7 @@
         "resolves_to": "192.64.119.217",
         "nameservers": "",
         "first_seen": "2026-05-12T12:27:50.087579+00:00",
-        "last_seen": "2026-05-13T12:31:37.768758+00:00",
+        "last_seen": "2026-05-14T11:33:21.376804+00:00",
         "urlscan": "https://urlscan.io/search/#togettherloans.com"
       },
       {
@@ -126,7 +126,7 @@
         "resolves_to": "104.21.56.2,2606:4700:3033::ac43:af1c",
         "nameservers": "",
         "first_seen": "2026-05-12T12:27:50.087579+00:00",
-        "last_seen": "2026-05-13T12:31:37.768758+00:00",
+        "last_seen": "2026-05-14T11:33:21.376804+00:00",
         "urlscan": "https://urlscan.io/search/#tigetherloans.com"
       },
       {
@@ -136,7 +136,7 @@
         "resolves_to": "192.64.119.45",
         "nameservers": "",
         "first_seen": "2026-05-12T12:27:50.087579+00:00",
-        "last_seen": "2026-05-13T12:31:37.768758+00:00",
+        "last_seen": "2026-05-14T11:33:21.376804+00:00",
         "urlscan": "https://urlscan.io/search/#togethetloans.com"
       },
       {
@@ -146,7 +146,7 @@
         "resolves_to": "18.233.141.236",
         "nameservers": "",
         "first_seen": "2026-05-12T12:27:50.087579+00:00",
-        "last_seen": "2026-05-13T12:31:37.768758+00:00",
+        "last_seen": "2026-05-14T11:33:21.376804+00:00",
         "urlscan": "https://urlscan.io/search/#tog.etherloans.com"
       },
       {
@@ -156,7 +156,7 @@
         "resolves_to": "64.190.63.222",
         "nameservers": "",
         "first_seen": "2026-05-12T12:27:50.087579+00:00",
-        "last_seen": "2026-05-13T12:31:37.768758+00:00",
+        "last_seen": "2026-05-14T11:33:21.376804+00:00",
         "urlscan": "https://urlscan.io/search/#togethe.rloans.com"
       },
       {
@@ -166,7 +166,7 @@
         "resolves_to": "76.223.54.146",
         "nameservers": "",
         "first_seen": "2026-05-12T12:27:50.087579+00:00",
-        "last_seen": "2026-05-13T12:31:37.768758+00:00",
+        "last_seen": "2026-05-14T11:33:21.376804+00:00",
         "urlscan": "https://urlscan.io/search/#togeth.erloans.com"
       },
       {
@@ -176,7 +176,7 @@
         "resolves_to": "162.255.119.93",
         "nameservers": "",
         "first_seen": "2026-05-12T12:27:50.087579+00:00",
-        "last_seen": "2026-05-13T12:31:37.768758+00:00",
+        "last_seen": "2026-05-14T11:33:21.376804+00:00",
         "urlscan": "https://urlscan.io/search/#togetherlaons.com"
       },
       {
@@ -186,7 +186,7 @@
         "resolves_to": "2.57.91.91",
         "nameservers": "",
         "first_seen": "2026-05-12T12:26:07.944632+00:00",
-        "last_seen": "2026-05-13T12:30:12.324869+00:00",
+        "last_seen": "2026-05-14T11:31:50.120096+00:00",
         "urlscan": "https://urlscan.io/search/#transformcredlt.com"
       },
       {
@@ -196,47 +196,47 @@
         "resolves_to": "2.57.91.91",
         "nameservers": "",
         "first_seen": "2026-05-12T12:26:07.944632+00:00",
-        "last_seen": "2026-05-13T12:30:12.324869+00:00",
+        "last_seen": "2026-05-14T11:31:50.120096+00:00",
         "urlscan": "https://urlscan.io/search/#xn--transformcredt-igc.com"
       },
       {
         "brand": "transformcredit.com",
         "candidate": "transforncredit.com",
         "permutation_type": "homoglyph",
-        "resolves_to": "66.175.209.179,2600:3c03::f03c:95ff:feed:cf2a",
+        "resolves_to": "45.33.83.100,2600:3c03::f03c:95ff:feed:cf2a",
         "nameservers": "",
         "first_seen": "2026-05-12T12:26:07.944632+00:00",
-        "last_seen": "2026-05-13T12:30:12.324869+00:00",
+        "last_seen": "2026-05-14T11:31:50.120096+00:00",
         "urlscan": "https://urlscan.io/search/#transforncredit.com"
       },
       {
         "brand": "transformcredit.com",
         "candidate": "trasformcredit.com",
         "permutation_type": "omission",
-        "resolves_to": "172.67.217.181,2606:4700:3035::ac43:d9b5",
+        "resolves_to": "172.67.217.181,2606:4700:3033::6815:2db0",
         "nameservers": "",
         "first_seen": "2026-05-12T12:26:07.944632+00:00",
-        "last_seen": "2026-05-13T12:30:12.324869+00:00",
+        "last_seen": "2026-05-14T11:31:50.120096+00:00",
         "urlscan": "https://urlscan.io/search/#trasformcredit.com"
       },
       {
         "brand": "transformcredit.com",
         "candidate": "tranformcredit.com",
         "permutation_type": "omission",
-        "resolves_to": "66.175.209.179,2600:3c03::f03c:95ff:fe91:5d52",
+        "resolves_to": "45.33.83.100,2600:3c03::f03c:95ff:feed:cf2a",
         "nameservers": "",
         "first_seen": "2026-05-12T12:26:07.944632+00:00",
-        "last_seen": "2026-05-13T12:30:12.324869+00:00",
+        "last_seen": "2026-05-14T11:31:50.120096+00:00",
         "urlscan": "https://urlscan.io/search/#tranformcredit.com"
       },
       {
         "brand": "transformcredit.com",
         "candidate": "transforcredit.com",
         "permutation_type": "omission",
-        "resolves_to": "66.175.209.179,2600:3c03::f03c:95ff:feed:4d4f",
+        "resolves_to": "45.33.83.100,2600:3c03::f03c:95ff:fe00:29ca",
         "nameservers": "",
         "first_seen": "2026-05-12T12:26:07.944632+00:00",
-        "last_seen": "2026-05-13T12:30:12.324869+00:00",
+        "last_seen": "2026-05-14T11:31:50.120096+00:00",
         "urlscan": "https://urlscan.io/search/#transforcredit.com"
       },
       {
@@ -246,27 +246,27 @@
         "resolves_to": "121.254.178.253",
         "nameservers": "",
         "first_seen": "2026-05-12T12:26:07.944632+00:00",
-        "last_seen": "2026-05-13T12:30:12.324869+00:00",
+        "last_seen": "2026-05-14T11:31:50.120096+00:00",
         "urlscan": "https://urlscan.io/search/#transfor.mcredit.com"
       },
       {
         "brand": "transformcredit.com",
         "candidate": "transform.credit.com",
         "permutation_type": "subdomain",
-        "resolves_to": "146.75.30.133",
+        "resolves_to": "146.75.106.133",
         "nameservers": "",
         "first_seen": "2026-05-12T12:26:07.944632+00:00",
-        "last_seen": "2026-05-13T12:30:12.324869+00:00",
+        "last_seen": "2026-05-14T11:31:50.120096+00:00",
         "urlscan": "https://urlscan.io/search/#transform.credit.com"
       },
       {
         "brand": "transformcredit.com",
         "candidate": "trans.formcredit.com",
         "permutation_type": "subdomain",
-        "resolves_to": "13.223.25.84,2600:1f18:4ae:c605:dd5d:b838:5816:d7fb",
+        "resolves_to": "13.223.25.84,2600:1f18:4ae:c606:78d4:4260:db4e:aeee",
         "nameservers": "",
         "first_seen": "2026-05-12T12:26:07.944632+00:00",
-        "last_seen": "2026-05-13T12:30:12.324869+00:00",
+        "last_seen": "2026-05-14T11:31:50.120096+00:00",
         "urlscan": "https://urlscan.io/search/#trans.formcredit.com"
       }
     ]
