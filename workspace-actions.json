@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "updated_at": "2026-05-14T16:36:29.631Z",
+  "updated_at": "2026-05-14T16:36:37.839Z",
   "actions": [
     {
       "ts": "2026-05-13T20:27:39.210Z",
@@ -2295,6 +2295,13 @@
     },
     {
       "ts": "2026-05-14T16:36:29.631Z",
+      "actor": "amber.cole@letme.com",
+      "action": "get-forwarding",
+      "target": "matthew.wood@letme.co.uk",
+      "ok": true
+    },
+    {
+      "ts": "2026-05-14T16:36:37.839Z",
       "actor": "amber.cole@letme.com",
       "action": "get-forwarding",
       "target": "matthew.wood@letme.co.uk",
