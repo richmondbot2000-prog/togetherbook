@@ -1,7 +1,7 @@
 """
-Generate comms.json — daily response-time stats for customer-initiated
-messages, split into 4 buckets by the customer's state at the moment they
-sent the message:
+Generate comms.json + comms-full.csv — response-time stats for customer-
+initiated messages, split into 4 buckets by the customer's state at the
+moment they sent the message:
 
   - unknown    : sender has no ARef on the inbound row
   - applicant  : ARef set; no live loan (balance > $10); no signed-not-rejected
@@ -13,18 +13,29 @@ sent the message:
                  either Arrears > 0 or DateInArrearsLocal IS NOT NULL at the
                  most recent LoanHistory snapshot before the message timestamp
 
-For each inbound message, the "response" is the FIRST outbound message in the
-same channel (SMS->SMS, Email->Email) to the same ExternalAddress that was
-sent *after* the inbound and within 14 days, EXCLUDING Message Factory sends.
-We capture TWO reply variants per message so the page can toggle Reply Robot
+Reply algorithm (locked spec, 2026-05-14):
+  1. Take every inbound message (LenderId=6, SMS or Email).
+  2. For each, scan forward on the same customer for the FIRST outbound
+     message in the SAME channel (SMS→SMS, Email→Email) where the
+     ClientType matches '%CRM%' or '%Responder%'. Every other ClientType
+     (MessageFactory, UIVR, ApplyWebsite*, Whitebox, App, Dialler, Jack,
+     internal monitors, etc.) is IGNORED — the search skips past as if
+     those rows didn't exist.
+  3. If a qualifying outbound exists within 14 days → classify:
+        ClientType LIKE '%CRM%'      → Replied by Human
+        ClientType LIKE '%Responder%' → Replied by Robot
+     Otherwise → No reply.
+  4. The same outbound can serve as the reply for multiple waiting inbounds;
+     each inbound is evaluated independently.
+
+We capture TWO reply variants per inbound so the page can toggle Reply Robot
 in or out without re-querying:
+  - reply_all   : first CRM-or-Responder reply
+  - reply_human : first CRM-only reply (i.e. the human-agent view)
 
-  - reply_all      : any reply, including Robot Responder ("Reply Robot")
-  - reply_human    : human-agent only — also excludes ClientType LIKE
-                     '%Responder%' alongside MessageFactory
-
-Anything beyond 14 days is treated as 'no reply within 14 days'; the page
-caps these to 14 days when the "include no-reply" filter is on.
+comms-full.csv is the audit-trail export: one row per inbound, PII-redacted,
+showing the reply (or lack of one) it received. Linked from comms.html via
+the "Download full list CSV" button.
 
 Required env vars: FABRIC_SQL_ENDPOINT, FABRIC_TENANT_ID, FABRIC_CLIENT_ID,
 FABRIC_CLIENT_SECRET.
@@ -50,6 +61,7 @@ import pyodbc
 
 YEAR = 2026
 OUTPUT_PATH = Path("comms.json")
+CSV_PATH = Path("comms-full.csv")
 MAX_REPLY_MINUTES = 14 * 24 * 60   # 14 days
 ARREARS_FLAG_TYPES = (2, 3, 4, 6)  # Decline, DNL, Cancelled, FraudRisk
 
@@ -59,17 +71,16 @@ ARREARS_FLAG_TYPES = (2, 3, 4, 6)  # Decline, DNL, Cancelled, FraudRisk
 # warehouse but are out of scope. See SPEC.md §0.5.
 LENDER_ID = 6
 
-# Description enum on dbo.Messages — an INT, not a string. Inbound side is
-# documented in scan_pipeline_samples.py (0/1/2 = SMS/Email/Call in). Outbound
-# enum values are derived empirically by the diagnostic at the top of the
-# scan; until it confirms, this is the best-guess mapping:
-#   3 = OutboundSMS, 4 = OutboundEmail, 5 = OutboundCall, 6 = OutboundLetter, 7 = OutboundPush
+# Description enum on dbo.Messages — an INT, not a string. Confirmed values
+# from the diagnostic cross-tab (run 25868213776, 2026-05-14):
+#   0 = InboundSMS, 1 = InboundEmail, 2 = InboundCall,
+#   5 = OutboundSMS, 6 = OutboundEmail, 7 = OutboundCall, 8/10 = other outbound
 # We pair only SMS→SMS and Email→Email — calls / letters / push notifications
 # are NOT replies for this analysis, even if they go to the same address.
 DESC_INBOUND_SMS    = 0
 DESC_INBOUND_EMAIL  = 1
-DESC_OUTBOUND_SMS   = 3
-DESC_OUTBOUND_EMAIL = 4
+DESC_OUTBOUND_SMS   = 5
+DESC_OUTBOUND_EMAIL = 6
 
 
 def env(name: str) -> str:
@@ -92,7 +103,9 @@ def conn_str(database: str) -> str:
 
 
 # Step 1: inbound + paired-outbound, all inside ReportingCommunications.
-# Returns one row per inbound — small enough to bring back to Python.
+# Returns one row per inbound. We pull the FULL inbound body + reply body so
+# the same dataset feeds both the aggregate chart AND the row-level CSV
+# export — no second pass over the warehouse.
 COMMS_QUERY = f"""
 DECLARE @from datetime2 = '{YEAR}-01-01';
 DECLARE @to   datetime2 = '{YEAR+1}-01-01';
@@ -101,10 +114,13 @@ DECLARE @lender   int      = {LENDER_ID};
 
 -- Warehouse-actual schema (NOT the wiki's logical view):
 --   dbo.Messages.Description is an INT enum: 0=SMS-in, 1=Email-in, 2=Call-in,
---   3+ = outbound (different subtype per channel). UTCTime is the single
---   timestamp column (no separate Received/Sent). Channel of outbound is
---   inferred by ExternalAddress shape — same address used for inbound +
---   outbound, so pairing by ExternalAddress is implicitly channel-equivalent.
+--   5=SMS-out, 6=Email-out. UTCTime is the single timestamp column.
+--
+-- Reply matching uses a POSITIVE LIST: an outbound only counts as a reply if
+-- ClientType matches '%CRM%' (human via CRM) or '%Responder%' (Robot /
+-- AiResponder). Everything else — MessageFactory, UIVR, ApplyWebsite*,
+-- Whitebox, App, Dialler, Jack, internal monitors — is invisible to the
+-- search and the algorithm skips past it.
 WITH inbound AS (
     SELECT
         m.MessageId,
@@ -112,6 +128,7 @@ WITH inbound AS (
         m.LoanbookId,
         m.ExternalAddress,
         m.UTCTime,
+        m.MessageBody,
         m.Description AS InboundDesc,
         CASE
             WHEN m.Description = 0 THEN 'SMS'
@@ -132,37 +149,38 @@ SELECT
     i.UTCTime AS DateReceivedUtc,
     i.Channel,
     i.ExternalAddress,
-    -- Minutes to first non-MessageFactory reply within 14 days
-    (
-        SELECT TOP 1 DATEDIFF(MINUTE, i.UTCTime, o.UTCTime)
-        FROM dbo.Messages o
-        WHERE o.ExternalAddress = i.ExternalAddress
-          AND o.LenderId = @lender
-          AND o.Description = CASE i.InboundDesc WHEN 0 THEN 3 WHEN 1 THEN 4 END
-          AND o.UTCTime >  i.UTCTime
-          AND o.UTCTime <= DATEADD(MINUTE, @maxMinutes, i.UTCTime)
-          AND (o.ClientType IS NULL OR o.ClientType <> 'MessageFactory')
-        ORDER BY o.UTCTime ASC
-    ) AS ReplyMinAll,
-    -- Same but additionally excluding Reply Robot (ClientType LIKE '%Responder%')
-    (
-        SELECT TOP 1 DATEDIFF(MINUTE, i.UTCTime, o.UTCTime)
-        FROM dbo.Messages o
-        WHERE o.ExternalAddress = i.ExternalAddress
-          AND o.LenderId = @lender
-          AND o.Description = CASE i.InboundDesc WHEN 0 THEN 3 WHEN 1 THEN 4 END
-          AND o.UTCTime >  i.UTCTime
-          AND o.UTCTime <= DATEADD(MINUTE, @maxMinutes, i.UTCTime)
-          AND (
-              o.ClientType IS NULL
-              OR (
-                  o.ClientType <> 'MessageFactory'
-                  AND o.ClientType NOT LIKE '%Responder%'
-              )
-          )
-        ORDER BY o.UTCTime ASC
-    ) AS ReplyMinHuman
-FROM inbound i;
+    i.MessageBody AS InboundBody,
+    r_all.UTCTime  AS ReplyAllTs,
+    DATEDIFF(MINUTE, i.UTCTime, r_all.UTCTime) AS ReplyMinAll,
+    r_all.MessageBody AS ReplyAllBody,
+    r_all.ClientType  AS ReplyAllClientType,
+    r_hum.UTCTime  AS ReplyHumanTs,
+    DATEDIFF(MINUTE, i.UTCTime, r_hum.UTCTime) AS ReplyMinHuman
+FROM inbound i
+OUTER APPLY (
+    -- First CRM-or-Responder reply (the "reply_all" view)
+    SELECT TOP 1 o.UTCTime, o.MessageBody, o.ClientType
+    FROM dbo.Messages o
+    WHERE o.ExternalAddress = i.ExternalAddress
+      AND o.LenderId = @lender
+      AND o.Description = CASE i.InboundDesc WHEN 0 THEN 5 WHEN 1 THEN 6 END
+      AND o.UTCTime >  i.UTCTime
+      AND o.UTCTime <= DATEADD(MINUTE, @maxMinutes, i.UTCTime)
+      AND (o.ClientType LIKE '%CRM%' OR o.ClientType LIKE '%Responder%')
+    ORDER BY o.UTCTime ASC
+) r_all
+OUTER APPLY (
+    -- First CRM-only reply (the "reply_human" view)
+    SELECT TOP 1 o.UTCTime
+    FROM dbo.Messages o
+    WHERE o.ExternalAddress = i.ExternalAddress
+      AND o.LenderId = @lender
+      AND o.Description = CASE i.InboundDesc WHEN 0 THEN 5 WHEN 1 THEN 6 END
+      AND o.UTCTime >  i.UTCTime
+      AND o.UTCTime <= DATEADD(MINUTE, @maxMinutes, i.UTCTime)
+      AND o.ClientType LIKE '%CRM%'
+    ORDER BY o.UTCTime ASC
+) r_hum;
 """
 
 
@@ -178,14 +196,19 @@ def fetch_inbound_paired():
     out = []
     for r in rows:
         out.append({
-            "MessageId":       r[0],
-            "ARef":            (r[1] or "").strip() if r[1] else "",
-            "LoanbookId":      (r[2] or "").strip() if r[2] else "",
-            "DateReceivedUtc": r[3],
-            "Channel":         r[4],
-            "ExternalAddress": (r[5] or "").strip() if r[5] else "",
-            "ReplyMinAll":     r[6],
-            "ReplyMinHuman":   r[7],
+            "MessageId":           r[0],
+            "ARef":                (r[1] or "").strip() if r[1] else "",
+            "LoanbookId":          (r[2] or "").strip() if r[2] else "",
+            "DateReceivedUtc":     r[3],
+            "Channel":             r[4],
+            "ExternalAddress":     (r[5] or "").strip() if r[5] else "",
+            "InboundBody":         r[6] or "",
+            "ReplyAllTs":          r[7],
+            "ReplyMinAll":         r[8],
+            "ReplyAllBody":        r[9] or "",
+            "ReplyAllClientType": (r[10] or "").strip() if r[10] else "",
+            "ReplyHumanTs":        r[11],
+            "ReplyMinHuman":       r[12],
         })
     print(f"[comms] {len(out)} inbound rows", flush=True)
     return out
@@ -574,7 +597,11 @@ RX_CARD      = re.compile(r"\b(?:\d[ -]?){13,19}\b")
 RX_PHONE     = re.compile(r"(?<!\d)\+?\d[\d\s\-().]{7,}\d(?!\d)")
 
 
-def redact(body: str, names: set[str]) -> str:
+def redact(body: str, names, cap: int | None = SAMPLE_BODY_CAP) -> str:
+    """PII-redact a message body. `names` is an iterable of names to scrub
+    (whole-word case-insensitive). `cap` truncates the result; pass None to
+    keep the full body (used by the CSV audit export where we want every
+    word of the original message preserved)."""
     if not body: return ""
     s = body
     s = RX_CARD.sub("****", s)
@@ -583,13 +610,122 @@ def redact(body: str, names: set[str]) -> str:
     s = RX_LOANBOOK.sub("****", s)
     s = RX_EMAIL.sub("****@****", s)
     s = RX_PHONE.sub("****", s)
-    # Names from the Customers table. Whole-word case-insensitive.
     for n in names:
         if len(n) < 3: continue
         s = re.compile(r"\b" + re.escape(n) + r"\b", re.IGNORECASE).sub("****", s)
-    if len(s) > SAMPLE_BODY_CAP:
-        s = s[:SAMPLE_BODY_CAP].rstrip() + " …[truncated]"
+    if cap is not None and len(s) > cap:
+        s = s[:cap].rstrip() + " …[truncated]"
     return s
+
+
+def fetch_names_by_aref(arefs: set[str]) -> dict[str, set[str]]:
+    """For every ARef in the inbound set, pull first/last name. Used by the
+    full-list CSV so each row redacts only that customer's own name. Returns
+    {aref: {first, last}}; missing ARefs map to an empty set."""
+    if not arefs:
+        return {}
+    print(f"[csv] fetching names for {len(arefs)} ARefs (CSV redaction)…", flush=True)
+    out: dict[str, set[str]] = {}
+    cn = pyodbc.connect(conn_str("ReportingApplications"), timeout=30)
+    try:
+        cur = cn.cursor()
+        for chunk in chunked(arefs, 1500):
+            ph = ",".join("?" * len(chunk))
+            cur.execute(
+                f"""SELECT ARef, FirstName, Surname
+                    FROM dbo.Customers WHERE ARef IN ({ph})""",
+                list(chunk),
+            )
+            for aref, fn, sn in cur.fetchall():
+                aref = (aref or "").strip()
+                if not aref: continue
+                bag = out.setdefault(aref, set())
+                if fn and fn.strip(): bag.add(fn.strip())
+                if sn and sn.strip(): bag.add(sn.strip())
+    finally:
+        cn.close()
+    print(f"[csv] name map built ({len(out)} ARefs resolved)", flush=True)
+    return out
+
+
+def write_full_csv(inbounds: list, loan_history, signed_gt, names_by_aref: dict[str, set[str]]) -> None:
+    """Audit-trail export: one row per inbound, PII-redacted. Linked from
+    comms.html as the "Download full list CSV" button. Streamed to disk so
+    we never materialise the full body of every message in a single string.
+
+    Result column uses the reply_all view (first CRM-or-Responder reply):
+      ClientType LIKE '%CRM%'        -> Replied by Human
+      ClientType LIKE '%Responder%'  -> Replied by Robot
+      No qualifying reply in 14 days -> No reply
+    """
+    import csv as _csv
+    print(f"[csv] writing {CSV_PATH} ({len(inbounds)} rows)…", flush=True)
+    n_human = n_robot = n_none = 0
+    with open(CSV_PATH, "w", newline="", encoding="utf-8") as f:
+        w = _csv.writer(f, quoting=_csv.QUOTE_MINIMAL)
+        w.writerow([
+            "inbound_datetime_utc",
+            "inbound_channel",
+            "inbound_body",
+            "result",
+            "hours_to_reply",
+            "reply_datetime_utc",
+            "reply_channel",
+            "reply_client_type",
+            "reply_body",
+            "customer_aref_last5",
+            "customer_state_at_inbound",
+        ])
+        for i in inbounds:
+            bucket = classify(i, loan_history, signed_gt)
+            aref = i.get("ARef") or ""
+            row_names = names_by_aref.get(aref, set())
+            in_body = redact(i.get("InboundBody") or "", row_names, cap=None)
+
+            ct = i.get("ReplyAllClientType") or ""
+            mins = i.get("ReplyMinAll")
+            if mins is None or not ct:
+                result = "No reply"
+                hours = ""
+                r_ts = ""
+                r_ct = ""
+                r_body = ""
+                n_none += 1
+            else:
+                ct_l = ct.lower()
+                if "responder" in ct_l:
+                    result = "Replied by Robot"
+                    n_robot += 1
+                elif "crm" in ct_l:
+                    result = "Replied by Human"
+                    n_human += 1
+                else:
+                    result = "Replied (uncategorised)"  # shouldn't happen — positive list filters this out
+                hours = f"{mins / 60:.2f}"
+                ts = i.get("ReplyAllTs")
+                r_ts = ts.strftime("%Y-%m-%d %H:%M:%S") if hasattr(ts, "strftime") else (str(ts) if ts else "")
+                r_ct = ct
+                r_body = redact(i.get("ReplyAllBody") or "", row_names, cap=None)
+
+            in_ts = i.get("DateReceivedUtc")
+            in_ts_s = in_ts.strftime("%Y-%m-%d %H:%M:%S") if hasattr(in_ts, "strftime") else str(in_ts)
+            w.writerow([
+                in_ts_s,
+                i.get("Channel") or "",
+                in_body,
+                result,
+                hours,
+                r_ts,
+                i.get("Channel") or "" if result != "No reply" else "",
+                r_ct,
+                r_body,
+                aref[-5:] if aref else "",
+                bucket,
+            ])
+    print(
+        f"[csv] {CSV_PATH} written — Human={n_human}, Robot={n_robot}, NoReply={n_none}",
+        flush=True,
+    )
 
 
 def sample_messages(inbounds, signed_gt, loan_history) -> dict:
@@ -639,19 +775,20 @@ def sample_messages(inbounds, signed_gt, loan_history) -> dict:
                 "body": body or "", "subj": subj or "",
                 "desc": desc,
             }
-        # 2. Two reply variants per inbound. Sequential queries — slow but
-        # bounded (100 × 4 buckets × 2 = 800 queries; ~3 min total).
+        # 2. Two reply variants per inbound — POSITIVE-LIST filter:
+        # reply_all  = first CRM-or-Responder same-channel outbound within 14 d.
+        # reply_human = first CRM-only same-channel outbound within 14 d.
+        # Sequential queries; bounded (100 × 4 buckets × 2 ≈ 800 queries).
         for mid, info in inbound_info.items():
-            # 2a. Reply (all) — first non-MF same-channel reply
             cur.execute(
                 f"""SELECT TOP 1 UTCTime, MessageBody{subj_sql_sel}, ClientType
                     FROM dbo.Messages
                     WHERE ExternalAddress = ?
                       AND LenderId = {LENDER_ID}
-                      AND Description = CASE WHEN ? = 0 THEN 3 WHEN ? = 1 THEN 4 END
+                      AND Description = CASE WHEN ? = 0 THEN 5 WHEN ? = 1 THEN 6 END
                       AND UTCTime >  ?
                       AND UTCTime <= DATEADD(MINUTE, ?, ?)
-                      AND (ClientType IS NULL OR ClientType <> 'MessageFactory')
+                      AND (ClientType LIKE '%CRM%' OR ClientType LIKE '%Responder%')
                     ORDER BY UTCTime ASC""",
                 info["ext"], info["desc"], info["desc"], info["ts"], MAX_REPLY_MINUTES, info["ts"],
             )
@@ -661,22 +798,15 @@ def sample_messages(inbounds, signed_gt, loan_history) -> dict:
                     "ts": r[0], "body": r[1] or "",
                     "subj": r[2] or "", "client_type": (r[3] or "").strip(),
                 }
-            # 2b. Reply (human only) — first non-MF non-Responder same-channel
             cur.execute(
                 f"""SELECT TOP 1 UTCTime, MessageBody{subj_sql_sel}, ClientType
                     FROM dbo.Messages
                     WHERE ExternalAddress = ?
                       AND LenderId = {LENDER_ID}
-                      AND Description = CASE WHEN ? = 0 THEN 3 WHEN ? = 1 THEN 4 END
+                      AND Description = CASE WHEN ? = 0 THEN 5 WHEN ? = 1 THEN 6 END
                       AND UTCTime >  ?
                       AND UTCTime <= DATEADD(MINUTE, ?, ?)
-                      AND (
-                          ClientType IS NULL
-                          OR (
-                              ClientType <> 'MessageFactory'
-                              AND ClientType NOT LIKE '%Responder%'
-                          )
-                      )
+                      AND ClientType LIKE '%CRM%'
                     ORDER BY UTCTime ASC""",
                 info["ext"], info["desc"], info["desc"], info["ts"], MAX_REPLY_MINUTES, info["ts"],
             )
@@ -908,6 +1038,12 @@ def main() -> None:
         for b in out["buckets"]
     )
     print(f"wrote {OUTPUT_PATH}: {summary}", flush=True)
+
+    # Full-list CSV audit export — built from the same inbound rows so the
+    # CSV and the chart always tell the same story for the same scan.
+    csv_arefs = {i["ARef"] for i in inbounds if i.get("ARef")}
+    names_by_aref = fetch_names_by_aref(csv_arefs)
+    write_full_csv(inbounds, loan_history, signed_gt, names_by_aref)
 
 
 if __name__ == "__main__":

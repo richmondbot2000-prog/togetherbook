@@ -52,17 +52,17 @@ jobs:
           FABRIC_CLIENT_SECRET: ${{ secrets.FABRIC_CLIENT_SECRET }}
         run: python scripts/scan_comms_response.py
 
-      - name: Commit if comms.json changed
+      - name: Commit if comms.json or comms-full.csv changed
         run: |
           set -euo pipefail
-          git add comms.json
-          if git diff --cached --quiet -- comms.json; then
+          git add comms.json comms-full.csv
+          if git diff --cached --quiet -- comms.json comms-full.csv; then
             echo "no changes — nothing to commit"
             exit 0
           fi
           git config user.name  "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git commit -m "Refresh comms: daily response-time stats"
+          git commit -m "Refresh comms: response-time stats + full-list CSV"
           for attempt in 1 2 3; do
             if git push; then break; fi
             if [ "$attempt" -eq 3 ]; then echo "::error::Push failed"; exit 1; fi

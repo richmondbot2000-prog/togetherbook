@@ -56,6 +56,21 @@
     font-style: italic;
     margin-left: 4px;
   }
+  .cm-csv-btn {
+    display: inline-block;
+    padding: 6px 12px;
+    background: var(--paper-50);
+    border: 1px solid var(--brass-600);
+    color: var(--ink-900);
+    font: 500 13px/1 var(--font-display);
+    text-decoration: none;
+    border-radius: 3px;
+    margin-left: 12px;
+  }
+  .cm-csv-btn:hover {
+    background: var(--brass-300);
+    color: var(--ink-900);
+  }
 
   /* Chart */
   .cm-chart-wrap {
@@ -244,7 +259,7 @@
 <main class="qb-page">
   <section class="cm-section">
     <h1>Comms response time</h1>
-    <p class="lead">When a customer messages us by SMS or email, how long do they wait for our next message back on the same channel? Each point is the <strong>weekly mean response time</strong> — daily noise from evenings and weekends gets folded into one number per week (Monday-anchored). <em>Message Factory</em> sends are excluded from counting as a reply (they're broadcast campaigns, not actual replies). Replies more than 14 days later are treated as "no reply within 14 days".</p>
+    <p class="lead">When a customer messages us by SMS or email, how long do they wait for our next message back on the same channel? Each point is the <strong>weekly mean response time</strong> — daily noise from evenings and weekends gets folded into one number per week (Monday-anchored). Only outbound messages from our <strong>CRM</strong> (human agent) or <strong>Robot Responder / AI Responder</strong> count as a reply — everything else (Message Factory, UIVR, Apply Website, Whitebox, App, Dialler, internal monitors) is ignored and the search jumps past it. Replies more than 14 days later are treated as "no reply within 14 days".</p>
     <p class="lead"><strong>Data maturity:</strong> a message received in the last 14 days hasn't had its full chance to be replied to yet, so the chart only shows weeks where every message in them is 14+ days old. The current week and the last two are hidden.</p>
     <p class="lead">The four lines split by the sender's state <em>at the moment they sent the message</em>: no ARef yet ("unknown"), have an ARef but no live loan ("applicant"), live loan and not in arrears ("live loan"), or live loan in arrears.</p>
     <p class="cm-meta" id="cmMeta">Loading…</p>
@@ -267,6 +282,10 @@
           <option value="median">Median</option>
         </select>
       </label>
+      <a id="cmCsvLink" href="comms-full.csv" download
+         class="cm-csv-btn" title="Download every inbound message in this analysis as a PII-redacted CSV — one row per message, with result + hours + reply detail.">
+        Download full list CSV
+      </a>
     </div>
 
     <div class="cm-totals" id="cmTotals"></div>
@@ -325,6 +344,13 @@
     const updated = (dataset.updated_at || "").replace("T", " ").slice(0, 19) + " UTC";
     document.getElementById("cmMeta").textContent =
       `Year ${dataset.year} · ${dataset.channels.join(" + ")} · 14-day reply window · updated ${updated}`;
+    // Cache-bust the CSV link with the scan's updated_at so the browser
+    // always pulls a fresh CSV after refresh-comms rather than serving the
+    // previous scan's version from cache.
+    const csvLink = document.getElementById("cmCsvLink");
+    if (csvLink && dataset.updated_at) {
+      csvLink.href = "comms-full.csv?v=" + encodeURIComponent(dataset.updated_at);
+    }
     const excludeRR = document.getElementById("cmExcludeRR").checked;
     // Checkbox is "Exclude no-reply messages" so unchecked = include them.
     const includeNoReply = !document.getElementById("cmExcludeNoReply").checked;

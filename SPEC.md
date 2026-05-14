@@ -98,7 +98,7 @@ The site is a flat set of HTML files. **No router, no SPA, no build step.** Each
 | **TopUps** | `/topups.html` | 24-month chart of distinct Transform Credit (LenderId 6) live loans split Primary / Top-Up, with a TUE-eligible-count line overlay; "last refreshed" badge | `topups.json` |
 | **Pipeline** | `/pipeline.html` | March-cohort application-pipeline analysis with two d3-sankey diagrams (Lead funnel + Application progression), per-stage drop-off table, and click-to-expand sampled customer timelines per dead-end endpoint. All PII masked server-side. | `pipeline.json` + `pipeline-samples.json` |
 | **Brokers** | `/brokers.html` | Per-Broker funnel scorecard PLUS three Source-quality analysis sections — (a) Sources to consider blocking, (b) Blocked Sources to consider re-enabling, (c) Sources where we overpay. KPI band, two top-10 leaderboards (volume + paid), worst-quality leaderboard (ghost rate), sortable table with inline mini-funnel. Click row to expand stage-by-stage detail + top rejection reasons. | `brokers.json` + `source-quality.json` |
-| **Comms** | `/comms.html` | Daily inbound→reply response-time tracker. Weekly Monday-anchored line chart × 4 customer-state buckets (unknown / applicant / live_loan / arrears), fixed 0-336 h Y-axis, two filter checkboxes (Exclude Robot Responder / Exclude no-reply at 14 d cap), 14-day data-maturity cutoff. Includes a sample-messages panel: 100 redacted (inbound, reply) pairs per bucket randomly drawn on every page load. | `comms.json` |
+| **Comms** | `/comms.html` | Inbound→reply response-time tracker using a positive-list reply rule (only `%CRM%` and `%Responder%` ClientTypes count). Weekly Monday-anchored line chart × 4 customer-state buckets (unknown / applicant / live_loan / arrears), fixed 0-336 h Y-axis, two filter checkboxes (Exclude Robot Responder / Exclude no-reply at 14 d cap), 14-day data-maturity cutoff. Sample-messages panel + **Download full list CSV** button (`comms-full.csv` — every inbound, redacted, with result + hours + reply detail). | `comms.json` + `comms-full.csv` |
 | **Schema** | `/database.html` | Full DB schema (renders `database.md` via marked.js + mermaid theme), plus per-table row counts as flipboards | `row-counts.json` + `database.md` |
 | **Code** | `/stats.html` | Codebase size dashboard (Solari split-flap digits) + by-language and by-repo tables | inline manual snapshot (live refresh pending Azure access) |
 | _(unlinked)_ | `/apis.html` | Per-helper detail page — kept for any deep-link bookmarks; not in nav | inline |
@@ -1074,9 +1074,28 @@ The scanner: `scripts/scan_comms_response.py`. Workflow: `.github/workflows/refr
 
 **Identity back-fill — the load-bearing trick.** Inbound SMS/Email rows on `Communications.Messages` usually carry no ARef (the IMAP/SMS poller only extracts one if it can scrape the subject line). v1 of this scanner had 98% of inbounds collapsing into `unknown`. The fix: build phone→ARef + email→ARef maps from `Applications.Telephones` + `Applications.Emails` (~19 M phones, ~18 M emails) joined to `Customers.ARef`, then for every ARef-less inbound look the sender's ExternalAddress up. ~97% match rate. Phone matching uses last-10-digits to fold US country-code variants together.
 
-**Reply pairing.** For each inbound, the scanner finds the first `Description >= 3` (outbound) on `dbo.Messages` to the same `ExternalAddress` within 14 days. Two variants captured:
-- `reply_all` — first non-MessageFactory reply (could be RR or human)
-- `reply_human` — first reply that is non-MF AND non-Responder (`ClientType NOT LIKE '%Responder%'` — catches RobotResponder, AiResponder, etc.)
+**Reply pairing — locked algorithm (spec'd 2026-05-14).** For each inbound, the scanner finds the first SAME-CHANNEL outbound on `dbo.Messages` to the same `ExternalAddress` within 14 days, using a **positive list** of valid reply ClientTypes:
+
+- `ClientType LIKE '%CRM%'` → **Replied by Human** (TogetherLoansCRM, TransformCreditCRM, etc.)
+- `ClientType LIKE '%Responder%'` → **Replied by Robot** (RobotResponder, RobotResponders, AiResponder)
+- **Anything else is IGNORED** — MessageFactory, UIVR, ApplyWebsite*, Whitebox, App, Dialler, Jack, internal monitors (LoanbookMonitorRobotV2, AutoPayoutProcessor, etc.). The search jumps past them as if they don't exist. The same outbound can serve as the reply for multiple waiting inbounds — each inbound is matched independently.
+
+Channel pairing uses the dbo.Messages Description enum:
+
+| Code | Meaning |
+|---|---|
+| 0 | InboundSMS |
+| 1 | InboundEmail |
+| 2 | InboundCall |
+| 5 | OutboundSMS |
+| 6 | OutboundEmail |
+| 7 | OutboundCall |
+
+SMS pairs to SMS (`0 → 5`), Email pairs to Email (`1 → 6`). Calls, letters, and push notifications never count as a reply.
+
+Two variants captured per inbound so the page can toggle the Robot Responder filter without re-querying:
+- `reply_all` — first CRM-or-Responder reply
+- `reply_human` — first CRM-only reply
 
 Beyond 14 days is treated as "no reply".
 
@@ -1112,6 +1131,24 @@ Beyond 14 days is treated as "no reply".
 4. `ReportingCommunications` again — sample bodies (one query for inbound bodies, 100×4×2 sequential reply lookups).
 
 Total run-time ~10–14 min. The scanner's main performance trap (pulled out 2026-05-14) was re-fetching ExternalAddress per ARef-less message in chunks of 1500 — that took 26 minutes and busted the 30-min workflow timeout. Now ExternalAddress is in the first SELECT.
+
+**Audit-trail CSV (`comms-full.csv`).** Linked from the page as the **Download full list CSV** button. One row per inbound (no aggregation), PII-redacted to the same level as the on-page samples. Columns:
+
+| Column | Notes |
+|---|---|
+| `inbound_datetime_utc` | UTC ISO `YYYY-MM-DD HH:MM:SS` |
+| `inbound_channel` | `SMS` / `Email` |
+| `inbound_body` | redacted (no length cap; names ****, ARef-shape ****, phone ****, etc.) |
+| `result` | `Replied by Human` / `Replied by Robot` / `No reply` |
+| `hours_to_reply` | blank when `No reply`; 2-decimal hours otherwise |
+| `reply_datetime_utc` | blank when `No reply` |
+| `reply_channel` | same as `inbound_channel` by spec; blank when `No reply` |
+| `reply_client_type` | e.g. `TogetherLoansCRM`, `AiResponder`, `RobotResponder` |
+| `reply_body` | redacted |
+| `customer_aref_last5` | last 5 chars of ARef or blank |
+| `customer_state_at_inbound` | `unknown` / `applicant` / `live_loan` / `arrears` / `other` |
+
+The CSV is the auditable ground truth — every classification on the chart is one row here. The page sets the link's `?v=` query to the scan's `updated_at` so the browser never serves a stale CSV after a fresh refresh-comms run.
 
 ---
 
