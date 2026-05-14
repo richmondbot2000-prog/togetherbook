@@ -9,11 +9,11 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&family=Orbitron:wght@500;600;700;800&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="style.css?v=1778762339">
-<link rel="stylesheet" href="quiet-tokens.css?v=1778762339">
-<link rel="stylesheet" href="quiet.css?v=1778762339">
-<link rel="stylesheet" href="quiet-extras.css?v=1778762339">
-<link rel="stylesheet" href="quiet-legacy.css?v=1778762339">
+<link rel="stylesheet" href="style.css?v=1778762651">
+<link rel="stylesheet" href="quiet-tokens.css?v=1778762651">
+<link rel="stylesheet" href="quiet.css?v=1778762651">
+<link rel="stylesheet" href="quiet-extras.css?v=1778762651">
+<link rel="stylesheet" href="quiet-legacy.css?v=1778762651">
 <style>
   .dir-section { max-width: 1080px; margin: 0 auto; padding: 24px 0 48px; }
   @media (max-width: 800px) { .dir-section { padding: 2px 0 32px; } }
@@ -1155,7 +1155,7 @@
 
 <header class="qb-topbar">
   <a class="qb-brand" href="index.html" aria-label="TogetherBOOK — home">
-    <img class="qb-brand-logo" src="togetherbook-logo.png?v=1778762339" alt="TogetherBOOK">
+    <img class="qb-brand-logo" src="togetherbook-logo.png?v=1778762651" alt="TogetherBOOK">
   </a>
   <button class="qb-hamburger" aria-label="Toggle navigation menu" aria-expanded="false"
           onclick="document.body.classList.toggle('nav-open');this.setAttribute('aria-expanded',document.body.classList.contains('nav-open'))">
@@ -4271,6 +4271,44 @@
       if (toast) toast.textContent = "Password copied to clipboard.";
     });
     modal.querySelector("[data-create]").addEventListener("click", () => submitCreate(modal));
+
+    // Auto-suggest the email domain based on the tenant radio + name fields.
+    // Only fills if the user hasn't already typed something custom.
+    const tenantToDomain = { letme: "letme.com", togetherloans: "togetherloans.com" };
+    const emailInput = modal.querySelector('input[name="email"]');
+    const givenInput = modal.querySelector('input[name="given_name"]');
+    const familyInput = modal.querySelector('input[name="family_name"]');
+    const radios = modal.querySelectorAll('input[name="tenant_choice"]');
+    function suggestEmail() {
+      const tenant = (modal.querySelector('input[name="tenant_choice"]:checked') || {}).value || "letme";
+      const domain = tenantToDomain[tenant] || "letme.com";
+      const slug = (s) => s.trim().toLowerCase().replace(/[^a-z0-9]+/g, ".").replace(/^\.+|\.+$/g, "");
+      const given = slug(givenInput.value);
+      const family = slug(familyInput.value);
+      if (!given && !family) return;
+      const suggested = `${given}${given && family ? "." : ""}${family}@${domain}`;
+      // Only overwrite if the field is empty OR holds a previous auto-suggestion.
+      if (!emailInput.value || emailInput.dataset.auto === "1") {
+        emailInput.value = suggested;
+        emailInput.dataset.auto = "1";
+      }
+    }
+    emailInput.addEventListener("input", () => { emailInput.dataset.auto = "0"; });
+    givenInput.addEventListener("input", suggestEmail);
+    familyInput.addEventListener("input", suggestEmail);
+    radios.forEach(r => r.addEventListener("change", () => {
+      // Tenant change: force-update the email (overrides user edits — the
+      // common case is they realised they picked the wrong tenant).
+      const tenant = (modal.querySelector('input[name="tenant_choice"]:checked') || {}).value;
+      const domain = tenantToDomain[tenant];
+      if (emailInput.value.includes("@")) {
+        const local = emailInput.value.split("@")[0];
+        emailInput.value = `${local}@${domain}`;
+        emailInput.dataset.auto = "1";
+      }
+      // Also flip the placeholder for clarity when the field is empty.
+      emailInput.placeholder = `jane.smith@${domain}`;
+    }));
   }
 
   function renderCreateBody() {
@@ -4287,6 +4325,17 @@
 
       <div class="dir-modal-section">
         <h3>Account</h3>
+        <div class="dir-form-row">
+          <label>Workspace</label>
+          <div style="display:flex;gap:8px;flex-wrap:wrap;">
+            <label style="display:inline-flex;align-items:center;gap:6px;cursor:pointer;">
+              <input type="radio" name="tenant_choice" value="letme" checked> Letme
+            </label>
+            <label style="display:inline-flex;align-items:center;gap:6px;cursor:pointer;">
+              <input type="radio" name="tenant_choice" value="togetherloans"> Together Loans
+            </label>
+          </div>
+        </div>
         <div class="dir-form-row">
           <label for="newGiven">First name</label>
           <input id="newGiven" name="given_name" type="text" placeholder="Jane" autocomplete="off">
@@ -4319,11 +4368,15 @@
 
   async function submitCreate(modal) {
     const get = name => (modal.querySelector(`input[name="${name}"]`).value || "").trim();
+    const tenantChoice = (modal.querySelector('input[name="tenant_choice"]:checked') || {}).value || "letme";
+    // Worker maps tenant=togetherloans to its impersonate user; anything else
+    // falls back to the default letme impersonation.
     const body = {
       given_name: get("given_name"),
       family_name: get("family_name"),
       email: get("email"),
       password: get("password"),
+      tenant: tenantChoice,
     };
     const toast = modal.querySelector("[data-toast]");
     toast.classList.remove("error");
