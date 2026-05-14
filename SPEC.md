@@ -42,6 +42,22 @@ A static-hosted internal site (cream paper / ink-blue / brass theme) that explai
 
 ---
 
+## 0.5 Scope rule — Transform Credit / Together Loans ONLY
+
+**Every warehouse-bound scanner MUST filter to `LenderId = 6`.** This site reports on Transform Credit / Together Loans data only. Other lenders in the same Fabric warehouse (Rapida, LendingMate, Fianceo, Tandolan, Lendingmate, ClearLoans, etc.) are out of scope.
+
+The shared `LENDER_ID = 6` constant is the canonical value. New scanners use it. Existing scanners enforce it as:
+
+- Tables with a direct `LenderId` column: `WHERE LenderId = 6`. This covers `Communications.Messages`, `Loanbook.Loan`, `Applications.Applications`, `Brokers.Campaigns`, `Loanbook.LoanAtInception`.
+- Tables joined via Loan: `JOIN dbo.Loan l ON … WHERE l.LenderID = 6`. Used in `scan_first_contact.py` + `scan_yesterday_payouts.py`.
+- The previous shortcut `JOIN Lenders … WHERE le.Country = 'USA'` is **deprecated** — TC is the only US lender today but the rule is to filter on identity, not geography. All older scanners have been migrated to `LenderID = 6` as of 2026-05-14.
+
+If a sample renders showing other-lender content (Rapida MFA codes, etc.) the filter is missing. Trace back through each `dbo.Messages` / Loan / Application reference in the scanner and ensure the lender filter applies.
+
+This rule is mechanically enforceable: `grep -nE "FROM dbo\.(Messages|Loan|Applications|LoanAtInception|Customers|Telephones|Emails|ESignatures|Flags)" scripts/scan_*.py` should never return a query without a paired `LenderId = 6` clause (directly on the table, or via JOIN to a table that has it).
+
+---
+
 ## 2. URLs and hosting
 
 | What | URL |

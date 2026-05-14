@@ -53,6 +53,12 @@ OUTPUT_PATH = Path("comms.json")
 MAX_REPLY_MINUTES = 14 * 24 * 60   # 14 days
 ARREARS_FLAG_TYPES = (2, 3, 4, 6)  # Decline, DNL, Cancelled, FraudRisk
 
+# This site reports ONLY Transform Credit / Together Loans data — LenderId 6.
+# Every warehouse query that pulls business data MUST filter by this. Other
+# lenders (Rapida, LendingMate, Fianceo, Tandolan, etc.) live in the same
+# warehouse but are out of scope. See SPEC.md §0.5.
+LENDER_ID = 6
+
 
 def env(name: str) -> str:
     v = os.environ.get(name)
@@ -79,6 +85,7 @@ COMMS_QUERY = f"""
 DECLARE @from datetime2 = '{YEAR}-01-01';
 DECLARE @to   datetime2 = '{YEAR+1}-01-01';
 DECLARE @maxMinutes int = {MAX_REPLY_MINUTES};
+DECLARE @lender   int      = {LENDER_ID};
 
 -- Warehouse-actual schema (NOT the wiki's logical view):
 --   dbo.Messages.Description is an INT enum: 0=SMS-in, 1=Email-in, 2=Call-in,
@@ -99,6 +106,7 @@ WITH inbound AS (
         END AS Channel
     FROM dbo.Messages m
     WHERE m.Description IN (0, 1)
+      AND m.LenderId = @lender
       AND m.UTCTime >= @from
       AND m.UTCTime <  @to
       AND m.ExternalAddress IS NOT NULL
@@ -116,6 +124,7 @@ SELECT
         SELECT TOP 1 DATEDIFF(MINUTE, i.UTCTime, o.UTCTime)
         FROM dbo.Messages o
         WHERE o.ExternalAddress = i.ExternalAddress
+          AND o.LenderId = @lender
           AND o.Description >= 3
           AND o.UTCTime >  i.UTCTime
           AND o.UTCTime <= DATEADD(MINUTE, @maxMinutes, i.UTCTime)
@@ -127,6 +136,7 @@ SELECT
         SELECT TOP 1 DATEDIFF(MINUTE, i.UTCTime, o.UTCTime)
         FROM dbo.Messages o
         WHERE o.ExternalAddress = i.ExternalAddress
+          AND o.LenderId = @lender
           AND o.Description >= 3
           AND o.UTCTime >  i.UTCTime
           AND o.UTCTime <= DATEADD(MINUTE, @maxMinutes, i.UTCTime)
@@ -410,6 +420,7 @@ def print_outbound_clienttype_diagnostic() -> None:
                 COUNT(*) AS n
             FROM dbo.Messages
             WHERE Description >= 3
+              AND LenderId = {LENDER_ID}
               AND UTCTime >= @from
               AND UTCTime <  @to
             GROUP BY ClientType
@@ -610,6 +621,7 @@ def sample_messages(inbounds, signed_gt, loan_history) -> dict:
                 f"""SELECT TOP 1 UTCTime, MessageBody{subj_sql_sel}, ClientType
                     FROM dbo.Messages
                     WHERE ExternalAddress = ?
+                      AND LenderId = {LENDER_ID}
                       AND Description >= 3
                       AND UTCTime >  ?
                       AND UTCTime <= DATEADD(MINUTE, ?, ?)
@@ -628,6 +640,7 @@ def sample_messages(inbounds, signed_gt, loan_history) -> dict:
                 f"""SELECT TOP 1 UTCTime, MessageBody{subj_sql_sel}, ClientType
                     FROM dbo.Messages
                     WHERE ExternalAddress = ?
+                      AND LenderId = {LENDER_ID}
                       AND Description >= 3
                       AND UTCTime >  ?
                       AND UTCTime <= DATEADD(MINUTE, ?, ?)

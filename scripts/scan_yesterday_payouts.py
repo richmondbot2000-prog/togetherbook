@@ -86,8 +86,7 @@ SELECT
 FROM dbo.LoanAtInception li
 JOIN dbo.Loan      l  ON l.LoanBookID = li.LoanBookID
 JOIN dbo.Customer  c  ON c.LoanBookID = li.LoanBookID AND c.RelationToBrw IS NULL
-JOIN dbo.Lenders   le ON le.LenderID  = l.LenderID
-WHERE le.Country = 'USA'
+WHERE l.LenderID = 6  -- Transform Credit / Together Loans only (SPEC §0.5)
   AND CAST(li.LoanAgreementDateLocal AS date) = @target
 ORDER BY c.StateCounty, c.FirstName
 """

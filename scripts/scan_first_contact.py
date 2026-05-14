@@ -103,8 +103,7 @@ SELECT
 FROM dbo.LoanAtInception li
 JOIN dbo.Loan      l  ON l.LoanBookID = li.LoanBookID
 JOIN dbo.Customer  c  ON c.LoanBookID = li.LoanBookID
-JOIN dbo.Lenders   le ON le.LenderID  = l.LenderID
-WHERE le.Country = 'USA'
+WHERE l.LenderID = 6  -- Transform Credit / Together Loans only (SPEC §0.5)
   AND CAST(li.LoanAgreementDateLocal AS date) >= @cutoff
 """
 
@@ -127,6 +126,7 @@ SELECT
   m.ExternalName
 FROM dbo.Messages m
 WHERE m.Description = 1
+  AND m.LenderId = 6  -- Transform Credit / Together Loans only (SPEC §0.5)
   AND m.UTCTime >= @cutoff
   AND m.LoanbookId IS NOT NULL
 ORDER BY m.LoanbookId, ISNULL(m.GtRef, 0), m.UTCTime ASC
