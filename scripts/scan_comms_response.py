@@ -242,6 +242,97 @@ def fetch_loan_history(loanbook_ids: set[str]) -> dict[str, list]:
     return history
 
 
+def normalise_phone(s: str) -> str:
+    """Strip everything non-digit. Use the LAST 10 digits as the lookup key
+    so a US-format Twilio +1XXXX matches a Customers.Telephones row stored
+    without country code. International numbers will need wider tooling
+    later but US-only is fine for v1."""
+    digits = "".join(c for c in (s or "") if c.isdigit())
+    return digits[-10:] if len(digits) >= 10 else digits
+
+
+def fetch_contact_to_aref() -> tuple[dict[str, str], dict[str, str]]:
+    """Build lookup maps so an ARef-less inbound can be re-identified by
+    the sender's phone or email.
+
+    Returns (phone_map, email_map). When a contact maps to multiple ARefs
+    (customer applied multiple times) we keep the lexicographically max
+    ARef — a proxy for "most recent" since ARef embeds a timestamp in its
+    leading digits. Good enough for v1; the customer's bucket is the same
+    on either application anyway in practice.
+    """
+    print("[apps] building contact -> ARef maps…", flush=True)
+    cn = pyodbc.connect(conn_str("ReportingApplications"), timeout=30)
+    phone_map: dict[str, str] = {}
+    email_map: dict[str, str] = {}
+    try:
+        cur = cn.cursor()
+        # Telephones: take the most-recent (max) ARef per normalised phone.
+        cur.execute("""
+            SELECT t.Number, c.ARef
+            FROM dbo.Telephones t
+            JOIN dbo.Customers c ON c.CustomerId = t.CustomerId
+            WHERE t.Number IS NOT NULL
+              AND c.ARef IS NOT NULL
+        """)
+        for num, aref in cur.fetchall():
+            key = normalise_phone(num)
+            if not key: continue
+            aref = (aref or "").strip()
+            if not aref: continue
+            cur_aref = phone_map.get(key)
+            if cur_aref is None or aref > cur_aref:
+                phone_map[key] = aref
+        # Emails: lowercase.
+        cur.execute("""
+            SELECT e.Email, c.ARef
+            FROM dbo.Emails e
+            JOIN dbo.Customers c ON c.CustomerId = e.CustomerId
+            WHERE e.Email IS NOT NULL
+              AND c.ARef IS NOT NULL
+        """)
+        for email, aref in cur.fetchall():
+            key = (email or "").strip().lower()
+            if not key: continue
+            aref = (aref or "").strip()
+            if not aref: continue
+            cur_aref = email_map.get(key)
+            if cur_aref is None or aref > cur_aref:
+                email_map[key] = aref
+    finally:
+        cn.close()
+    print(f"[apps] phone_map={len(phone_map)} entries, email_map={len(email_map)} entries", flush=True)
+    return phone_map, email_map
+
+
+def fetch_aref_to_loanbook() -> dict[str, str]:
+    """ARef -> latest LoanbookId. Customers in Loanbook reference their loan
+    via Loanbook.Loan.LoanbookId; we link back to the Applications ARef via
+    Loan.ARef. Take the lexicographically max LoanbookId per ARef when a
+    customer has multiple loans — bucketing uses the LATEST loan's state."""
+    print("[loanbook] building ARef -> LoanbookId map…", flush=True)
+    cn = pyodbc.connect(conn_str("ReportingLoanbook"), timeout=30)
+    aref_to_lb: dict[str, str] = {}
+    try:
+        cur = cn.cursor()
+        cur.execute("""
+            SELECT ARef, LoanbookId
+            FROM dbo.Loan
+            WHERE ARef IS NOT NULL
+              AND LoanbookId IS NOT NULL
+        """)
+        for aref, lb in cur.fetchall():
+            aref = (aref or "").strip()
+            lb = (lb or "").strip()
+            if not (aref and lb): continue
+            if lb > (aref_to_lb.get(aref) or ""):
+                aref_to_lb[aref] = lb
+    finally:
+        cn.close()
+    print(f"[loanbook] {len(aref_to_lb)} ARef -> LoanbookId mappings", flush=True)
+    return aref_to_lb
+
+
 def fetch_signed_gt(arefs: set[str]) -> set[str]:
     """Return the set of ARefs for which a guarantor was signed (ESignatures
     with GtRef NOT NULL) and not currently rejected (no active Decline / DNL /
@@ -343,6 +434,58 @@ def classify(inbound, loan_history, signed_gt_arefs) -> str:
 
 def main() -> None:
     inbounds = fetch_inbound_paired()
+
+    # AUGMENTATION: most inbounds land without an ARef on the row because the
+    # IMAP/SMS parser couldn't extract one. Look the sender's email/phone up
+    # in Applications.Customers contact tables and back-fill ARef + LoanbookId
+    # so they classify into the right bucket instead of all collapsing into
+    # 'unknown'.
+    phone_map, email_map = fetch_contact_to_aref()
+    aref_to_lb = fetch_aref_to_loanbook()
+    augmented = 0
+    # The first SQL pass didn't pull ExternalAddress (it wasn't needed for
+    # pairing). Pull it now only for ARef-less rows so we can do contact
+    # lookup without re-running the heavy CROSS APPLY.
+    print("[comms] re-fetching ExternalAddress for ARef-less inbounds…", flush=True)
+    needed_ids = [i["MessageId"] for i in inbounds if not i["ARef"]]
+    ext_by_msg: dict[int, str] = {}
+    if needed_ids:
+        cn = pyodbc.connect(conn_str("ReportingCommunications"), timeout=30)
+        try:
+            cur = cn.cursor()
+            for chunk in chunked(needed_ids, 1500):
+                ph = ",".join("?" * len(chunk))
+                cur.execute(
+                    f"SELECT MessageId, ExternalAddress FROM dbo.Messages WHERE MessageId IN ({ph})",
+                    list(chunk),
+                )
+                for mid, ext in cur.fetchall():
+                    ext_by_msg[mid] = (ext or "").strip()
+        finally:
+            cn.close()
+    print(f"[comms] got ExternalAddress for {len(ext_by_msg)} ARef-less rows", flush=True)
+
+    for ext_msg in inbounds:
+        if ext_msg["ARef"]:
+            continue
+        ext = ext_by_msg.get(ext_msg["MessageId"], "")
+        if not ext: continue
+        derived_aref = None
+        if "@" in ext:
+            derived_aref = email_map.get(ext.lower())
+        else:
+            derived_aref = phone_map.get(normalise_phone(ext))
+        if not derived_aref: continue
+        ext_msg["ARef"] = derived_aref
+        if not ext_msg["LoanbookId"]:
+            lb = aref_to_lb.get(derived_aref)
+            if lb: ext_msg["LoanbookId"] = lb
+        augmented += 1
+    print(
+        f"[augment] back-filled ARef on {augmented} of {len(needed_ids)} ARef-less "
+        f"inbounds ({(augmented*100)//max(len(needed_ids),1)}%)",
+        flush=True,
+    )
 
     loanbook_ids = {i["LoanbookId"] for i in inbounds if i["LoanbookId"]}
     arefs = {i["ARef"] for i in inbounds if i["ARef"]}
