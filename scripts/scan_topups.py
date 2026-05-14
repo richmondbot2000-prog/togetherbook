@@ -266,21 +266,31 @@ def main() -> None:
     """, [TABLE_SCHEMA])
     login_cols = {r[0] for r in cur.fetchall()}
     login_ts_col = next((c for c in ('LoginDateTimeUtc', 'LoginDateTimeUTC', 'LoginDateTimeLocal') if c in login_cols), None)
-    has_logins = bool(login_cols) and 'LoanbookId' in login_cols and login_ts_col
-    print(f"# AppLoginSuccesses: present={bool(login_cols)} ts_col={login_ts_col} usable={has_logins}", flush=True)
+    # LoanbookId casing drifts across tables — Loan_History uses 'LoanbookId'
+    # but the wiki shows AppLoginSuccesses with 'LoanBookId' (capital B).
+    # Match case-insensitively and pick whatever the column is actually
+    # called so the SQL doesn't blow up.
+    login_lb_col = next(
+        (c for c in login_cols if c.lower() == 'loanbookid'),
+        None,
+    )
+    has_logins = bool(login_cols) and login_lb_col and login_ts_col
+    print(f"# AppLoginSuccesses: present={bool(login_cols)} ts_col={login_ts_col} lb_col={login_lb_col} usable={has_logins}", flush=True)
 
     # Logins CTE: per (month, loanbook) row if the borrower logged into the
     # app at least once that month. LEFT JOINed below so absent = 0 login.
     if has_logins:
+        # Note: the JOIN aliases LoanbookId in the inner CTE so the outer
+        # join condition can match plm.LoanbookId (Loan_History casing)
+        # regardless of how AppLoginSuccesses spells its column.
         logins_cte = f""",
             logins_per_loan_month AS (
                 SELECT DISTINCT
                     DATEFROMPARTS(YEAR([{login_ts_col}]), MONTH([{login_ts_col}]), 1) AS month_start,
-                    LoanbookId
+                    [{login_lb_col}] AS LoanbookId
                 FROM [{TABLE_SCHEMA}].[AppLoginSuccesses]
                 WHERE [{login_ts_col}] >= ?
-                  AND LoanbookId IS NOT NULL
-                  AND (SuccessfulLogin IS NULL OR SuccessfulLogin = 1)
+                  AND [{login_lb_col}] IS NOT NULL
             )
         """
         logins_join = """
