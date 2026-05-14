@@ -583,10 +583,14 @@ def sample_messages(inbounds, signed_gt, loan_history) -> dict:
     cn = pyodbc.connect(conn_str("ReportingCommunications"), timeout=60)
     try:
         cur = cn.cursor()
+        # Subject lives on Messages in some warehouses but not all. Discover.
+        subj_col = pick_column(cur, "dbo", "Messages",
+                               "Subject", "MessageTitle", "MessageSubject")
+        subj_sql_sel = f", [{subj_col}]" if subj_col else ", '' AS Subject"
         # 1. Inbound rows (body + subject + ExternalAddress + UTCTime + Description)
         ph = ",".join("?" * len(msg_ids))
         cur.execute(
-            f"""SELECT MessageId, UTCTime, ExternalAddress, MessageBody, Subject, Description
+            f"""SELECT MessageId, UTCTime, ExternalAddress, MessageBody{subj_sql_sel}, Description
                 FROM dbo.Messages WHERE MessageId IN ({ph})""",
             msg_ids,
         )
@@ -599,7 +603,7 @@ def sample_messages(inbounds, signed_gt, loan_history) -> dict:
         # 2. First reply per inbound — one query each, but only 40 total.
         for mid, info in inbound_info.items():
             cur.execute(
-                """SELECT TOP 1 UTCTime, MessageBody, Subject, ClientType
+                f"""SELECT TOP 1 UTCTime, MessageBody{subj_sql_sel}, ClientType
                     FROM dbo.Messages
                     WHERE ExternalAddress = ?
                       AND Description >= 3
