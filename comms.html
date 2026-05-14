@@ -6,9 +6,9 @@
 <title>TogetherBOOK — Comms response time</title>
 <link rel="icon" type="image/png" href="site-icon.png">
 <link rel="apple-touch-icon" href="site-icon.png">
-<link rel="stylesheet" href="quiet-tokens.css?v=1778752258">
-<link rel="stylesheet" href="quiet.css?v=1778752258">
-<link rel="stylesheet" href="quiet-extras.css?v=1778752258">
+<link rel="stylesheet" href="quiet-tokens.css?v=1778755449">
+<link rel="stylesheet" href="quiet.css?v=1778755449">
+<link rel="stylesheet" href="quiet-extras.css?v=1778755449">
 <style>
   .cm-section { max-width: 1080px; margin: 0 auto; padding: 24px 0 48px; }
   @media (max-width: 800px) { .cm-section { padding: 2px 0 32px; } }
@@ -199,13 +199,22 @@
     color: var(--ink-500);
     margin-top: 2px;
   }
+  /* Bucket-coloured left border + label, matching the chart line palette. */
+  .cm-totals-card--unknown   { border-left: 4px solid #888; }
+  .cm-totals-card--applicant { border-left: 4px solid #2c6cb8; }
+  .cm-totals-card--live_loan { border-left: 4px solid #2c8a4a; }
+  .cm-totals-card--arrears   { border-left: 4px solid #c54c4c; }
+  .cm-totals-card--unknown   .lab { color: #555; }
+  .cm-totals-card--applicant .lab { color: #2c6cb8; }
+  .cm-totals-card--live_loan .lab { color: #2c8a4a; }
+  .cm-totals-card--arrears   .lab { color: #c54c4c; }
 </style>
 </head>
 <body>
 
 <header class="qb-topbar">
   <a class="qb-brand" href="index.html" aria-label="TogetherBOOK — home">
-    <img class="qb-brand-logo" src="togetherbook-logo.png?v=1778752258" alt="TogetherBOOK">
+    <img class="qb-brand-logo" src="togetherbook-logo.png?v=1778755449" alt="TogetherBOOK">
   </a>
   <button class="qb-hamburger" aria-label="Toggle navigation menu" aria-expanded="false"
           onclick="document.body.classList.toggle('nav-open');this.setAttribute('aria-expanded',document.body.classList.contains('nav-open'))">
@@ -435,7 +444,7 @@
       const total = t.n_total;
       const pct = total > 0 ? Math.round(100 * replied / total) : 0;
       cards.push(`
-        <div class="cm-totals-card">
+        <div class="cm-totals-card cm-totals-card--${bucket}">
           <div class="lab">${escapeHtml(BUCKET_LABEL[bucket])}</div>
           <div class="val">${formatNumber(total)} <span style="font-size:12px;color:var(--ink-500);">messages</span></div>
           <div class="sub">${formatNumber(replied)} got a reply within 14 d (${pct}%)</div>
