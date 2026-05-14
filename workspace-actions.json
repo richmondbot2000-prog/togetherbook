@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "updated_at": "2026-05-14T16:31:53.313Z",
+  "updated_at": "2026-05-14T16:32:02.044Z",
   "actions": [
     {
       "ts": "2026-05-13T20:27:39.210Z",
@@ -2180,6 +2180,13 @@
       "actor": "james.benamor@letme.com",
       "action": "group-delete",
       "target": "teamboh@rapida.bg",
+      "ok": true
+    },
+    {
+      "ts": "2026-05-14T16:32:02.044Z",
+      "actor": "james.benamor@letme.com",
+      "action": "group-delete",
+      "target": "reporting@rapidamoney.pl",
       "ok": true
     }
   ]
