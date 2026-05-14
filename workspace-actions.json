@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "updated_at": "2026-05-14T12:15:29.187Z",
+  "updated_at": "2026-05-14T12:49:16.121Z",
   "actions": [
     {
       "ts": "2026-05-13T20:27:39.210Z",
@@ -2111,6 +2111,13 @@
       "target": "george.roche@letme.co.uk",
       "ok": false,
       "error": "Entity already exists."
+    },
+    {
+      "ts": "2026-05-14T12:49:16.121Z",
+      "actor": "berginie.botero@togetherloans.com",
+      "action": "get-forwarding",
+      "target": "berginie.botero@togetherloans.com",
+      "ok": true
     }
   ]
 }
