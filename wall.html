@@ -6,9 +6,9 @@
 <title>TogetherBOOK — Wall</title>
 <link rel="icon" type="image/png" href="site-icon.png">
 <link rel="apple-touch-icon" href="site-icon.png">
-<link rel="stylesheet" href="quiet-tokens.css?v=1778851241">
-<link rel="stylesheet" href="quiet.css?v=1778851241">
-<link rel="stylesheet" href="quiet-extras.css?v=1778851241">
+<link rel="stylesheet" href="quiet-tokens.css?v=1778852178">
+<link rel="stylesheet" href="quiet.css?v=1778852178">
+<link rel="stylesheet" href="quiet-extras.css?v=1778852178">
 <style>
   /* 648 px column — sweet spot per editorial line-length research
      (60–75 chars per line at 15 px body). Wider feels marketing-y. */
@@ -59,7 +59,7 @@
   }
   .wl-compose-actions-left { display: flex; gap: 10px; align-items: center; }
   .wl-char-count { font: 500 11px/1 var(--font-mono); color: var(--ink-500); }
-  .wl-char-count.over { color: var(--manuscript-red); font-weight: 700; }
+  .wl-char-count.over { color: var(--red-500); font-weight: 700; }
   /* Post action — italic Newsreader text label, brass underline. Echoes
      the .qb-link-action pattern used elsewhere on the site (e.g. helper
      "see more" links). Solid coloured buttons are explicitly out of the
@@ -259,12 +259,15 @@
     -webkit-box-orient: vertical;
     overflow: hidden;
   }
+  /* See more / See less — rendered as a <button> so Tab nav reaches it. */
   .wl-see-more {
-    color: var(--teal-500); cursor: pointer; text-decoration: none;
+    background: none; border: none;
+    color: var(--teal-500); cursor: pointer;
     font: 600 14px/1.4 var(--font-display);
     display: inline-block; padding: 4px 0;
   }
   .wl-see-more:hover { text-decoration: underline; color: var(--link-hover); }
+  .wl-see-more:focus { outline: 1px solid var(--brass-500); outline-offset: 2px; }
 
   /* Reaction summary — italic Newsreader verbs as marginalia rather than
      filled emoji pills. Each verb is coloured by its semantic role
@@ -328,7 +331,7 @@
     min-height: 24px;
   }
   .wl-reaction-summary .wl-comment-count.has-new {
-    color: var(--manuscript-red); font-weight: 700;
+    color: var(--red-500); font-weight: 700;
   }
 
   /* Action bar — Like / Comment, equal-spaced, 44pt tall. No borders
@@ -553,7 +556,7 @@
     position: absolute; top: -4px; right: -14px;
     min-width: 16px; height: 16px;
     padding: 0 4px;
-    background: var(--manuscript-red);
+    background: var(--red-500);
     color: white; border-radius: 8px;
     font: 700 10px/16px var(--font-mono);
     text-align: center; box-sizing: border-box;
@@ -580,7 +583,7 @@
     content: attr(data-count);
     position: absolute; top: -4px; right: -4px;
     min-width: 18px; height: 18px;
-    background: var(--manuscript-red); color: white;
+    background: var(--red-500); color: white;
     border-radius: 9px;
     font: 700 11px/18px var(--font-mono);
     padding: 0 5px; box-sizing: border-box;
@@ -647,7 +650,7 @@
 
 <header class="qb-topbar">
   <a class="qb-brand" href="index.html" aria-label="TogetherBOOK — home">
-    <img class="qb-brand-logo" src="togetherbook-logo.png?v=1778851241" alt="TogetherBOOK">
+    <img class="qb-brand-logo" src="togetherbook-logo.png?v=1778852178" alt="TogetherBOOK">
   </a>
   <button class="qb-hamburger" aria-label="Toggle navigation menu" aria-expanded="false"
           onclick="document.body.classList.toggle('nav-open');this.setAttribute('aria-expanded',document.body.classList.contains('nav-open'))">
@@ -978,7 +981,7 @@
     }
   });
 
-  // ── GIF picker (via /api/wall/gif-search → Tenor) ─────────────────
+  // ── GIF picker (via /api/wall/gif-search → GIPHY) ─────────────────
   let gifPickerState = null;
   function openGifPicker(onPick) {
     closeGifPicker();
@@ -1088,8 +1091,8 @@
           ${canDeletePost ? `<div class="wl-post-head-actions"><button class="wl-delete-btn" data-delete-post="${escapeHtml(post.id)}" title="Delete this post" aria-label="Delete post">${icon("trash", false)}</button></div>` : ""}
         </div>
         <div class="wl-post-body${expanded || (post.body || "").length < 240 ? "" : " is-clamped"}" data-post-body="${escapeHtml(post.id)}">${bodyHtml}</div>
-        ${(post.body || "").length >= 240 && !expanded ? `<a class="wl-see-more" data-expand="${escapeHtml(post.id)}">See more</a>` : ""}
-        ${expanded && (post.body || "").length >= 240 ? `<a class="wl-see-more" data-expand="${escapeHtml(post.id)}" data-collapse="1">See less</a>` : ""}
+        ${(post.body || "").length >= 240 && !expanded ? `<button type="button" class="wl-see-more" data-expand="${escapeHtml(post.id)}">See more</button>` : ""}
+        ${expanded && (post.body || "").length >= 240 ? `<button type="button" class="wl-see-more" data-expand="${escapeHtml(post.id)}" data-collapse="1">See less</button>` : ""}
         ${photos}
         <div class="wl-reaction-summary">
           <div>${reactions}</div>
@@ -1104,7 +1107,7 @@
           </button>
           <button class="wl-action" data-toggle-comments="${escapeHtml(post.id)}">
             <span class="wl-action-icon">${icon("comment", false)}</span>
-            <span class="wl-action-label">Reply</span>
+            <span class="wl-action-label">Comment</span>
           </button>
         </div>
         <div class="wl-comment-composer">
@@ -1141,7 +1144,7 @@
       const url = mediaUrl(p);
       return isVideo
         ? `<video src="${escapeHtml(url)}" controls playsinline></video>`
-        : `<img src="${escapeHtml(url)}" alt="" loading="lazy" data-cm-open-lightbox="${escapeHtml(commentId)}::${i}">`;
+        : `<img src="${escapeHtml(url)}" alt="" loading="lazy" data-cm-open-lightbox="${escapeHtml(commentId)}::${i}" onerror="this.style.opacity=0.3;this.alt='still publishing — refresh in 30 s';">`;
     }).join("");
     return `<div class="wl-comment-photos cm-${n}">${tiles}</div>`;
   }
@@ -1177,8 +1180,10 @@
     const tiles = visible.map((p, i) => {
       const overlay = (overlayN > 0 && i === visible.length - 1)
         ? `<div class="wl-more-overlay">+${overlayN}</div>` : "";
+      // onerror dims + relabels while GitHub Pages publishes (30-60 s).
       return `<div class="wl-photo" data-open-lightbox="${escapeHtml(postId)}::${i}">
-                <img src="${escapeHtml(mediaUrl(p))}" alt="" loading="lazy">${overlay}
+                <img src="${escapeHtml(mediaUrl(p))}" alt="" loading="lazy"
+                     onerror="this.style.opacity=0.3;this.alt='still publishing — refresh in 30 s';">${overlay}
               </div>`;
     }).join("");
     return `<div class="wl-photos ${cls}">${tiles}</div>`;
@@ -1244,8 +1249,8 @@
             ${renderReactionPills(comment.reactions || {}, comment.id, "comment")}
           </div>
           <div class="wl-comment-actions">
-            <button class="wl-reply-link wl-comment-like" data-like="${escapeHtml(comment.id)}" data-kind="comment" title="Tap to ${myReaction ? "remove " + myReaction : "react " + DEFAULT_REACTION}; long-press for more">
-              ${myReaction ? myReaction + " Reacted" : "Like"}
+            <button class="wl-reply-link wl-comment-like" data-like="${escapeHtml(comment.id)}" data-kind="comment" title="Tap to ${myReaction ? "remove your reaction" : "react " + reactionLabel(DEFAULT_REACTION)}; long-press to pick a different reaction" ${myReaction ? `style="color:${reactionColor(myReaction)};"` : ""}>
+              ${myReaction ? reactionLabel(myReaction) : "Like"}
             </button>
             <button class="wl-reply-link" data-reply="${escapeHtml(replyKey)}">Reply</button>
           </div>
@@ -1351,12 +1356,15 @@
         await reactTo(el.dataset.on, el.dataset.kind, el.dataset.react);
       });
     });
-    document.querySelectorAll("[data-add-react]").forEach(el => {
-      el.addEventListener("click", (ev) => {
-        ev.stopPropagation();
-        openEmojiPicker(el, async emoji => {
-          await reactTo(el.dataset.addReact, el.dataset.kind, emoji);
-        });
+    // Avatar fallback to initials when photo 404s. Re-escape the value
+    // we read back from the attribute (getAttribute returns decoded text)
+    // so we can't be tricked into injecting HTML via a hostile name.
+    document.querySelectorAll(".wl-avatar-img").forEach(img => {
+      img.addEventListener("error", () => {
+        const init = img.getAttribute("data-fallback-initials") || "?";
+        const div = document.createElement("div");
+        div.textContent = init;
+        img.replaceWith(div);
       });
     });
     // Like buttons: tap = default reaction toggle; long-press = picker.
@@ -1369,17 +1377,6 @@
         const [pid, idxStr] = el.dataset.openLightbox.split("::");
         const post = posts.find(p => p.id === pid);
         if (post) openLightbox(post.photos || [], parseInt(idxStr, 10) || 0);
-      });
-    });
-    // Share — copy a link to the post.
-    document.querySelectorAll("[data-share]").forEach(el => {
-      el.addEventListener("click", () => {
-        const id = el.dataset.share;
-        const url = `${location.origin}${location.pathname}#post-${id}`;
-        navigator.clipboard?.writeText(url).then(
-          () => showBanner("Link copied"),
-          () => showBanner("Couldn't copy — " + url, true),
-        );
       });
     });
 
@@ -1522,10 +1519,10 @@
         root.remove();
         resolve(ans);
       };
-      const onKey = e => {
-        if (e.key === "Escape") close(false);
-        else if (e.key === "Enter") close(true);
-      };
+      // Esc closes (cancel). Enter is intentionally NOT shortcut to
+       // confirm — if the user has Tab-focused Cancel, hitting Enter should
+       // cancel; the focused button handles its own Enter natively.
+      const onKey = e => { if (e.key === "Escape") close(false); };
       document.addEventListener("keydown", onKey);
       root.addEventListener("click", e => { if (e.target === root) close(false); });
       root.querySelector(".wl-confirm-cancel").addEventListener("click", () => close(false));
@@ -1661,7 +1658,7 @@
       list.innerHTML = events.slice(0, 30).map(ev => {
         const name = displayName(ev.actor_email, ev.actor_name);
         const verb = ev.kind === "react"
-          ? `reacted ${ev.emoji} to your`
+          ? `${reactionPast(ev.emoji)} your`
           : (ev.parent_comment_id ? "replied to a comment on your" : "commented on your");
         return `<a class="wl-notif-item" href="#post-${escapeHtml(ev.post_id)}" data-jump="${escapeHtml(ev.post_id)}">
           <div><strong>${escapeHtml(name)}</strong> ${verb} post.</div>
@@ -1693,6 +1690,7 @@
     for (const post of posts) {
       if ((post.author_email || "").toLowerCase() !== viewerEmail) continue;
       const seen = lastSeenByPost[post.id] || "";
+      // Comments + replies (from other people, since the last mark-seen)
       for (const c of (post.comments || [])) {
         if ((c.author_email || "").toLowerCase() === viewerEmail) continue;
         if ((c.created_at || "") <= seen) continue;
@@ -1703,6 +1701,22 @@
           actor_email: c.author_email,
           actor_name: c.author_name,
           parent_comment_id: c.parent_comment_id || null,
+        });
+      }
+      // Reactions (from other people, additions only, since mark-seen)
+      for (const ev of (post.react_events || [])) {
+        if (ev.kind !== "added") continue;
+        if ((ev.actor_email || "").toLowerCase() === viewerEmail) continue;
+        if ((ev.at || "") <= seen) continue;
+        events.push({
+          kind: "react",
+          at: ev.at,
+          post_id: post.id,
+          actor_email: ev.actor_email,
+          actor_name: "",
+          emoji: ev.emoji,
+          target_kind: ev.target_kind,
+          target_id: ev.target_id,
         });
       }
     }
@@ -1786,10 +1800,15 @@
     return (name || "").split(/\s+/).map(p => p.charAt(0).toUpperCase()).slice(0, 2).join("") || "?";
   }
   function avatarInner(name, photoUrl) {
+    const init = initials(name);
     if (photoUrl) {
-      return `<img src="${escapeHtml(photoUrl)}" alt="" onerror="this.outerHTML='<div>${escapeHtml(initials(name))}</div>'">`;
+      // Attached error handler instead of inline onerror — inline-attribute
+      // approach syntax-errors when a name contains an apostrophe (e.g.
+      // "O'Brien" → JS unterminated string literal). wireFeed() picks
+      // these up after each render.
+      return `<img class="wl-avatar-img" src="${escapeHtml(photoUrl)}" alt="" data-fallback-initials="${escapeHtml(init)}">`;
     }
-    return `<div>${escapeHtml(initials(name))}</div>`;
+    return `<div>${escapeHtml(init)}</div>`;
   }
   // Editorial overline format: "WED, 15 MAY 2026 · 09:36" with a brass
   // middot. Wraps in <time datetime> for screen-reader semantics.

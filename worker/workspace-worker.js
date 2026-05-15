@@ -1549,17 +1549,22 @@ async function wallReact(env, viewerEmail, body) {
   let resultPostId = null;
   let resultReactions = null;
 
+  const now = new Date().toISOString();
   await updateWallJson(env, doc => {
     const posts = doc.posts || [];
+    let hostPost = null;
+    let added = false;
+
     if (kind === "post") {
       const post = posts.find(p => p.id === parentId);
       if (!post) throw new Error("post not found");
       post.reactions = post.reactions || {};
       const set = new Set((post.reactions[emoji] || []).map(e => e.toLowerCase()));
-      if (set.has(viewerEmail)) set.delete(viewerEmail);
-      else set.add(viewerEmail);
+      if (set.has(viewerEmail)) { set.delete(viewerEmail); }
+      else                      { set.add(viewerEmail); added = true; }
       if (set.size === 0) delete post.reactions[emoji];
       else post.reactions[emoji] = Array.from(set);
+      hostPost = post;
       resultPostId = post.id;
       resultReactions = post.reactions;
     } else {
@@ -1571,12 +1576,31 @@ async function wallReact(env, viewerEmail, body) {
       if (!foundComment) throw new Error("comment not found");
       foundComment.reactions = foundComment.reactions || {};
       const set = new Set((foundComment.reactions[emoji] || []).map(e => e.toLowerCase()));
-      if (set.has(viewerEmail)) set.delete(viewerEmail);
-      else set.add(viewerEmail);
+      if (set.has(viewerEmail)) { set.delete(viewerEmail); }
+      else                      { set.add(viewerEmail); added = true; }
       if (set.size === 0) delete foundComment.reactions[emoji];
       else foundComment.reactions[emoji] = Array.from(set);
+      hostPost = foundPost;
       resultPostId = foundPost.id;
       resultReactions = foundComment.reactions;
+    }
+
+    // Append a react event to the host post so the page can render this
+    // reaction in the post-author's notification feed. Removals are
+    // recorded too so we can trim the log later if needed; the page only
+    // counts additions newer than seen-at.
+    hostPost.react_events = hostPost.react_events || [];
+    hostPost.react_events.push({
+      actor_email: viewerEmail,
+      emoji,
+      target_kind: kind,
+      target_id: parentId,
+      at: now,
+      kind: added ? "added" : "removed",
+    });
+    // FIFO-trim — keep the most recent 200 events per post.
+    if (hostPost.react_events.length > 200) {
+      hostPost.react_events = hostPost.react_events.slice(-200);
     }
   }, `Wall: react ${emoji} on ${parentId} by ${viewerEmail}`);
 
@@ -1587,19 +1611,35 @@ async function wallMarkSeen(env, viewerEmail, body) {
   if (!viewerEmail) throw new Error("not authenticated");
   const at = (body.at || new Date().toISOString()).toString();
 
+  // Read wall.json to find every post the viewer authored — those are
+  // the posts whose comment/reaction events they own and want stamped
+  // as "seen up to <at>". Without this, the client's per-post
+  // lastSeenByPost map stays empty across reloads and the bell
+  // re-shows the same events forever.
+  let myPostIds = [];
+  try {
+    const wallRes = await fetch(
+      `https://raw.githubusercontent.com/${REPO}/${BRANCH}/${WALL_PATH}?_=${Date.now()}`,
+      { headers: { "User-Agent": "apifk-workspace-worker" } },
+    );
+    if (wallRes.ok) {
+      const wall = await wallRes.json();
+      myPostIds = (wall.posts || [])
+        .filter(p => (p.author_email || "").toLowerCase() === viewerEmail)
+        .map(p => p.id);
+    }
+  } catch (e) { /* fall through with empty list */ }
+
   await updateGhJson(env, WALL_SEEN_PATH, doc => {
     doc.schema_version = 1;
     doc.by_user = doc.by_user || {};
     const me = doc.by_user[viewerEmail] = doc.by_user[viewerEmail] || { posts: {} };
     me.posts = me.posts || {};
+    for (const pid of myPostIds) me.posts[pid] = at;
     me.last_marked_at = at;
-    // Best-effort: caller will pass a timestamp it considers "now"; we
-    // record it per-post the next time the page loads (page loads its
-    // own posts and patches lastSeenByPost client-side). Storing
-    // last_marked_at is enough for the read-side to compute unseen.
   }, `Wall: mark-seen by ${viewerEmail}`);
 
-  return { ok: true, at };
+  return { ok: true, at, marked: myPostIds.length };
 }
 
 /** Read → mutate → write wall.json with retry-on-409 (sha conflict). */
