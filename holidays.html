@@ -9,11 +9,11 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&family=Newsreader:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500;1,600&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="style.css?v=1778883109">
-<link rel="stylesheet" href="quiet-tokens.css?v=1778883109">
-<link rel="stylesheet" href="quiet.css?v=1778883109">
-<link rel="stylesheet" href="quiet-extras.css?v=1778883109">
-<link rel="stylesheet" href="quiet-legacy.css?v=1778883109">
+<link rel="stylesheet" href="style.css?v=1778885566">
+<link rel="stylesheet" href="quiet-tokens.css?v=1778885566">
+<link rel="stylesheet" href="quiet.css?v=1778885566">
+<link rel="stylesheet" href="quiet-extras.css?v=1778885566">
+<link rel="stylesheet" href="quiet-legacy.css?v=1778885566">
 <style>
   .hd-section { max-width: 1080px; margin: 0 auto; padding: 24px 0 48px; }
   .hd-section h1 {
@@ -151,19 +151,39 @@
   /* Status colours. Office + WFH = saturated green; non-working = grey;
      holiday + maternity = yellow; half-day variants = light green;
      sickness = red. Numbers stay readable on every background. */
-  .hd-day[data-status="office"]      { background: #c7e7b8; }
-  .hd-day[data-status="wfh"]         { background: #b7dfc9; }
-  .hd-day[data-status="non-working"] { background: #d8d8df; }
-  .hd-day[data-status="holiday"]     { background: #f3d97a; }
-  .hd-day[data-status="half-am"]     { background: linear-gradient(180deg, #e4f1cc 0 50%, #c7e7b8 50% 100%); }
-  .hd-day[data-status="half-pm"]     { background: linear-gradient(180deg, #c7e7b8 0 50%, #e4f1cc 50% 100%); }
-  .hd-day[data-status="sick"]        { background: #f5b5b5; }
-  .hd-day[data-status="maternity"]   { background: #f3d97a; }
+  /* Saturated, hue-distinct palette so two statuses can never be
+     mistaken for one another. Each hue carries semantic meaning:
+       sage  = working
+       teal  = working from home
+       slate = non-working
+       amber = paid time off
+       red   = sickness
+       mauve = maternity (deliberately a fourth hue family so it
+                doesn't blur into holiday yellow)
+       brass = approved holiday (deeper amber than `holiday`). */
+  .hd-day[data-status="office"]      { background: #6FA94A; color: #fff; }
+  .hd-day[data-status="wfh"]         { background: #2F8F87; color: #fff; }
+  .hd-day[data-status="non-working"] { background: #8B95A6; color: #fff; }
+  .hd-day[data-status="holiday"]     { background: #E8A82A; color: #fff; }
+  /* Half-day gradients: the YELLOW half is the off half. */
+  .hd-day[data-status="half-am"]     { background: linear-gradient(180deg, #E8A82A 0 50%, #6FA94A 50% 100%); color: #fff; }
+  .hd-day[data-status="half-pm"]     { background: linear-gradient(180deg, #6FA94A 0 50%, #E8A82A 50% 100%); color: #fff; }
+  .hd-day[data-status="sick"]        { background: #C0392B; color: #fff; }
+  .hd-day[data-status="maternity"]   { background: #A95C8E; color: #fff; }
   .hd-day[data-status="approved-holiday"] {
-    background: #f3d97a;
-    box-shadow: inset 0 0 0 1px #b08a18;
+    background: #B07820;
+    color: #fff;
+    box-shadow: inset 0 0 0 1px #6E4A12;
   }
-  .hd-day[data-default-bh="1"]       { background: #f3d97a; }
+  .hd-day[data-default-bh="1"]       { background: #E8A82A; color: #fff; }
+  /* On the saturated backgrounds the dark ink-900 day-number is hard
+     to read; flip both number and label to paper. */
+  .hd-day[data-status] .hd-day-num,
+  .hd-day[data-default-bh="1"] .hd-day-num { color: #FDFBF4; }
+  .hd-day[data-status] .hd-day-label,
+  .hd-day[data-default-bh="1"] .hd-day-label { color: rgba(253,251,244,0.85); }
+  .hd-day[data-status] .hd-day-month,
+  .hd-day[data-default-bh="1"] .hd-day-month { color: rgba(253,251,244,0.7); }
 
   /* Status picker — small popover anchored to the clicked day. */
   .hd-pop {
@@ -225,84 +245,103 @@
     border-bottom-color: var(--red-500, #b14040);
   }
 
-  /* Team view — one thin row per direct report, year stretched across.
-     Cells are tiny so a full 365-day year fits in a single horizontal
-     strip. The strip scrolls horizontally on narrow viewports.
-
-     Cell width: 10px so 365 cells = 3650px (scrolls).
-     Cell height: 16px (about a 10pt line height). */
+  /* Team view — one row per (report, month). Each row carries DOW
+     initials + date numbers above its status cells so a manager can
+     read e.g. "Sarah took Tue 14 Apr off" at a glance.
+     Cell width: ~22px so a 31-day month fits in ~700px. */
   .hd-team {
     margin: 0 0 24px;
-    overflow-x: auto;
-    overflow-y: visible;
-    border-top: 1px solid var(--ink-300);
-    border-bottom: 1px solid var(--ink-300);
     background: var(--paper-50, white);
   }
-  .hd-team-month-strip {
-    display: grid; grid-auto-flow: column; grid-auto-columns: 10px;
-    margin-left: 160px;
-    height: 16px;
-    font: 600 8px/1 var(--font-mono, 'JetBrains Mono', monospace);
+  .hd-team-empty {
+    padding: 18px 24px;
     color: var(--ink-500);
-    letter-spacing: 0.06em;
-    text-transform: uppercase;
+    font: italic 400 14px/1.4 var(--font-display, 'Newsreader', serif);
   }
-  .hd-team-month-strip > span {
-    border-left: 1px solid var(--ink-300);
-    padding-left: 3px;
-    align-self: end;
-    white-space: nowrap;
+  .hd-team-person {
+    border-top: 2px solid var(--ink-500);
+    padding: 10px 0 14px;
   }
-  .hd-team-row {
-    display: flex;
-    align-items: stretch;
-    border-top: 1px solid var(--ink-300);
+  .hd-team-person:first-of-type { border-top: none; }
+  .hd-team-person-head {
+    display: flex; align-items: baseline; gap: 14px;
+    padding: 0 6px 8px;
   }
-  .hd-team-row:first-of-type { border-top: none; }
-  .hd-team-name {
-    flex: 0 0 160px;
-    position: sticky; left: 0; z-index: 2;
-    background: var(--paper-50, white);
-    padding: 4px 10px;
-    border-right: 1px solid var(--ink-500);
-    display: flex; flex-direction: column; justify-content: center;
-    font: 500 11px/1.15 var(--font-display, 'Newsreader', serif);
+  .hd-team-person-name {
+    font: 600 15px/1.2 var(--font-display, 'Newsreader', serif);
     color: var(--ink-900);
   }
-  .hd-team-name .hd-team-count {
-    font: 400 9px/1 var(--font-mono, 'JetBrains Mono', monospace);
+  .hd-team-person-count {
+    font: 400 11px/1 var(--font-mono, 'JetBrains Mono', monospace);
     color: var(--ink-600);
     letter-spacing: 0.04em;
     text-transform: uppercase;
-    margin-top: 2px;
   }
-  .hd-team-strip {
+  /* One month-row = month-label column + 31-column grid (3 rows). */
+  .hd-team-month-row {
     display: grid;
-    grid-auto-flow: column;
-    grid-auto-columns: 10px;
-    height: 16px;
+    grid-template-columns: 56px 1fr;
+    align-items: stretch;
+    margin-top: 4px;
+  }
+  .hd-team-month-label {
+    padding: 12px 8px 0 0;
+    border-right: 1px solid var(--ink-300);
+    font: italic 500 12px/1.2 var(--font-display, 'Newsreader', serif);
+    color: var(--ink-700);
+    text-align: right;
+    align-self: stretch;
+  }
+  .hd-team-month-grid {
+    display: grid;
+    grid-auto-rows: 12px 14px 22px;
+    padding-left: 4px;
+  }
+  .hd-team-dow-row,
+  .hd-team-date-row,
+  .hd-team-cells-row {
+    display: grid;
+    grid-template-columns: repeat(31, minmax(0, 1fr));
+    gap: 1px;
+  }
+  .hd-team-dow {
+    font: 600 9px/1 var(--font-mono, 'JetBrains Mono', monospace);
+    color: var(--ink-500);
+    text-align: center;
+    letter-spacing: 0.02em;
+  }
+  .hd-team-dow.is-weekend { color: var(--brass-600, #A47829); }
+  .hd-team-date {
+    font: 500 10px/1 var(--font-mono, 'JetBrains Mono', monospace);
+    color: var(--ink-700);
+    text-align: center;
   }
   .hd-team-cell {
-    border-right: 1px solid rgba(0,0,0,0.04);
+    height: 22px;
     cursor: pointer;
     position: relative;
+    background: transparent;
   }
-  .hd-team-cell:hover { outline: 1px solid var(--brass-500); outline-offset: -1px; z-index: 1; }
-  .hd-team-cell[data-status="office"]      { background: #c7e7b8; }
-  .hd-team-cell[data-status="wfh"]         { background: #b7dfc9; }
-  .hd-team-cell[data-status="non-working"] { background: #d8d8df; }
-  .hd-team-cell[data-status="holiday"]     { background: #f3d97a; }
-  .hd-team-cell[data-status="half-am"]     { background: linear-gradient(180deg,#e4f1cc 0 50%,#c7e7b8 50% 100%); }
-  .hd-team-cell[data-status="half-pm"]     { background: linear-gradient(180deg,#c7e7b8 0 50%,#e4f1cc 50% 100%); }
-  .hd-team-cell[data-status="sick"]        { background: #f5b5b5; }
-  .hd-team-cell[data-status="maternity"]   { background: #f3d97a; }
+  .hd-team-cell.is-empty { cursor: default; background: transparent; }
+  .hd-team-cell:hover:not(.is-empty) {
+    outline: 2px solid var(--ink-900, #11192E); outline-offset: -2px; z-index: 1;
+  }
+  .hd-team-cell[data-status="office"]      { background: #6FA94A; }
+  .hd-team-cell[data-status="wfh"]         { background: #2F8F87; }
+  .hd-team-cell[data-status="non-working"] { background: #8B95A6; }
+  .hd-team-cell[data-status="holiday"]     { background: #E8A82A; }
+  .hd-team-cell[data-status="half-am"]     { background: linear-gradient(180deg,#E8A82A 0 50%,#6FA94A 50% 100%); }
+  .hd-team-cell[data-status="half-pm"]     { background: linear-gradient(180deg,#6FA94A 0 50%,#E8A82A 50% 100%); }
+  .hd-team-cell[data-status="sick"]        { background: #C0392B; }
+  .hd-team-cell[data-status="maternity"]   { background: #A95C8E; }
   .hd-team-cell[data-status="approved-holiday"] {
-    background: #f3d97a;
-    box-shadow: inset 0 0 0 1px #b08a18;
+    background: #B07820;
+    box-shadow: inset 0 0 0 1px #6E4A12;
   }
-  .hd-team-cell[data-default-bh="1"]       { background: #f3d97a; }
-  .hd-team-cell.is-today { box-shadow: inset 0 0 0 1px var(--red-500, #b14040); }
+  .hd-team-cell[data-default-bh="1"]       { background: #E8A82A; }
+  .hd-team-cell.is-today { box-shadow: inset 0 0 0 2px var(--ink-900, #11192E); }
+  .hd-team-cell.is-weekend-default { background: #8B95A6; opacity: 0.7; }
+  .hd-team-cell.is-bh-default      { background: #E8A82A; opacity: 0.9; }
   .hd-team-empty {
     padding: 18px 24px;
     color: var(--ink-500);
@@ -387,7 +426,7 @@
 
 <header class="qb-topbar">
   <a class="qb-brand" href="index.html" aria-label="TogetherBOOK — home">
-    <img class="qb-brand-logo" src="togetherbook-logo.png?v=1778883109" alt="TogetherBOOK">
+    <img class="qb-brand-logo" src="togetherbook-logo.png?v=1778885566" alt="TogetherBOOK">
   </a>
   <button class="qb-hamburger" aria-label="Toggle navigation menu" aria-expanded="false"
           onclick="document.body.classList.toggle('nav-open');this.setAttribute('aria-expanded',document.body.classList.contains('nav-open'))">
@@ -425,13 +464,15 @@
     </nav>
 
     <div class="hd-legend" aria-label="Status colour legend">
-      <span class="hd-legend-item"><span class="hd-legend-sw" style="background:#c7e7b8"></span>Worked at Office</span>
-      <span class="hd-legend-item"><span class="hd-legend-sw" style="background:#b7dfc9"></span>Worked From Home</span>
-      <span class="hd-legend-item"><span class="hd-legend-sw" style="background:linear-gradient(180deg,#e4f1cc 0 50%,#c7e7b8 50% 100%)"></span>Half Day AM</span>
-      <span class="hd-legend-item"><span class="hd-legend-sw" style="background:linear-gradient(180deg,#c7e7b8 0 50%,#e4f1cc 50% 100%)"></span>Half Day PM</span>
-      <span class="hd-legend-item"><span class="hd-legend-sw" style="background:#f3d97a"></span>Paid Holiday / Maternity</span>
-      <span class="hd-legend-item"><span class="hd-legend-sw" style="background:#d8d8df"></span>Non-working</span>
-      <span class="hd-legend-item"><span class="hd-legend-sw" style="background:#f5b5b5"></span>Sickness</span>
+      <span class="hd-legend-item"><span class="hd-legend-sw" style="background:#6FA94A"></span>Worked at Office</span>
+      <span class="hd-legend-item"><span class="hd-legend-sw" style="background:#2F8F87"></span>Worked From Home</span>
+      <span class="hd-legend-item"><span class="hd-legend-sw" style="background:linear-gradient(180deg,#E8A82A 0 50%,#6FA94A 50% 100%)"></span>Half Day AM</span>
+      <span class="hd-legend-item"><span class="hd-legend-sw" style="background:linear-gradient(180deg,#6FA94A 0 50%,#E8A82A 50% 100%)"></span>Half Day PM</span>
+      <span class="hd-legend-item"><span class="hd-legend-sw" style="background:#E8A82A"></span>Paid Holiday</span>
+      <span class="hd-legend-item"><span class="hd-legend-sw" style="background:#B07820;box-shadow:inset 0 0 0 1px #6E4A12"></span>Approved Holiday</span>
+      <span class="hd-legend-item"><span class="hd-legend-sw" style="background:#A95C8E"></span>Maternity</span>
+      <span class="hd-legend-item"><span class="hd-legend-sw" style="background:#8B95A6"></span>Non-working</span>
+      <span class="hd-legend-item"><span class="hd-legend-sw" style="background:#C0392B"></span>Sickness</span>
     </div>
 
     <div id="hdOwnView">
@@ -466,19 +507,16 @@
   // Status table. Stored under data-status; popover uses the same keys.
   // The order here is the order they appear in the popover.
   const STATUSES = [
-    { key: "office",      label: "Worked at Office",  swatch: "#c7e7b8" },
-    { key: "wfh",         label: "Worked from Home",  swatch: "#b7dfc9" },
-    { key: "half-am",     label: "Half Day – Morning",   swatch: "linear-gradient(180deg,#e4f1cc 0 50%,#c7e7b8 50% 100%)" },
-    { key: "half-pm",     label: "Half Day – Afternoon", swatch: "linear-gradient(180deg,#c7e7b8 0 50%,#e4f1cc 50% 100%)" },
-    { key: "holiday",     label: "Paid Holiday",      swatch: "#f3d97a" },
-    // "approved-holiday" is appended dynamically when the viewer is a
-    // line manager / admin acting on a direct report's day. Visually
-    // yellow, but borders are darker to differentiate from "holiday".
-    { key: "sick",        label: "Sickness",          swatch: "#f5b5b5" },
-    { key: "maternity",   label: "Maternity",         swatch: "#f3d97a" },
-    { key: "non-working", label: "Non-Working",       swatch: "#d8d8df" },
+    { key: "office",      label: "Worked at Office",     swatch: "#6FA94A" },
+    { key: "wfh",         label: "Worked from Home",     swatch: "#2F8F87" },
+    { key: "half-am",     label: "Half Day – Morning",   swatch: "linear-gradient(180deg,#E8A82A 0 50%,#6FA94A 50% 100%)" },
+    { key: "half-pm",     label: "Half Day – Afternoon", swatch: "linear-gradient(180deg,#6FA94A 0 50%,#E8A82A 50% 100%)" },
+    { key: "holiday",     label: "Paid Holiday",         swatch: "#E8A82A" },
+    { key: "sick",        label: "Sickness",             swatch: "#C0392B" },
+    { key: "maternity",   label: "Maternity",            swatch: "#A95C8E" },
+    { key: "non-working", label: "Non-Working",          swatch: "#8B95A6" },
   ];
-  const APPROVED_HOLIDAY = { key: "approved-holiday", label: "Approved Holiday", swatch: "#f3d97a", managerOnly: true };
+  const APPROVED_HOLIDAY = { key: "approved-holiday", label: "Approved Holiday", swatch: "#B07820", managerOnly: true };
   const STATUS_LABEL = Object.fromEntries(
     [...STATUSES, APPROVED_HOLIDAY].map(s => [s.key, s.label])
   );
@@ -747,6 +785,12 @@
   // cells × however many days are in the visible fiscal year. The strip
   // scrolls horizontally; a sticky name column on the left keeps the
   // report identifiable while panning.
+  // Team view — for each direct report, render 12 month-rows (one
+  // per calendar month spanned by the fiscal year). Each row carries
+  // DOW initials + date numbers above the status cells so a manager
+  // can identify a specific day by inspection. Grid is fixed at 31
+  // columns; months with fewer days leave the trailing cells empty
+  // so all rows align horizontally.
   function renderTeam() {
     const root = document.getElementById("hdTeam");
     root.innerHTML = "";
@@ -754,77 +798,140 @@
       root.innerHTML = `<div class="hd-team-empty">You have no direct reports on file. Have admins set you as someone's line manager on the Directory page.</div>`;
       return;
     }
-    // Enumerate all days in the fiscal year (yearStart..yearEnd).
-    const days = [];
-    for (const d of iterDates(yearStart, yearEnd)) days.push(d);
-    // Header strip — month labels at the start of each month.
-    const monthStrip = document.createElement("div");
-    monthStrip.className = "hd-team-month-strip";
-    monthStrip.style.gridAutoColumns = "10px";
-    monthStrip.style.gridTemplateColumns = `repeat(${days.length}, 10px)`;
-    for (let i = 0; i < days.length; i++) {
-      const cell = document.createElement("span");
-      const isFirst = (days[i].getDate() === 1) || (i === 0);
-      cell.textContent = isFirst ? days[i].toLocaleDateString("en-GB", { month: "short" }).toUpperCase() : "";
-      if (!isFirst) cell.style.borderLeft = "none";
-      monthStrip.appendChild(cell);
+    // List of months covered by the fiscal year. yearStart is 1 Apr,
+    // yearEnd is 31 Mar → 12 months. Build by stepping by month.
+    const months = [];
+    {
+      let y = yearStart.getFullYear(), m = yearStart.getMonth();
+      const endY = yearEnd.getFullYear(), endM = yearEnd.getMonth();
+      while (y < endY || (y === endY && m <= endM)) {
+        months.push({ year: y, month: m });
+        m++;
+        if (m > 11) { m = 0; y++; }
+      }
     }
-    root.appendChild(monthStrip);
 
-    // Sort reports by full name from staff.json.
     const reports = [...directReports]
       .map(e => ({ email: e, user: staffByEmail[e] || { email: e, name: e } }))
       .sort((a, b) => (a.user.name || a.email).localeCompare(b.user.name || b.email));
 
     const todayIso = isoDate(new Date());
+    const DOW_LETTERS = ["S","M","T","W","T","F","S"];
 
     for (const r of reports) {
-      const row = document.createElement("div");
-      row.className = "hd-team-row";
-      row.dataset.email = r.email;
+      const person = document.createElement("div");
+      person.className = "hd-team-person";
+      person.dataset.email = r.email;
 
-      const nameCell = document.createElement("div");
-      nameCell.className = "hd-team-name";
+      const head = document.createElement("div");
+      head.className = "hd-team-person-head";
       const hcount = countHolidayDays(r.email);
-      nameCell.innerHTML = `
-        <span>${escapeHtml(r.user.name || r.email)}</span>
-        <span class="hd-team-count">${hcount} holiday day${hcount === 1 ? "" : "s"}</span>`;
-      row.appendChild(nameCell);
+      head.innerHTML = `
+        <span class="hd-team-person-name">${escapeHtml(r.user.name || r.email)}</span>
+        <span class="hd-team-person-count">${hcount} holiday day${hcount === 1 ? "" : "s"}</span>`;
+      person.appendChild(head);
 
-      const strip = document.createElement("div");
-      strip.className = "hd-team-strip";
-      strip.style.gridTemplateColumns = `repeat(${days.length}, 10px)`;
       const dayMap = ((holidaysDoc.by_user || {})[r.email] || {}).days || {};
-      for (const d of days) {
-        const iso = isoDate(d);
-        const cell = document.createElement("div");
-        cell.className = "hd-team-cell";
-        cell.dataset.date = iso;
-        cell.title = `${r.user.name || r.email} · ${d.toLocaleDateString("en-GB", { weekday: "short", day: "numeric", month: "short" })}`;
-        const stored = dayMap[iso];
-        const dow = d.getDay();
-        const isWeekend = (dow === 0 || dow === 6);
-        const isBh = UK_BANK_HOLIDAYS.has(iso);
-        if (stored) {
-          cell.dataset.status = stored;
-          cell.title += ` · ${STATUS_LABEL[stored] || stored}`;
-        } else if (isWeekend) {
-          cell.dataset.status = "non-working";
-        } else if (isBh) {
-          cell.dataset.defaultBh = "1";
-          cell.title += " · Bank Holiday";
-        } else {
-          cell.dataset.status = "office";
+
+      for (const mm of months) {
+        const monthLabel = new Date(mm.year, mm.month, 1).toLocaleDateString("en-GB", { month: "short", year: "numeric" });
+        const daysInMonth = new Date(mm.year, mm.month + 1, 0).getDate();
+
+        const row = document.createElement("div");
+        row.className = "hd-team-month-row";
+
+        const lab = document.createElement("div");
+        lab.className = "hd-team-month-label";
+        lab.textContent = monthLabel;
+        row.appendChild(lab);
+
+        const grid = document.createElement("div");
+        grid.className = "hd-team-month-grid";
+
+        // Sub-row 1 — DOW initials
+        const dowRow = document.createElement("div");
+        dowRow.className = "hd-team-dow-row";
+        for (let i = 0; i < 31; i++) {
+          const cell = document.createElement("div");
+          cell.className = "hd-team-dow";
+          if (i < daysInMonth) {
+            const d = new Date(mm.year, mm.month, i + 1);
+            const dow = d.getDay();
+            cell.textContent = DOW_LETTERS[dow];
+            if (dow === 0 || dow === 6) cell.classList.add("is-weekend");
+          }
+          dowRow.appendChild(cell);
         }
-        if (iso === todayIso) cell.classList.add("is-today");
-        cell.addEventListener("click", e => {
-          e.stopPropagation();
-          openTeamPicker(cell, d, r.email);
-        });
-        strip.appendChild(cell);
+        grid.appendChild(dowRow);
+
+        // Sub-row 2 — date numbers
+        const dateRow = document.createElement("div");
+        dateRow.className = "hd-team-date-row";
+        for (let i = 0; i < 31; i++) {
+          const cell = document.createElement("div");
+          cell.className = "hd-team-date";
+          if (i < daysInMonth) cell.textContent = String(i + 1);
+          dateRow.appendChild(cell);
+        }
+        grid.appendChild(dateRow);
+
+        // Sub-row 3 — status cells
+        const cellsRow = document.createElement("div");
+        cellsRow.className = "hd-team-cells-row";
+        for (let i = 0; i < 31; i++) {
+          const cell = document.createElement("div");
+          cell.className = "hd-team-cell";
+          if (i >= daysInMonth) {
+            cell.classList.add("is-empty");
+            cellsRow.appendChild(cell);
+            continue;
+          }
+          const d = new Date(mm.year, mm.month, i + 1);
+          const iso = isoDate(d);
+          // Some early-April or late-March cells may fall outside the
+          // fiscal window (the year starts mid-week containing 1 Apr);
+          // those are still part of the calendar month so we render
+          // them as out-of-year empties.
+          const inYear = (d >= yearStart && d <= yearEnd);
+          if (!inYear) {
+            cell.classList.add("is-empty");
+            cell.title = d.toLocaleDateString("en-GB", { weekday: "short", day: "numeric", month: "short", year: "numeric" }) + " — outside fiscal year";
+            cellsRow.appendChild(cell);
+            continue;
+          }
+          cell.dataset.date = iso;
+          const stored = dayMap[iso];
+          const dow = d.getDay();
+          const isWeekend = (dow === 0 || dow === 6);
+          const isBh = UK_BANK_HOLIDAYS.has(iso);
+          if (stored) {
+            cell.dataset.status = stored;
+          } else if (isWeekend) {
+            cell.classList.add("is-weekend-default");
+          } else if (isBh) {
+            cell.classList.add("is-bh-default");
+            cell.dataset.defaultBh = "1";
+          } else {
+            cell.dataset.status = "office";
+          }
+          if (iso === todayIso) cell.classList.add("is-today");
+          const human = d.toLocaleDateString("en-GB", { weekday: "short", day: "numeric", month: "short" });
+          cell.title = `${r.user.name || r.email} · ${human}` +
+            (stored ? ` · ${STATUS_LABEL[stored] || stored}` :
+              (isBh ? " · UK Bank Holiday" :
+                (isWeekend ? " · Weekend" : "")));
+          cell.addEventListener("click", e => {
+            e.stopPropagation();
+            openTeamPicker(cell, d, r.email);
+          });
+          cellsRow.appendChild(cell);
+        }
+        grid.appendChild(cellsRow);
+
+        row.appendChild(grid);
+        person.appendChild(row);
       }
-      row.appendChild(strip);
-      root.appendChild(row);
+      root.appendChild(person);
     }
   }
 
@@ -1035,7 +1142,7 @@
     // Optimistic repaint: in own view there's a hd-day cell; in team
     // view it's a hd-team-cell within a row keyed by email.
     const ownCell = (target === selectedEmail) ? document.querySelector(`.hd-day[data-date="${iso}"]`) : null;
-    const teamCell = document.querySelector(`.hd-team-row[data-email="${target}"] .hd-team-cell[data-date="${iso}"]`);
+    const teamCell = document.querySelector(`.hd-team-person[data-email="${target}"] .hd-team-cell[data-date="${iso}"]`);
     if (ownCell) repaintCell(ownCell);
     if (teamCell) repaintTeamCell(teamCell, target);
     renderHeader();
@@ -1060,7 +1167,7 @@
       // row's count label optimistically (the strip itself is already
       // repainted above).
       if (currentView === "team") {
-        const row = document.querySelector(`.hd-team-row[data-email="${target}"] .hd-team-count`);
+        const row = document.querySelector(`.hd-team-person[data-email="${target}"] .hd-team-person-count`);
         if (row) {
           const n = countHolidayDays(target);
           row.textContent = `${n} holiday day${n === 1 ? "" : "s"}`;
@@ -1091,10 +1198,17 @@
     const isBh = UK_BANK_HOLIDAYS.has(iso);
     cell.removeAttribute("data-status");
     cell.removeAttribute("data-default-bh");
-    if (stored) cell.dataset.status = stored;
-    else if (isWeekend) cell.dataset.status = "non-working";
-    else if (isBh) cell.dataset.defaultBh = "1";
-    else cell.dataset.status = "office";
+    cell.classList.remove("is-weekend-default", "is-bh-default");
+    if (stored) {
+      cell.dataset.status = stored;
+    } else if (isWeekend) {
+      cell.classList.add("is-weekend-default");
+    } else if (isBh) {
+      cell.classList.add("is-bh-default");
+      cell.dataset.defaultBh = "1";
+    } else {
+      cell.dataset.status = "office";
+    }
   }
   function ensureUserMap(email) {
     holidaysDoc.by_user = holidaysDoc.by_user || {};
