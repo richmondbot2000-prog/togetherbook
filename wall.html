@@ -6,9 +6,9 @@
 <title>TogetherBOOK — Wall</title>
 <link rel="icon" type="image/png" href="site-icon.png">
 <link rel="apple-touch-icon" href="site-icon.png">
-<link rel="stylesheet" href="quiet-tokens.css?v=1778852742">
-<link rel="stylesheet" href="quiet.css?v=1778852742">
-<link rel="stylesheet" href="quiet-extras.css?v=1778852742">
+<link rel="stylesheet" href="quiet-tokens.css?v=1778854105">
+<link rel="stylesheet" href="quiet.css?v=1778854105">
+<link rel="stylesheet" href="quiet-extras.css?v=1778854105">
 <style>
   /* 648 px column — sweet spot per editorial line-length research
      (60–75 chars per line at 15 px body). Wider feels marketing-y. */
@@ -173,17 +173,24 @@
   .wl-gif-head input:focus { outline: 2px solid var(--ink-700); border-color: var(--ink-700); }
   .wl-gif-close { background: none; border: none; cursor: pointer; padding: 6px; color: var(--ink-700); }
   .wl-gif-close:hover { color: var(--ink-900); }
+  /* CSS-columns masonry — each GIF shows in its natural aspect ratio,
+     packed by the browser into 3 columns (2 on mobile). The container
+     scrolls vertically. No more square crop / top-30% slice. */
   .wl-gif-grid {
     flex: 1 1 auto; overflow-y: auto;
-    display: grid; grid-template-columns: 1fr 1fr 1fr;
-    gap: 4px; padding: 10px;
+    column-count: 3; column-gap: 4px;
+    padding: 10px;
   }
   .wl-gif-tile {
+    display: block;
     cursor: pointer; background: var(--paper-100); overflow: hidden;
     border: 1px solid var(--paper-300);
-    border-radius: 3px; aspect-ratio: 1 / 1;
+    border-radius: 3px;
+    margin-bottom: 4px;
+    break-inside: avoid;
+    width: 100%;
   }
-  .wl-gif-tile img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .wl-gif-tile img { width: 100%; height: auto; display: block; }
   .wl-gif-tile:hover { border-color: var(--brass-500); }
   .wl-gif-attribution {
     padding: 6px 14px;
@@ -192,7 +199,7 @@
     border-top: 1px solid var(--divider);
   }
   @media (max-width: 480px) {
-    .wl-gif-grid { grid-template-columns: 1fr 1fr; }
+    .wl-gif-grid { column-count: 2; }
   }
 
   /* Avatars — circular medallion with a 1 px brass ring (echoes the
@@ -650,7 +657,7 @@
 
 <header class="qb-topbar">
   <a class="qb-brand" href="index.html" aria-label="TogetherBOOK — home">
-    <img class="qb-brand-logo" src="togetherbook-logo.png?v=1778852742" alt="TogetherBOOK">
+    <img class="qb-brand-logo" src="togetherbook-logo.png?v=1778854105" alt="TogetherBOOK">
   </a>
   <button class="qb-hamburger" aria-label="Toggle navigation menu" aria-expanded="false"
           onclick="document.body.classList.toggle('nav-open');this.setAttribute('aria-expanded',document.body.classList.contains('nav-open'))">
