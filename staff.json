@@ -1,7 +1,7 @@
 {
   "schema_version": 2,
-  "updated_at": "2026-05-14T10:14:28.874511Z",
-  "snapshot_date": "2026-05-14",
+  "updated_at": "2026-05-15T08:31:06.554110Z",
+  "snapshot_date": "2026-05-15",
   "domain": "letme.co.uk",
   "tenants": [
     {
@@ -9,7 +9,7 @@
       "domain": "letme.co.uk",
       "delegate": "james.benamor@letme.co.uk",
       "users": 66,
-      "suspended_hidden": 3,
+      "suspended_hidden": 0,
       "error": null
     },
     {
@@ -23,7 +23,7 @@
   ],
   "totals": {
     "users": 194,
-    "suspended_hidden": 4,
+    "suspended_hidden": 1,
     "by_department": {
       "(unspecified)": 194
     },
@@ -224,20 +224,10 @@
     },
     {
       "id": "114290408268659127125",
-      "email": "autobots@rapida.bg",
-      "aliases": [
-        "rapida.collections@mail.rapida.bg",
-        "rapida.collections@rapida.bg",
-        "rapida.payout@mail.rapida.bg",
-        "rapida.payout@rapida.bg"
-      ],
-      "aliases_editable": [
-        "rapida.collections@mail.rapida.bg",
-        "rapida.collections@rapida.bg",
-        "rapida.payout@mail.rapida.bg",
-        "rapida.payout@rapida.bg"
-      ],
-      "name": "Bulgaria Autobots",
+      "email": "autobots.parked.1778797190@rapida.bg",
+      "aliases": [],
+      "aliases_editable": [],
+      "name": "",
       "given": "Bulgaria",
       "family": "Autobots",
       "title": "",
@@ -245,7 +235,7 @@
       "photo_url": "",
       "suspended": false,
       "admin": false,
-      "deletion_time": "",
+      "deletion_time": "2026-05-14T22:19:51.000Z",
       "last_login": "2022-02-10T18:15:12.000Z",
       "tenant": "letme.co.uk",
       "tenants": [
@@ -454,7 +444,7 @@
       "suspended": false,
       "admin": true,
       "deletion_time": "",
-      "last_login": "2026-05-13T20:16:54.000Z",
+      "last_login": "2026-05-14T12:55:39.000Z",
       "tenant": "letme.co.uk",
       "tenants": [
         "letme.co.uk"
@@ -595,7 +585,7 @@
       "email": "lucas.bishop@togetherloans.com",
       "aliases": [],
       "aliases_editable": [],
-      "name": "Lucas Bishop",
+      "name": "",
       "given": "Lucas",
       "family": "Bishop",
       "title": "",
@@ -603,8 +593,8 @@
       "photo_url": "",
       "suspended": false,
       "admin": false,
-      "deletion_time": "",
-      "last_login": "2026-05-11T13:06:15.000Z",
+      "deletion_time": "2026-05-14T17:07:32.000Z",
+      "last_login": "2026-05-14T13:15:11.000Z",
       "tenant": "togetherloans",
       "tenants": [
         "togetherloans"
@@ -743,10 +733,10 @@
       "title": "",
       "department": "",
       "photo_url": "",
-      "suspended": true,
+      "suspended": false,
       "admin": false,
       "deletion_time": "",
-      "last_login": "2026-03-26T14:57:22.000Z",
+      "last_login": "2026-05-14T10:30:00.000Z",
       "tenant": "letme.co.uk",
       "tenants": [
         "letme.co.uk"
@@ -947,7 +937,7 @@
       "suspended": false,
       "admin": false,
       "deletion_time": "",
-      "last_login": "2026-05-04T09:21:35.000Z",
+      "last_login": "2026-05-12T08:11:19.000Z",
       "tenant": "letme.co.uk",
       "tenants": [
         "letme.co.uk"
@@ -1063,7 +1053,7 @@
       "suspended": false,
       "admin": false,
       "deletion_time": "",
-      "last_login": "2026-05-14T08:37:37.000Z",
+      "last_login": "2026-05-14T15:55:34.000Z",
       "tenant": "letme.co.uk",
       "tenants": [
         "letme.co.uk"
@@ -1570,10 +1560,10 @@
       "title": "",
       "department": "",
       "photo_url": "",
-      "suspended": true,
+      "suspended": false,
       "admin": false,
       "deletion_time": "",
-      "last_login": "2026-04-17T19:34:12.000Z",
+      "last_login": "2026-05-14T10:46:32.000Z",
       "tenant": "letme.co.uk",
       "tenants": [
         "letme.co.uk"
@@ -1892,10 +1882,10 @@
       "title": "",
       "department": "",
       "photo_url": "",
-      "suspended": true,
+      "suspended": false,
       "admin": false,
       "deletion_time": "",
-      "last_login": "2026-04-07T05:11:16.000Z",
+      "last_login": "2026-05-14T10:25:30.000Z",
       "tenant": "letme.co.uk",
       "tenants": [
         "letme.co.uk"
@@ -2014,7 +2004,7 @@
       "email": "candi.holland@togetherloans.com",
       "aliases": [],
       "aliases_editable": [],
-      "name": "Candice Holland",
+      "name": "",
       "given": "Candice",
       "family": "Holland",
       "title": "",
@@ -2022,8 +2012,8 @@
       "photo_url": "",
       "suspended": false,
       "admin": false,
-      "deletion_time": "",
-      "last_login": "2026-04-30T01:30:36.000Z",
+      "deletion_time": "2026-05-14T16:05:15.000Z",
+      "last_login": "2026-05-13T12:34:54.000Z",
       "tenant": "togetherloans",
       "tenants": [
         "togetherloans"
@@ -2191,7 +2181,7 @@
       "suspended": false,
       "admin": false,
       "deletion_time": "",
-      "last_login": "2026-05-14T08:41:37.000Z",
+      "last_login": "2026-05-14T14:07:48.000Z",
       "tenant": "letme.co.uk",
       "tenants": [
         "letme.co.uk"
@@ -2996,7 +2986,7 @@
       "suspended": false,
       "admin": false,
       "deletion_time": "",
-      "last_login": "2026-05-11T13:27:41.000Z",
+      "last_login": "2026-05-14T12:59:03.000Z",
       "tenant": "togetherloans",
       "tenants": [
         "togetherloans"
@@ -3484,9 +3474,23 @@
     {
       "id": "105860758388691187197",
       "email": "george.roche.parked.1778681073@letme.co.uk",
-      "aliases": [],
-      "aliases_editable": [],
-      "name": "",
+      "aliases": [
+        "george.roche.parked.1778681073@grenwich-clearloans.com",
+        "george.roche.parked.1778681073@mail.amigohome.co.uk",
+        "george.roche.parked.1778681073@mail.letme.co.uk",
+        "george.roche.parked.1778681073@rgroup.co.uk",
+        "george.roche@grenwich-clearloans.com",
+        "george.roche@letme.co.uk",
+        "george.roche@letme.com",
+        "george.roche@mail.amigohome.co.uk",
+        "george.roche@mail.letme.co.uk",
+        "george.roche@rgroup.co.uk"
+      ],
+      "aliases_editable": [
+        "george.roche@letme.co.uk",
+        "george.roche@letme.com"
+      ],
+      "name": "George Roche",
       "given": "George",
       "family": "Roche",
       "title": "",
@@ -3494,7 +3498,7 @@
       "photo_url": "",
       "suspended": false,
       "admin": false,
-      "deletion_time": "2026-05-13T14:04:36.000Z",
+      "deletion_time": "",
       "last_login": "2026-05-12T08:45:22.000Z",
       "tenant": "letme.co.uk",
       "tenants": [
@@ -4360,17 +4364,9 @@
     {
       "id": "114352222652755540625",
       "email": "matthew.wood@letme.co.uk",
-      "aliases": [
-        "matthew.wood@grenwich-clearloans.com",
-        "matthew.wood@letme.com",
-        "matthew.wood@mail.amigohome.co.uk",
-        "matthew.wood@mail.letme.co.uk",
-        "matthew.wood@rgroup.co.uk"
-      ],
-      "aliases_editable": [
-        "matthew.wood@letme.com"
-      ],
-      "name": "matthew wood",
+      "aliases": [],
+      "aliases_editable": [],
+      "name": "",
       "given": "matthew",
       "family": "wood",
       "title": "",
@@ -4378,8 +4374,8 @@
       "photo_url": "",
       "suspended": false,
       "admin": false,
-      "deletion_time": "",
-      "last_login": "2026-04-26T20:56:13.000Z",
+      "deletion_time": "2026-05-14T16:36:42.000Z",
+      "last_login": "2026-05-14T10:34:15.000Z",
       "tenant": "letme.co.uk",
       "tenants": [
         "letme.co.uk"
