@@ -9,11 +9,11 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&family=Orbitron:wght@500;600;700;800&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="style.css?v=1778878703">
-<link rel="stylesheet" href="quiet-tokens.css?v=1778878703">
-<link rel="stylesheet" href="quiet.css?v=1778878703">
-<link rel="stylesheet" href="quiet-extras.css?v=1778878703">
-<link rel="stylesheet" href="quiet-legacy.css?v=1778878703">
+<link rel="stylesheet" href="style.css?v=1778878840">
+<link rel="stylesheet" href="quiet-tokens.css?v=1778878840">
+<link rel="stylesheet" href="quiet.css?v=1778878840">
+<link rel="stylesheet" href="quiet-extras.css?v=1778878840">
+<link rel="stylesheet" href="quiet-legacy.css?v=1778878840">
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
       integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
       crossorigin="">
@@ -249,7 +249,7 @@
 
 <header class="qb-topbar">
   <a class="qb-brand" href="index.html" aria-label="TogetherBOOK — home">
-    <img class="qb-brand-logo" src="togetherbook-logo.png?v=1778878703" alt="TogetherBOOK">
+    <img class="qb-brand-logo" src="togetherbook-logo.png?v=1778878840" alt="TogetherBOOK">
   </a>
   <button class="qb-hamburger" aria-label="Toggle navigation menu" aria-expanded="false"
           onclick="document.body.classList.toggle('nav-open');this.setAttribute('aria-expanded',document.body.classList.contains('nav-open'))">
@@ -535,6 +535,9 @@
       // caption carries a toggle link that swaps the map between
       // absolute dollars and $-per-state-resident.
       content.innerHTML = `
+        <p class="yp-map-caption">Where the borrowers are</p>
+        <div class="yp-map" id="ypMap"></div>
+
         <p class="yp-map-caption has-toggle" id="ypTotalCaption">
           <span id="ypTotalCaptionText">Total paid out by state</span>
           <button type="button" class="yp-map-toggle" id="ypTotalToggle">show $ per person of state population</button>
@@ -700,6 +703,11 @@
       `${n.toLocaleString('en-GB')} borrowers · ${fmtUSD0.format(total)} paid out · last refreshed ${updated}`;
     lastYearByState = data.by_state;
     yearTotalMode = 'total';
+    // The Year payload also carries per-borrower items[] for the same
+    // "Where The Borrowers Are" pin map that Yesterday + Last Week
+    // show. The aggregates below (state maps, monthly chart, summary
+    // cards) come from by_state[] / by_month[].
+    try { renderMap(data.items || []); }             catch (e) { console.error('pin map (year) failed', e); }
     try { renderStateMapFromAgg(data.by_state); }    catch (e) { console.error('state map (agg) failed', e); }
     try { renderMonthlyBars(data.by_month); }        catch (e) { console.error('monthly bars failed', e); }
     try { renderAvgStateMapFromAgg(data.by_state); } catch (e) { console.error('avg state map (agg) failed', e); }

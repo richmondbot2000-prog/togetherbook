@@ -98,8 +98,8 @@ WHERE l.LenderID = 6
 ORDER BY c.StateCounty, c.FirstName
 """
 
-# Aggregated (used by the Year dataset). Two SELECTs in one batch — pyodbc's
-# nextset() pulls the second result set.
+# Aggregated + per-borrower (used by the Year dataset). Four SELECTs in
+# one batch — pyodbc's nextset() walks the result sets.
 YEAR_QUERY = """
 DECLARE @first_of_this_month date = DATEFROMPARTS(YEAR(GETDATE()), MONTH(GETDATE()), 1);
 DECLARE @last_of_last_month  date = DATEADD(day, -1, @first_of_this_month);
@@ -144,7 +144,24 @@ FROM dbo.LoanAtInception li
 JOIN dbo.Loan      l  ON l.LoanBookID = li.LoanBookID
 JOIN dbo.Customer  c  ON c.LoanBookID = li.LoanBookID AND c.RelationToBrw IS NULL
 WHERE l.LenderID = 6
+  AND CAST(li.LoanAgreementDateLocal AS date) BETWEEN @year_start AND @last_of_last_month;
+
+-- per-borrower rows — feeds the same "Where The Borrowers Are" pin
+-- map the Yesterday + Last Week views use. ~50k rows / year; the
+-- gzipped wire payload is ~2 MB and MarkerCluster handles 50k pins
+-- without breaking a sweat.
+SELECT
+  c.FirstName              AS first_name,
+  c.StateCounty            AS state,
+  c.Postcode               AS zip,
+  li.LoanAmountAtInception AS amount,
+  CAST(li.LoanAgreementDateLocal AS date) AS payout_date
+FROM dbo.LoanAtInception li
+JOIN dbo.Loan      l  ON l.LoanBookID = li.LoanBookID
+JOIN dbo.Customer  c  ON c.LoanBookID = li.LoanBookID AND c.RelationToBrw IS NULL
+WHERE l.LenderID = 6
   AND CAST(li.LoanAgreementDateLocal AS date) BETWEEN @year_start AND @last_of_last_month
+ORDER BY c.StateCounty, c.FirstName
 """
 
 
@@ -178,7 +195,7 @@ def fetch_week(cur, zip_lookup, started):
     }
 
 
-def fetch_year(cur, started):
+def fetch_year(cur, zip_lookup, started):
     cur.execute(YEAR_QUERY)
 
     # Result set 1: per-state
@@ -219,6 +236,23 @@ def fetch_year(cur, started):
         if summary_row[4]: range_from = summary_row[4].isoformat()
         if summary_row[5]: range_to   = summary_row[5].isoformat()
 
+    # Result set 4: per-borrower rows for the pin map
+    if not cur.nextset():
+        raise RuntimeError("year query: missing 4th result set (items)")
+    items = []
+    for first_name, state, zipcode, amount, _payout_date in cur.fetchall():
+        z5 = (zipcode or "").strip()[:5].zfill(5) if (zipcode or "").strip() else ""
+        info = zip_lookup.get(z5)
+        items.append({
+            "first_name": (first_name or "").strip(),
+            "state":      (state or "").strip(),
+            "city":       info["city"]   if info else None,
+            "county":     info["county"] if info else None,
+            "amount":     float(amount) if amount is not None else 0.0,
+            "lat":        info["lat"]    if info else None,
+            "lng":        info["lng"]    if info else None,
+        })
+
     return {
         "schema_version": 1,
         "updated_at": started.isoformat() + "Z",
@@ -226,6 +260,7 @@ def fetch_year(cur, started):
         "totals": {"borrowers": total_n, "amount": total_amt},
         "by_state": by_state,
         "by_month": by_month,
+        "items": items,
     }
 
 
@@ -240,7 +275,7 @@ def main() -> None:
     zip_lookup = load_zip_lookup()
 
     week = fetch_week(cur, zip_lookup, started)
-    year = fetch_year(cur, started)
+    year = fetch_year(cur, zip_lookup, started)
 
     conn.close()
 
