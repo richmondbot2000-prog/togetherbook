@@ -2,7 +2,7 @@
 
 _The source-of-truth document for `togetherbook.net` / `richmondbot2000-prog/togetherbook`. Lives in this repo so future maintainers find it next to the code. **A successor Claude or engineer should be able to pick this up cold and operate the site competently.**_
 
-**Last reviewed:** 2026-05-12 (overnight rewrite to cover the source-quality analysis, brandwatch email notifications, multi-tenant Directory, and Cloudflare Access policy update)
+**Last reviewed:** 2026-05-15 — added Wall compact-feed / pagination / YouTube + OG link previews / Share deep-links; renamed Payout → Payouts with three-range tabs + per-capita toggle and new history scanner; new Holidays page + Line Manager field in Directory + manager team view + Approved Holiday status. Previous reviews: 2026-05-12 (source-quality analysis, brandwatch email notifications, multi-tenant Directory, Cloudflare Access).
 
 ## Contents
 
@@ -21,9 +21,12 @@ _The source-of-truth document for `togetherbook.net` / `richmondbot2000-prog/tog
    - 11.1 [Directory page](#111-directory-page-directoryhtml)
    - 11.2 [TopUps page](#112-topups-page-topupshtml)
    - 11.3 [Brandwatch page](#113-brandwatch-page-brandwatchhtml)
-   - 11.4 [Yesterday page](#114-yesterday-page-yesterdayhtml)
+   - 11.4 [Payouts page](#114-payouts-page-yesterdayhtml)
    - 11.5 [Brokers page + Source-quality analysis](#115-brokers-page--source-quality-analysis-brokershtml)
    - 11.6 [Pipeline page](#116-pipeline-page-pipelinehtml)
+   - 11.7 [Comms response time](#117-comms-response-time-commshtml)
+   - 11.8 [Wall page](#118-wall-page-wallhtml)
+   - 11.9 [Holidays page](#119-holidays-page-holidayshtml)
 12. [Concept reference: Top-Up Eligibility (TUE)](#12-concept-reference-top-up-eligibility-tue)
 13. [Concept reference: Brokers / Sources / Campaigns terminology](#13-concept-reference-brokers--sources--campaigns-terminology)
 14. [Brandwatch email notifications](#14-brandwatch-email-notifications)
@@ -92,7 +95,8 @@ The site is a flat set of HTML files. **No router, no SPA, no build step.** Each
 |---|---|---|---|
 | **Wall** | `/wall.html` | First top-level item. Internal social feed (~200 staff): posts up to 10k chars + 10 media; comments + one-level replies; typographic named reactions; SVG-icon action bar; trash-icon deletes (author or admin); notification bell + topbar badge. Photo/video/GIF uploads on posts, comments AND replies. See §11.8. | `wall.json` + `wall-seen.json` + `wall-media/*` |
 | **Home — About our systems** | `/index.html` | Long-scroll storybook in 7 chapters: hero · 8 helpers · 12 robots · 6 screens · 6 outside askers · loan story · 6 ground rules · 15 commandments. Section-parent for Schema + Code sub-pages. | inline (no JSON) |
-| **Payout** | `/yesterday.html` | Three Leaflet maps of US borrowers paid out yesterday (clustered pins · per-state totals · per-state averages) + per-state breakdown tables. (File still `yesterday.html` — only the nav label changed to "Payout" 2026-05-14.) | `yesterday-payouts.json` |
+| **Payouts** | `/yesterday.html` | Three-range tabs (Yesterday · Last Week · Last Year). Yesterday + Week: three Leaflet maps (clustered pins · per-state totals · per-state averages) + per-state breakdown tables. Year: aggregated layout — pin map of full-year borrowers, state-total map with `$/resident` toggle, monthly bar chart, state-avg map, summary cards. (File still `yesterday.html`; nav label is "Payouts".) | `yesterday-payouts.json` + `payouts-week.json` + `payouts-year.json` |
+| **Holidays** | `/holidays.html` | Per-user fiscal-year (Apr→Mar) attendance calendar: 52 weekly rows × 7 day cells, 8 status types + manager-only Approved Holiday, default Mon-Fri working / Sat-Sun non-working / UK BH on weekday = Holiday. Admins can switch person. Line managers see a Team tab — one thin horizontal year strip per direct report, ~10 px cells, sticky name column. Change log union for managers (own days + manager-made changes to reports). See §11.9. | `holidays.json` + `annotations.json` (line_manager) |
 | **Brandwatch** | `/brandwatch.html` | Public mentions across 10 sources (Trustpilot, BBB, Reddit, Bluesky, Lemmy, Hacker News, CourtListener, Google News, CFPB, YouTube) | `brandwatch.json` |
 | **Reports** | `/reports.html` | Hub landing for the operational reports (1st Contact, Top Ups, Pipeline, Brokers, Comms). Section-parent. | none (links only) |
 | **1st Contact** | `/1stcontact.html` | First inbound email per US borrower / GT after payout, 3-month window, redacted PII; word cloud at top. Now lives under Reports. | `first-contact.json` |
@@ -1415,6 +1419,102 @@ The Wall went through a senior design review (commit `Wall v4`) to fit Storybook
 
 ---
 
+### 11.9 Holidays page (`holidays.html`)
+
+Internal HR-lite calendar for the ~200 staff. Each user logs in via Cloudflare Access, sees a personal fiscal-year (1 April → 31 March) calendar, and can mark each day with one of 8 statuses. Admins + line managers can edit other people's days.
+
+#### 11.9.1 Files
+
+| Asset | Purpose |
+|---|---|
+| `holidays.html` | the whole page (markup + CSS + JS in one file) |
+| `holidays.json` | per-user days + audit log |
+| `annotations.json` | contains the `line_manager` field per user (shared with Directory) |
+| `worker/workspace-worker.js` | `/api/holidays/*` route — see §11.9.4 |
+| `worker/annotations-worker.js` | accepts `line_manager` in the field whitelist |
+
+#### 11.9.2 Storage model
+
+`holidays.json`:
+
+```jsonc
+{
+  "schema_version": 1,
+  "updated_at": "...",
+  "year_start": "2026-04-01",
+  "year_end":   "2027-03-31",
+  "by_user": {
+    "user@email.com": {
+      "days": { "2026-04-15": "holiday", "2026-04-16": "office", "..." : "..." }
+    }
+  },
+  "log": [
+    { "user_email": "...", "date": "2026-04-15",
+      "from": null|"<status>", "to": null|"<status>",
+      "changed_by": "...", "changed_at": "<ISO>" }
+  ]
+}
+```
+
+Log is FIFO-trimmed at 5000 entries.
+
+**Status keys** (stored short tokens):
+
+| Key | Label | Default colour | Notes |
+|---|---|---|---|
+| `office` | Worked at Office | green `#c7e7b8` | implicit default for Mon-Fri non-BH |
+| `wfh` | Worked from Home | green `#b7dfc9` | |
+| `non-working` | Non-Working | grey `#d8d8df` | implicit default for Sat/Sun |
+| `holiday` | Paid Holiday | yellow `#f3d97a` | implicit default for UK BH on weekday |
+| `half-am` | Half Day – Morning | top-half light-green, bottom-half office-green (CSS gradient) | |
+| `half-pm` | Half Day – Afternoon | top-half office-green, bottom-half light-green (CSS gradient) | |
+| `sick` | Sickness | red `#f5b5b5` | |
+| `maternity` | Maternity | yellow `#f3d97a` | |
+| `approved-holiday` | Approved Holiday | yellow + 1px `#b08a18` inner border | **manager-only** — admin OR target's line manager. Self-edit cannot apply it. |
+
+#### 11.9.3 Page layout
+
+- Header row carries the H1, the admin-only person dropdown, and a holiday-day count (totals `holiday` + `maternity` + default UK BH on weekdays).
+- Legend strip below the header (Quiet-Edition swatches matching the table above).
+- When the viewer has ≥1 direct report, a **My calendar / Team — N** tab strip appears below the legend.
+  - **My calendar** view: 52 weekly rows × 7 day cells (Sun → Sat), 100 px sticky week-label column on the left. Cells are ~64 px tall. Click any in-year day → popover picker.
+  - **Team** view: one horizontal strip per direct report. 10 px wide cells × 365 days. Sticky 160 px name column on the left + holiday count below name. Month markers stripped across the top. Strip scrolls horizontally; click any cell → popover.
+- Status picker popover sits over the clicked cell. Options are the 8 statuses + (manager edits only) **Approved Holiday** + a "Reset to default" item that deletes the override.
+- Change log section at the bottom shows every change as `<time> · <date> · <from> → <to> · by <name>`. In Team view, log entries are tagged with the affected person too.
+- Edits are optimistic — paint the new cell, POST `/api/holidays/set`, roll back + banner on error.
+
+#### 11.9.4 Worker endpoints (`/api/holidays/*`)
+
+Routed inside the shared `workspace-worker.js`. All endpoints require a Cloudflare Access JWT.
+
+| Path | Body | Behaviour |
+|---|---|---|
+| `whoami` (GET/POST) | — | `{ email, name }` mirror of `/api/wall/whoami` |
+| `set` (POST) | `{ email, date: "YYYY-MM-DD", status: "<key>"|null }` | Writes the day; appends log entry. `status=null` clears the override. Author-or-admin-or-line-manager only. Manager-only statuses (`approved-holiday`) refused for self-edits. |
+
+`fetchLineManagers()` (helper inside the worker) reads `annotations.json` directly from `raw.githubusercontent.com` so the manager-of map is current within seconds of an annotation save (the GitHub Pages copy lags 30-60 s).
+
+#### 11.9.5 Line Manager (Directory)
+
+The "Line Manager" field is part of the per-user annotation, added to:
+- The Directory Edit Card's Contact section. Edit reveals a `<datalist>`-backed email input listing every non-suspended staff member except the user being edited.
+- `annotations-worker.js`'s field whitelist (`setScalar("line_manager", ...)` — clear-on-empty semantics match phone / address).
+
+The Holidays page reads `annotations.json` from raw GH on every load and inverts the map to compute `directReports = { email | annotations[email].line_manager == viewer }`.
+
+#### 11.9.6 Defaults + UK Bank Holidays
+
+A baked list of 9 UK BHs for the 2026-04 → 2027-03 fiscal year (Good Friday, Easter Monday, Early May, Spring, Summer, Christmas Day, Boxing Day substitute on Mon 28 Dec, New Year's Day, Good Friday 2027). Stored as a `Set` of ISO dates in `holidays.html`. When a fiscal year rolls over, update the list — there's no programmatic Easter calculator on the page.
+
+#### 11.9.7 Quiet Edition conformance
+
+- Cream paper everywhere; no card chrome on the calendar grid; hairline `--ink-300` dividers.
+- Newsreader italics for buttons + tab labels; JetBrains Mono for date numerals and meta lines.
+- Active tab carries a manuscript-red rule + bold weight, mirroring the Payouts page selector.
+- Status colours are the only saturated hues on the page; everything else is paper/ink/brass.
+
+---
+
 ## 12. Concept reference: Top-Up Eligibility (TUE)
 
 Distilled from `~/Desktop/wiki/Markdown/Central_Loanbook.md` and the Glossary, since the TopUps page rests on understanding this:
@@ -1754,15 +1854,16 @@ A short list of footguns to avoid, kept brief; longer detail in `~/Desktop/wiki/
 
 | Item | Status | Blocker |
 |---|---|---|
-| `rgroup.co.uk` Workspace as second Directory tenant | Pending Ben Gardner's DWD setup confirm | Set up wired locally and `WORKSPACE_TENANTS` secret is configured. Ben (Super Admin on rgroup.co.uk Workspace) authorised the service account but the test fetches were still 403ing as of last check — likely needs verification that he's actually Super Admin (not Admin) and that the OAuth scope string is exactly `https://www.googleapis.com/auth/admin.directory.user.readonly`. Resume by triggering `refresh-directory.yml` and checking `fetch_errors[]` in the resulting `staff.json`. |
-| Per-API response time + call count on home page | Plan ready, not built | Awaiting Kamran Kamaei's response to the email request for `Reader` access on the rgcore Azure subscription's Application Insights resources. Plan: GH Actions workflow that queries each App Insights resource for yesterday's `requests \| where timestamp > ago(1d) \| summarize count(), avg(duration) by cloud_RoleName`, writes `api-stats.json`, renders a `48ms · 2.1M calls` line under each helper card. |
-| Type 1 (CPF) rate=0.10/0.12 ambiguity | Awaiting user clarification | The `scan_source_quality.py` CommissionType decoder treats type 1 literally as `rate × paid_out`. A handful of campaigns have rate 0.10/0.12 which produce near-zero cost and look mis-typed (probably type 5 rev-share entries entered under type 1). Resume by asking the user whether those should be re-coded as rev-share, or whether the literal CPF interpretation stands. |
-| Null-SR1 buy-vs-wait economic decision | Diagnosed not decided | 2026-05-11 analysis found ~77 funded loans per 60d that came back through proper-SR1 channels after we rejected the null-SR1 lead. Decision is whether to buy null-SR1 leads upfront. Needs the price of a null-SR1 lead from the upstream broker to compute net economics. |
-| Humand integration | Plan ready, not built | Awaiting Humand support's response to the email request for Public API access + a production API key. Plan: pull people + org chart + birthdays/anniversaries; enrich directory cards with manager line, team tag, joined date, birthday. |
-| Live code-line stats | Function code written, GH Actions equivalent not built | Currently shows a manual snapshot from 2026-05-06 (1.65M lines / 12.3K files / 45 repos). Either deploy `azure-function-stats/` (blocked on Azure admin) or build a `refresh-code-stats.yml` GH Actions workflow using the existing DevOps PAT. |
-| Three engineering specs (drafts) | Not implemented | `SPEC_AppInsights_CustomDimensions.md` + `SPEC_CentralStats_APIs.md` + `SPEC_QueueTelemetry_Tracing.md` in `~/Desktop/wiki/Overview/`. Need a developer + reviewer to build. |
-| Reddit OAuth | Code wired, abandoned | `REDDIT_CLIENT_ID` / `REDDIT_CLIENT_SECRET` would activate the OAuth code path. Reddit's developer registration is impossible to complete via Google sign-in (verified-email + non-OAuth + separate bot account + Data API form). Currently using ScraperAPI residential-proxy fallback. |
-| Sanitisation pass | Not done | Internal hostnames (`*.api.rgcore.com`), Slack channels, payment partners (BridgePay/Checkout/GoCardless/Twilio/Vonage/Veriff/Sendgrid), `LenderId 6 = Together Loans/TransformCredit`, employee email pattern — all live on the site. Less of a concern now that the canonical URL is gated behind Cloudflare Access. |
+| Holidays v2 design | Background design agent commissioned 2026-05-15 | Sub-agent (research + ship a `holidays-v2.html` prototype alongside v1) was launched overnight. Review the resulting file + research doc in the morning; decide whether to swap it in. |
+| `rgroup.co.uk` Workspace as second Directory tenant | Pending Ben Gardner's DWD setup confirm | Set up wired locally and `WORKSPACE_TENANTS` secret is configured. Ben (Super Admin on rgroup.co.uk Workspace) authorised the service account but the test fetches were still 403ing as of last check. Resume by triggering `refresh-directory.yml` and checking `fetch_errors[]` in the resulting `staff.json`. |
+| Per-API response time + call count on home page | Plan ready, not built | Awaiting Kamran Kamaei's `Reader` access on the rgcore Azure subscription's Application Insights resources. |
+| Type 1 (CPF) rate=0.10/0.12 ambiguity | Awaiting user clarification | A handful of campaigns have rate 0.10/0.12 and look mis-typed (probably rev-share entered under CPF). |
+| Null-SR1 buy-vs-wait economic decision | Diagnosed not decided | Needs the price of a null-SR1 lead from the upstream broker. |
+| Humand integration | Plan ready, not built | Awaiting Humand support's Public API key. |
+| Live code-line stats | Manual snapshot in place | Either deploy `azure-function-stats/` (blocked on Azure admin) or build a `refresh-code-stats.yml` workflow. |
+| Reddit OAuth | Code wired, abandoned | Reddit dev registration impossible via Google sign-in. ScraperAPI fallback is in use. |
+| UK Bank Holidays after 2027 | Hard-coded for 2026-04 → 2027-03 | When the fiscal year rolls over, append next year's BHs to the `UK_BANK_HOLIDAYS` Set in `holidays.html`. |
+| Sanitisation pass | Not done | Cloudflare Access reduces urgency but internal hostnames + payment partners + employee email pattern are still in the public-mirror copy. |
 
 ---
 
@@ -1773,7 +1874,6 @@ A short list of footguns to avoid, kept brief; longer detail in `~/Desktop/wiki/
 - `~/Desktop/wiki/Overview/07_TogetherBook_Site.md` — the wiki-wide spec entry for this site, integrated alongside other Central Services docs. **Keep this in structural sync with SPEC.md.**
 - **`~/Desktop/wiki/partnerships-handbook.html`** — the Together Loans Partnerships Handbook. **Authoritative source** for partner terminology, commission types, AutoBlock thresholds, CPA target, dedup rules, scorecard semantics, and the partnership team's report library. Read this before doing anything substantive on the Brokers page or source-quality analysis.
 - `~/Desktop/wiki/TogetherBOOK_handoff/wiki/README.md` — the original Quiet Edition design handoff package
-- `~/Desktop/wiki/Markdown/*` — service-by-service Tettra exports, useful when adding new platform-aware pages
 - `~/Desktop/wiki/Markdown/*` — service-by-service Tettra exports, useful when adding new platform-aware pages
 
 ---
