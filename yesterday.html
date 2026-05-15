@@ -9,11 +9,11 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&family=Orbitron:wght@500;600;700;800&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="style.css?v=1778878536">
-<link rel="stylesheet" href="quiet-tokens.css?v=1778878536">
-<link rel="stylesheet" href="quiet.css?v=1778878536">
-<link rel="stylesheet" href="quiet-extras.css?v=1778878536">
-<link rel="stylesheet" href="quiet-legacy.css?v=1778878536">
+<link rel="stylesheet" href="style.css?v=1778878703">
+<link rel="stylesheet" href="quiet-tokens.css?v=1778878703">
+<link rel="stylesheet" href="quiet.css?v=1778878703">
+<link rel="stylesheet" href="quiet-extras.css?v=1778878703">
+<link rel="stylesheet" href="quiet-legacy.css?v=1778878703">
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
       integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
       crossorigin="">
@@ -249,7 +249,7 @@
 
 <header class="qb-topbar">
   <a class="qb-brand" href="index.html" aria-label="TogetherBOOK — home">
-    <img class="qb-brand-logo" src="togetherbook-logo.png?v=1778878536" alt="TogetherBOOK">
+    <img class="qb-brand-logo" src="togetherbook-logo.png?v=1778878703" alt="TogetherBOOK">
   </a>
   <button class="qb-hamburger" aria-label="Toggle navigation menu" aria-expanded="false"
           onclick="document.body.classList.toggle('nav-open');this.setAttribute('aria-expanded',document.body.classList.contains('nav-open'))">
@@ -320,11 +320,6 @@
   // disappears and the heat is genuinely on the borrowers-per-capita
   // axis). Defaults to 'total'; the caption row carries the toggle.
   let yearTotalMode = 'total';
-
-  // Same two modes apply to the loans-count map. 'count' = absolute
-  // borrowers across the window; 'capita' = loans per 100,000
-  // residents so dense small states don't disappear under California.
-  let yearCountMode = 'count';
 
   // Geographic centre of each US state (lat, lng) — used to anchor the
   // total-paid-out label on the second map.
@@ -546,12 +541,6 @@
         </p>
         <div class="yp-map-states" id="ypStateMap"></div>
 
-        <p class="yp-map-caption has-toggle" id="ypCountCaption">
-          <span id="ypCountCaptionText">Number of loans by state</span>
-          <button type="button" class="yp-map-toggle" id="ypCountToggle">show loans per 100,000 residents</button>
-        </p>
-        <div class="yp-map-states" id="ypCountMap"></div>
-
         <p class="yp-map-caption">Monthly payouts (last 12 completed months)</p>
         <div class="yp-bars" id="ypBars"></div>
 
@@ -622,40 +611,6 @@
     return '$' + v.toFixed(2);
   }
 
-  // Number-of-loans map: pill label is either the raw borrower count
-  // ('count' mode) or loans-per-100,000-residents ('capita' mode).
-  function renderCountMapFromAgg(byState) {
-    const mapEl = document.getElementById('ypCountMap');
-    if (!mapEl || typeof L === 'undefined') return;
-    const map = L.map(mapEl, { worldCopyJump: false, scrollWheelZoom: false }).setView([39.0, -96.5], 4);
-    map.on('click', () => map.scrollWheelZoom.enable());
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-      maxZoom: 10,
-      attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-    }).addTo(map);
-    const capita = yearCountMode === 'capita';
-    for (const row of byState || []) {
-      const state = (row.state || '').toUpperCase();
-      const c = STATE_CENTROIDS[state];
-      if (!c) continue;
-      const n = row.borrowers || 0;
-      const pop = STATE_POPULATIONS[state] || 0;
-      const per100k = pop ? (n / pop) * 100000 : null;
-      if (capita && per100k == null) continue;
-      const display = capita
-        ? per100k.toFixed(per100k < 10 ? 2 : 1)
-        : n.toLocaleString('en-GB');
-      const popupLine = capita
-        ? `<strong>${state}</strong><br>${per100k.toFixed(per100k < 10 ? 2 : 1)} loans / 100,000 residents<br>${n.toLocaleString('en-GB')} loans · ${pop.toLocaleString('en-US')} residents`
-        : `<strong>${state}</strong><br>${n.toLocaleString('en-GB')} loans<br>${fmtUSD2.format(row.amount || 0)} total`;
-      const icon = L.divIcon({
-        className: 'state-amount-icon',
-        html: `<span class="amount-pill" title="${state}: ${display}">${display}</span>`,
-        iconSize: null, iconAnchor: [0, 0],
-      });
-      L.marker(c, { icon, interactive: true }).addTo(map).bindPopup(popupLine);
-    }
-  }
   function renderAvgStateMapFromAgg(byState) {
     const mapEl = document.getElementById('ypAvgStateMap');
     if (!mapEl || typeof L === 'undefined') return;
@@ -745,14 +700,11 @@
       `${n.toLocaleString('en-GB')} borrowers · ${fmtUSD0.format(total)} paid out · last refreshed ${updated}`;
     lastYearByState = data.by_state;
     yearTotalMode = 'total';
-    yearCountMode = 'count';
     try { renderStateMapFromAgg(data.by_state); }    catch (e) { console.error('state map (agg) failed', e); }
-    try { renderCountMapFromAgg(data.by_state); }    catch (e) { console.error('count map (agg) failed', e); }
     try { renderMonthlyBars(data.by_month); }        catch (e) { console.error('monthly bars failed', e); }
     try { renderAvgStateMapFromAgg(data.by_state); } catch (e) { console.error('avg state map (agg) failed', e); }
     try { renderStateCardsFromAgg(data.by_state); }  catch (e) { console.error('state cards (agg) failed', e); }
     wireYearTotalToggle();
-    wireYearCountToggle();
   }
   function wireYearTotalToggle() {
     const btn = document.getElementById('ypTotalToggle');
@@ -775,26 +727,6 @@
         old.parentNode.replaceChild(fresh, old);
       }
       try { renderStateMapFromAgg(lastYearByState); } catch (e) { console.error('state map toggle re-render failed', e); }
-    });
-  }
-  function wireYearCountToggle() {
-    const btn = document.getElementById('ypCountToggle');
-    const cap = document.getElementById('ypCountCaptionText');
-    if (!btn || !cap) return;
-    btn.addEventListener('click', () => {
-      yearCountMode = (yearCountMode === 'count') ? 'capita' : 'count';
-      cap.textContent = yearCountMode === 'capita'
-        ? 'Loans per 100,000 residents, by state'
-        : 'Number of loans by state';
-      btn.textContent = yearCountMode === 'capita'
-        ? 'show raw loan counts'
-        : 'show loans per 100,000 residents';
-      const old = document.getElementById('ypCountMap');
-      if (old) {
-        const fresh = old.cloneNode(false);
-        old.parentNode.replaceChild(fresh, old);
-      }
-      try { renderCountMapFromAgg(lastYearByState); } catch (e) { console.error('count map toggle re-render failed', e); }
     });
   }
 
