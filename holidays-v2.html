@@ -1,0 +1,1534 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>BOOK — Holidays (v2 preview)</title>
+<link rel="icon" type="image/png" href="site-icon.png">
+<link rel="apple-touch-icon" href="site-icon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&family=Newsreader:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400;1,500;1,600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css?v=1778884073">
+<link rel="stylesheet" href="quiet-tokens.css?v=1778884073">
+<link rel="stylesheet" href="quiet.css?v=1778884073">
+<link rel="stylesheet" href="quiet-extras.css?v=1778884073">
+<link rel="stylesheet" href="quiet-legacy.css?v=1778884073">
+<style>
+  /* ────────────────────────────────────────────────────────────────
+     Holidays v2 — Year-at-a-glance ledger.
+     One screen, 52 ruled "weeks of the working year" columns × N
+     people rows; each cell is a Mon-Fri strip of 5 micro-bars so
+     the daily status is encoded in 4 px increments. Above the
+     grid: a column-total ribbon showing how many of the team are
+     off each week — the conflict-spotting layer the v1 lacked.
+     ──────────────────────────────────────────────────────────── */
+
+  /* Widen the page beyond the usual 1200 — density needs the room. */
+  body .qb-page.hv2-page { max-width: 1320px; }
+
+  .hv2 { padding: 18px 0 56px; }
+
+  /* Masthead — editorial title block. The "v2 preview" tag lives
+     italic-and-red at the corner so the reader is never in doubt
+     which version they're looking at. */
+  .hv2-mast {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    align-items: end;
+    gap: 14px 24px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid var(--ink-900);
+    margin-bottom: 4px;
+  }
+  .hv2-mast-title {
+    font-family: var(--font-display);
+    font-weight: 800;
+    font-size: clamp(2rem, 4.4vw, 3rem);
+    letter-spacing: -0.01em;
+    color: var(--ink-900);
+    line-height: 1;
+    margin: 0;
+  }
+  .hv2-mast-title em {
+    font-style: italic;
+    font-weight: 500;
+    color: var(--ink-700);
+    margin-left: 12px;
+    font-size: 0.7em;
+    letter-spacing: 0;
+  }
+  .hv2-mast-meta {
+    font: 400 11px/1.4 var(--font-mono);
+    color: var(--ink-600);
+    text-align: right;
+    letter-spacing: 0.04em;
+  }
+  .hv2-mast-meta strong {
+    display: block;
+    font: italic 600 14px/1.2 var(--font-display);
+    color: var(--red-500);
+    margin-bottom: 2px;
+    letter-spacing: 0;
+    text-transform: none;
+  }
+  .hv2-strapline {
+    font: italic 400 13px/1.4 var(--font-display);
+    color: var(--ink-700);
+    margin: 6px 0 18px;
+    padding-bottom: 14px;
+    border-bottom: 1px solid var(--brass-500);
+  }
+
+  /* Toolbar — view toggle on the left (Year / Month), person picker
+     centred, legend on the right. Single hairline below. */
+  .hv2-bar {
+    display: grid;
+    grid-template-columns: auto 1fr auto;
+    gap: 18px 24px;
+    align-items: center;
+    padding: 10px 0;
+    border-bottom: 1px solid var(--ink-300);
+    margin-bottom: 16px;
+  }
+  .hv2-tabs { display: inline-flex; gap: 18px; align-items: baseline; }
+  .hv2-tab {
+    background: none; border: none; padding: 4px 0;
+    font: italic 500 15px/1 var(--font-display);
+    color: var(--ink-500);
+    cursor: pointer;
+    border-bottom: 1.5px solid transparent;
+    letter-spacing: 0;
+  }
+  .hv2-tab.is-active {
+    color: var(--red-500);
+    font-weight: 700;
+    border-bottom-color: var(--red-500);
+  }
+  .hv2-tab .hv2-tab-c {
+    font: 600 10px/1 var(--font-mono);
+    color: var(--ink-500);
+    margin-left: 4px;
+  }
+  .hv2-tab.is-active .hv2-tab-c { color: var(--red-500); }
+
+  .hv2-picker { display: inline-flex; align-items: baseline; gap: 8px; justify-self: center; }
+  .hv2-picker label {
+    font: italic 500 13px/1 var(--font-display);
+    color: var(--ink-700);
+  }
+  .hv2-picker select {
+    font: 500 13px/1 var(--font-mono);
+    padding: 5px 8px;
+    border: 1px solid var(--ink-500);
+    background: var(--paper-50);
+    color: var(--ink-900);
+    border-radius: 2px;
+    min-width: 220px;
+  }
+
+  /* Legend — micro, inline, beside the chart not above it. Each
+     swatch is a 14×14 paint chip in the same hue used on the grid. */
+  .hv2-legend {
+    display: inline-flex; flex-wrap: wrap; gap: 6px 14px;
+    font: 400 11px/1 var(--font-mono);
+    color: var(--ink-700);
+    justify-self: end;
+  }
+  .hv2-legend-item { display: inline-flex; align-items: center; gap: 5px; }
+  .hv2-legend-sw {
+    width: 11px; height: 11px; flex-shrink: 0;
+    border: 1px solid var(--ink-700);
+  }
+
+  /* ─── Year view ────────────────────────────────────────────────
+     The grid is a fixed-pixel layout (not %), so 52 weeks always
+     get 52 columns and a colour-block is never blurred or split.
+     Cell sizes are tuned for density:
+       — namebar = 168 px
+       — week column = 21 px wide (5 day-bars × 4 px gap-free + 1 px rule)
+       — row height = 22 px (so ≥15 rows above the fold @ 1080 px tall)
+     Editing: click a person's name to switch focus; click any day
+     cell to open the existing status popover.
+     ──────────────────────────────────────────────────────────── */
+  :root {
+    --hv2-name-w: 168px;
+    --hv2-week-w: 21px;
+    --hv2-day-w:  4px;
+    --hv2-day-gap: 0px;
+    --hv2-row-h:  22px;
+  }
+  /* The grid stretches to fit the page; we recompute --hv2-week-w
+     in JS once on load so 52 columns exactly fill the available
+     width on the current viewport. Density targets are documented
+     in holidays-v2-research.md. */
+
+  .hv2-grid-wrap {
+    border: 1px solid var(--ink-700);
+    background: var(--paper-50);
+    overflow: hidden;
+  }
+  /* Sub-row 1: column-total ribbon — for each week, how many of
+     the team are off (holiday / sick / approved / half). Black
+     bar grows from the baseline; brass tick = ≥3 people off
+     (likely a coverage problem). */
+  .hv2-totals {
+    display: grid;
+    grid-template-columns: var(--hv2-name-w) 1fr;
+    border-bottom: 1px solid var(--ink-900);
+    background: var(--paper-100);
+  }
+  .hv2-totals-label {
+    padding: 6px 10px;
+    border-right: 1px solid var(--ink-700);
+    font: italic 500 11px/1.2 var(--font-display);
+    color: var(--ink-700);
+    display: flex; flex-direction: column; justify-content: center;
+  }
+  .hv2-totals-label .hv2-totals-cap {
+    font: 600 9px/1.1 var(--font-mono);
+    color: var(--ink-500);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    margin-bottom: 2px;
+  }
+  .hv2-totals-strip {
+    display: grid;
+    grid-auto-flow: column;
+    grid-auto-columns: var(--hv2-week-w);
+    height: 38px;
+    align-items: end;
+    padding: 4px 0 0;
+  }
+  .hv2-tot-cell {
+    position: relative;
+    border-left: 1px solid var(--ink-300);
+    height: 100%;
+    display: flex; flex-direction: column; justify-content: flex-end;
+    align-items: stretch;
+    padding: 0 1px;
+    cursor: default;
+  }
+  .hv2-tot-cell:first-child { border-left: none; }
+  .hv2-tot-bar {
+    background: var(--ink-700);
+    width: 100%;
+    min-height: 0;
+  }
+  .hv2-tot-cell[data-busy="hot"] .hv2-tot-bar { background: var(--red-500); }
+  .hv2-tot-cell[data-busy="warm"] .hv2-tot-bar { background: var(--brass-500); }
+  .hv2-tot-cell[data-busy="cool"] .hv2-tot-bar { background: var(--ink-700); }
+  /* Hover ring on the totals bar mirrors the same week's column
+     in the grid below, so the reader can correlate cause and effect. */
+  .hv2-tot-cell:hover { background: var(--paper-200); }
+
+  /* Month-name strip — italic display serif, anchored to the start
+     of each month's first week column. Doubles as the month rule. */
+  .hv2-months {
+    display: grid;
+    grid-template-columns: var(--hv2-name-w) 1fr;
+    border-bottom: 1px solid var(--ink-900);
+    background: var(--paper-100);
+  }
+  .hv2-months-pad {
+    border-right: 1px solid var(--ink-700);
+    padding: 6px 10px;
+    font: 600 10px/1 var(--font-mono);
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--ink-500);
+    display: flex; align-items: center;
+  }
+  .hv2-months-strip {
+    position: relative;
+    display: grid;
+    grid-auto-flow: column;
+    grid-auto-columns: var(--hv2-week-w);
+    height: 22px;
+  }
+  .hv2-month {
+    position: relative;
+    font: italic 500 12px/1 var(--font-display);
+    color: var(--ink-700);
+    padding: 6px 0 0 4px;
+    border-left: 1px solid var(--ink-700);
+    white-space: nowrap;
+  }
+  .hv2-month-spacer {
+    border-left: 1px solid transparent;
+  }
+
+  /* Team rows — one row per employee. Sticky left column so when
+     the user pans on narrow screens, names stay visible. */
+  .hv2-rows {
+    max-height: calc(100vh - 320px);
+    overflow-y: auto;
+    overflow-x: auto;
+  }
+  .hv2-row {
+    display: grid;
+    grid-template-columns: var(--hv2-name-w) 1fr;
+    border-top: 1px solid var(--ink-300);
+    align-items: stretch;
+  }
+  .hv2-row:first-child { border-top: none; }
+  .hv2-row.is-self { background: var(--paper-100); }
+  .hv2-row.is-focus { background: var(--brass-50); }
+  .hv2-name {
+    padding: 4px 10px;
+    border-right: 1px solid var(--ink-700);
+    background: inherit;
+    display: flex; align-items: center; gap: 8px;
+    cursor: pointer;
+    min-height: var(--hv2-row-h);
+  }
+  .hv2-name:hover { background: var(--paper-200); }
+  .hv2-name-info { display: flex; flex-direction: column; line-height: 1.1; }
+  .hv2-name-n {
+    font: 500 12px/1.15 var(--font-display);
+    color: var(--ink-900);
+  }
+  .hv2-name-c {
+    font: 500 9px/1 var(--font-mono);
+    color: var(--ink-600);
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    margin-top: 2px;
+  }
+  .hv2-name-c.is-overused { color: var(--red-500); font-weight: 600; }
+  /* "Holiday-days-used" mini-meter — a 5-segment dot row showing
+     the fraction of the typical 25-day allowance used. Each dot is
+     5 days. Empty = unused, brass = used, red = over. */
+  .hv2-name-meter {
+    display: inline-flex; gap: 2px; margin-left: auto;
+    flex-shrink: 0;
+  }
+  .hv2-name-meter span {
+    width: 6px; height: 6px;
+    border: 1px solid var(--ink-500);
+    background: transparent;
+  }
+  .hv2-name-meter span.on { background: var(--brass-500); border-color: var(--brass-600); }
+  .hv2-name-meter span.over { background: var(--red-500); border-color: var(--red-600); }
+
+  /* The week strip itself — 52 columns, each split into 5 day
+     micro-bars laid out as a sub-grid. No gap; cell colour does
+     the work. The 1 px left border on every cell renders the
+     week ruling without an extra DOM node. */
+  .hv2-strip {
+    display: grid;
+    grid-auto-flow: column;
+    grid-auto-columns: var(--hv2-week-w);
+    height: var(--hv2-row-h);
+  }
+  .hv2-week {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    grid-template-rows: 100%;
+    border-left: 1px solid var(--ink-300);
+    height: 100%;
+  }
+  .hv2-week:first-child { border-left: none; }
+  .hv2-week.is-month-edge { border-left: 1px solid var(--ink-700); }
+
+  /* The day cell — tiny, but every status colour is identical to
+     the v1 swatch so the team's eye-training carries over. */
+  .hv2-day {
+    height: 100%;
+    cursor: pointer;
+    position: relative;
+  }
+  .hv2-day:hover { outline: 1px solid var(--brass-600); outline-offset: -1px; z-index: 3; }
+  .hv2-day.is-today {
+    box-shadow: inset 0 0 0 1px var(--red-500);
+  }
+
+  /* Status palette — refined for cream paper. Sage / honey / clay /
+     dust map to the Quiet Edition palette directly, so colour
+     never feels like a "B2B SaaS dashboard" green. */
+  .hv2-day[data-status="office"]      { background: #B7CFA1; } /* sage-500-ish */
+  .hv2-day[data-status="wfh"]         { background: #94B6B1; } /* dusk teal */
+  .hv2-day[data-status="non-working"] { background: #ECDFB6; } /* paper-300, weekend */
+  .hv2-day[data-status="holiday"]     { background: var(--brass-500); }
+  .hv2-day[data-status="half-am"]     { background: linear-gradient(180deg, var(--brass-500) 0 50%, #B7CFA1 50% 100%); }
+  .hv2-day[data-status="half-pm"]     { background: linear-gradient(180deg, #B7CFA1 0 50%, var(--brass-500) 50% 100%); }
+  .hv2-day[data-status="sick"]        { background: var(--red-500); }
+  .hv2-day[data-status="maternity"]   { background: var(--brass-500); box-shadow: inset 0 0 0 1px var(--brass-700); }
+  .hv2-day[data-status="approved-holiday"] {
+    background: var(--brass-500);
+    box-shadow: inset 0 0 0 1px var(--red-500);
+  }
+  .hv2-day[data-default-bh="1"]       { background: var(--brass-300); }
+  .hv2-day.is-weekend                 { background: var(--paper-200); }
+
+  /* ─── Focus panel — appears when the user clicks a name. Shows
+     that one person's full Apr→Mar timeline as a wider row with
+     month boundaries, plus a tiny KPI table. The panel is the
+     primary editing surface when looking at a single person. */
+  .hv2-focus {
+    margin-top: 18px;
+    border: 1px solid var(--ink-700);
+    background: var(--paper-50);
+    display: none;
+  }
+  .hv2-focus.is-open { display: block; }
+  .hv2-focus-head {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    align-items: baseline;
+    padding: 12px 14px 8px;
+    border-bottom: 1px solid var(--brass-500);
+  }
+  .hv2-focus-name {
+    font: 600 18px/1.1 var(--font-display);
+    color: var(--ink-900);
+    margin: 0;
+  }
+  .hv2-focus-name em {
+    font-style: italic;
+    font-weight: 500;
+    color: var(--ink-600);
+    margin-left: 8px;
+    font-size: 0.78em;
+  }
+  .hv2-focus-kpis {
+    display: inline-flex; gap: 22px;
+    font: 400 12px/1.2 var(--font-display);
+    color: var(--ink-700);
+  }
+  .hv2-focus-kpi strong {
+    font: 600 18px/1 var(--font-mono);
+    color: var(--brass-600);
+    margin-right: 4px;
+  }
+  .hv2-focus-kpi.alert strong { color: var(--red-500); }
+
+  /* A taller per-person strip — same week-grid plus a Mon-Fri
+     row label rail. 8 px day cells (~390 px / 49 weeks ≈ 8 px). */
+  .hv2-focus-body {
+    padding: 10px 14px 14px;
+  }
+  .hv2-focus-rail {
+    display: grid;
+    grid-template-columns: 40px 1fr;
+    border-top: 1px solid var(--ink-300);
+    border-bottom: 1px solid var(--ink-700);
+    background: var(--paper-100);
+  }
+  .hv2-focus-railday {
+    display: flex; align-items: center; justify-content: flex-end;
+    padding-right: 6px;
+    border-right: 1px solid var(--ink-700);
+    font: 600 9px/1 var(--font-mono);
+    color: var(--ink-500);
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+  }
+  .hv2-focus-dayrow {
+    display: grid;
+    grid-auto-flow: column;
+    grid-auto-columns: minmax(0, 1fr);
+    height: 16px;
+  }
+  .hv2-focus-rail + .hv2-focus-rail .hv2-focus-railday { border-top: 1px solid var(--ink-300); }
+  .hv2-focus-rail .hv2-focus-day {
+    border-left: 1px solid rgba(0,0,0,0.04);
+    cursor: pointer;
+  }
+  .hv2-focus-rail .hv2-focus-day.is-month-edge { border-left: 1px solid var(--ink-700); }
+  .hv2-focus-rail .hv2-focus-day[data-status="office"]      { background: #B7CFA1; }
+  .hv2-focus-rail .hv2-focus-day[data-status="wfh"]         { background: #94B6B1; }
+  .hv2-focus-rail .hv2-focus-day[data-status="non-working"] { background: var(--paper-300); }
+  .hv2-focus-rail .hv2-focus-day[data-status="holiday"]     { background: var(--brass-500); }
+  .hv2-focus-rail .hv2-focus-day[data-status="half-am"]     { background: linear-gradient(180deg, var(--brass-500) 0 50%, #B7CFA1 50% 100%); }
+  .hv2-focus-rail .hv2-focus-day[data-status="half-pm"]     { background: linear-gradient(180deg, #B7CFA1 0 50%, var(--brass-500) 50% 100%); }
+  .hv2-focus-rail .hv2-focus-day[data-status="sick"]        { background: var(--red-500); }
+  .hv2-focus-rail .hv2-focus-day[data-status="maternity"]   { background: var(--brass-500); box-shadow: inset 0 0 0 1px var(--brass-700); }
+  .hv2-focus-rail .hv2-focus-day[data-status="approved-holiday"] {
+    background: var(--brass-500);
+    box-shadow: inset 0 0 0 1px var(--red-500);
+  }
+  .hv2-focus-rail .hv2-focus-day[data-default-bh="1"] { background: var(--brass-300); }
+  .hv2-focus-rail .hv2-focus-day.is-today { box-shadow: inset 0 0 0 1px var(--red-500); }
+  .hv2-focus-rail .hv2-focus-day:hover { outline: 1px solid var(--brass-600); outline-offset: -1px; z-index: 3; }
+  /* Month strip atop the focus rail */
+  .hv2-focus-months {
+    display: grid;
+    grid-template-columns: 40px 1fr;
+    border-bottom: 1px solid var(--ink-300);
+    background: var(--paper-100);
+  }
+  .hv2-focus-months .hv2-focus-railday { border-right: 1px solid var(--ink-700); }
+  .hv2-focus-months .hv2-focus-dayrow { height: 20px; align-items: flex-end; }
+  .hv2-focus-month-tick {
+    border-left: 1px solid var(--ink-700);
+    padding: 0 0 4px 4px;
+    font: italic 500 11px/1 var(--font-display);
+    color: var(--ink-700);
+    grid-row: 1;
+  }
+
+  /* ─── Status picker popover — same affordance as v1 but redrawn
+     in the Quiet Edition palette: cream paper, hairline border,
+     italic display-serif options, brass swatch micro-rule. */
+  .hv2-pop {
+    position: absolute; z-index: 600;
+    min-width: 232px;
+    background: var(--paper-50);
+    border: 1px solid var(--ink-900);
+    padding: 8px 0;
+    font: 500 13px/1.2 var(--font-display);
+    color: var(--ink-900);
+  }
+  .hv2-pop-head {
+    padding: 6px 14px 8px;
+    font: italic 500 12px/1.2 var(--font-display);
+    color: var(--ink-700);
+    border-bottom: 1px solid var(--brass-500);
+    margin-bottom: 4px;
+  }
+  .hv2-pop-head strong {
+    display: block;
+    font: 600 13px/1.2 var(--font-display);
+    color: var(--ink-900);
+    font-style: normal;
+  }
+  .hv2-pop-opt {
+    width: 100%;
+    background: none; border: none;
+    text-align: left;
+    padding: 6px 14px;
+    display: flex; align-items: center; gap: 10px;
+    cursor: pointer;
+    font: inherit; color: inherit;
+  }
+  .hv2-pop-opt:hover { background: var(--paper-200); }
+  .hv2-pop-opt[disabled] { opacity: 0.5; cursor: default; }
+  .hv2-pop-opt[disabled]:hover { background: none; }
+  .hv2-pop-sw {
+    width: 14px; height: 14px;
+    border: 1px solid var(--ink-700);
+    display: inline-block; flex-shrink: 0;
+  }
+  .hv2-pop-clear {
+    color: var(--red-500);
+    font-style: italic;
+    border-top: 1px solid var(--ink-300);
+    margin-top: 4px;
+  }
+  .hv2-pop-clear:disabled { color: var(--ink-500); }
+
+  /* Banner for save errors */
+  .hv2-banner {
+    position: fixed; left: 50%; transform: translateX(-50%);
+    top: 80px; z-index: 800;
+    background: var(--ink-900); color: white;
+    padding: 10px 18px;
+    font: italic 500 14px/1 var(--font-display);
+    display: none;
+  }
+  .hv2-banner.is-error { background: var(--red-500); }
+  .hv2-banner.is-shown { display: block; }
+
+  /* Audit log — same pattern as v1 (the user asked it be preserved)
+     but laid out in two newspaper columns so it reads as a "stop
+     press" sidebar rather than an unbounded scrolling list. */
+  .hv2-log-section { margin-top: 32px; }
+  .hv2-log-section h2 {
+    font: 700 12px/1 var(--font-mono);
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--ink-500);
+    margin: 0 0 10px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid var(--brass-500);
+  }
+  .hv2-log {
+    list-style: none;
+    margin: 0; padding: 0;
+    columns: 2;
+    column-gap: 36px;
+    column-rule: 1px solid var(--ink-300);
+    font: 400 13px/1.45 var(--font-display);
+    color: var(--ink-800);
+  }
+  @media (max-width: 800px) { .hv2-log { columns: 1; } }
+  .hv2-log li {
+    padding: 6px 0;
+    border-bottom: 1px dotted var(--ink-300);
+    break-inside: avoid;
+  }
+  .hv2-log time {
+    font: 400 10px/1.3 var(--font-mono);
+    color: var(--ink-600);
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    display: block;
+    margin-bottom: 2px;
+  }
+  .hv2-log .from-to {
+    font-family: var(--font-mono);
+    font-size: 0.78rem;
+    color: var(--ink-700);
+  }
+  .hv2-log .by {
+    color: var(--ink-500);
+    font-style: italic;
+    font-size: 0.85rem;
+  }
+  .hv2-log-empty {
+    padding: 14px;
+    color: var(--ink-500);
+    font-style: italic;
+  }
+
+  /* "v2 preview" corner ribbon — italic red, lower-right, tiny */
+  .hv2-preview-mark {
+    position: fixed;
+    right: 12px; bottom: 12px;
+    z-index: 900;
+    font: italic 600 12px/1 var(--font-display);
+    color: var(--red-500);
+    background: var(--paper-50);
+    border: 1px solid var(--red-500);
+    padding: 5px 10px;
+    letter-spacing: 0.04em;
+    pointer-events: none;
+  }
+  .hv2-preview-mark::before {
+    content: "› ";
+    font-style: normal;
+    color: var(--brass-500);
+    margin-right: 2px;
+  }
+
+  /* When focus mode is on AND there are no direct reports, hide the
+     team grid (the page becomes single-person centric). */
+  .hv2-single-mode .hv2-grid-wrap { display: none; }
+
+  @media (max-width: 900px) {
+    :root { --hv2-name-w: 132px; }
+    .hv2-mast { grid-template-columns: 1fr; }
+    .hv2-mast-meta { text-align: left; }
+    .hv2-bar { grid-template-columns: 1fr; }
+    .hv2-legend { justify-self: start; }
+    .hv2-picker { justify-self: start; }
+  }
+</style>
+</head>
+<body>
+
+<header class="qb-topbar">
+  <a class="qb-brand" href="index.html" aria-label="TogetherBOOK — home">
+    <img class="qb-brand-logo" src="togetherbook-logo.png?v=1778884073" alt="TogetherBOOK">
+  </a>
+  <button class="qb-hamburger" aria-label="Toggle navigation menu" aria-expanded="false"
+          onclick="document.body.classList.toggle('nav-open');this.setAttribute('aria-expanded',document.body.classList.contains('nav-open'))">
+    <span></span><span></span><span></span>
+  </button>
+  <nav class="qb-nav">
+    <a class="qb-nav-link" href="wall.html">Wall</a>
+    <a class="qb-nav-link" href="index.html" data-sub='[{"href": "database.html", "label": "Schema"}, {"href": "stats.html", "label": "Code"}]'>About our systems</a>
+    <a class="qb-nav-link" href="yesterday.html">Payouts</a>
+    <a class="qb-nav-link is-active" href="holidays.html">Holidays</a>
+    <a class="qb-nav-link" href="brandwatch.html">Brandwatch</a>
+    <a class="qb-nav-link" href="directory.html">Directory</a>
+    <a class="qb-nav-link" href="reports.html" data-sub='[{"href": "1stcontact.html", "label": "1st Contact"}, {"href": "topups.html", "label": "Top Ups"}, {"href": "pipeline.html", "label": "Pipeline"}, {"href": "brokers.html", "label": "Brokers"}, {"href": "comms.html", "label": "Comms"}]'>Reports</a>
+  </nav>
+</header>
+<div class="qb-nav-backdrop" onclick="document.body.classList.remove('nav-open')"></div>
+
+<main class="qb-page hv2-page">
+  <section class="hv2">
+
+    <header class="hv2-mast">
+      <h1 class="hv2-mast-title">The Year in Absence<em>fiscal Apr → Mar</em></h1>
+      <div class="hv2-mast-meta">
+        <strong id="hv2WeekHotLine">—</strong>
+        <span id="hv2RangeLine">Loading the ledger…</span>
+      </div>
+    </header>
+    <p class="hv2-strapline" id="hv2Strap">
+      Each row is one teammate; each column is one working week. Black bars above show how many of the team are off that week — taller means thinner cover.
+    </p>
+
+    <div class="hv2-bar">
+      <div class="hv2-tabs" id="hv2Tabs" role="tablist" aria-label="Holidays view">
+        <button type="button" class="hv2-tab is-active" data-view="team" role="tab" aria-selected="true">
+          Team <span class="hv2-tab-c" id="hv2TabTeamCount">—</span>
+        </button>
+        <button type="button" class="hv2-tab" data-view="self" role="tab" aria-selected="false">
+          My calendar
+        </button>
+      </div>
+      <div class="hv2-picker" id="hv2PickerWrap" style="display:none;">
+        <label for="hv2Person">Focus on</label>
+        <select id="hv2Person"></select>
+      </div>
+      <div class="hv2-legend" aria-label="Status colour legend">
+        <span class="hv2-legend-item"><span class="hv2-legend-sw" style="background:#B7CFA1"></span>Office</span>
+        <span class="hv2-legend-item"><span class="hv2-legend-sw" style="background:#94B6B1"></span>WFH</span>
+        <span class="hv2-legend-item"><span class="hv2-legend-sw" style="background:linear-gradient(180deg,var(--brass-500) 0 50%,#B7CFA1 50% 100%)"></span>Half</span>
+        <span class="hv2-legend-item"><span class="hv2-legend-sw" style="background:var(--brass-500)"></span>Holiday</span>
+        <span class="hv2-legend-item"><span class="hv2-legend-sw" style="background:var(--brass-300)"></span>Bank holiday</span>
+        <span class="hv2-legend-item"><span class="hv2-legend-sw" style="background:var(--red-500)"></span>Sick</span>
+        <span class="hv2-legend-item"><span class="hv2-legend-sw" style="background:var(--paper-200)"></span>Weekend / off</span>
+      </div>
+    </div>
+
+    <!-- Year-at-a-glance grid: totals ribbon + month strip + team rows -->
+    <div class="hv2-grid-wrap" id="hv2GridWrap" role="grid" aria-label="Team year-at-a-glance">
+      <div class="hv2-totals" id="hv2Totals">
+        <div class="hv2-totals-label">
+          <span class="hv2-totals-cap">Cover Risk</span>
+          <span>people off, by week</span>
+        </div>
+        <div class="hv2-totals-strip" id="hv2TotalsStrip"></div>
+      </div>
+      <div class="hv2-months" id="hv2Months">
+        <div class="hv2-months-pad">Week starting →</div>
+        <div class="hv2-months-strip" id="hv2MonthsStrip"></div>
+      </div>
+      <div class="hv2-rows" id="hv2Rows"></div>
+    </div>
+
+    <!-- Focus panel — opens when a name is clicked or self-tab is active -->
+    <div class="hv2-focus" id="hv2Focus">
+      <div class="hv2-focus-head">
+        <h2 class="hv2-focus-name" id="hv2FocusName">—</h2>
+        <div class="hv2-focus-kpis" id="hv2FocusKpis"></div>
+      </div>
+      <div class="hv2-focus-body">
+        <div class="hv2-focus-months" id="hv2FocusMonths"></div>
+        <div id="hv2FocusRails"></div>
+      </div>
+    </div>
+
+    <div class="hv2-log-section">
+      <h2>Stop press — change log</h2>
+      <ul class="hv2-log" id="hv2Log"><li class="hv2-log-empty">Loading change log…</li></ul>
+    </div>
+  </section>
+</main>
+
+<div class="hv2-banner" id="hv2Banner"></div>
+<aside class="hv2-preview-mark">v2 preview</aside>
+
+<script>
+  /* ===================================================================
+   * Holidays v2 — the same data + the same API as v1, redrawn as a
+   * year-at-a-glance editorial ledger.
+   *
+   *  Storage: holidays.json on raw.githubusercontent.com
+   *  API:     POST /api/holidays/set with { email, date, status }
+   *  Auth:    Cloudflare Access — viewer email comes from /whoami
+   *
+   * The page never mutates state the worker disallows — the worker
+   * still rejects "approved-holiday" from non-managers, etc.
+   * =================================================================== */
+
+  const HV_API = "/api/holidays";
+
+  const STATUSES = [
+    { key: "office",      label: "Worked at Office",      swatch: "#B7CFA1" },
+    { key: "wfh",         label: "Worked from Home",      swatch: "#94B6B1" },
+    { key: "half-am",     label: "Half Day — Morning",    swatch: "linear-gradient(180deg,var(--brass-500) 0 50%,#B7CFA1 50% 100%)" },
+    { key: "half-pm",     label: "Half Day — Afternoon",  swatch: "linear-gradient(180deg,#B7CFA1 0 50%,var(--brass-500) 50% 100%)" },
+    { key: "holiday",     label: "Paid Holiday",          swatch: "var(--brass-500)" },
+    { key: "sick",        label: "Sickness",              swatch: "var(--red-500)" },
+    { key: "maternity",   label: "Maternity",             swatch: "var(--brass-500)" },
+    { key: "non-working", label: "Non-Working",           swatch: "var(--paper-200)" },
+  ];
+  const APPROVED_HOLIDAY = { key: "approved-holiday", label: "Approved Holiday", swatch: "var(--brass-500)" };
+  const STATUS_LABEL = Object.fromEntries([...STATUSES, APPROVED_HOLIDAY].map(s => [s.key, s.label]));
+  // "Off" = counts toward cover risk + per-person holiday-day count.
+  const OFF_STATUSES = new Set(["holiday", "approved-holiday", "sick", "maternity", "half-am", "half-pm"]);
+
+  // UK Bank Holidays for 2026-04-01 → 2027-03-31 — same list as v1.
+  const UK_BANK_HOLIDAYS = new Set([
+    "2026-04-03", "2026-04-06", "2026-05-04", "2026-05-25", "2026-08-31",
+    "2026-12-25", "2026-12-28", "2027-01-01", "2027-03-26", "2027-03-29",
+  ]);
+
+  // Typical full-time holiday allowance — the per-person dot meter is
+  // calibrated to 25 days. Over-use lights up red.
+  const ALLOWANCE = 25;
+
+  let viewerEmail = "", viewerName = "";
+  let viewerIsAdmin = false;
+  let adminEmails = new Set();
+  let staff = [];
+  let staffByEmail = {};
+  let lineManagerByEmail = {};
+  let directReports = new Set();
+  let holidaysDoc = null;
+  let yearStart = new Date(2026, 3, 1);
+  let yearEnd   = new Date(2027, 2, 31);
+
+  // View state
+  let currentView = "team";        // "team" | "self"
+  let focusEmail = "";              // person whose detail panel is open
+  let teamMembers = [];             // list of {email,user} shown in the team grid
+
+  // Precomputed week list — Mondays only, [start..end] covering yearStart..yearEnd
+  let weekStarts = [];
+
+  const HOLIDAYS_RAW_URL    = "https://raw.githubusercontent.com/richmondbot2000-prog/togetherbook/main/holidays.json";
+  const ANNOTATIONS_RAW_URL = "https://raw.githubusercontent.com/richmondbot2000-prog/togetherbook/main/annotations.json";
+
+  Promise.all([
+    fetch(`${HV_API}/whoami`, { cache: "no-store" }).then(r => r.ok ? r.json() : Promise.reject("not signed in")),
+    fetch("staff.json",       { cache: "no-store" }).then(r => r.ok ? r.json() : Promise.reject("staff.json missing")),
+    fetch("admins.json",      { cache: "no-store" }).then(r => r.ok ? r.json() : ({ admins: [] })),
+    fetch(`${HOLIDAYS_RAW_URL}?ts=${Date.now()}`,    { cache: "no-store" }).then(r => r.ok ? r.json() : ({ by_user: {}, log: [] })),
+    fetch(`${ANNOTATIONS_RAW_URL}?ts=${Date.now()}`, { cache: "no-store" }).then(r => r.ok ? r.json() : ({ annotations: {} })).catch(() => ({ annotations: {} })),
+  ]).then(([who, s, ad, hd, an]) => {
+    viewerEmail = ((who && who.email) || "").toLowerCase();
+    viewerName  = (who && who.name)  || "";
+    adminEmails = new Set((ad.admins || []).map(e => (e || "").toLowerCase()));
+    viewerIsAdmin = adminEmails.has(viewerEmail);
+    staff = (s.users || [])
+      .filter(u => !u.suspended && !u.deletion_time)
+      .sort((a, b) => (a.name || "").localeCompare(b.name || ""));
+    staffByEmail = Object.fromEntries(staff.map(u => [(u.email || "").toLowerCase(), u]));
+    holidaysDoc = hd;
+    if (hd.year_start) yearStart = parseISO(hd.year_start);
+    if (hd.year_end)   yearEnd   = parseISO(hd.year_end);
+
+    lineManagerByEmail = {};
+    for (const [k, v] of Object.entries((an && an.annotations) || {})) {
+      const mgr = (v && v.line_manager) ? String(v.line_manager).toLowerCase() : "";
+      if (mgr) lineManagerByEmail[k.toLowerCase()] = mgr;
+    }
+    directReports = new Set(
+      Object.entries(lineManagerByEmail)
+        .filter(([_, mgr]) => mgr === viewerEmail)
+        .map(([emp]) => emp.toLowerCase())
+    );
+
+    buildWeekStarts();
+    pickInitialView();
+    setupTabs();
+    setupPicker();
+    renderAll();
+  }).catch(err => {
+    document.getElementById("hv2RangeLine").textContent = "Could not load: " + (err.message || err);
+    document.getElementById("hv2TotalsStrip").innerHTML = "";
+    document.getElementById("hv2Rows").innerHTML =
+      `<div class="hv2-log-empty" style="padding:24px;">Cloudflare Access must be signed in for the calendar to load.</div>`;
+  });
+
+  // Decide whose data to show by default. Order:
+  //   1. Line managers (direct reports > 0) → Team view, focus = self
+  //   2. Admins                              → Team view of "everyone", focus = self
+  //   3. ICs                                 → Self view
+  function pickInitialView() {
+    if (directReports.size > 0) {
+      currentView = "team";
+      teamMembers = buildTeamList("reports");
+    } else if (viewerIsAdmin) {
+      currentView = "team";
+      teamMembers = buildTeamList("everyone");
+    } else {
+      currentView = "self";
+      teamMembers = buildTeamList("solo");
+    }
+    focusEmail = viewerEmail;
+  }
+
+  // teamMembers: viewer's direct reports + viewer themselves (so the
+  // manager sees their own pattern alongside the reports). Admins see
+  // everyone. ICs see only themselves.
+  function buildTeamList(mode) {
+    const ofRow = e => ({ email: e, user: staffByEmail[e] || { email: e, name: e } });
+    if (mode === "solo") return [ofRow(viewerEmail)];
+    if (mode === "everyone") return staff.map(u => ofRow((u.email || "").toLowerCase()));
+    // mode === "reports"
+    const set = new Set([viewerEmail, ...directReports]);
+    return [...set]
+      .map(ofRow)
+      .sort((a, b) => {
+        // Viewer pinned to the top so they're always first in the eyeline.
+        if (a.email === viewerEmail) return -1;
+        if (b.email === viewerEmail) return 1;
+        return (a.user.name || a.email).localeCompare(b.user.name || b.email);
+      });
+  }
+
+  function buildWeekStarts() {
+    weekStarts = [];
+    // First Monday on/before yearStart
+    const first = new Date(yearStart);
+    const dow = first.getDay();
+    // JS: 0=Sun … 6=Sat. We want Monday.
+    const offset = (dow === 0) ? -6 : (1 - dow);
+    first.setDate(first.getDate() + offset);
+    let cursor = new Date(first);
+    let safety = 0;
+    while (cursor <= yearEnd && safety < 64) {
+      weekStarts.push(new Date(cursor));
+      cursor.setDate(cursor.getDate() + 7);
+      safety++;
+    }
+  }
+
+  function setupTabs() {
+    const wrap = document.getElementById("hv2Tabs");
+    const cnt = document.getElementById("hv2TabTeamCount");
+    cnt.textContent = String(teamMembers.length);
+    // Hide the team tab if the viewer has no reports AND isn't an admin.
+    if (!viewerIsAdmin && directReports.size === 0) {
+      wrap.querySelector('[data-view="team"]').style.display = "none";
+    }
+    wrap.querySelectorAll(".hv2-tab").forEach(btn => {
+      btn.addEventListener("click", () => {
+        currentView = btn.dataset.view;
+        if (currentView === "self") {
+          teamMembers = [{ email: viewerEmail, user: staffByEmail[viewerEmail] || { email: viewerEmail, name: viewerName } }];
+          focusEmail = viewerEmail;
+        } else if (directReports.size > 0) {
+          teamMembers = buildTeamList("reports");
+        } else if (viewerIsAdmin) {
+          teamMembers = buildTeamList("everyone");
+        }
+        wrap.querySelectorAll(".hv2-tab").forEach(b => {
+          const on = b === btn;
+          b.classList.toggle("is-active", on);
+          b.setAttribute("aria-selected", String(on));
+        });
+        renderAll();
+      });
+    });
+  }
+
+  function setupPicker() {
+    if (!viewerIsAdmin) return;
+    const wrap = document.getElementById("hv2PickerWrap");
+    const sel  = document.getElementById("hv2Person");
+    wrap.style.display = "inline-flex";
+    sel.innerHTML = staff.map(u => {
+      const e = (u.email || "").toLowerCase();
+      const isSel = (e === focusEmail) ? " selected" : "";
+      return `<option value="${escapeHtml(e)}"${isSel}>${escapeHtml(u.name || u.email)}${e === viewerEmail ? "  ·  (you)" : ""}</option>`;
+    }).join("");
+    sel.addEventListener("change", () => {
+      focusEmail = sel.value;
+      // An admin picking a person opens that person's focus panel
+      // (and on the self tab swaps the strip to them too).
+      renderAll();
+    });
+  }
+
+  // ────────────────────────────────────────────────────────────────
+  // Rendering
+  // ────────────────────────────────────────────────────────────────
+  function renderAll() {
+    fitWeekColumn();
+    renderMast();
+    renderMonths();
+    renderTotals();
+    renderRows();
+    renderFocus();
+    renderLog();
+  }
+
+  // Resize the week column to exactly fill available width — this
+  // is the trick that lets 15 people × 52 weeks fit edge-to-edge.
+  function fitWeekColumn() {
+    const wrap = document.getElementById("hv2GridWrap");
+    if (!wrap || !weekStarts.length) return;
+    const w = wrap.clientWidth;
+    const nameW = parseFloat(getComputedStyle(document.documentElement).getPropertyValue("--hv2-name-w")) || 168;
+    // Floor to whole pixels so day micro-bars are crisp.
+    const each = Math.max(15, Math.floor((w - nameW - 1) / weekStarts.length));
+    document.documentElement.style.setProperty("--hv2-week-w", each + "px");
+    document.documentElement.style.setProperty("--hv2-day-w", Math.max(2, Math.floor((each - 1) / 5)) + "px");
+  }
+  window.addEventListener("resize", () => { fitWeekColumn(); });
+
+  function renderMast() {
+    const range = `${fmtDate(yearStart)} → ${fmtDate(yearEnd)}`;
+    document.getElementById("hv2RangeLine").textContent = range;
+    // "Worst cover week" headline KPI — most-people-off week.
+    const totals = computeWeekTotals();
+    let worstWeek = -1, worstCount = 0;
+    for (let i = 0; i < totals.length; i++) {
+      if (totals[i] > worstCount) { worstCount = totals[i]; worstWeek = i; }
+    }
+    const headline = document.getElementById("hv2WeekHotLine");
+    if (worstWeek < 0 || worstCount === 0) {
+      headline.textContent = "No absences logged yet";
+    } else {
+      const wk = weekStarts[worstWeek];
+      headline.textContent = `Thinnest cover: w/c ${fmtDate(wk)} — ${worstCount} of ${teamMembers.length}`;
+    }
+    document.getElementById("hv2TabTeamCount").textContent = String(teamMembers.length);
+  }
+
+  function renderMonths() {
+    const strip = document.getElementById("hv2MonthsStrip");
+    strip.innerHTML = "";
+    strip.style.gridTemplateColumns = `repeat(${weekStarts.length}, var(--hv2-week-w))`;
+    let lastMonth = -1;
+    for (let i = 0; i < weekStarts.length; i++) {
+      // The week is "in" a month if the Thursday of that week falls
+      // in that month (ISO week convention). Stops short months
+      // (Apr starts mid-week) from claiming the previous month.
+      const thu = new Date(weekStarts[i]);
+      thu.setDate(thu.getDate() + 3);
+      const m = thu.getMonth();
+      const cell = document.createElement("div");
+      if (m !== lastMonth) {
+        cell.className = "hv2-month";
+        cell.textContent = thu.toLocaleDateString("en-GB", { month: "short" });
+        lastMonth = m;
+      } else {
+        cell.className = "hv2-month-spacer";
+      }
+      strip.appendChild(cell);
+    }
+  }
+
+  // For each week column: count how many teamMembers are 'off' at
+  // any point during that working week. Halves count as 0.5 so a
+  // team of 6 with 2 holiday + 1 half-day reads as 2.5/6.
+  function computeWeekTotals() {
+    const out = new Array(weekStarts.length).fill(0);
+    for (let wi = 0; wi < weekStarts.length; wi++) {
+      const start = weekStarts[wi];
+      let sum = 0;
+      for (const m of teamMembers) {
+        let personMax = 0;
+        for (let d = 0; d < 5; d++) {
+          const day = new Date(start);
+          day.setDate(start.getDate() + d);
+          if (day < yearStart || day > yearEnd) continue;
+          const iso = isoDate(day);
+          const stored = ((holidaysDoc.by_user || {})[m.email] || {}).days || {};
+          const v = stored[iso];
+          // Bank holiday on a weekday with no override = counts.
+          const isBh = UK_BANK_HOLIDAYS.has(iso);
+          let s = v;
+          if (!s && isBh) s = "holiday";
+          if (!s) continue;
+          if (s === "half-am" || s === "half-pm") personMax = Math.max(personMax, 0.5);
+          else if (OFF_STATUSES.has(s) || s === "holiday") personMax = Math.max(personMax, 1);
+        }
+        sum += personMax;
+      }
+      out[wi] = sum;
+    }
+    return out;
+  }
+
+  function renderTotals() {
+    const strip = document.getElementById("hv2TotalsStrip");
+    strip.innerHTML = "";
+    strip.style.gridTemplateColumns = `repeat(${weekStarts.length}, var(--hv2-week-w))`;
+    const totals = computeWeekTotals();
+    const maxScale = Math.max(3, ...totals); // bar height calibrated to scale
+    const teamSize = Math.max(1, teamMembers.length);
+    const todayIso = isoDate(new Date());
+    for (let i = 0; i < weekStarts.length; i++) {
+      const cell = document.createElement("div");
+      cell.className = "hv2-tot-cell";
+      const ratio = totals[i] / maxScale;
+      // Severity: ≥25% of team off in a single week is red, ≥10% brass.
+      const sev = (totals[i] / teamSize >= 0.25) ? "hot"
+                : (totals[i] / teamSize >= 0.10) ? "warm" : "cool";
+      cell.dataset.busy = sev;
+      const wk = weekStarts[i];
+      const wkEnd = new Date(wk); wkEnd.setDate(wk.getDate() + 4);
+      cell.title = `w/c ${wk.toLocaleDateString("en-GB", { day:"numeric", month:"short" })} — ${formatPeople(totals[i])} of ${teamMembers.length} off`;
+      // Mark "this week" with a thin red line at the baseline.
+      if (todayIso >= isoDate(wk) && todayIso <= isoDate(wkEnd)) {
+        cell.style.boxShadow = "inset 0 -2px 0 var(--red-500)";
+      }
+      const bar = document.createElement("div");
+      bar.className = "hv2-tot-bar";
+      bar.style.height = totals[i] === 0 ? "0%" : Math.max(6, Math.round(ratio * 100)) + "%";
+      cell.appendChild(bar);
+      strip.appendChild(cell);
+    }
+  }
+
+  function renderRows() {
+    const root = document.getElementById("hv2Rows");
+    root.innerHTML = "";
+    if (teamMembers.length === 0) {
+      root.innerHTML = `<div class="hv2-log-empty" style="padding:24px;">No teammates to show. Set a line manager on the Directory page.</div>`;
+      return;
+    }
+    for (const m of teamMembers) {
+      root.appendChild(renderTeamRow(m));
+    }
+  }
+
+  function renderTeamRow(member) {
+    const row = document.createElement("div");
+    row.className = "hv2-row";
+    row.dataset.email = member.email;
+    if (member.email === viewerEmail) row.classList.add("is-self");
+    if (member.email === focusEmail)  row.classList.add("is-focus");
+
+    // Name + holiday-day meter
+    const name = document.createElement("div");
+    name.className = "hv2-name";
+    const usedRaw = countHolidayDays(member.email);
+    const used = Math.round(usedRaw * 10) / 10;
+    const over = used > ALLOWANCE;
+    // Per-person dot meter — 5 dots, each = 5 days, brass when used.
+    const dots = [];
+    const filled = Math.min(5, Math.ceil(used / 5));
+    for (let i = 0; i < 5; i++) {
+      const on = (i < filled);
+      const cls = over && i === 4 ? "over" : (on ? "on" : "");
+      dots.push(`<span class="${cls}"></span>`);
+    }
+    name.innerHTML = `
+      <div class="hv2-name-info">
+        <span class="hv2-name-n">${escapeHtml(member.user.name || member.email)}</span>
+        <span class="hv2-name-c ${over ? "is-overused" : ""}">${used} of ${ALLOWANCE} days</span>
+      </div>
+      <span class="hv2-name-meter" aria-hidden="true">${dots.join("")}</span>
+    `;
+    name.title = `${member.user.name || member.email} — open detail`;
+    name.addEventListener("click", () => {
+      focusEmail = member.email;
+      renderAll();
+      const focusEl = document.getElementById("hv2Focus");
+      focusEl.scrollIntoView({ behavior: "smooth", block: "nearest" });
+    });
+    row.appendChild(name);
+
+    const strip = document.createElement("div");
+    strip.className = "hv2-strip";
+    strip.style.gridTemplateColumns = `repeat(${weekStarts.length}, var(--hv2-week-w))`;
+    const dayMap = ((holidaysDoc.by_user || {})[member.email] || {}).days || {};
+    const todayIso = isoDate(new Date());
+
+    let lastMonth = -1;
+    for (let wi = 0; wi < weekStarts.length; wi++) {
+      const start = weekStarts[wi];
+      const wk = document.createElement("div");
+      wk.className = "hv2-week";
+      const thu = new Date(start); thu.setDate(start.getDate() + 3);
+      if (thu.getMonth() !== lastMonth) {
+        wk.classList.add("is-month-edge");
+        lastMonth = thu.getMonth();
+      }
+      for (let di = 0; di < 5; di++) {
+        const d = new Date(start);
+        d.setDate(start.getDate() + di);
+        const inYear = (d >= yearStart && d <= yearEnd);
+        const iso = isoDate(d);
+        const day = document.createElement("div");
+        day.className = "hv2-day";
+        if (!inYear) {
+          day.classList.add("is-weekend");
+        } else {
+          day.dataset.date = iso;
+          day.dataset.email = member.email;
+          const stored = dayMap[iso];
+          const isBh = UK_BANK_HOLIDAYS.has(iso);
+          if (stored) {
+            day.dataset.status = stored;
+          } else if (isBh) {
+            day.dataset.defaultBh = "1";
+          } else {
+            day.dataset.status = "office";
+          }
+          if (iso === todayIso) day.classList.add("is-today");
+          day.title = `${member.user.name || member.email} · ${d.toLocaleDateString("en-GB", { weekday: "short", day: "numeric", month: "short" })}` + (stored ? ` · ${STATUS_LABEL[stored] || stored}` : (isBh ? " · Bank Holiday" : ""));
+          day.addEventListener("click", e => {
+            e.stopPropagation();
+            openPicker(day, d, member.email);
+          });
+        }
+        wk.appendChild(day);
+      }
+      strip.appendChild(wk);
+    }
+    row.appendChild(strip);
+    return row;
+  }
+
+  // ────────────────────────────────────────────────────────────────
+  // Focus panel (per-person detail)
+  // ────────────────────────────────────────────────────────────────
+  function renderFocus() {
+    const panel = document.getElementById("hv2Focus");
+    panel.classList.add("is-open");
+    const user = staffByEmail[focusEmail] || { email: focusEmail, name: focusEmail };
+    const isMe = (focusEmail === viewerEmail);
+    document.getElementById("hv2FocusName").innerHTML =
+      `${escapeHtml(user.name || focusEmail)}<em>${isMe ? "you" : (lineManagerForLabel(focusEmail))}</em>`;
+
+    // KPIs: holiday used / allowance, sick days, bank-holiday count.
+    const days = ((holidaysDoc.by_user || {})[focusEmail] || {}).days || {};
+    let used = 0, sick = 0, halves = 0;
+    for (const d of iterDates(yearStart, yearEnd)) {
+      const iso = isoDate(d);
+      const dow = d.getDay();
+      const isWeekend = (dow === 0 || dow === 6);
+      const isBh = UK_BANK_HOLIDAYS.has(iso);
+      const stored = days[iso];
+      if (stored === "holiday" || stored === "maternity" || stored === "approved-holiday") used += 1;
+      else if (stored === "half-am" || stored === "half-pm") { used += 0.5; halves += 1; }
+      else if (stored === "sick") sick += 1;
+      else if (!stored && !isWeekend && isBh) used += 1;
+    }
+    const remaining = Math.max(0, ALLOWANCE - used);
+    const kpis = document.getElementById("hv2FocusKpis");
+    kpis.innerHTML = `
+      <div class="hv2-focus-kpi ${used > ALLOWANCE ? "alert" : ""}"><strong>${used}</strong>holiday days used</div>
+      <div class="hv2-focus-kpi"><strong>${remaining}</strong>remaining (of ${ALLOWANCE})</div>
+      <div class="hv2-focus-kpi ${sick >= 7 ? "alert" : ""}"><strong>${sick}</strong>sick days</div>
+      <div class="hv2-focus-kpi"><strong>${halves}</strong>half-days</div>`;
+
+    // Render five rows (Mon..Fri) of day cells across the year.
+    const rails = document.getElementById("hv2FocusRails");
+    rails.innerHTML = "";
+    const months = document.getElementById("hv2FocusMonths");
+    months.innerHTML = "";
+    // Compute the full list of work-days, grouped Mon..Fri across weeks
+    const days5 = [[], [], [], [], []]; // index 0=Mon … 4=Fri
+    for (const wk of weekStarts) {
+      for (let i = 0; i < 5; i++) {
+        const d = new Date(wk); d.setDate(wk.getDate() + i);
+        days5[i].push(d);
+      }
+    }
+    // Month header
+    const monthRail = document.createElement("div");
+    monthRail.className = "hv2-focus-railday";
+    monthRail.textContent = "";
+    months.appendChild(monthRail);
+    const monthRow = document.createElement("div");
+    monthRow.className = "hv2-focus-dayrow";
+    monthRow.style.gridTemplateColumns = `repeat(${weekStarts.length}, 1fr)`;
+    let prev = -1;
+    for (let wi = 0; wi < weekStarts.length; wi++) {
+      const thu = new Date(weekStarts[wi]); thu.setDate(thu.getDate() + 3);
+      const cell = document.createElement("div");
+      cell.className = "hv2-focus-month-tick";
+      if (thu.getMonth() !== prev) {
+        cell.textContent = thu.toLocaleDateString("en-GB", { month: "short" });
+        prev = thu.getMonth();
+      } else {
+        cell.style.borderLeft = "1px solid var(--ink-300)";
+      }
+      monthRow.appendChild(cell);
+    }
+    months.appendChild(monthRow);
+
+    const todayIso = isoDate(new Date());
+    const dayLabel = ["Mon","Tue","Wed","Thu","Fri"];
+    for (let di = 0; di < 5; di++) {
+      const rail = document.createElement("div");
+      rail.className = "hv2-focus-rail";
+      const lbl = document.createElement("div");
+      lbl.className = "hv2-focus-railday";
+      lbl.textContent = dayLabel[di];
+      rail.appendChild(lbl);
+      const row = document.createElement("div");
+      row.className = "hv2-focus-dayrow";
+      row.style.gridTemplateColumns = `repeat(${weekStarts.length}, 1fr)`;
+      let lastM = -1;
+      for (let wi = 0; wi < weekStarts.length; wi++) {
+        const d = days5[di][wi];
+        const inYear = (d >= yearStart && d <= yearEnd);
+        const cell = document.createElement("div");
+        cell.className = "hv2-focus-day";
+        if (!inYear) {
+          cell.style.background = "var(--paper-200)";
+        } else {
+          const iso = isoDate(d);
+          const stored = days[iso];
+          const isBh = UK_BANK_HOLIDAYS.has(iso);
+          if (stored) cell.dataset.status = stored;
+          else if (isBh) cell.dataset.defaultBh = "1";
+          else cell.dataset.status = "office";
+          if (iso === todayIso) cell.classList.add("is-today");
+          cell.title = `${user.name || focusEmail} · ${d.toLocaleDateString("en-GB", { weekday: "short", day: "numeric", month: "short", year: "numeric" })}` + (stored ? ` · ${STATUS_LABEL[stored] || stored}` : (isBh ? " · Bank Holiday" : ""));
+          cell.addEventListener("click", e => {
+            e.stopPropagation();
+            openPicker(cell, d, focusEmail);
+          });
+        }
+        const thu = new Date(weekStarts[wi]); thu.setDate(thu.getDate() + 3);
+        if (thu.getMonth() !== lastM) {
+          cell.classList.add("is-month-edge");
+          lastM = thu.getMonth();
+        }
+        row.appendChild(cell);
+      }
+      rail.appendChild(row);
+      rails.appendChild(rail);
+    }
+  }
+
+  function lineManagerForLabel(email) {
+    const mgr = lineManagerByEmail[email];
+    if (!mgr) return "no line manager set";
+    const u = staffByEmail[mgr];
+    return `reports to ${u ? (u.name || mgr) : mgr}`;
+  }
+
+  // ────────────────────────────────────────────────────────────────
+  // Status picker — same affordance as v1 but redrawn.
+  // ────────────────────────────────────────────────────────────────
+  let openPopEl = null;
+  function openPicker(anchor, d, targetEmail) {
+    closePicker();
+    if (!canEditOnBehalf(targetEmail)) {
+      banner("You can only edit your own calendar.", true);
+      return;
+    }
+    const iso = isoDate(d);
+    const dayMap = ((holidaysDoc.by_user || {})[targetEmail] || {}).days || {};
+    const current = dayMap[iso] || null;
+    const dow = d.getDay();
+    const isWeekend = (dow === 0 || dow === 6);
+    const isBh = UK_BANK_HOLIDAYS.has(iso);
+    const defaultStatus = isWeekend ? "non-working" : (isBh ? "holiday" : "office");
+    const editingOther = targetEmail !== viewerEmail;
+    const showApproved = editingOther && (viewerIsAdmin || directReports.has(targetEmail));
+    const opts = showApproved ? [...STATUSES, APPROVED_HOLIDAY] : STATUSES.slice();
+    const pop = document.createElement("div");
+    pop.className = "hv2-pop";
+    const who = (staffByEmail[targetEmail] || {}).name || targetEmail;
+    const dateLabel = d.toLocaleDateString("en-GB", { weekday: "long", day: "numeric", month: "short", year: "numeric" });
+    pop.innerHTML = `
+      <div class="hv2-pop-head">
+        <strong>${escapeHtml(who)}</strong>
+        ${escapeHtml(dateLabel)}${isBh ? " · UK Bank Holiday" : ""}
+      </div>
+      ${opts.map(s => `
+        <button type="button" class="hv2-pop-opt" data-status="${s.key}" ${current === s.key ? "disabled" : ""}>
+          <span class="hv2-pop-sw" style="background:${s.swatch}"></span>${s.label}${current === s.key ? " · current" : ""}
+        </button>
+      `).join("")}
+      <button type="button" class="hv2-pop-opt hv2-pop-clear" data-clear ${current ? "" : "disabled"}>
+        Reset to default (${STATUS_LABEL[defaultStatus]})
+      </button>`;
+    document.body.appendChild(pop);
+    positionPop(pop, anchor);
+    openPopEl = pop;
+    pop.addEventListener("click", e => {
+      const btn = e.target.closest("button");
+      if (!btn || btn.disabled) return;
+      const next = btn.dataset.clear ? null : btn.dataset.status;
+      saveDayFor(targetEmail, iso, current, next);
+      closePicker();
+    });
+    setTimeout(() => {
+      document.addEventListener("click", outsideClose, { once: true });
+      document.addEventListener("keydown", escClose);
+    }, 0);
+    function outsideClose(e) {
+      if (pop.contains(e.target)) {
+        document.addEventListener("click", outsideClose, { once: true });
+        return;
+      }
+      closePicker();
+    }
+    function escClose(e) {
+      if (e.key === "Escape") { e.preventDefault(); closePicker(); }
+    }
+    pop._cleanup = () => { document.removeEventListener("keydown", escClose); };
+  }
+  function closePicker() {
+    if (openPopEl) {
+      if (openPopEl._cleanup) openPopEl._cleanup();
+      openPopEl.remove();
+      openPopEl = null;
+    }
+  }
+  function positionPop(pop, anchor) {
+    const r = anchor.getBoundingClientRect();
+    let left = window.scrollX + r.left;
+    let top  = window.scrollY + r.bottom + 4;
+    const maxLeft = window.scrollX + document.documentElement.clientWidth - pop.offsetWidth - 8;
+    if (left > maxLeft) left = maxLeft;
+    if (left < window.scrollX + 8) left = window.scrollX + 8;
+    pop.style.left = left + "px";
+    pop.style.top  = top + "px";
+  }
+
+  function canEditOnBehalf(email) {
+    const e = (email || "").toLowerCase();
+    if (e === viewerEmail) return true;
+    if (viewerIsAdmin) return true;
+    if (directReports.has(e)) return true;
+    return false;
+  }
+
+  async function saveDayFor(targetEmail, iso, fromStatus, toStatus) {
+    const target = (targetEmail || "").toLowerCase();
+    const map = ensureUserMap(target);
+    const prev = map.days[iso] || null;
+    if (toStatus === null) delete map.days[iso];
+    else map.days[iso] = toStatus;
+    // Optimistic: re-render the affected row + totals + focus panel
+    renderTotals();
+    renderMast();
+    const row = document.querySelector(`.hv2-row[data-email="${target}"]`);
+    if (row) {
+      const fresh = renderTeamRow(teamMembers.find(m => m.email === target) || { email: target, user: staffByEmail[target] || { name: target } });
+      row.replaceWith(fresh);
+    }
+    if (target === focusEmail) renderFocus();
+
+    try {
+      const res = await fetch(`${HV_API}/set`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email: target, date: iso, status: toStatus }),
+      });
+      const data = await res.json().catch(() => null);
+      if (!res.ok || (data && data.ok === false)) {
+        throw new Error((data && data.error) || `HTTP ${res.status}`);
+      }
+      if (data && data.log_entry) {
+        holidaysDoc.log = (holidaysDoc.log || []);
+        holidaysDoc.log.push(data.log_entry);
+        renderLog();
+      }
+      holidaysDoc.updated_at = (data && data.updated_at) || holidaysDoc.updated_at;
+      banner("Saved");
+    } catch (err) {
+      if (prev === null) delete map.days[iso]; else map.days[iso] = prev;
+      renderTotals();
+      const row2 = document.querySelector(`.hv2-row[data-email="${target}"]`);
+      if (row2) {
+        const fresh = renderTeamRow(teamMembers.find(m => m.email === target) || { email: target, user: staffByEmail[target] || { name: target } });
+        row2.replaceWith(fresh);
+      }
+      if (target === focusEmail) renderFocus();
+      banner("Save failed: " + (err.message || err), true);
+      console.error("[holidays v2] save failed", err);
+    }
+  }
+
+  function ensureUserMap(email) {
+    holidaysDoc.by_user = holidaysDoc.by_user || {};
+    holidaysDoc.by_user[email] = holidaysDoc.by_user[email] || {};
+    holidaysDoc.by_user[email].days = holidaysDoc.by_user[email].days || {};
+    return holidaysDoc.by_user[email];
+  }
+
+  function countHolidayDays(email) {
+    const map = (holidaysDoc.by_user && holidaysDoc.by_user[email]) || {};
+    const days = map.days || {};
+    let count = 0;
+    for (const d of iterDates(yearStart, yearEnd)) {
+      const iso = isoDate(d);
+      const dow = d.getDay();
+      const isWeekend = (dow === 0 || dow === 6);
+      const stored = days[iso];
+      if (stored === "holiday" || stored === "maternity" || stored === "approved-holiday") { count += 1; continue; }
+      if (stored === "half-am" || stored === "half-pm") { count += 0.5; continue; }
+      if (!stored && !isWeekend && UK_BANK_HOLIDAYS.has(iso)) { count += 1; continue; }
+    }
+    return count;
+  }
+
+  function renderLog() {
+    const root = document.getElementById("hv2Log");
+    const all = (holidaysDoc.log || []);
+    const me = viewerEmail;
+    let entries;
+    if (currentView === "team") {
+      const teamSet = new Set(teamMembers.map(m => m.email));
+      entries = all.filter(e => {
+        const u = (e.user_email || "").toLowerCase();
+        const by = (e.changed_by || "").toLowerCase();
+        if (teamSet.has(u)) return true;
+        if (by === me && teamSet.has(u)) return true;
+        return false;
+      });
+    } else {
+      entries = all.filter(e => (e.user_email || "").toLowerCase() === focusEmail);
+    }
+    if (!entries.length) {
+      root.innerHTML = `<li class="hv2-log-empty">No changes recorded yet.</li>`;
+      return;
+    }
+    const sorted = entries.slice().sort((a, b) => (a.changed_at < b.changed_at ? 1 : -1));
+    root.innerHTML = sorted.slice(0, 120).map(e => {
+      const at = e.changed_at ? new Date(e.changed_at).toLocaleString("en-GB", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" }) : "";
+      const day = e.date ? new Date(e.date).toLocaleDateString("en-GB", { weekday: "short", day: "numeric", month: "short" }) : "";
+      const from = STATUS_LABEL[e.from] || e.from || "default";
+      const to   = STATUS_LABEL[e.to]   || e.to   || "default";
+      const userIsMe = (e.user_email || "").toLowerCase() === me;
+      const byIsMe   = (e.changed_by || "").toLowerCase() === me;
+      let who;
+      if (userIsMe && byIsMe) who = "by you";
+      else if (byIsMe) who = `${escapeHtml(displayName(e.user_email))} — by you`;
+      else if (userIsMe) who = `by ${escapeHtml(displayName(e.changed_by))}`;
+      else who = `${escapeHtml(displayName(e.user_email))} — by ${escapeHtml(displayName(e.changed_by))}`;
+      return `
+        <li>
+          <time>${escapeHtml(at)}</time>
+          <strong>${escapeHtml(day)}</strong>
+          <span class="from-to"> · ${escapeHtml(from)} → ${escapeHtml(to)}</span><br>
+          <span class="by">${who}</span>
+        </li>`;
+    }).join("");
+  }
+
+  // ────────────────────────────────────────────────────────────────
+  // Utilities
+  // ────────────────────────────────────────────────────────────────
+  function isoDate(d) {
+    const y = d.getFullYear();
+    const m = (d.getMonth() + 1).toString().padStart(2, "0");
+    const dd = d.getDate().toString().padStart(2, "0");
+    return `${y}-${m}-${dd}`;
+  }
+  function parseISO(s) {
+    const [y, m, d] = (s || "").split("-").map(n => parseInt(n, 10));
+    return new Date(y, (m || 1) - 1, d || 1);
+  }
+  function* iterDates(from, to) {
+    for (let d = new Date(from); d <= to; d.setDate(d.getDate() + 1)) yield new Date(d);
+  }
+  function fmtDate(d) {
+    return d.toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" });
+  }
+  function displayName(email) {
+    if (!email) return "Unknown";
+    const u = staffByEmail[(email || "").toLowerCase()];
+    return (u && u.name) || (email || "").split("@")[0];
+  }
+  function formatPeople(n) {
+    if (n === 0) return "0";
+    if (Math.round(n) === n) return String(n);
+    return n.toFixed(1);
+  }
+  function escapeHtml(s) {
+    return String(s || "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+  }
+  let bannerTimer = null;
+  function banner(text, isError) {
+    const el = document.getElementById("hv2Banner");
+    el.textContent = text;
+    el.classList.toggle("is-error", !!isError);
+    el.classList.add("is-shown");
+    clearTimeout(bannerTimer);
+    bannerTimer = setTimeout(() => el.classList.remove("is-shown"), isError ? 4500 : 2200);
+  }
+</script>
+
+<script>
+  document.addEventListener('keydown', e => {
+    if (e.key === 'Escape') document.body.classList.remove('nav-open');
+  });
+  document.querySelectorAll('.qb-nav-link').forEach(a =>
+    a.addEventListener('click', () => document.body.classList.remove('nav-open'))
+  );
+</script>
+<script src="nav.js?v=1778884073" defer></script>
+</body>
+</html>
