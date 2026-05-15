@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "updated_at": "2026-05-15T20:43:26.636805Z",
+  "updated_at": "2026-05-15T21:01:32.807183Z",
   "range": {
     "from": "2026-05-11",
     "to": "2026-05-15"
@@ -56,15 +56,6 @@
       "lng": -112.0793
     },
     {
-      "first_name": "david",
-      "state": "AZ",
-      "city": "Phoenix",
-      "county": "Maricopa",
-      "amount": 5000.0,
-      "lat": 33.4916,
-      "lng": -112.0793
-    },
-    {
       "first_name": "David",
       "state": "AZ",
       "city": "Surprise",
@@ -72,6 +63,15 @@
       "amount": 3000.0,
       "lat": 33.6378,
       "lng": -112.3854
+    },
+    {
+      "first_name": "david",
+      "state": "AZ",
+      "city": "Phoenix",
+      "county": "Maricopa",
+      "amount": 5000.0,
+      "lat": 33.4916,
+      "lng": -112.0793
     },
     {
       "first_name": "Ebony",
@@ -112,20 +112,20 @@
     {
       "first_name": "Justin",
       "state": "AZ",
-      "city": "Kingman",
-      "county": "Mohave",
-      "amount": 6000.0,
-      "lat": 35.2198,
-      "lng": -113.9298
-    },
-    {
-      "first_name": "Justin",
-      "state": "AZ",
       "city": "Tempe",
       "county": "Maricopa",
       "amount": 6000.0,
       "lat": 33.4005,
       "lng": -111.9251
+    },
+    {
+      "first_name": "Justin",
+      "state": "AZ",
+      "city": "Kingman",
+      "county": "Mohave",
+      "amount": 6000.0,
+      "lat": 35.2198,
+      "lng": -113.9298
     },
     {
       "first_name": "Leo",
@@ -265,20 +265,20 @@
     {
       "first_name": "Ariana",
       "state": "CA",
-      "city": "Lathrop",
-      "county": "San Joaquin",
-      "amount": 3000.0,
-      "lat": 37.8209,
-      "lng": -121.2827
-    },
-    {
-      "first_name": "Ariana",
-      "state": "CA",
       "city": "La Palma",
       "county": "Orange",
       "amount": 5000.0,
       "lat": 33.8491,
       "lng": -118.0398
+    },
+    {
+      "first_name": "Ariana",
+      "state": "CA",
+      "city": "Lathrop",
+      "county": "San Joaquin",
+      "amount": 3000.0,
+      "lat": 37.8209,
+      "lng": -121.2827
     },
     {
       "first_name": "CANDACE",
@@ -616,11 +616,11 @@
     {
       "first_name": "Luis",
       "state": "CA",
-      "city": "Rancho Cucamonga",
-      "county": "San Bernardino",
+      "city": "Selma",
+      "county": "Fresno",
       "amount": 5000.0,
-      "lat": 34.1336,
-      "lng": -117.5771
+      "lat": 36.5695,
+      "lng": -119.617
     },
     {
       "first_name": "Luis",
@@ -634,11 +634,11 @@
     {
       "first_name": "Luis",
       "state": "CA",
-      "city": "Selma",
-      "county": "Fresno",
+      "city": "Rancho Cucamonga",
+      "county": "San Bernardino",
       "amount": 5000.0,
-      "lat": 36.5695,
-      "lng": -119.617
+      "lat": 34.1336,
+      "lng": -117.5771
     },
     {
       "first_name": "Lydia",
@@ -769,20 +769,20 @@
     {
       "first_name": "Sean",
       "state": "CA",
-      "city": "Corona",
-      "county": "Riverside",
-      "amount": 3000.0,
-      "lat": 33.853,
-      "lng": -117.5537
-    },
-    {
-      "first_name": "Sean",
-      "state": "CA",
       "city": "Yucaipa",
       "county": "San Bernardino",
       "amount": 5000.0,
       "lat": 34.0282,
       "lng": -117.0489
+    },
+    {
+      "first_name": "Sean",
+      "state": "CA",
+      "city": "Corona",
+      "county": "Riverside",
+      "amount": 3000.0,
+      "lat": 33.853,
+      "lng": -117.5537
     },
     {
       "first_name": "Shawn",
@@ -913,20 +913,20 @@
     {
       "first_name": "Walter",
       "state": "CA",
-      "city": "Caruthers",
-      "county": "Fresno",
-      "amount": 7750.0,
-      "lat": 36.5358,
-      "lng": -119.8446
-    },
-    {
-      "first_name": "Walter",
-      "state": "CA",
       "city": "Susanville",
       "county": "Lassen",
       "amount": 3000.0,
       "lat": 40.4073,
       "lng": -120.6497
+    },
+    {
+      "first_name": "Walter",
+      "state": "CA",
+      "city": "Caruthers",
+      "county": "Fresno",
+      "amount": 7750.0,
+      "lat": 36.5358,
+      "lng": -119.8446
     },
     {
       "first_name": "Willie",
@@ -2299,20 +2299,20 @@
     {
       "first_name": "Jessica",
       "state": "IL",
-      "city": "Davis Junction",
-      "county": "Ogle",
-      "amount": 5000.0,
-      "lat": 42.0979,
-      "lng": -89.0838
-    },
-    {
-      "first_name": "Jessica",
-      "state": "IL",
       "city": "Downers Grove",
       "county": "DuPage",
       "amount": 7750.0,
       "lat": 41.7818,
       "lng": -88.0148
+    },
+    {
+      "first_name": "Jessica",
+      "state": "IL",
+      "city": "Davis Junction",
+      "county": "Ogle",
+      "amount": 5000.0,
+      "lat": 42.0979,
+      "lng": -89.0838
     },
     {
       "first_name": "JOSEPH",
@@ -3316,20 +3316,20 @@
     {
       "first_name": "Aaron",
       "state": "NC",
-      "city": "Sunbury",
-      "county": "Gates",
-      "amount": 5000.0,
-      "lat": 36.4316,
-      "lng": -76.6096
-    },
-    {
-      "first_name": "Aaron",
-      "state": "NC",
       "city": "Moyock",
       "county": "Currituck",
       "amount": 6000.0,
       "lat": 36.4871,
       "lng": -76.1146
+    },
+    {
+      "first_name": "Aaron",
+      "state": "NC",
+      "city": "Sunbury",
+      "county": "Gates",
+      "amount": 5000.0,
+      "lat": 36.4316,
+      "lng": -76.6096
     },
     {
       "first_name": "Adrian",
@@ -3595,20 +3595,20 @@
     {
       "first_name": "Karen",
       "state": "NC",
-      "city": "King",
-      "county": "Stokes",
-      "amount": 3750.0,
-      "lat": 36.295,
-      "lng": -80.356
-    },
-    {
-      "first_name": "Karen",
-      "state": "NC",
       "city": "Troy",
       "county": "Montgomery",
       "amount": 3000.0,
       "lat": 35.3777,
       "lng": -79.9093
+    },
+    {
+      "first_name": "Karen",
+      "state": "NC",
+      "city": "King",
+      "county": "Stokes",
+      "amount": 3750.0,
+      "lat": 36.295,
+      "lng": -80.356
     },
     {
       "first_name": "Kendrick",
@@ -4045,20 +4045,20 @@
     {
       "first_name": "Jason",
       "state": "OH",
-      "city": "Loveland",
-      "county": "Clermont",
-      "amount": 3000.0,
-      "lat": 39.2445,
-      "lng": -84.2588
-    },
-    {
-      "first_name": "Jason",
-      "state": "OH",
       "city": "Kent",
       "county": "Portage",
       "amount": 3750.0,
       "lat": 41.1487,
       "lng": -81.3497
+    },
+    {
+      "first_name": "Jason",
+      "state": "OH",
+      "city": "Loveland",
+      "county": "Clermont",
+      "amount": 3000.0,
+      "lat": 39.2445,
+      "lng": -84.2588
     },
     {
       "first_name": "Jeremey",
@@ -4945,20 +4945,20 @@
     {
       "first_name": "Brandon",
       "state": "TX",
-      "city": "Corpus Christi",
-      "county": "Nueces",
-      "amount": 3000.0,
-      "lat": 27.7624,
-      "lng": -97.4348
-    },
-    {
-      "first_name": "Brandon",
-      "state": "TX",
       "city": "North Richland Hills",
       "county": "Tarrant",
       "amount": 3000.0,
       "lat": 32.8614,
       "lng": -97.2174
+    },
+    {
+      "first_name": "Brandon",
+      "state": "TX",
+      "city": "Corpus Christi",
+      "county": "Nueces",
+      "amount": 3000.0,
+      "lat": 27.7624,
+      "lng": -97.4348
     },
     {
       "first_name": "Brayden",
@@ -5530,20 +5530,20 @@
     {
       "first_name": "Marcus",
       "state": "TX",
-      "city": "Midland",
-      "county": "Midland",
-      "amount": 4500.0,
-      "lat": 31.9392,
-      "lng": -102.067
-    },
-    {
-      "first_name": "Marcus",
-      "state": "TX",
       "city": "San Antonio",
       "county": "Bexar",
       "amount": 4500.0,
       "lat": 29.4647,
       "lng": -98.4984
+    },
+    {
+      "first_name": "Marcus",
+      "state": "TX",
+      "city": "Midland",
+      "county": "Midland",
+      "amount": 4500.0,
+      "lat": 31.9392,
+      "lng": -102.067
     },
     {
       "first_name": "Markus",
@@ -5647,20 +5647,20 @@
     {
       "first_name": "Patricia",
       "state": "TX",
-      "city": "Alice",
-      "county": "Jim Wells",
-      "amount": 3250.0,
-      "lat": 27.7477,
-      "lng": -98.0767
-    },
-    {
-      "first_name": "Patricia",
-      "state": "TX",
       "city": "Bandera",
       "county": "Bandera",
       "amount": 3000.0,
       "lat": 29.7276,
       "lng": -99.0453
+    },
+    {
+      "first_name": "Patricia",
+      "state": "TX",
+      "city": "Alice",
+      "county": "Jim Wells",
+      "amount": 3250.0,
+      "lat": 27.7477,
+      "lng": -98.0767
     },
     {
       "first_name": "Phillip",

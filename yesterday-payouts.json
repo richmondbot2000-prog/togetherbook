@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "updated_at": "2026-05-15T20:43:21.074438Z",
+  "updated_at": "2026-05-15T21:01:28.624147Z",
   "target_date": "2026-05-14",
   "totals": {
     "borrowers": 140
@@ -153,20 +153,20 @@
     {
       "first_name": "Stephanie",
       "state": "CA",
-      "city": "Chatsworth",
-      "county": "Los Angeles",
-      "amount": 10000.0,
-      "lat": 34.2578,
-      "lng": -118.5963
-    },
-    {
-      "first_name": "Stephanie",
-      "state": "CA",
       "city": "Fresno",
       "county": "Fresno",
       "amount": 7000.0,
       "lat": 36.7557,
       "lng": -119.693
+    },
+    {
+      "first_name": "Stephanie",
+      "state": "CA",
+      "city": "Chatsworth",
+      "county": "Los Angeles",
+      "amount": 10000.0,
+      "lat": 34.2578,
+      "lng": -118.5963
     },
     {
       "first_name": "Tareq",
