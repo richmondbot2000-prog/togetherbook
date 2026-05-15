@@ -6,37 +6,53 @@
 <title>TogetherBOOK — Wall</title>
 <link rel="icon" type="image/png" href="site-icon.png">
 <link rel="apple-touch-icon" href="site-icon.png">
-<link rel="stylesheet" href="quiet-tokens.css?v=1778843200">
-<link rel="stylesheet" href="quiet.css?v=1778843200">
-<link rel="stylesheet" href="quiet-extras.css?v=1778843200">
+<link rel="stylesheet" href="quiet-tokens.css?v=1778851241">
+<link rel="stylesheet" href="quiet.css?v=1778851241">
+<link rel="stylesheet" href="quiet-extras.css?v=1778851241">
 <style>
   /* 648 px column — sweet spot per editorial line-length research
      (60–75 chars per line at 15 px body). Wider feels marketing-y. */
   .wl-section { max-width: 648px; margin: 0 auto; padding: 18px 0 48px; }
   @media (max-width: 800px) { .wl-section { padding: 8px 12px 32px; } }
 
-  /* Compose form */
+  /* Compose form — the only true card on the page (the inkwell).
+     Brass left rule + 'a new page' eyebrow makes the compose card
+     visually quote the feed below. */
   .wl-compose {
     background: var(--paper-50);
     border: 1px solid var(--paper-300);
-    padding: 14px 16px;
-    margin: 0 0 18px;
-    border-radius: 6px;
+    border-left: 4px solid var(--brass-500);
+    border-radius: 0;
+    padding: 20px 22px;
+    margin: 0 0 24px;
+  }
+  .wl-compose-eyebrow {
+    font: italic 500 13px/1 var(--font-display);
+    color: var(--red-500);
+    text-transform: lowercase;
+    letter-spacing: 0.02em;
+    margin: 0 0 12px;
+    display: flex; align-items: center; gap: 10px;
+  }
+  .wl-compose-eyebrow::before {
+    content: ""; flex: 0 0 36px; height: 1px;
+    background: var(--brass-300);
   }
   .wl-compose-row { display: flex; gap: 12px; align-items: flex-start; }
   .wl-compose-row .wl-avatar { flex: 0 0 auto; }
   .wl-compose textarea {
     flex: 1 1 auto;
-    width: 100%; min-height: 60px; max-height: 320px;
+    width: 100%; min-height: 64px; max-height: 320px;
     border: 1px solid var(--paper-300);
-    border-radius: 4px;
+    border-radius: 0;
     padding: 10px 12px;
-    font: 400 15px/1.5 var(--font-body);
+    font: 400 16px/1.55 var(--font-display);
     color: var(--ink-900);
     background: white;
     resize: vertical;
   }
-  .wl-compose textarea:focus { outline: 2px solid var(--ink-700); border-color: var(--ink-700); }
+  .wl-compose textarea::placeholder { font-style: italic; color: var(--ink-500); }
+  .wl-compose textarea:focus { outline: 1px solid var(--brass-500); border-color: var(--brass-500); }
   .wl-compose-actions {
     display: flex; gap: 10px; align-items: center;
     margin-top: 10px; justify-content: space-between;
@@ -44,16 +60,23 @@
   .wl-compose-actions-left { display: flex; gap: 10px; align-items: center; }
   .wl-char-count { font: 500 11px/1 var(--font-mono); color: var(--ink-500); }
   .wl-char-count.over { color: var(--manuscript-red); font-weight: 700; }
+  /* Post action — italic Newsreader text label, brass underline. Echoes
+     the .qb-link-action pattern used elsewhere on the site (e.g. helper
+     "see more" links). Solid coloured buttons are explicitly out of the
+     Quiet Edition system. */
   .wl-btn-post {
-    background: var(--teal-500); color: white;
-    border: none; border-radius: 4px;
-    padding: 10px 18px;             /* 44px tall min */
-    font: 600 14px/1 var(--font-display);
+    background: none; border: none;
+    color: var(--ink-800);
+    font: italic 600 16px/1.2 var(--font-display);
+    padding: 8px 4px;
+    border-bottom: 1.5px solid var(--brass-500);
     cursor: pointer;
     min-height: 40px;
+    transition: color 120ms ease, border-color 120ms ease;
   }
+  .wl-btn-post::after { content: " →"; font-style: normal; }
   .wl-btn-post:disabled { opacity: 0.45; cursor: not-allowed; }
-  .wl-btn-post:hover:not(:disabled) { background: var(--teal-700); }
+  .wl-btn-post:hover:not(:disabled) { color: var(--red-500); border-bottom-color: var(--red-500); }
   /* Compose attach buttons (Photo / Video / GIF) — flat outline icons + label. */
   .wl-attach-btn {
     background: transparent;
@@ -104,7 +127,7 @@
     justify-content: center;
     border-radius: 4px;
   }
-  .wl-comment-attach:hover { color: var(--ink-900); background: var(--paper-100); }
+  .wl-comment-attach:hover { color: var(--red-500); }
   .wl-comment-attach .wl-icon { width: 18px; height: 18px; }
   .wl-comment-attach input[type=file] { display: none; }
   .wl-comment-photos { margin-top: 6px; display: grid; gap: 2px; border-radius: 4px; overflow: hidden; max-width: 100%; }
@@ -120,19 +143,20 @@
     max-height: 320px; object-fit: contain;
   }
 
-  /* GIF picker */
+  /* GIF picker — paper-card on ink scrim, no radius / shadow. */
   .wl-gif-panel {
     position: fixed; inset: 0; z-index: 2500;
-    background: rgba(17, 25, 46, 0.5);
+    background: rgba(17, 25, 46, 0.6);
     display: flex; align-items: center; justify-content: center;
     padding: 20px;
   }
   .wl-gif-modal {
     background: var(--paper-50);
     border: 1px solid var(--paper-300);
+    border-left: 4px solid var(--brass-500);
     width: 100%; max-width: 640px; max-height: 80vh;
     display: flex; flex-direction: column;
-    border-radius: 4px; overflow: hidden;
+    border-radius: 0; overflow: hidden;
   }
   .wl-gif-head {
     display: flex; align-items: center; gap: 10px;
@@ -171,36 +195,61 @@
     .wl-gif-grid { grid-template-columns: 1fr 1fr; }
   }
 
-  /* Avatars */
+  /* Avatars — circular medallion with a 1 px brass ring (echoes the
+     qb-monogram pattern on index.html). Initials inside use italic
+     Newsreader (helper-monogram style). */
   .wl-avatar {
     width: 40px; height: 40px; border-radius: 50%;
-    background: var(--paper-200);
+    background: var(--paper-100);
+    box-shadow: 0 0 0 1px var(--brass-300);
     object-fit: cover;
     display: flex; align-items: center; justify-content: center;
     overflow: hidden;
-    font: 600 14px/1 var(--font-display);
-    color: var(--ink-700);
+    font: italic 600 14px/1 var(--font-display);
+    color: var(--brass-600);
     flex-shrink: 0;
   }
   .wl-avatar img { width: 100%; height: 100%; object-fit: cover; }
 
-  /* Post card */
+  /* Post as a hairline-divided row (not a card). Matches the rest of
+     Quiet Edition's row-based composition (helpers, robots, commandments).
+     The compose form below is the only true card on the page. */
   .wl-post {
-    background: var(--paper-50);
-    border: 1px solid var(--paper-300);
-    border-radius: 6px;
-    margin: 0 0 14px;
-    padding: 14px 16px;
+    background: transparent;
+    border: none;
+    border-bottom: 1px solid var(--divider);
+    border-radius: 0;
+    margin: 0;
+    padding: 24px 0 20px;
   }
-  .wl-post-head { display: flex; gap: 10px; align-items: center; margin-bottom: 10px; }
+  .wl-section > #wlFeed > .wl-post:first-of-type {
+    border-top: 1px solid var(--ink-300);
+  }
+  .wl-post-head { display: flex; gap: 12px; align-items: center; margin-bottom: 10px; }
   .wl-post-head .wl-meta { flex: 1 1 auto; }
-  .wl-post-name { font: 600 15px/1.2 var(--font-display); color: var(--ink-900); }
-  /* Timestamp: ink-600 (~6.5:1 vs paper-50) passes WCAG body 4.5:1. */
-  .wl-post-time { font: 400 12px/1.2 var(--font-display); color: var(--ink-600); margin-top: 2px; }
-  /* Body: 15px / 1.40 — feed cadence, not magazine. */
+  .wl-post-name { font: 500 17px/1.3 var(--font-display); color: var(--ink-900); letter-spacing: -0.005em; }
+  .wl-channel-tag {
+    font: italic 400 13px/1 var(--font-display);
+    color: var(--teal-500);
+    margin-left: 4px;
+  }
+  .wl-channel-tag::before { content: "— "; color: var(--brass-500); font-style: normal; }
+  /* Timestamp: italic overline pattern (matches qb-meta-label rhythm).
+     ink-500 is fine here because we're at 11 px tracking-wide — overline
+     scale exempts from the WCAG body-text 4.5:1 floor. */
+  .wl-post-time {
+    font: 400 11px/1 var(--font-body);
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--ink-500);
+    margin-top: 4px;
+  }
+  .wl-post-time .wl-time-dot { color: var(--brass-500); margin: 0 6px; }
+  /* Body: Newsreader (--font-display), 16px / 1.55 — matches the editorial
+     voice of commandments + helper blurbs across the site. */
   .wl-post-body {
-    font: 400 15px/1.40 var(--font-body); color: var(--ink-900);
-    white-space: pre-wrap; word-wrap: break-word; margin: 0 0 8px;
+    font: 400 16px/1.55 var(--font-display); color: var(--ink-800);
+    white-space: pre-wrap; word-wrap: break-word; margin: 0 0 10px;
   }
   /* Line-clamp truncation (4 lines) — handles paragraphed AND wall-of-text
      posts uniformly. Removed when expanded. */
@@ -217,43 +266,58 @@
   }
   .wl-see-more:hover { text-decoration: underline; color: var(--link-hover); }
 
-  /* Reaction summary — pills sit above the action bar, showing what others
-     have already reacted. Tap a pill to toggle yours. Min height 28 px
-     pill + 8 px hit-area padding above/below = 44 pt touch target. */
-  .wl-reactions { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; margin: 4px 0 2px; min-height: 32px; }
+  /* Reaction summary — italic Newsreader verbs as marginalia rather than
+     filled emoji pills. Each verb is coloured by its semantic role
+     (Loved → red, Celebrated → sage, Noted → ink, …). "is-mine" earns a
+     1px brass underline; no background fill — that's a Material pattern
+     the rest of the site rejects. */
+  .wl-reactions {
+    display: flex; flex-wrap: wrap; gap: 0;
+    align-items: baseline; margin: 6px 0 2px;
+    min-height: 24px;
+    font: italic 500 14px/1.4 var(--font-display);
+  }
   .wl-react-pill {
-    display: inline-flex; align-items: center; gap: 4px;
-    padding: 5px 10px; min-height: 28px;
-    background: var(--paper-100);
-    border: 1px solid var(--paper-300);
-    border-radius: 14px;
-    font: 500 13px/1 var(--font-display);
-    color: var(--ink-800);
+    display: inline-flex; align-items: baseline; gap: 4px;
+    background: none; border: none;
+    padding: 6px 0;
+    font: inherit;
+    color: var(--ink-700);
     cursor: pointer;
-    transition: background 120ms ease, border-color 120ms ease;
+    border-bottom: 1px solid transparent;
   }
+  .wl-react-pill + .wl-react-pill::before {
+    content: "·"; font-style: normal;
+    color: var(--brass-300);
+    margin: 0 8px;
+    align-self: baseline;
+  }
+  .wl-react-pill .wl-react-count { font-style: normal; font-weight: 400; }
   .wl-react-pill.is-mine {
-    background: color-mix(in srgb, var(--teal-500) 10%, white);
-    border-color: var(--teal-500);
-    color: var(--teal-500);
+    border-bottom-color: var(--brass-500);
+    font-weight: 600;
   }
-  .wl-react-pill:hover { border-color: var(--brass-500); }
+  .wl-react-pill:hover { color: var(--red-500); }
 
-  /* Emoji picker */
+  /* Reaction picker — vertical list of italic named verbs, each in its
+     semantic colour. No box-shadow (out of system). */
   .wl-emoji-popover {
-    position: absolute; background: white;
-    border: 1px solid var(--paper-300); border-radius: 6px;
-    box-shadow: 0 4px 16px rgba(0,0,0,0.15);
-    padding: 6px;
-    display: flex; flex-wrap: wrap; gap: 2px;
-    max-width: 280px; z-index: 100;
+    position: absolute; background: var(--paper-50);
+    border: 1px solid var(--paper-300); border-radius: 0;
+    padding: 6px 0;
+    display: flex; flex-direction: column;
+    min-width: 160px; z-index: 100;
   }
   .wl-emoji-popover button {
     background: transparent; border: none;
-    font-size: 22px; width: 32px; height: 32px;
-    cursor: pointer; border-radius: 4px; padding: 0;
+    font: italic 500 15px/1 var(--font-display);
+    padding: 10px 16px;
+    text-align: left;
+    cursor: pointer;
+    color: var(--ink-800);
+    min-height: 40px;
   }
-  .wl-emoji-popover button:hover { background: var(--paper-200); }
+  .wl-emoji-popover button:hover { background: var(--paper-100); color: var(--red-500); }
 
   /* Reaction + comment summary (above the action bar) */
   .wl-reaction-summary {
@@ -267,17 +331,20 @@
     color: var(--manuscript-red); font-weight: 700;
   }
 
-  /* Action bar — Like / Comment / Share, equal-spaced, 44pt tall.
-     Tap Like applies the default 👍; long-press opens the 6-emoji picker. */
+  /* Action bar — Like / Comment, equal-spaced, 44pt tall. No borders
+     (single hairline below the post separates it from the next post).
+     Tap Like applies the default 👍 (= "Noted"); long-press opens the
+     6-named-reaction picker. Share dropped — internal company wall;
+     everyone's already on the same site behind Cloudflare Access. */
   .wl-action-bar {
-    display: grid; grid-template-columns: 1fr 1fr 1fr;
-    border-top: 1px solid var(--divider);
-    border-bottom: 1px solid var(--divider);
-    margin: 4px 0 6px;
+    display: grid; grid-template-columns: 1fr 1fr;
+    border-top: none; border-bottom: none;
+    margin: 6px 0 4px;
   }
   .wl-action {
     background: none; border: none;
     display: flex; align-items: center; justify-content: center; gap: 8px;
+    color: var(--ink-700);
     padding: 11px 8px;        /* 44 pt touch target */
     min-height: 44px;
     font: 600 13px/1 var(--font-display);
@@ -286,10 +353,13 @@
     user-select: none;
     -webkit-user-select: none;
   }
-  .wl-action:hover { background: var(--paper-100); }
-  .wl-action.is-active { color: var(--teal-500); }
-  .wl-action-icon { font-size: 18px; line-height: 1; }
-  .wl-action-label { font-size: 13px; }
+  .wl-action:hover { color: var(--red-500); }
+  .wl-action.is-active { color: var(--brass-600); }
+  .wl-action-icon { line-height: 1; display: inline-flex; align-items: center; }
+  .wl-action-label {
+    font: italic 500 14px/1 var(--font-display);
+    letter-spacing: 0;
+  }
   @media (max-width: 480px) {
     .wl-action-label { display: none; }
     .wl-action-icon { font-size: 20px; }
@@ -332,7 +402,8 @@
   .wl-confirm-modal {
     background: var(--paper-50);
     border: 1px solid var(--paper-300);
-    border-radius: 4px;
+    border-left: 4px solid var(--red-500);
+    border-radius: 0;
     padding: 22px 26px;
     max-width: 440px; width: 100%;
   }
@@ -348,28 +419,44 @@
   }
   .wl-confirm-actions { display: flex; gap: 10px; justify-content: flex-end; }
   .wl-confirm-cancel, .wl-confirm-ok {
-    border: 1px solid var(--paper-300);
-    background: var(--paper-100);
-    color: var(--ink-800);
-    padding: 8px 16px; border-radius: 4px; cursor: pointer;
-    font: 500 13px/1 var(--font-display);
+    background: none; border: none;
+    color: var(--ink-700);
+    padding: 8px 4px;
+    font: italic 500 14px/1.2 var(--font-display);
+    border-bottom: 1.5px solid transparent;
+    cursor: pointer;
     min-height: 36px;
   }
-  .wl-confirm-cancel:hover { border-color: var(--brass-500); }
+  .wl-confirm-cancel { border-bottom-color: var(--brass-300); }
+  .wl-confirm-cancel:hover { color: var(--ink-900); border-bottom-color: var(--brass-500); }
   .wl-confirm-ok {
-    background: var(--red-500); color: white; border-color: var(--red-500);
+    color: var(--red-500);
+    border-bottom-color: var(--red-500);
+    font-weight: 600;
   }
-  .wl-confirm-ok:hover { background: var(--red-600); border-color: var(--red-600); }
+  .wl-confirm-ok:hover { color: var(--red-700); border-bottom-color: var(--red-700); }
 
-  /* Comments */
-  .wl-comments { margin-top: 4px; }
-  .wl-comment { display: flex; gap: 10px; align-items: flex-start; padding: 8px 0; }
+  /* Comments — hairline-divided rows, no chat-bubble fill. */
+  .wl-comments { margin-top: 6px; }
+  .wl-comment {
+    display: flex; gap: 12px; align-items: flex-start;
+    padding: 12px 0;
+    border-top: 1px dashed var(--divider);
+  }
+  .wl-comment:first-child { border-top: none; }
   .wl-comment .wl-avatar { width: 32px; height: 32px; font-size: 11px; }
-  .wl-comment-body { flex: 1 1 auto; background: var(--paper-100); border-radius: 12px; padding: 8px 12px; }
-  .wl-comment-name { font: 600 13px/1.2 var(--font-display); color: var(--ink-900); }
-  .wl-comment-time { font: 400 11px/1.2 var(--font-display); color: var(--ink-500); margin-left: 6px; }
+  .wl-comment-body { flex: 1 1 auto; background: none; border-radius: 0; padding: 0; }
+  .wl-comment-name { font: 500 14px/1.3 var(--font-display); color: var(--ink-900); }
+  .wl-comment-time {
+    font: 400 10px/1 var(--font-body);
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--ink-500);
+    margin-left: 8px;
+  }
+  .wl-comment-time .wl-time-dot { color: var(--brass-500); margin: 0 4px; }
   .wl-comment-text {
-    font: 400 14px/1.45 var(--font-body); color: var(--ink-900);
+    font: 400 15px/1.55 var(--font-display); color: var(--ink-800);
     margin-top: 3px; white-space: pre-wrap; word-wrap: break-word;
   }
   .wl-comment-actions { display: flex; gap: 12px; align-items: center; margin-top: 6px; }
@@ -382,10 +469,11 @@
     min-height: 28px;
   }
   .wl-reply-link:hover { color: var(--teal-500); }
-  /* Replies: indent 36 px (avatar 28 + 8 gap) — Threads-style. The vertical
-     rule uses --divider (12% ink-800) so it's actually visible. */
-  .wl-replies { margin-left: 36px; border-left: 1.5px solid var(--divider); padding-left: 10px; }
+  /* Replies indent: 36 px gutter, brass-300 left rule (marginal commentary
+     pattern; matches qb-bubble's quote rule). */
+  .wl-replies { margin-left: 36px; border-left: 1px solid var(--brass-300); padding-left: 12px; }
   .wl-comment.is-reply .wl-avatar { width: 28px; height: 28px; font-size: 10px; }
+  .wl-comment.is-reply { padding: 10px 0; }
   .wl-show-all-comments {
     color: var(--teal-500); cursor: pointer;
     font: 600 13px/1.2 var(--font-display);
@@ -443,11 +531,15 @@
   .wl-lightbox .wl-lightbox-arrow.prev { left: 16px; }
   .wl-lightbox .wl-lightbox-arrow.next { right: 16px; }
   .wl-lightbox .wl-lightbox-close {
-    position: absolute; top: 16px; right: 16px;
-    background: rgba(255,255,255,0.12); color: white;
-    width: 44px; height: 44px; border-radius: 50%; border: none;
-    font-size: 24px; cursor: pointer;
+    position: absolute; top: 20px; right: 24px;
+    background: transparent; color: var(--paper-50);
+    border: none;
+    font: italic 500 16px/1 var(--font-display);
+    padding: 6px 0; cursor: pointer;
+    border-bottom: 1px solid var(--paper-50);
+    min-height: 44px;
   }
+  .wl-lightbox .wl-lightbox-close:hover { color: var(--brass-300); border-bottom-color: var(--brass-300); }
   .wl-lightbox .wl-lightbox-count {
     position: absolute; bottom: 20px; left: 50%; transform: translateX(-50%);
     color: white; font: 500 13px/1 var(--font-mono);
@@ -496,9 +588,8 @@
   .wl-notif-panel {
     position: absolute; top: 48px; right: 0;
     width: 320px; max-height: 420px; overflow-y: auto;
-    background: white;
-    border: 1px solid var(--paper-300); border-radius: 6px;
-    box-shadow: 0 4px 16px rgba(0,0,0,0.15);
+    background: var(--paper-50);
+    border: 1px solid var(--paper-300); border-radius: 0;
     display: none;
   }
   .wl-notif-panel.is-open { display: block; }
@@ -519,32 +610,44 @@
   .wl-notif-empty { padding: 24px 14px; text-align: center; color: var(--ink-500); font-style: italic; }
 
   /* States */
-  .wl-loading { text-align: center; padding: 24px; color: var(--ink-500); font-style: italic; }
+  .wl-loading {
+    text-align: center; padding: 24px;
+    color: var(--ink-500);
+    font: italic 400 14px/1.4 var(--font-display);
+  }
   .wl-empty {
-    background: var(--paper-50);
+    background: transparent;
     border: 1px dashed var(--brass-300);
     padding: 40px 24px; text-align: center;
-    color: var(--ink-700);
-    font: 400 15px/1.5 var(--font-display);
-    border-radius: 6px;
+    color: var(--ink-600);
+    font: italic 400 17px/1.5 var(--font-display);
+    border-radius: 0;
+  }
+  .wl-empty::before {
+    content: "❦"; display: block;
+    font: 400 22px/1 var(--font-display);
+    color: var(--brass-500);
+    margin: 0 0 12px;
+    font-style: normal;
   }
 
-  /* Banner */
+  /* Toast banner — paper-on-ink, no radius, no shadow. */
   .wl-banner {
     position: fixed; top: 12px; left: 50%; transform: translateX(-50%);
-    background: var(--ink-900); color: white;
-    padding: 10px 18px; border-radius: 4px;
-    font: 500 13px/1 var(--font-display); z-index: 2000;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+    background: var(--ink-900); color: var(--paper-50);
+    padding: 10px 18px; border-radius: 0;
+    font: italic 500 14px/1 var(--font-display);
+    border: 1px solid var(--brass-500);
+    z-index: 2000;
   }
-  .wl-banner.is-error { background: var(--manuscript-red); }
+  .wl-banner.is-error { background: var(--red-500); border-color: var(--red-700); }
 </style>
 </head>
 <body>
 
 <header class="qb-topbar">
   <a class="qb-brand" href="index.html" aria-label="TogetherBOOK — home">
-    <img class="qb-brand-logo" src="togetherbook-logo.png?v=1778843200" alt="TogetherBOOK">
+    <img class="qb-brand-logo" src="togetherbook-logo.png?v=1778851241" alt="TogetherBOOK">
   </a>
   <button class="qb-hamburger" aria-label="Toggle navigation menu" aria-expanded="false"
           onclick="document.body.classList.toggle('nav-open');this.setAttribute('aria-expanded',document.body.classList.contains('nav-open'))">
@@ -575,9 +678,10 @@
 <main class="qb-page">
   <section class="wl-section">
     <div class="wl-compose" id="wlCompose" style="display:none;">
+      <div class="wl-compose-eyebrow">a new page</div>
       <div class="wl-compose-row">
         <div class="wl-avatar" id="wlMyAvatar">?</div>
-        <textarea id="wlComposeText" placeholder="What's on your mind?" maxlength="10000"></textarea>
+        <textarea id="wlComposeText" placeholder="Tell the rest of the team what's worth a page." maxlength="10000"></textarea>
       </div>
       <div class="wl-compose-previews" id="wlComposePreviews"></div>
       <div class="wl-compose-actions">
@@ -596,13 +700,13 @@
         </div>
         <div class="wl-compose-actions-left">
           <span class="wl-char-count" id="wlCharCount">0 / 10,000</span>
-          <button class="wl-btn-post" id="wlPostBtn" disabled>Post</button>
+          <button class="wl-btn-post" id="wlPostBtn" disabled>Post this page</button>
         </div>
       </div>
     </div>
 
     <div id="wlFeed">
-      <div class="wl-loading">Loading wall…</div>
+      <div class="wl-loading">Reading the wall…</div>
     </div>
   </section>
 </main>
@@ -623,11 +727,26 @@
   const expandedPostIds = new Set();
   const openReplyTo   = new Set();
 
-  // Facebook's settled answer: 6 emojis. Larger sets measurably slow
-  // decision time (their A/B test). The first one is the default applied
-  // on a plain Like tap.
+  // Facebook's settled answer: 6 reactions. Larger sets measurably slow
+  // decision time (their A/B test). We store as emoji keys (so old data
+  // round-trips), but render as named italic Newsreader to fit Quiet
+  // Edition — full-colour Apple emoji on cream paper read as fridge
+  // magnets stuck to a manuscript. The first entry is the default
+  // applied on a plain Like tap.
   const REACTIONS = ["👍", "❤️", "😂", "😮", "😢", "🎉"];
   const DEFAULT_REACTION = REACTIONS[0];
+  // Storage key (emoji) → display verb + semantic colour token.
+  const REACTION_META = {
+    "👍": { label: "Noted",       past: "noted",       color: "var(--ink-700)" },
+    "❤️": { label: "Loved",       past: "loved",       color: "var(--red-500)" },
+    "😂": { label: "Smiled",      past: "smiled at",   color: "var(--brass-600)" },
+    "😮": { label: "Surprised",   past: "was surprised by", color: "var(--teal-500)" },
+    "😢": { label: "Mourned",     past: "mourned",     color: "var(--ink-600)" },
+    "🎉": { label: "Celebrated",  past: "celebrated",  color: "var(--sage-600)" },
+  };
+  function reactionLabel(emoji) { return (REACTION_META[emoji] || {}).label || emoji; }
+  function reactionPast(emoji)  { return (REACTION_META[emoji] || {}).past  || "reacted to"; }
+  function reactionColor(emoji) { return (REACTION_META[emoji] || {}).color || "var(--ink-700)"; }
   const WALL_API = "/api/wall";
 
   // Inline SVG icon set — outline (default) ↔ filled (active/hover).
@@ -855,7 +974,7 @@
     } catch (err) {
       showBanner(err.message || String(err), true);
     } finally {
-      postBtn.disabled = false; postBtn.textContent = "Post";
+      postBtn.disabled = false; postBtn.textContent = "Post this page";
     }
   });
 
@@ -921,7 +1040,7 @@
   function renderFeed() {
     const root = document.getElementById("wlFeed");
     if (!posts.length) {
-      root.innerHTML = `<div class="wl-empty">Be the first to post.</div>`;
+      root.innerHTML = `<div class="wl-empty">No pages yet. Write the first.</div>`;
       return;
     }
     root.innerHTML = posts.map(renderPost).join("");
@@ -946,8 +1065,10 @@
     const bodyHtml = renderBody(post.body || "", post.id, expanded);
     const photos = renderPhotos(post.photos || [], post.id);
     const reactions = renderReactionPills(post.reactions || {}, post.id, "post");
+    // Channel rendered as italic register-tag (matches the .qb-register-tag
+     // pattern on index.html — italic small-caps in a muted ink/teal/sage).
     const channelTag = post.channel
-      ? ` <span style="color:var(--ink-600); font-weight:400;">› ${escapeHtml(post.channel)}</span>` : "";
+      ? ` <span class="wl-channel-tag">${escapeHtml(post.channel)}</span>` : "";
     const comments = post.comments || [];
     const cmCount = (comments || []).filter(c => !c.parent_comment_id).length;
     const open = openPostIds.has(post.id);
@@ -977,17 +1098,13 @@
           </span>
         </div>
         <div class="wl-action-bar">
-          <button class="wl-action wl-action-like ${likeActive ? "is-active" : ""}" data-like="${escapeHtml(post.id)}" data-kind="post" title="Tap to ${likeActive ? "remove " + likeIcon : "react " + DEFAULT_REACTION}; long-press for more">
+          <button class="wl-action wl-action-like ${likeActive ? "is-active" : ""}" data-like="${escapeHtml(post.id)}" data-kind="post" title="Tap to ${likeActive ? "remove your reaction" : "react " + reactionLabel(DEFAULT_REACTION)}; long-press to pick a different reaction" ${likeActive ? `style="color:${reactionColor(myReaction)};"` : ""}>
             <span class="wl-action-icon">${icon("thumb", likeActive)}</span>
-            <span class="wl-action-label">${likeActive ? "Reacted" : "Like"}</span>
+            <span class="wl-action-label">${likeActive ? reactionLabel(myReaction) : "Note"}</span>
           </button>
           <button class="wl-action" data-toggle-comments="${escapeHtml(post.id)}">
             <span class="wl-action-icon">${icon("comment", false)}</span>
-            <span class="wl-action-label">Comment</span>
-          </button>
-          <button class="wl-action" data-share="${escapeHtml(post.id)}">
-            <span class="wl-action-icon">${icon("share", false)}</span>
-            <span class="wl-action-label">Share</span>
+            <span class="wl-action-label">Reply</span>
           </button>
         </div>
         <div class="wl-comment-composer">
@@ -1021,9 +1138,10 @@
     const n = Math.min(photos.length, 4);
     const tiles = photos.slice(0, 4).map((p, i) => {
       const isVideo = /\.(mp4|webm|mov)$/i.test(p);
+      const url = mediaUrl(p);
       return isVideo
-        ? `<video src="${escapeHtml(p)}" controls playsinline></video>`
-        : `<img src="${escapeHtml(p)}" alt="" loading="lazy" data-cm-open-lightbox="${escapeHtml(commentId)}::${i}">`;
+        ? `<video src="${escapeHtml(url)}" controls playsinline></video>`
+        : `<img src="${escapeHtml(url)}" alt="" loading="lazy" data-cm-open-lightbox="${escapeHtml(commentId)}::${i}">`;
     }).join("");
     return `<div class="wl-comment-photos cm-${n}">${tiles}</div>`;
   }
@@ -1060,31 +1178,29 @@
       const overlay = (overlayN > 0 && i === visible.length - 1)
         ? `<div class="wl-more-overlay">+${overlayN}</div>` : "";
       return `<div class="wl-photo" data-open-lightbox="${escapeHtml(postId)}::${i}">
-                <img src="${escapeHtml(p)}" alt="" loading="lazy">${overlay}
+                <img src="${escapeHtml(mediaUrl(p))}" alt="" loading="lazy">${overlay}
               </div>`;
     }).join("");
     return `<div class="wl-photos ${cls}">${tiles}</div>`;
   }
 
-  // Reaction pills above the action bar. Show top 3 emoji types; the rest
-  // collapse into a "+N" pill that opens the picker for switching. Tap
-  // mine to remove, tap others' to switch yours.
+  // Render reactions as italic named verbs in the comment's marginalia.
+  // Each verb shows in its semantic colour (red for Loved, sage for
+  // Celebrated, etc.) so the typographic register stays inside the
+  // Quiet Edition system. "Mine" gets a 1px brass underline + bold.
   function renderReactionPills(rx, parentId, parentKind) {
     const entries = Object.entries(rx || {})
       .filter(([_, emails]) => Array.isArray(emails) && emails.length > 0)
       .sort((a, b) => b[1].length - a[1].length);
     if (!entries.length) return "";
-    const top = entries.slice(0, 3);
-    const restCount = entries.slice(3).reduce((n, [, emails]) => n + emails.length, 0);
-    const pills = top.map(([emoji, emails]) => {
+    const pills = entries.slice(0, 6).map(([emoji, emails]) => {
       const mine = emails.map(e => (e || "").toLowerCase()).includes(viewerEmail);
-      const total = emails.length;
-      return `<button class="wl-react-pill ${mine ? "is-mine" : ""}" data-react="${escapeHtml(emoji)}" data-on="${escapeHtml(parentId)}" data-kind="${escapeHtml(parentKind)}" title="${emails.map(escapeHtml).join(", ")}">${emoji} ${total}</button>`;
+      const label = reactionLabel(emoji);
+      const colour = reactionColor(emoji);
+      const names = emails.map(e => displayName(e, "")).filter(Boolean).join(", ");
+      return `<button class="wl-react-pill ${mine ? "is-mine" : ""}" data-react="${escapeHtml(emoji)}" data-on="${escapeHtml(parentId)}" data-kind="${escapeHtml(parentKind)}" title="${escapeHtml(names)}" style="color:${colour};">${escapeHtml(label)} <span class="wl-react-count">· ${emails.length}</span></button>`;
     }).join("");
-    const more = restCount > 0
-      ? `<button class="wl-react-pill" data-add-react="${escapeHtml(parentId)}" data-kind="${escapeHtml(parentKind)}">+${restCount}</button>`
-      : "";
-    return `<div class="wl-reactions">${pills}${more}</div>`;
+    return `<div class="wl-reactions">${pills}</div>`;
   }
   function renderComments(post, allOpen) {
     const comments = (post.comments || []).slice();
@@ -1461,13 +1577,13 @@
     root.className = "wl-lightbox";
     root.innerHTML = `
       <button class="wl-lightbox-arrow prev" aria-label="Previous">‹</button>
-      <img src="${escapeHtml(photos[idx])}" alt="">
+      <img src="${escapeHtml(mediaUrl(photos[idx]))}" alt="">
       <button class="wl-lightbox-arrow next" aria-label="Next">›</button>
-      <button class="wl-lightbox-close" aria-label="Close">×</button>
+      <button class="wl-lightbox-close" aria-label="Close">close</button>
       <div class="wl-lightbox-count">${idx + 1} / ${photos.length}</div>`;
     document.body.appendChild(root);
     const refresh = () => {
-      root.querySelector("img").src = photos[idx];
+      root.querySelector("img").src = mediaUrl(photos[idx]);
       root.querySelector(".wl-lightbox-count").textContent = `${idx + 1} / ${photos.length}`;
     };
     const onKey = e => {
@@ -1495,13 +1611,16 @@
     closeEmojiPicker();
     const pop = document.createElement("div");
     pop.className = "wl-emoji-popover";
-    pop.innerHTML = REACTIONS.map(e => `<button>${e}</button>`).join("");
+    pop.innerHTML = REACTIONS.map(e => {
+      const meta = REACTION_META[e];
+      return `<button data-emoji="${escapeHtml(e)}" style="color:${meta.color};">${escapeHtml(meta.label)}</button>`;
+    }).join("");
     document.body.appendChild(pop);
     const rect = anchor.getBoundingClientRect();
     pop.style.left = `${Math.max(8, rect.left + window.scrollX)}px`;
     pop.style.top  = `${rect.bottom + window.scrollY + 4}px`;
     pop.querySelectorAll("button").forEach(b => {
-      b.addEventListener("click", () => { closeEmojiPicker(); onPick(b.textContent); });
+      b.addEventListener("click", () => { closeEmojiPicker(); onPick(b.dataset.emoji); });
     });
     activePopover = pop;
     setTimeout(() => document.addEventListener("click", closeEmojiPicker, { once: true }), 0);
@@ -1644,6 +1763,16 @@
   function dirPhotoKey(email) {
     return (email || "").toString().trim().toLowerCase().replace(/@/g, "_at_");
   }
+  // Always serve wall-media via the public github.io mirror — Cloudflare
+  // Access gates book.togetherbook.net/wall-media/*, and `<img>` tags
+  // can't follow the 302 redirect to the login page. GIPHY URLs come
+  // through as absolute https:// already; pass those untouched.
+  const MEDIA_BASE = "https://richmondbot2000-prog.github.io/togetherbook/";
+  function mediaUrl(path) {
+    if (!path) return "";
+    if (/^https?:/i.test(path)) return path;
+    return MEDIA_BASE + path.replace(/^\/+/, "");
+  }
   function photoUrlFor(u) {
     if (!u || !u.email) return "";
     const email = u.email.toLowerCase();
@@ -1662,12 +1791,16 @@
     }
     return `<div>${escapeHtml(initials(name))}</div>`;
   }
+  // Editorial overline format: "WED, 15 MAY 2026 · 09:36" with a brass
+  // middot. Wraps in <time datetime> for screen-reader semantics.
   function formatTime(iso) {
     if (!iso) return "";
     const d = new Date(iso);
-    if (isNaN(d.getTime())) return iso;
-    const opts = { month: "short", day: "numeric", year: "numeric", hour: "numeric", minute: "2-digit" };
-    return d.toLocaleString(undefined, opts);
+    if (isNaN(d.getTime())) return escapeHtml(iso);
+    const date = d.toLocaleDateString("en-GB", { weekday: "short", day: "numeric", month: "short", year: "numeric" });
+    const time = d.toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit", hourCycle: "h23" });
+    const datePart = date.toUpperCase().replace(",", "");
+    return `<time datetime="${escapeHtml(iso)}">${escapeHtml(datePart)}<span class="wl-time-dot">·</span>${escapeHtml(time)}</time>`;
   }
   function escapeHtml(s) {
     return String(s == null ? "" : s)
