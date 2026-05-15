@@ -6,11 +6,13 @@
 <title>TogetherBOOK — Wall</title>
 <link rel="icon" type="image/png" href="site-icon.png">
 <link rel="apple-touch-icon" href="site-icon.png">
-<link rel="stylesheet" href="quiet-tokens.css?v=1778792419">
-<link rel="stylesheet" href="quiet.css?v=1778792419">
-<link rel="stylesheet" href="quiet-extras.css?v=1778792419">
+<link rel="stylesheet" href="quiet-tokens.css?v=1778835391">
+<link rel="stylesheet" href="quiet.css?v=1778835391">
+<link rel="stylesheet" href="quiet-extras.css?v=1778835391">
 <style>
-  .wl-section { max-width: 720px; margin: 0 auto; padding: 18px 0 48px; }
+  /* 648 px column — sweet spot per editorial line-length research
+     (60–75 chars per line at 15 px body). Wider feels marketing-y. */
+  .wl-section { max-width: 648px; margin: 0 auto; padding: 18px 0 48px; }
   @media (max-width: 800px) { .wl-section { padding: 8px 12px 32px; } }
 
   /* Compose form */
@@ -34,22 +36,60 @@
     background: white;
     resize: vertical;
   }
-  .wl-compose textarea:focus { outline: 1px solid var(--brass-500); border-color: var(--brass-500); }
+  .wl-compose textarea:focus { outline: 2px solid var(--ink-700); border-color: var(--ink-700); }
   .wl-compose-actions {
     display: flex; gap: 10px; align-items: center;
     margin-top: 10px; justify-content: space-between;
   }
+  .wl-compose-actions-left { display: flex; gap: 10px; align-items: center; }
   .wl-char-count { font: 500 11px/1 var(--font-mono); color: var(--ink-500); }
   .wl-char-count.over { color: var(--manuscript-red); font-weight: 700; }
   .wl-btn-post {
-    background: #2c6cb8; color: white;
+    background: var(--teal-500); color: white;
     border: none; border-radius: 4px;
-    padding: 8px 16px;
+    padding: 10px 18px;             /* 44px tall min */
     font: 600 14px/1 var(--font-display);
     cursor: pointer;
+    min-height: 40px;
   }
   .wl-btn-post:disabled { opacity: 0.45; cursor: not-allowed; }
-  .wl-btn-post:hover:not(:disabled) { background: #235898; }
+  .wl-btn-post:hover:not(:disabled) { background: var(--teal-700); }
+  .wl-btn-photo {
+    background: var(--paper-100);
+    border: 1px solid var(--paper-300);
+    color: var(--ink-700);
+    border-radius: 4px;
+    padding: 7px 12px;
+    font: 500 13px/1 var(--font-display);
+    cursor: pointer;
+    display: inline-flex; align-items: center; gap: 6px;
+  }
+  .wl-btn-photo:hover { background: var(--paper-200); }
+  .wl-compose-previews {
+    display: flex; flex-wrap: wrap; gap: 6px;
+    margin-top: 10px;
+  }
+  .wl-compose-preview {
+    position: relative; width: 88px; height: 88px;
+    border-radius: 4px; overflow: hidden;
+    border: 1px solid var(--paper-300);
+  }
+  .wl-compose-preview img { width: 100%; height: 100%; object-fit: cover; }
+  .wl-compose-preview .wl-remove {
+    position: absolute; top: 2px; right: 2px;
+    width: 22px; height: 22px;
+    border-radius: 50%; border: none;
+    background: rgba(0,0,0,0.55); color: white;
+    font-size: 14px; line-height: 22px;
+    cursor: pointer; padding: 0;
+  }
+  .wl-compose-preview .wl-remove:hover { background: rgba(0,0,0,0.8); }
+  .wl-compose-preview.is-uploading::after {
+    content: ""; position: absolute; inset: 0;
+    background: rgba(255,255,255,0.5);
+    animation: wl-pulse 1.2s ease-in-out infinite;
+  }
+  @keyframes wl-pulse { 0%,100%{opacity:0.3} 50%{opacity:0.8} }
 
   /* Avatars */
   .wl-avatar {
@@ -72,38 +112,52 @@
     margin: 0 0 14px;
     padding: 14px 16px;
   }
-  .wl-post-head { display: flex; gap: 12px; align-items: center; margin-bottom: 10px; }
+  .wl-post-head { display: flex; gap: 10px; align-items: center; margin-bottom: 10px; }
   .wl-post-head .wl-meta { flex: 1 1 auto; }
-  .wl-post-name { font: 600 14px/1.2 var(--font-display); color: var(--ink-900); }
-  .wl-post-time { font: 400 12px/1.2 var(--font-display); color: var(--ink-500); margin-top: 2px; }
+  .wl-post-name { font: 600 15px/1.2 var(--font-display); color: var(--ink-900); }
+  /* Timestamp: ink-600 (~6.5:1 vs paper-50) passes WCAG body 4.5:1. */
+  .wl-post-time { font: 400 12px/1.2 var(--font-display); color: var(--ink-600); margin-top: 2px; }
+  /* Body: 15px / 1.40 — feed cadence, not magazine. */
   .wl-post-body {
-    font: 400 15px/1.55 var(--font-body); color: var(--ink-900);
-    white-space: pre-wrap; word-wrap: break-word; margin: 0 0 10px;
+    font: 400 15px/1.40 var(--font-body); color: var(--ink-900);
+    white-space: pre-wrap; word-wrap: break-word; margin: 0 0 8px;
   }
-  .wl-see-more { color: #2c6cb8; cursor: pointer; text-decoration: none; font-weight: 600; }
-  .wl-see-more:hover { text-decoration: underline; }
+  /* Line-clamp truncation (4 lines) — handles paragraphed AND wall-of-text
+     posts uniformly. Removed when expanded. */
+  .wl-post-body.is-clamped {
+    display: -webkit-box;
+    -webkit-line-clamp: 4;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+  .wl-see-more {
+    color: var(--teal-500); cursor: pointer; text-decoration: none;
+    font: 600 14px/1.4 var(--font-display);
+    display: inline-block; padding: 4px 0;
+  }
+  .wl-see-more:hover { text-decoration: underline; color: var(--link-hover); }
 
-  /* Reactions */
-  .wl-reactions { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; margin: 8px 0 4px; }
+  /* Reaction summary — pills sit above the action bar, showing what others
+     have already reacted. Tap a pill to toggle yours. Min height 28 px
+     pill + 8 px hit-area padding above/below = 44 pt touch target. */
+  .wl-reactions { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; margin: 4px 0 2px; min-height: 32px; }
   .wl-react-pill {
     display: inline-flex; align-items: center; gap: 4px;
-    padding: 2px 8px;
-    background: white;
+    padding: 5px 10px; min-height: 28px;
+    background: var(--paper-100);
     border: 1px solid var(--paper-300);
-    border-radius: 12px;
-    font: 500 12px/1 var(--font-display);
-    color: var(--ink-700);
+    border-radius: 14px;
+    font: 500 13px/1 var(--font-display);
+    color: var(--ink-800);
     cursor: pointer;
+    transition: background 120ms ease, border-color 120ms ease;
   }
-  .wl-react-pill.is-mine { background: #e8efff; border-color: #2c6cb8; color: #2c6cb8; }
+  .wl-react-pill.is-mine {
+    background: color-mix(in srgb, var(--teal-500) 10%, white);
+    border-color: var(--teal-500);
+    color: var(--teal-500);
+  }
   .wl-react-pill:hover { border-color: var(--brass-500); }
-  .wl-react-add {
-    background: transparent; border: 1px solid transparent;
-    padding: 2px 6px; cursor: pointer; opacity: 0.55;
-    font-size: 16px;
-  }
-  .wl-react-add:hover { opacity: 1; }
-  .wl-see-all-react { color: #2c6cb8; cursor: pointer; font: 500 12px/1 var(--font-display); margin-left: 4px; background: none; border: none; }
 
   /* Emoji picker */
   .wl-emoji-popover {
@@ -121,22 +175,45 @@
   }
   .wl-emoji-popover button:hover { background: var(--paper-200); }
 
-  /* Comment bar */
-  .wl-comment-bar {
+  /* Reaction + comment summary (above the action bar) */
+  .wl-reaction-summary {
     display: flex; align-items: center; justify-content: space-between;
-    padding: 8px 0;
-    border-top: 1px solid var(--paper-300);
-    margin-top: 8px;
+    padding: 4px 0 6px;
+    font: 500 13px/1.2 var(--font-display);
+    color: var(--ink-600);
+    min-height: 24px;
   }
-  .wl-comment-bar-link {
-    display: inline-flex; align-items: center; gap: 6px;
-    color: #2c6cb8; cursor: pointer;
-    font: 500 13px/1 var(--font-display);
-    background: none; border: none; padding: 0;
+  .wl-reaction-summary .wl-comment-count.has-new {
+    color: var(--manuscript-red); font-weight: 700;
   }
-  .wl-comment-bar-link:hover { text-decoration: underline; }
-  .wl-comment-count { font: 500 12px/1 var(--font-display); color: var(--ink-500); }
-  .wl-comment-count.has-new { color: var(--manuscript-red); font-weight: 700; }
+
+  /* Action bar — Like / Comment / Share, equal-spaced, 44pt tall.
+     Tap Like applies the default 👍; long-press opens the 6-emoji picker. */
+  .wl-action-bar {
+    display: grid; grid-template-columns: 1fr 1fr 1fr;
+    border-top: 1px solid var(--divider);
+    border-bottom: 1px solid var(--divider);
+    margin: 4px 0 6px;
+  }
+  .wl-action {
+    background: none; border: none;
+    display: flex; align-items: center; justify-content: center; gap: 8px;
+    padding: 11px 8px;        /* 44 pt touch target */
+    min-height: 44px;
+    font: 600 13px/1 var(--font-display);
+    color: var(--ink-700);
+    cursor: pointer;
+    user-select: none;
+    -webkit-user-select: none;
+  }
+  .wl-action:hover { background: var(--paper-100); }
+  .wl-action.is-active { color: var(--teal-500); }
+  .wl-action-icon { font-size: 18px; line-height: 1; }
+  .wl-action-label { font-size: 13px; }
+  @media (max-width: 480px) {
+    .wl-action-label { display: none; }
+    .wl-action-icon { font-size: 20px; }
+  }
 
   /* Comment composer */
   .wl-comment-composer { display: flex; gap: 8px; align-items: center; margin: 6px 0 8px; }
@@ -165,28 +242,84 @@
   .wl-comment-actions { display: flex; gap: 12px; align-items: center; margin-top: 6px; }
   .wl-comment-actions .wl-react-pill { font-size: 11px; padding: 1px 7px; }
   .wl-reply-link {
-    color: var(--ink-500); cursor: pointer;
-    font: 500 12px/1 var(--font-display);
-    background: none; border: none; padding: 0;
+    color: var(--ink-600); cursor: pointer;
+    font: 600 12px/1 var(--font-display);
+    background: none; border: none;
+    padding: 8px 0;          /* 44 pt hit area */
+    min-height: 28px;
   }
-  .wl-reply-link:hover { color: #2c6cb8; }
-  .wl-replies { margin-left: 42px; border-left: 1px solid var(--paper-300); padding-left: 8px; }
+  .wl-reply-link:hover { color: var(--teal-500); }
+  /* Replies: indent 36 px (avatar 28 + 8 gap) — Threads-style. The vertical
+     rule uses --divider (12% ink-800) so it's actually visible. */
+  .wl-replies { margin-left: 36px; border-left: 1.5px solid var(--divider); padding-left: 10px; }
+  .wl-comment.is-reply .wl-avatar { width: 28px; height: 28px; font-size: 10px; }
   .wl-show-all-comments {
-    color: #2c6cb8; cursor: pointer;
-    font: 500 13px/1.2 var(--font-display);
-    padding: 8px 0;
+    color: var(--teal-500); cursor: pointer;
+    font: 600 13px/1.2 var(--font-display);
+    padding: 10px 0; min-height: 44px;
     background: none; border: none;
   }
-  .wl-show-all-comments:hover { text-decoration: underline; }
+  .wl-show-all-comments:hover { text-decoration: underline; color: var(--link-hover); }
 
-  /* Photo carousel */
-  .wl-photos { position: relative; margin: 10px 0 6px; }
-  .wl-photos img { width: 100%; max-height: 480px; object-fit: cover; border-radius: 4px; display: block; }
-  .wl-photos.has-many { display: flex; overflow-x: auto; gap: 6px; scroll-snap-type: x mandatory; }
-  .wl-photos.has-many img { flex: 0 0 100%; scroll-snap-align: center; }
-  .wl-photos-dots { display: flex; justify-content: center; gap: 4px; margin-top: 6px; }
-  .wl-photos-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--paper-300); }
-  .wl-photos-dot.is-current { background: var(--brass-500); }
+  /* Photo grids — Facebook/LinkedIn pattern. Layout depends on count:
+     1 → single image, native ratio, capped height, contain so screenshots
+         don't get cropped (paper-200 backdrop fills the gaps).
+     2 → side-by-side 1:1
+     3 → 1 large left + 2 stacked right (Facebook's "P3 split")
+     4 → 2×2 grid
+     5+ → 3 visible + "+N more" overlay on the last; tap opens lightbox.
+     All grids use a 2px gap; corners 4px. */
+  .wl-photos { position: relative; margin: 10px 0 6px; display: grid; gap: 2px; border-radius: 4px; overflow: hidden; }
+  .wl-photos .wl-photo {
+    position: relative; cursor: zoom-in; background: var(--paper-200);
+    overflow: hidden;
+  }
+  .wl-photos .wl-photo img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .wl-photos.count-1 { grid-template-columns: 1fr; }
+  .wl-photos.count-1 .wl-photo { aspect-ratio: auto; max-height: 520px; }
+  .wl-photos.count-1 .wl-photo img { object-fit: contain; max-height: 520px; }
+  .wl-photos.count-2 { grid-template-columns: 1fr 1fr; }
+  .wl-photos.count-2 .wl-photo { aspect-ratio: 1 / 1; }
+  .wl-photos.count-3 { grid-template-columns: 2fr 1fr; grid-template-rows: 1fr 1fr; aspect-ratio: 3 / 2; }
+  .wl-photos.count-3 .wl-photo:nth-child(1) { grid-row: 1 / 3; }
+  .wl-photos.count-4 { grid-template-columns: 1fr 1fr; grid-template-rows: 1fr 1fr; aspect-ratio: 1 / 1; }
+  .wl-photos.count-5plus { grid-template-columns: 1fr 1fr 1fr; aspect-ratio: 3 / 2; }
+  .wl-photos.count-5plus .wl-photo { aspect-ratio: 1 / 1; }
+  .wl-photo .wl-more-overlay {
+    position: absolute; inset: 0;
+    background: rgba(0,0,0,0.55);
+    color: white;
+    display: flex; align-items: center; justify-content: center;
+    font: 600 28px/1 var(--font-display);
+    pointer-events: none;
+  }
+  /* Lightbox */
+  .wl-lightbox {
+    position: fixed; inset: 0; z-index: 3000;
+    background: rgba(0,0,0,0.92);
+    display: flex; align-items: center; justify-content: center;
+    cursor: zoom-out;
+  }
+  .wl-lightbox img { max-width: 96vw; max-height: 92vh; object-fit: contain; }
+  .wl-lightbox .wl-lightbox-arrow {
+    position: absolute; top: 50%; transform: translateY(-50%);
+    background: rgba(255,255,255,0.12); color: white;
+    width: 44px; height: 44px; border-radius: 50%;
+    border: none; font-size: 24px; cursor: pointer;
+  }
+  .wl-lightbox .wl-lightbox-arrow.prev { left: 16px; }
+  .wl-lightbox .wl-lightbox-arrow.next { right: 16px; }
+  .wl-lightbox .wl-lightbox-close {
+    position: absolute; top: 16px; right: 16px;
+    background: rgba(255,255,255,0.12); color: white;
+    width: 44px; height: 44px; border-radius: 50%; border: none;
+    font-size: 24px; cursor: pointer;
+  }
+  .wl-lightbox .wl-lightbox-count {
+    position: absolute; bottom: 20px; left: 50%; transform: translateX(-50%);
+    color: white; font: 500 13px/1 var(--font-mono);
+    background: rgba(255,255,255,0.12); padding: 6px 12px; border-radius: 12px;
+  }
 
   /* Notification badge on the topbar Wall link */
   .qb-nav-link.wl-has-notif { position: relative; }
@@ -271,7 +404,7 @@
 
 <header class="qb-topbar">
   <a class="qb-brand" href="index.html" aria-label="TogetherBOOK — home">
-    <img class="qb-brand-logo" src="togetherbook-logo.png?v=1778792419" alt="TogetherBOOK">
+    <img class="qb-brand-logo" src="togetherbook-logo.png?v=1778835391" alt="TogetherBOOK">
   </a>
   <button class="qb-hamburger" aria-label="Toggle navigation menu" aria-expanded="false"
           onclick="document.body.classList.toggle('nav-open');this.setAttribute('aria-expanded',document.body.classList.contains('nav-open'))">
@@ -324,6 +457,7 @@
   "use strict";
   let posts = [];
   let staffByEmail = {};
+  let annotationsMap = {};   // email (lowercase) → annotation entry (incl. directory_photo_uploaded_at)
   let viewerEmail = "";
   let viewerName  = "";
   let viewerPhoto = "";
@@ -332,22 +466,29 @@
   const expandedPostIds = new Set();
   const openReplyTo   = new Set();
 
-  const REACTIONS = ["👍", "❤️", "😂", "😮", "😢", "🎉", "🙌", "🔥"];
+  // Facebook's settled answer: 6 emojis. Larger sets measurably slow
+  // decision time (their A/B test). The first one is the default applied
+  // on a plain Like tap.
+  const REACTIONS = ["👍", "❤️", "😂", "😮", "😢", "🎉"];
+  const DEFAULT_REACTION = REACTIONS[0];
   const WALL_API = "/api/wall";
-  const BODY_PREVIEW = 250;
 
   Promise.all([
-    fetch("wall.json",      { cache: "no-store" }).then(r => r.ok ? r.json() : { posts: [] }).catch(() => ({ posts: [] })),
-    fetch("staff.json",     { cache: "no-store" }).then(r => r.ok ? r.json() : null).catch(() => null),
-    fetch("wall-seen.json", { cache: "no-store" }).then(r => r.ok ? r.json() : null).catch(() => null),
+    fetch("wall.json",        { cache: "no-store" }).then(r => r.ok ? r.json() : { posts: [] }).catch(() => ({ posts: [] })),
+    fetch("staff.json",       { cache: "no-store" }).then(r => r.ok ? r.json() : null).catch(() => null),
+    fetch("wall-seen.json",   { cache: "no-store" }).then(r => r.ok ? r.json() : null).catch(() => null),
     fetch(`${WALL_API}/whoami`, { cache: "no-store" }).then(r => r.ok ? r.json() : null).catch(() => null),
-  ]).then(([wall, staff, seen, who]) => {
+    fetch("annotations.json", { cache: "no-store" }).then(r => r.ok ? r.json() : null).catch(() => null),
+  ]).then(([wall, staff, seen, who, annFile]) => {
     posts = Array.isArray(wall.posts) ? wall.posts : [];
     if (staff && Array.isArray(staff.users)) {
       for (const u of staff.users) {
         const k = (u.email || "").toLowerCase();
         if (k) staffByEmail[k] = u;
       }
+    }
+    if (annFile && annFile.annotations && typeof annFile.annotations === "object") {
+      annotationsMap = annFile.annotations;
     }
     if (who && who.email) {
       viewerEmail = who.email.toLowerCase();
@@ -422,15 +563,18 @@
     const name = displayName(post.author_email, post.author_name);
     const photo = photoUrlFor(staffByEmail[(post.author_email || "").toLowerCase()] || {});
     const expanded = expandedPostIds.has(post.id);
-    const body = renderBody(post.body || "", post.id, expanded);
-    const photos = renderPhotos(post.photos || []);
-    const reactions = renderReactions(post.reactions || {}, post.id, "post");
+    const bodyHtml = renderBody(post.body || "", post.id, expanded);
+    const photos = renderPhotos(post.photos || [], post.id);
+    const reactions = renderReactionPills(post.reactions || {}, post.id, "post");
     const channelTag = post.channel
-      ? ` <span style="color:var(--ink-500); font-weight:400;">› ${escapeHtml(post.channel)}</span>` : "";
+      ? ` <span style="color:var(--ink-600); font-weight:400;">› ${escapeHtml(post.channel)}</span>` : "";
     const comments = post.comments || [];
     const cmCount = (comments || []).filter(c => !c.parent_comment_id).length;
     const open = openPostIds.has(post.id);
     const newCount = unseenCommentCount(post);
+    const myReaction = mineReactionOn(post.reactions || {});
+    const likeActive = !!myReaction;
+    const likeIcon = myReaction || "👍";
     return `
       <article class="wl-post" data-post="${escapeHtml(post.id)}" id="post-${escapeHtml(post.id)}">
         <div class="wl-post-head">
@@ -440,14 +584,29 @@
             <div class="wl-post-time">${formatTime(post.created_at)}</div>
           </div>
         </div>
-        <div class="wl-post-body">${body}</div>
+        <div class="wl-post-body${expanded || (post.body || "").length < 240 ? "" : " is-clamped"}" data-post-body="${escapeHtml(post.id)}">${bodyHtml}</div>
+        ${(post.body || "").length >= 240 && !expanded ? `<a class="wl-see-more" data-expand="${escapeHtml(post.id)}">See more</a>` : ""}
+        ${expanded && (post.body || "").length >= 240 ? `<a class="wl-see-more" data-expand="${escapeHtml(post.id)}" data-collapse="1">See less</a>` : ""}
         ${photos}
-        ${reactions}
-        <div class="wl-comment-bar">
-          <button class="wl-comment-bar-link" data-toggle-comments="${escapeHtml(post.id)}">💬 Comment</button>
+        <div class="wl-reaction-summary">
+          <div>${reactions}</div>
           <span class="wl-comment-count ${newCount > 0 ? "has-new" : ""}">
-            ${cmCount === 0 ? "No comments yet" : (cmCount + (cmCount === 1 ? " comment" : " comments")) + (newCount > 0 ? ` · ${newCount} new` : "")}
+            ${cmCount === 0 ? "" : (cmCount + (cmCount === 1 ? " comment" : " comments")) + (newCount > 0 ? ` · ${newCount} new` : "")}
           </span>
+        </div>
+        <div class="wl-action-bar">
+          <button class="wl-action wl-action-like ${likeActive ? "is-active" : ""}" data-like="${escapeHtml(post.id)}" data-kind="post" title="Tap to ${likeActive ? "remove " + likeIcon : "react " + DEFAULT_REACTION}; long-press for more">
+            <span class="wl-action-icon">${likeActive ? likeIcon : "👍"}</span>
+            <span class="wl-action-label">${likeActive ? "Reacted" : "Like"}</span>
+          </button>
+          <button class="wl-action" data-toggle-comments="${escapeHtml(post.id)}">
+            <span class="wl-action-icon">💬</span>
+            <span class="wl-action-label">Comment</span>
+          </button>
+          <button class="wl-action" data-share="${escapeHtml(post.id)}">
+            <span class="wl-action-icon">↗︎</span>
+            <span class="wl-action-label">Share</span>
+          </button>
         </div>
         <div class="wl-comment-composer">
           <div class="wl-avatar">${avatarInner(viewerName, viewerPhoto)}</div>
@@ -457,54 +616,80 @@
       </article>`;
   }
 
+  function mineReactionOn(rx) {
+    if (!viewerEmail) return null;
+    for (const [emoji, emails] of Object.entries(rx || {})) {
+      if ((emails || []).map(e => (e || "").toLowerCase()).includes(viewerEmail)) return emoji;
+    }
+    return null;
+  }
+
+  // Body is rendered raw + clamped via CSS line-clamp; the "See more" link
+  // is sibling-rendered in renderPost. No JS character slicing — keeps
+  // paragraphed and dense posts treated uniformly.
   function renderBody(body, postId, expanded) {
-    const safe = escapeHtml(body);
-    if (body.length <= BODY_PREVIEW || expanded) {
-      const link = body.length > BODY_PREVIEW
-        ? ` <a class="wl-see-more" data-expand="${escapeHtml(postId)}" data-collapse="1">See less</a>`
-        : "";
-      return safe + link;
-    }
-    return safe.slice(0, BODY_PREVIEW) + "… "
-      + `<a class="wl-see-more" data-expand="${escapeHtml(postId)}">See more</a>`;
+    return escapeHtml(body);
   }
-  function renderPhotos(photos) {
+
+  // Per-count grid layout. Counts of 1/2/3/4 show every photo; 5+ shows
+  // first 3 with a "+N" overlay on the 3rd. Tap opens the lightbox.
+  function renderPhotos(photos, postId) {
     if (!photos.length) return "";
-    if (photos.length === 1) {
-      return `<div class="wl-photos"><img src="${escapeHtml(photos[0])}" alt="" loading="lazy"></div>`;
+    const n = photos.length;
+    let cls = "count-" + Math.min(n, 4);
+    let visible = photos.slice();
+    let overlayN = 0;
+    if (n >= 5) {
+      cls = "count-5plus";
+      visible = photos.slice(0, 3);
+      overlayN = n - 3;
     }
-    const imgs = photos.map(p => `<img src="${escapeHtml(p)}" alt="" loading="lazy">`).join("");
-    const dots = photos.map((_, i) => `<span class="wl-photos-dot ${i === 0 ? "is-current" : ""}"></span>`).join("");
-    return `<div class="wl-photos has-many" data-carousel>${imgs}</div><div class="wl-photos-dots">${dots}</div>`;
+    const tiles = visible.map((p, i) => {
+      const overlay = (overlayN > 0 && i === visible.length - 1)
+        ? `<div class="wl-more-overlay">+${overlayN}</div>` : "";
+      return `<div class="wl-photo" data-open-lightbox="${escapeHtml(postId)}::${i}">
+                <img src="${escapeHtml(p)}" alt="" loading="lazy">${overlay}
+              </div>`;
+    }).join("");
+    return `<div class="wl-photos ${cls}">${tiles}</div>`;
   }
-  function renderReactions(rx, parentId, parentKind) {
+
+  // Reaction pills above the action bar. Show top 3 emoji types; the rest
+  // collapse into a "+N" pill that opens the picker for switching. Tap
+  // mine to remove, tap others' to switch yours.
+  function renderReactionPills(rx, parentId, parentKind) {
     const entries = Object.entries(rx || {})
       .filter(([_, emails]) => Array.isArray(emails) && emails.length > 0)
       .sort((a, b) => b[1].length - a[1].length);
-    const pills = entries.map(([emoji, emails]) => {
+    if (!entries.length) return "";
+    const top = entries.slice(0, 3);
+    const restCount = entries.slice(3).reduce((n, [, emails]) => n + emails.length, 0);
+    const pills = top.map(([emoji, emails]) => {
       const mine = emails.map(e => (e || "").toLowerCase()).includes(viewerEmail);
-      return `<button class="wl-react-pill ${mine ? "is-mine" : ""}" data-react="${escapeHtml(emoji)}" data-on="${escapeHtml(parentId)}" data-kind="${escapeHtml(parentKind)}" title="${emails.map(escapeHtml).join(", ")}">${emoji} ${emails.length}</button>`;
+      const total = emails.length;
+      return `<button class="wl-react-pill ${mine ? "is-mine" : ""}" data-react="${escapeHtml(emoji)}" data-on="${escapeHtml(parentId)}" data-kind="${escapeHtml(parentKind)}" title="${emails.map(escapeHtml).join(", ")}">${emoji} ${total}</button>`;
     }).join("");
-    return `
-      <div class="wl-reactions">
-        ${pills}
-        <button class="wl-react-add" data-add-react="${escapeHtml(parentId)}" data-kind="${escapeHtml(parentKind)}" title="Add reaction">🙂</button>
-      </div>`;
+    const more = restCount > 0
+      ? `<button class="wl-react-pill" data-add-react="${escapeHtml(parentId)}" data-kind="${escapeHtml(parentKind)}">+${restCount}</button>`
+      : "";
+    return `<div class="wl-reactions">${pills}${more}</div>`;
   }
   function renderComments(post, allOpen) {
     const comments = (post.comments || []).slice();
     if (!comments.length) return "";
     const topLevel = comments.filter(c => !c.parent_comment_id);
     topLevel.sort((a, b) => (a.created_at < b.created_at ? -1 : 1));
-    const showList = allOpen ? topLevel : topLevel.slice(-1);
-    const headerLink = !allOpen && topLevel.length > 1
-      ? `<button class="wl-show-all-comments" data-show-all="${escapeHtml(post.id)}">Show all ${topLevel.length} comments</button>`
-      : (allOpen && topLevel.length > 1
+    // Preview 2 newest by default — Facebook/LinkedIn consensus.
+    const showList = allOpen ? topLevel : topLevel.slice(-2);
+    const hiddenN = topLevel.length - showList.length;
+    const headerLink = !allOpen && hiddenN > 0
+      ? `<button class="wl-show-all-comments" data-show-all="${escapeHtml(post.id)}">View ${hiddenN} earlier ${hiddenN === 1 ? "comment" : "comments"}</button>`
+      : (allOpen && topLevel.length > 2
           ? `<button class="wl-show-all-comments" data-show-all="${escapeHtml(post.id)}" data-collapse="1">Show only most recent</button>`
           : "");
-    return `<div class="wl-comments">${headerLink}${showList.map(c => renderComment(post, c)).join("")}</div>`;
+    return `<div class="wl-comments">${headerLink}${showList.map(c => renderComment(post, c, false)).join("")}</div>`;
   }
-  function renderComment(post, comment) {
+  function renderComment(post, comment, isReply) {
     const name = displayName(comment.author_email, comment.author_name);
     const photo = photoUrlFor(staffByEmail[(comment.author_email || "").toLowerCase()] || {});
     const replies = (post.comments || [])
@@ -512,8 +697,9 @@
       .sort((a, b) => (a.created_at < b.created_at ? -1 : 1));
     const replyKey = `${post.id}::${comment.id}`;
     const replyComposerOpen = openReplyTo.has(replyKey);
+    const myReaction = mineReactionOn(comment.reactions || {});
     return `
-      <div class="wl-comment" data-comment="${escapeHtml(comment.id)}">
+      <div class="wl-comment ${isReply ? "is-reply" : ""}" data-comment="${escapeHtml(comment.id)}">
         <div class="wl-avatar">${avatarInner(name, photo)}</div>
         <div style="flex:1;">
           <div class="wl-comment-body">
@@ -522,9 +708,12 @@
               <span class="wl-comment-time">${formatTime(comment.created_at)}</span>
             </div>
             <div class="wl-comment-text">${escapeHtml(comment.body || "")}</div>
-            ${renderReactions(comment.reactions || {}, comment.id, "comment")}
+            ${renderReactionPills(comment.reactions || {}, comment.id, "comment")}
           </div>
           <div class="wl-comment-actions">
+            <button class="wl-reply-link wl-comment-like" data-like="${escapeHtml(comment.id)}" data-kind="comment" title="Tap to ${myReaction ? "remove " + myReaction : "react " + DEFAULT_REACTION}; long-press for more">
+              ${myReaction ? myReaction + " Reacted" : "👍 Like"}
+            </button>
             <button class="wl-reply-link" data-reply="${escapeHtml(replyKey)}">Reply</button>
           </div>
           ${replyComposerOpen ? `
@@ -532,7 +721,7 @@
               <div class="wl-avatar">${avatarInner(viewerName, viewerPhoto)}</div>
               <input type="text" placeholder="Reply to ${escapeHtml(name)}…" data-add-reply="${escapeHtml(replyKey)}" maxlength="2000" autofocus>
             </div>` : ""}
-          ${replies.length ? `<div class="wl-replies">${replies.map(r => renderComment(post, r)).join("")}</div>` : ""}
+          ${replies.length ? `<div class="wl-replies">${replies.map(r => renderComment(post, r, true)).join("")}</div>` : ""}
         </div>
       </div>`;
   }
@@ -554,9 +743,11 @@
     document.querySelectorAll("[data-toggle-comments]").forEach(el => {
       el.addEventListener("click", () => {
         const id = el.dataset.toggleComments;
-        if (openPostIds.has(id)) openPostIds.delete(id);
-        else openPostIds.add(id);
+        // Comment-action click: expand all comments AND focus the composer.
+        openPostIds.add(id);
         renderFeed();
+        const inp = document.querySelector(`[data-add-comment="${cssAttr(id)}"]`);
+        if (inp) inp.focus();
       });
     });
     document.querySelectorAll("[data-show-all]").forEach(el => {
@@ -634,6 +825,101 @@
         });
       });
     });
+    // Like buttons: tap = default reaction toggle; long-press = picker.
+    document.querySelectorAll("[data-like]").forEach(el => {
+      attachLikeButton(el);
+    });
+    // Photo tiles → lightbox
+    document.querySelectorAll("[data-open-lightbox]").forEach(el => {
+      el.addEventListener("click", () => {
+        const [pid, idxStr] = el.dataset.openLightbox.split("::");
+        const post = posts.find(p => p.id === pid);
+        if (post) openLightbox(post.photos || [], parseInt(idxStr, 10) || 0);
+      });
+    });
+    // Share — copy a link to the post.
+    document.querySelectorAll("[data-share]").forEach(el => {
+      el.addEventListener("click", () => {
+        const id = el.dataset.share;
+        const url = `${location.origin}${location.pathname}#post-${id}`;
+        navigator.clipboard?.writeText(url).then(
+          () => showBanner("Link copied"),
+          () => showBanner("Couldn't copy — " + url, true),
+        );
+      });
+    });
+  }
+
+  // Tap a Like button = toggle default reaction. Long-press (450 ms) opens
+  // the 6-emoji picker. Works on both desktop (mouse) and touch.
+  function attachLikeButton(el) {
+    let timer = null, longPressFired = false;
+    const start = (ev) => {
+      longPressFired = false;
+      timer = setTimeout(() => {
+        longPressFired = true;
+        openEmojiPicker(el, async emoji => {
+          await reactTo(el.dataset.like, el.dataset.kind, emoji);
+        });
+      }, 450);
+    };
+    const cancel = () => { if (timer) { clearTimeout(timer); timer = null; } };
+    el.addEventListener("mousedown", start);
+    el.addEventListener("touchstart", start, { passive: true });
+    el.addEventListener("mouseup", cancel);
+    el.addEventListener("mouseleave", cancel);
+    el.addEventListener("touchend", cancel);
+    el.addEventListener("touchcancel", cancel);
+    el.addEventListener("click", async (ev) => {
+      if (longPressFired) { ev.preventDefault(); return; }
+      // Default reaction: if you already reacted, remove that; otherwise add 👍.
+      const post = posts.find(p => p.id === el.dataset.like)
+                 || posts.find(p => (p.comments || []).some(c => c.id === el.dataset.like));
+      const rx = (el.dataset.kind === "post"
+        ? (post && post.reactions)
+        : ((post && (post.comments || []).find(c => c.id === el.dataset.like) || {}).reactions)) || {};
+      const mine = mineReactionOn(rx) || DEFAULT_REACTION;
+      await reactTo(el.dataset.like, el.dataset.kind, mine);
+    });
+  }
+
+  // ── Lightbox ───────────────────────────────────────────────────────
+  let lightboxState = null;
+  function openLightbox(photos, startIdx) {
+    if (!photos || !photos.length) return;
+    closeLightbox();
+    let idx = startIdx;
+    const root = document.createElement("div");
+    root.className = "wl-lightbox";
+    root.innerHTML = `
+      <button class="wl-lightbox-arrow prev" aria-label="Previous">‹</button>
+      <img src="${escapeHtml(photos[idx])}" alt="">
+      <button class="wl-lightbox-arrow next" aria-label="Next">›</button>
+      <button class="wl-lightbox-close" aria-label="Close">×</button>
+      <div class="wl-lightbox-count">${idx + 1} / ${photos.length}</div>`;
+    document.body.appendChild(root);
+    const refresh = () => {
+      root.querySelector("img").src = photos[idx];
+      root.querySelector(".wl-lightbox-count").textContent = `${idx + 1} / ${photos.length}`;
+    };
+    const onKey = e => {
+      if (e.key === "Escape") closeLightbox();
+      else if (e.key === "ArrowLeft")  { idx = (idx - 1 + photos.length) % photos.length; refresh(); }
+      else if (e.key === "ArrowRight") { idx = (idx + 1) % photos.length; refresh(); }
+    };
+    root.addEventListener("click", e => {
+      if (e.target === root || e.target.classList.contains("wl-lightbox-close")) closeLightbox();
+      else if (e.target.classList.contains("prev"))  { idx = (idx - 1 + photos.length) % photos.length; refresh(); }
+      else if (e.target.classList.contains("next"))  { idx = (idx + 1) % photos.length; refresh(); }
+    });
+    document.addEventListener("keydown", onKey);
+    lightboxState = { root, onKey };
+  }
+  function closeLightbox() {
+    if (!lightboxState) return;
+    lightboxState.root.remove();
+    document.removeEventListener("keydown", lightboxState.onKey);
+    lightboxState = null;
   }
 
   let activePopover = null;
@@ -778,10 +1064,21 @@
     const u = staffByEmail[email.toLowerCase()];
     return (u && u.name) || fallback || email.split("@")[0];
   }
+  // Mirrors directory.html's dirPhotoUrl: prefer the admin-uploaded
+  // override at assets/photos/<email_at_>.jpg (with the annotation
+  // timestamp as cache-bust); fall back to Google's Workspace
+  // thumbnailPhotoUrl when no upload exists.
+  function dirPhotoKey(email) {
+    return (email || "").toString().trim().toLowerCase().replace(/@/g, "_at_");
+  }
   function photoUrlFor(u) {
     if (!u || !u.email) return "";
-    const safe = u.email.replace(/[^a-zA-Z0-9._-]/g, "_");
-    return `assets/photos/${safe}.jpg`;
+    const email = u.email.toLowerCase();
+    const ann = annotationsMap[email];
+    if (ann && ann.directory_photo_uploaded_at) {
+      return `assets/photos/${dirPhotoKey(email)}.jpg?v=${encodeURIComponent(ann.directory_photo_uploaded_at)}`;
+    }
+    return u.photo_url || "";
   }
   function initials(name) {
     return (name || "").split(/\s+/).map(p => p.charAt(0).toUpperCase()).slice(0, 2).join("") || "?";
@@ -804,6 +1101,7 @@
       .replaceAll("&", "&amp;").replaceAll("<", "&lt;").replaceAll(">", "&gt;")
       .replaceAll('"', "&quot;").replaceAll("'", "&#39;");
   }
+  function cssAttr(s) { return String(s).replace(/"/g, '\\"'); }
   function showBanner(msg, isError) {
     document.querySelectorAll(".wl-banner").forEach(el => el.remove());
     const b = document.createElement("div");
