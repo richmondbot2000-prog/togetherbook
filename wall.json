@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "updated_at": "2026-05-15T14:17:17.596Z",
+  "updated_at": "2026-05-15T14:24:00.054Z",
   "posts": [
     {
       "id": "post_mp6zxv0t_4pj7yu",
@@ -29,18 +29,6 @@
         ]
       },
       "comments": [
-        {
-          "id": "com_mp6yh32s_3m8rai",
-          "parent_comment_id": null,
-          "author_email": "james.benamor@letme.com",
-          "author_name": "james.benamor",
-          "created_at": "2026-05-15T13:31:09.652Z",
-          "body": "this is a comment",
-          "photos": [
-            "wall-media/img_mp6yh2e4_62j3ua.jpg"
-          ],
-          "reactions": {}
-        },
         {
           "id": "com_mp6zp153_1tvntf",
           "parent_comment_id": null,
