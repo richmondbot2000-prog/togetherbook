@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "updated_at": "2026-05-15T20:30:02.138Z",
+  "updated_at": "2026-05-15T20:30:06.893Z",
   "posts": [
     {
       "id": "post_mp76cgvu_z1f6a5",
@@ -14,9 +14,6 @@
       "channel": null,
       "reactions": {
         "😂": [
-          "james.benamor@letme.com"
-        ],
-        "🎉": [
           "james.benamor@letme.com"
         ]
       },
@@ -37,6 +34,14 @@
           "target_id": "post_mp76cgvu_z1f6a5",
           "at": "2026-05-15T20:30:01.882Z",
           "kind": "added"
+        },
+        {
+          "actor_email": "james.benamor@letme.com",
+          "emoji": "🎉",
+          "target_kind": "post",
+          "target_id": "post_mp76cgvu_z1f6a5",
+          "at": "2026-05-15T20:30:06.689Z",
+          "kind": "removed"
         }
       ]
     },
