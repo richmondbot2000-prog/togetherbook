@@ -1,13 +1,19 @@
-name: Refresh yesterday payouts
+name: Refresh payouts
 
-# Pulls yesterday's US payouts from the Fabric warehouse and commits
-# yesterday-payouts.json back to main so the kids site stays current.
+# Pulls US payouts from the Fabric warehouse and commits three JSONs
+# back to main so the Payouts page (yesterday.html) stays current:
+#
+#   - yesterday-payouts.json   per-borrower, single day (yesterday)
+#   - payouts-week.json        per-borrower, last 7 days
+#   - payouts-year.json        aggregated, rolling 12 completed months
 #
 # We try every hour from 06:00–23:00 UTC instead of a single 06:00 slot
 # because GitHub Actions cron is unreliable on free public repos
 # (slots can be silently skipped during high load). The first step in
-# the job is a guard that exits cleanly if today's run has already
-# committed — so 17 of the 18 daily firings do almost no work.
+# the job is a guard that exits cleanly if today's yesterday-payouts
+# already matches yesterday's date — so 17 of the 18 daily firings do
+# almost no work. The week + year scanners run alongside the yesterday
+# scanner when the guard says "go".
 
 on:
   schedule:
@@ -69,7 +75,7 @@ jobs:
         if: steps.guard.outputs.skip != 'true'
         run: pip install --quiet pyodbc==5.*
 
-      - name: Scan
+      - name: Scan yesterday
         if: steps.guard.outputs.skip != 'true'
         env:
           FABRIC_SQL_ENDPOINT: d76gbn5gtayeppltcrsxsvkluq-ruqkpz7fkwpelmnjh4kbg2lqpi.datawarehouse.fabric.microsoft.com
@@ -78,20 +84,35 @@ jobs:
           FABRIC_CLIENT_SECRET: ${{ secrets.FABRIC_CLIENT_SECRET }}
         run: python scripts/scan_yesterday_payouts.py
 
-      - name: Commit if yesterday-payouts.json changed
+      - name: Scan week + year history
+        if: steps.guard.outputs.skip != 'true'
+        env:
+          FABRIC_SQL_ENDPOINT: d76gbn5gtayeppltcrsxsvkluq-ruqkpz7fkwpelmnjh4kbg2lqpi.datawarehouse.fabric.microsoft.com
+          FABRIC_TENANT_ID:    b760fc1f-98a6-4730-bd73-146579554ba4
+          FABRIC_CLIENT_ID:    b8fb2709-6e42-4a1e-91e6-8a3807a9884d
+          FABRIC_CLIENT_SECRET: ${{ secrets.FABRIC_CLIENT_SECRET }}
+        # Tolerated failure — if the history scanner fails, we still
+        # want yesterday's JSON to ship. The Payouts page renders a
+        # "not refreshed yet" placeholder when the JSONs are missing.
+        continue-on-error: true
+        run: python scripts/scan_payouts_history.py
+
+      - name: Commit if any payouts JSON changed
         if: steps.guard.outputs.skip != 'true'
         run: |
           set -euo pipefail
-          if git diff --quiet -- yesterday-payouts.json; then
+          if git diff --quiet -- yesterday-payouts.json payouts-week.json payouts-year.json; then
             echo "no changes — nothing to commit"
             exit 0
           fi
           git config user.name  "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add yesterday-payouts.json
+          for f in yesterday-payouts.json payouts-week.json payouts-year.json; do
+            if [ -f "$f" ]; then git add "$f"; fi
+          done
           N=$(python -c "import json; d=json.load(open('yesterday-payouts.json')); print(d['totals']['borrowers'])")
           DATE=$(python -c "import json; d=json.load(open('yesterday-payouts.json')); print(d.get('target_date',''))")
-          git commit -m "Refresh yesterday payouts: ${N} borrowers on ${DATE}"
+          git commit -m "Refresh payouts: ${N} borrowers on ${DATE} (+ week + year)"
 
           # If a sibling workflow (e.g. refresh-row-counts) committed in parallel,
           # the push will be rejected. Rebase onto the latest main and retry.

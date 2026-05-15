@@ -9,11 +9,11 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&family=Orbitron:wght@500;600;700;800&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="style.css?v=1778865773">
-<link rel="stylesheet" href="quiet-tokens.css?v=1778865773">
-<link rel="stylesheet" href="quiet.css?v=1778865773">
-<link rel="stylesheet" href="quiet-extras.css?v=1778865773">
-<link rel="stylesheet" href="quiet-legacy.css?v=1778865773">
+<link rel="stylesheet" href="style.css?v=1778876398">
+<link rel="stylesheet" href="quiet-tokens.css?v=1778876398">
+<link rel="stylesheet" href="quiet.css?v=1778876398">
+<link rel="stylesheet" href="quiet-extras.css?v=1778876398">
+<link rel="stylesheet" href="quiet-legacy.css?v=1778876398">
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
       integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
       crossorigin="">
@@ -201,13 +201,37 @@
     font: italic 400 16px/1.5 var(--font-display, 'Newsreader', serif);
   }
   .yp-range-pending strong { display: block; margin-bottom: 6px; color: var(--ink-900); font-style: normal; font-weight: 600; }
+
+  /* Monthly bar chart (Last Year view) — minimal horizontal-bar list,
+     no library. Each row: month label · bar · amount + count. */
+  .yp-bars {
+    display: flex; flex-direction: column; gap: 6px;
+    margin: 0 0 28px;
+    padding: 16px 18px;
+    background: var(--bg-soft);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+  }
+  .yp-bar-row {
+    display: grid;
+    grid-template-columns: 100px 1fr 180px;
+    gap: 14px;
+    align-items: center;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.78rem;
+  }
+  .yp-bar-label { color: var(--ink-soft); text-transform: uppercase; letter-spacing: 0.04em; }
+  .yp-bar-track { position: relative; height: 14px; background: var(--bg-soft-2); border-radius: 3px; overflow: hidden; }
+  .yp-bar-fill  { position: absolute; inset: 0 auto 0 0; background: var(--accent, #00d4ff); }
+  .yp-bar-amt   { text-align: right; color: var(--ink); }
+  .yp-bar-amt-meta { color: var(--muted); font-size: 0.7rem; margin-left: 6px; }
 </style>
 </head>
 <body>
 
 <header class="qb-topbar">
   <a class="qb-brand" href="index.html" aria-label="TogetherBOOK — home">
-    <img class="qb-brand-logo" src="togetherbook-logo.png?v=1778865773" alt="TogetherBOOK">
+    <img class="qb-brand-logo" src="togetherbook-logo.png?v=1778876398" alt="TogetherBOOK">
   </a>
   <button class="qb-hamburger" aria-label="Toggle navigation menu" aria-expanded="false"
           onclick="document.body.classList.toggle('nav-open');this.setAttribute('aria-expanded',document.body.classList.contains('nav-open'))">
@@ -458,24 +482,152 @@
     return leafletReady;
   }
 
-  function clearContent() {
+  function clearContent(shape) {
     const content = document.getElementById('ypContent');
-    content.innerHTML = `
-      <p class="yp-map-caption">Where the borrowers are</p>
-      <div class="yp-map" id="ypMap"></div>
+    if (shape === 'agg') {
+      // Year view: aggregates only — no per-borrower pin map, no
+      // per-borrower tables. The monthly bar chart slot lives between
+      // the state-total map and the state-avg map.
+      content.innerHTML = `
+        <p class="yp-map-caption">Total paid out by state</p>
+        <div class="yp-map-states" id="ypStateMap"></div>
 
-      <p class="yp-map-caption">Total paid out by state</p>
-      <div class="yp-map-states" id="ypStateMap"></div>
+        <p class="yp-map-caption">Monthly payouts (last 12 completed months)</p>
+        <div class="yp-bars" id="ypBars"></div>
 
-      <p class="yp-map-caption">Average loan amount by state</p>
-      <div class="yp-map-states" id="ypAvgStateMap"></div>
+        <p class="yp-map-caption">Average loan amount by state</p>
+        <div class="yp-map-states" id="ypAvgStateMap"></div>
 
-      <div class="yp-states" id="ypStates"></div>`;
+        <div class="yp-states" id="ypStates"></div>`;
+    } else {
+      content.innerHTML = `
+        <p class="yp-map-caption">Where the borrowers are</p>
+        <div class="yp-map" id="ypMap"></div>
+
+        <p class="yp-map-caption">Total paid out by state</p>
+        <div class="yp-map-states" id="ypStateMap"></div>
+
+        <p class="yp-map-caption">Average loan amount by state</p>
+        <div class="yp-map-states" id="ypAvgStateMap"></div>
+
+        <div class="yp-states" id="ypStates"></div>`;
+    }
+  }
+
+  // Year-shape renderers — take pre-aggregated rows from the JSON
+  // (by_state, by_month) instead of recomputing from items.
+  function renderStateMapFromAgg(byState) {
+    const mapEl = document.getElementById('ypStateMap');
+    if (!mapEl || typeof L === 'undefined') return;
+    const map = L.map(mapEl, { worldCopyJump: false, scrollWheelZoom: false }).setView([39.0, -96.5], 4);
+    map.on('click', () => map.scrollWheelZoom.enable());
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      maxZoom: 10,
+      attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+    }).addTo(map);
+    for (const row of byState || []) {
+      const state = (row.state || '').toUpperCase();
+      const c = STATE_CENTROIDS[state];
+      if (!c) continue;
+      const total = row.amount || 0;
+      const icon = L.divIcon({
+        className: 'state-amount-icon',
+        html: `<span class="amount-pill" title="${state}: ${fmtUSD2.format(total)}">${fmtUSD0.format(total)}</span>`,
+        iconSize: null, iconAnchor: [0, 0],
+      });
+      L.marker(c, { icon, interactive: true })
+        .addTo(map)
+        .bindPopup(`<strong>${state}</strong><br>${fmtUSD2.format(total)}<br>${(row.borrowers || 0).toLocaleString('en-GB')} loans`);
+    }
+  }
+  function renderAvgStateMapFromAgg(byState) {
+    const mapEl = document.getElementById('ypAvgStateMap');
+    if (!mapEl || typeof L === 'undefined') return;
+    const map = L.map(mapEl, { worldCopyJump: false, scrollWheelZoom: false }).setView([39.0, -96.5], 4);
+    map.on('click', () => map.scrollWheelZoom.enable());
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      maxZoom: 10,
+      attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+    }).addTo(map);
+    for (const row of byState || []) {
+      const state = (row.state || '').toUpperCase();
+      const c = STATE_CENTROIDS[state];
+      if (!c) continue;
+      const n = row.borrowers || 0;
+      if (!n) continue;
+      const avg = row.avg || ((row.amount || 0) / n);
+      const icon = L.divIcon({
+        className: 'state-amount-icon',
+        html: `<span class="amount-pill" title="${state}: avg ${fmtUSD2.format(avg)} across ${n} loan${n === 1 ? '' : 's'}">${fmtUSD0.format(avg)}</span>`,
+        iconSize: null, iconAnchor: [0, 0],
+      });
+      L.marker(c, { icon, interactive: true })
+        .addTo(map)
+        .bindPopup(`<strong>${state}</strong><br>Average: ${fmtUSD2.format(avg)}<br>${n.toLocaleString('en-GB')} loan${n === 1 ? '' : 's'} · ${fmtUSD2.format(row.amount || 0)} total`);
+    }
+  }
+  function renderMonthlyBars(byMonth) {
+    const root = document.getElementById('ypBars');
+    if (!root) return;
+    const months = (byMonth || []).slice();
+    if (!months.length) { root.textContent = 'No data.'; return; }
+    const peak = months.reduce((m, r) => Math.max(m, r.amount || 0), 0) || 1;
+    root.innerHTML = months.map(r => {
+      const label = monthLabel(r.month);
+      const pct = Math.max(2, (100 * (r.amount || 0) / peak));
+      return `
+        <div class="yp-bar-row">
+          <span class="yp-bar-label">${label}</span>
+          <div class="yp-bar-track"><div class="yp-bar-fill" style="width:${pct.toFixed(1)}%"></div></div>
+          <div class="yp-bar-amt">${fmtUSD0.format(r.amount || 0)}<span class="yp-bar-amt-meta">${(r.borrowers || 0).toLocaleString('en-GB')} loans</span></div>
+        </div>`;
+    }).join('');
+  }
+  function monthLabel(iso) {
+    // "2025-05" → "May 2025"
+    if (!iso) return '';
+    const [y, m] = iso.split('-');
+    const d = new Date(parseInt(y, 10), parseInt(m, 10) - 1, 1);
+    return d.toLocaleDateString('en-GB', { month: 'short', year: 'numeric' });
+  }
+  function renderStateCardsFromAgg(byState) {
+    const root = document.getElementById('ypStates');
+    if (!root) return;
+    const sorted = (byState || []).slice().sort((a, b) => (a.state || '').localeCompare(b.state || ''));
+    const frag = document.createDocumentFragment();
+    for (const row of sorted) {
+      const card = document.createElement('div');
+      card.className = 'yp-state';
+      card.innerHTML = `
+        <h3 class="yp-state-h">
+          <span>${row.state || '—'}</span>
+          <span class="yp-state-meta">${(row.borrowers || 0).toLocaleString('en-GB')} · ${fmtUSD0.format(row.amount || 0)}</span>
+        </h3>
+        <table class="yp-table">
+          <tbody>
+            <tr><td class="first-name">Average loan</td><td></td><td class="amount">${fmtUSD2.format(row.avg || ((row.amount || 0) / Math.max(1, row.borrowers || 1)))}</td></tr>
+          </tbody>
+        </table>`;
+      frag.appendChild(card);
+    }
+    root.appendChild(frag);
   }
 
   function showPending(message) {
     document.getElementById('ypContent').innerHTML =
       `<div class="yp-range-pending"><strong>Not refreshed yet</strong>${message}</div>`;
+  }
+
+  function paintAggregated(data) {
+    const total = (data.totals && data.totals.amount) || 0;
+    const n     = (data.totals && data.totals.borrowers) || 0;
+    const updated = data.updated_at ? new Date(data.updated_at).toLocaleString('en-GB') : '';
+    document.getElementById('ypMeta').textContent =
+      `${n.toLocaleString('en-GB')} borrowers · ${fmtUSD0.format(total)} paid out · last refreshed ${updated}`;
+    try { renderStateMapFromAgg(data.by_state); }    catch (e) { console.error('state map (agg) failed', e); }
+    try { renderMonthlyBars(data.by_month); }        catch (e) { console.error('monthly bars failed', e); }
+    try { renderAvgStateMapFromAgg(data.by_state); } catch (e) { console.error('avg state map (agg) failed', e); }
+    try { renderStateCardsFromAgg(data.by_state); }  catch (e) { console.error('state cards (agg) failed', e); }
   }
 
   function paint(data) {
@@ -544,7 +696,9 @@
     });
     const cfg = RANGES[key];
     if (!cfg) return;
-    clearContent();
+    // Re-clear lazily once we see the shape — for now build the
+    // per-borrower layout. Year view rebuilds the layout itself.
+    clearContent('items');
     document.getElementById('ypMeta').textContent = 'Loading…';
     document.getElementById('ypLead').innerHTML = '&nbsp;';
 
@@ -559,7 +713,14 @@
         })
         .then(data => {
           document.getElementById('ypLead').innerHTML = cfg.label(data);
-          paint(data);
+          // Year-shape datasets carry by_state[] + by_month[] instead
+          // of items[]; render the aggregated layout in that case.
+          if (Array.isArray(data.by_state)) {
+            clearContent('agg');
+            paintAggregated(data);
+          } else {
+            paint(data);
+          }
         })
         .catch(err => {
           if (err.code === 'missing') {
