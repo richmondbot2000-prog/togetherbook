@@ -39,7 +39,7 @@ export default {
     let body;
     try { body = await req.json(); }
     catch { return json({ error: "invalid JSON body" }, 400, req); }
-    const { key, phone, start_date, address, payroll_match, forward_to, rename_decay, directory_photo_uploaded_at, line_manager } = body || {};
+    const { key, phone, start_date, address, payroll_match, forward_to, rename_decay, directory_photo_uploaded_at, line_manager, pending_conversion } = body || {};
     if (!key || typeof key !== "string") {
       return json({ error: "missing 'key' (email or username)" }, 400, req);
     }
@@ -112,6 +112,18 @@ export default {
       const m = (rename_decay && typeof rename_decay === "object") ? rename_decay : null;
       if (m) next.rename_decay = m;
       else delete next.rename_decay;
+    }
+
+    // pending_conversion: { forward_to, queued_at, ready_after } — set on the
+    // immediate convert-to-group leaver path so the daily
+    // finalise_pending_conversions.py cron can create the forwarding Group
+    // when Google's 20-day address-reuse lockout expires. Cleared by sending
+    // null. Without this, the immediate-convert flow silently loses the
+    // forwarding intent (see commit log 2026-05-16 QA round).
+    if (has("pending_conversion")) {
+      const m = (pending_conversion && typeof pending_conversion === "object") ? pending_conversion : null;
+      if (m) next.pending_conversion = m;
+      else delete next.pending_conversion;
     }
 
     if (Object.keys(next).length === 0) {

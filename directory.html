@@ -9,11 +9,11 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&family=Orbitron:wght@500;600;700;800&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="style.css?v=1778883109">
-<link rel="stylesheet" href="quiet-tokens.css?v=1778883109">
-<link rel="stylesheet" href="quiet.css?v=1778883109">
-<link rel="stylesheet" href="quiet-extras.css?v=1778883109">
-<link rel="stylesheet" href="quiet-legacy.css?v=1778883109">
+<link rel="stylesheet" href="style.css?v=1778887303">
+<link rel="stylesheet" href="quiet-tokens.css?v=1778887303">
+<link rel="stylesheet" href="quiet.css?v=1778887303">
+<link rel="stylesheet" href="quiet-extras.css?v=1778887303">
+<link rel="stylesheet" href="quiet-legacy.css?v=1778887303">
 <style>
   .dir-section { max-width: 1080px; margin: 0 auto; padding: 24px 0 48px; }
   @media (max-width: 800px) { .dir-section { padding: 2px 0 32px; } }
@@ -1171,7 +1171,7 @@
 
 <header class="qb-topbar">
   <a class="qb-brand" href="index.html" aria-label="TogetherBOOK — home">
-    <img class="qb-brand-logo" src="togetherbook-logo.png?v=1778883109" alt="TogetherBOOK">
+    <img class="qb-brand-logo" src="togetherbook-logo.png?v=1778887303" alt="TogetherBOOK">
   </a>
   <button class="qb-hamburger" aria-label="Toggle navigation menu" aria-expanded="false"
           onclick="document.body.classList.toggle('nav-open');this.setAttribute('aria-expanded',document.body.classList.contains('nav-open'))">
@@ -1938,7 +1938,7 @@
     const isDeleted = !!u.deletion_time;
     const tenantTag = (u.tenant || "").toLowerCase();
     const liveGws = !u.suspended && !isDeleted
-      ? `<img class="dir-gws-icon" data-tenant="${escapeHtml(tenantTag)}" src="assets/google-workspace-icon.svg?v=1778883109" alt="Google Workspace account active" title="Google Workspace${tenantTag === "togetherloans" ? " (Together Loans)" : ""} account active">`
+      ? `<img class="dir-gws-icon" data-tenant="${escapeHtml(tenantTag)}" src="assets/google-workspace-icon.svg?v=1778887303" alt="Google Workspace account active" title="Google Workspace${tenantTag === "togetherloans" ? " (Together Loans)" : ""} account active">`
       : "";
 
     // Visual states (most-severe-wins):
@@ -2180,6 +2180,9 @@
     }
     if (opts && Object.prototype.hasOwnProperty.call(opts, "line_manager")) {
       payload.line_manager = opts.line_manager;
+    }
+    if (opts && Object.prototype.hasOwnProperty.call(opts, "pending_conversion")) {
+      payload.pending_conversion = opts.pending_conversion;
     }
     const res = await fetch(ANNOTATIONS_API, {
       method: "POST",
@@ -2592,7 +2595,7 @@
     ` : "";
 
     const liveGwsWordmark = (u && !u.suspended)
-      ? `<img class="dir-modal-gws-wordmark" data-tenant="${escapeHtml((u.tenant || "").toLowerCase())}" src="assets/google-workspace-wordmark.svg?v=1778883109" alt="Google Workspace${(u.tenant || "").toLowerCase() === "togetherloans" ? " (Together Loans)" : ""} account active">`
+      ? `<img class="dir-modal-gws-wordmark" data-tenant="${escapeHtml((u.tenant || "").toLowerCase())}" src="assets/google-workspace-wordmark.svg?v=1778887303" alt="Google Workspace${(u.tenant || "").toLowerCase() === "togetherloans" ? " (Together Loans)" : ""} account active">`
       : "";
     const suspendedBadge = (u && u.suspended)
       ? `<span class="dir-suspended-badge" title="This Workspace account is currently suspended — no email/Drive access, no billing on Flex plan">Workspace account suspended</span>`
@@ -4013,20 +4016,12 @@
         <p class="dir-modal-saved-hint" style="text-align:left;margin:0 0 10px;">Account is <strong>live</strong>. Mail also forwards to <code>${escapeHtml(target)}</code>.</p>
         <div class="dir-manage-actions">
           <button type="button" data-action="disable-forwarding">Disable forwarding</button>
-          <button type="button" class="danger" data-action="suspend-and-route" data-prefill="${escapeHtml(target)}">Suspend + keep this forward</button>
         </div>
-        <p class="dir-modal-saved-hint">Disable turns off forwarding immediately. Suspend keeps forwarding to <code>${escapeHtml(target)}</code> and stops the seat fee.</p>`;
+        <p class="dir-modal-saved-hint">Disable turns off forwarding immediately. To stop the seat fee, use a Delete option below — suspend keeps Google charging the licence.</p>`;
       // Re-wire the new buttons.
       const modal = document.getElementById("dirModal");
       container.querySelectorAll("[data-action]").forEach(btn => {
         btn.addEventListener("click", () => {
-          // If the action is suspend-and-route with a prefill, populate the
-          // input first (the user can edit if they want a different target).
-          if (btn.dataset.action === "suspend-and-route" && btn.dataset.prefill) {
-            // No live input on this state — pass the prefill via extras directly.
-            runAction(entry, "suspend-and-route", modal.querySelector(".dir-confirm-slot"), { route_to: btn.dataset.prefill });
-            return;
-          }
           onManageClick(entry, btn.dataset.action, modal);
         });
       });
@@ -4488,7 +4483,7 @@
     return `
       <button class="dir-modal-close" type="button" data-close aria-label="Close">×</button>
       <div class="dir-modal-head">
-        <img class="dir-modal-gws-wordmark" src="assets/google-workspace-wordmark.svg?v=1778883109" alt="Google Workspace" style="height:28px;margin:0;">
+        <img class="dir-modal-gws-wordmark" src="assets/google-workspace-wordmark.svg?v=1778887303" alt="Google Workspace" style="height:28px;margin:0;">
         <div>
           <h2 class="dir-modal-name" id="dirModalName">Create new user</h2>
           <p class="dir-modal-title">Adds a Google Workspace account immediately.</p>

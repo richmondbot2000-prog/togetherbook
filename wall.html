@@ -6,9 +6,9 @@
 <title>TogetherBOOK — Wall</title>
 <link rel="icon" type="image/png" href="site-icon.png">
 <link rel="apple-touch-icon" href="site-icon.png">
-<link rel="stylesheet" href="quiet-tokens.css?v=1778857334">
-<link rel="stylesheet" href="quiet.css?v=1778857334">
-<link rel="stylesheet" href="quiet-extras.css?v=1778857334">
+<link rel="stylesheet" href="quiet-tokens.css?v=1778887303">
+<link rel="stylesheet" href="quiet.css?v=1778887303">
+<link rel="stylesheet" href="quiet-extras.css?v=1778887303">
 <style>
   /* 648 px column — sweet spot per editorial line-length research
      (60–75 chars per line at 15 px body). Wider feels marketing-y. */
@@ -841,7 +841,7 @@
 
 <header class="qb-topbar">
   <a class="qb-brand" href="index.html" aria-label="TogetherBOOK — home">
-    <img class="qb-brand-logo" src="togetherbook-logo.png?v=1778857334" alt="TogetherBOOK">
+    <img class="qb-brand-logo" src="togetherbook-logo.png?v=1778887303" alt="TogetherBOOK">
   </a>
   <button class="qb-hamburger" aria-label="Toggle navigation menu" aria-expanded="false"
           onclick="document.body.classList.toggle('nav-open');this.setAttribute('aria-expanded',document.body.classList.contains('nav-open'))">
@@ -1044,24 +1044,15 @@
       lastSeenByPost = seen.by_user[viewerEmail].posts || {};
     }
     sortPosts();
-    // If the URL has a #post-<id> hash (a Share-link), find the post,
-    // jump to the page containing it, and expand it on load.
-    const hash = (location.hash || "").replace(/^#post-/, "");
-    if (hash) {
-      const target = decodeURIComponent(hash);
-      const idx = posts.findIndex(p => p.id === target);
-      if (idx >= 0) {
-        currentPage = Math.floor(idx / POSTS_PER_PAGE);
-        expandedPostIds.clear();
-        expandedPostIds.add(target);
-      }
-    }
+    // Initial deep-link jump (if any) — relies on jumpToPost which
+    // both bell clicks and the hashchange handler also call.
+    const hashId = (location.hash || "").replace(/^#post-/, "");
+    if (hashId) jumpToPost(decodeURIComponent(hashId), { skipScroll: true });
     renderFeed();
     renderNotifications();
-    if (hash) {
-      const target = decodeURIComponent(hash);
+    if (hashId) {
       requestAnimationFrame(() => {
-        const el = document.getElementById(`post-${target}`);
+        const el = document.getElementById(`post-${decodeURIComponent(hashId)}`);
         if (el) el.scrollIntoView({ behavior: "smooth", block: "start" });
       });
     }
@@ -1265,6 +1256,32 @@
     gifPickerState = null;
   }
 
+  // Navigate to a specific post: jump to the page that contains it,
+  // expand it, scroll it into view. Used by:
+  //   - initial page load (#post-<id> hash)
+  //   - hashchange (user clicked a link with #post-<id>)
+  //   - notification bell entries (data-jump handler)
+  //   - Share — copies a #post-<id> URL that lands here on the recipient
+  function jumpToPost(postId, opts) {
+    if (!postId) return;
+    const idx = posts.findIndex(p => p.id === postId);
+    if (idx < 0) return;
+    currentPage = Math.floor(idx / POSTS_PER_PAGE);
+    expandedPostIds.clear();
+    expandedPostIds.add(postId);
+    openPostIds.add(postId);
+    renderFeed();
+    if (opts && opts.skipScroll) return;
+    requestAnimationFrame(() => {
+      const el = document.getElementById(`post-${postId}`);
+      if (el) el.scrollIntoView({ behavior: "smooth", block: "start" });
+    });
+  }
+  window.addEventListener("hashchange", () => {
+    const h = (location.hash || "").replace(/^#post-/, "");
+    if (h) jumpToPost(decodeURIComponent(h));
+  });
+
   function renderFeed() {
     const root = document.getElementById("wlFeed");
     if (!posts.length) {
@@ -1351,7 +1368,7 @@
     return `
       <article class="wl-post wl-post--compact" data-post="${escapeHtml(post.id)}" id="post-${escapeHtml(post.id)}" data-expand-card="${escapeHtml(post.id)}" role="button" tabindex="0" aria-label="Open post for full view">
         ${renderPostHead(post)}
-        <div class="wl-post-body wl-post-body--teaser">${linkifyBody(body250)}</div>
+        <div class="wl-post-body wl-post-body--teaser">${enrichBody(body250)}</div>
         ${photoStrip}
         ${linkBlocks}
         <div class="wl-compact-meta">
@@ -2204,10 +2221,10 @@
         </a>`;
       }).join("");
       list.querySelectorAll("[data-jump]").forEach(a => {
-        a.addEventListener("click", () => {
+        a.addEventListener("click", e => {
+          e.preventDefault();
           const id = a.dataset.jump;
-          openPostIds.add(id);
-          renderFeed();
+          jumpToPost(id);
         });
       });
     }

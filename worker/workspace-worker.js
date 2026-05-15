@@ -1653,16 +1653,45 @@ async function wallReact(env, viewerEmail, body) {
     let hostPost = null;
     let added = false;
 
+    // Sweep the viewer off every OTHER emoji on this target before
+    // adding the new one — a user has at most one active reaction per
+    // post/comment (Facebook model). Removed entries get a "removed"
+    // react_event so the audit log stays accurate.
+    const sweepOtherEmojis = (rx) => {
+      for (const [otherEmoji, emails] of Object.entries(rx)) {
+        if (otherEmoji === emoji) continue;
+        const i = (emails || []).map(e => (e || "").toLowerCase()).indexOf(viewerEmail);
+        if (i < 0) continue;
+        emails.splice(i, 1);
+        if (emails.length === 0) delete rx[otherEmoji];
+        hostPost.react_events = hostPost.react_events || [];
+        hostPost.react_events.push({
+          actor_email: viewerEmail,
+          emoji: otherEmoji,
+          target_kind: kind,
+          target_id: parentId,
+          at: now,
+          kind: "removed",
+        });
+      }
+    };
+
     if (kind === "post") {
       const post = posts.find(p => p.id === parentId);
       if (!post) throw new Error("post not found");
       post.reactions = post.reactions || {};
+      hostPost = post;
       const set = new Set((post.reactions[emoji] || []).map(e => e.toLowerCase()));
-      if (set.has(viewerEmail)) { set.delete(viewerEmail); }
-      else                      { set.add(viewerEmail); added = true; }
+      const wasMine = set.has(viewerEmail);
+      if (wasMine) {
+        set.delete(viewerEmail);
+      } else {
+        sweepOtherEmojis(post.reactions);
+        set.add(viewerEmail);
+        added = true;
+      }
       if (set.size === 0) delete post.reactions[emoji];
       else post.reactions[emoji] = Array.from(set);
-      hostPost = post;
       resultPostId = post.id;
       resultReactions = post.reactions;
     } else {
@@ -1673,12 +1702,18 @@ async function wallReact(env, viewerEmail, body) {
       }
       if (!foundComment) throw new Error("comment not found");
       foundComment.reactions = foundComment.reactions || {};
+      hostPost = foundPost;
       const set = new Set((foundComment.reactions[emoji] || []).map(e => e.toLowerCase()));
-      if (set.has(viewerEmail)) { set.delete(viewerEmail); }
-      else                      { set.add(viewerEmail); added = true; }
+      const wasMine = set.has(viewerEmail);
+      if (wasMine) {
+        set.delete(viewerEmail);
+      } else {
+        sweepOtherEmojis(foundComment.reactions);
+        set.add(viewerEmail);
+        added = true;
+      }
       if (set.size === 0) delete foundComment.reactions[emoji];
       else foundComment.reactions[emoji] = Array.from(set);
-      hostPost = foundPost;
       resultPostId = foundPost.id;
       resultReactions = foundComment.reactions;
     }
