@@ -9,11 +9,11 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&family=Newsreader:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500;1,600&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="style.css?v=1778886020">
-<link rel="stylesheet" href="quiet-tokens.css?v=1778886020">
-<link rel="stylesheet" href="quiet.css?v=1778886020">
-<link rel="stylesheet" href="quiet-extras.css?v=1778886020">
-<link rel="stylesheet" href="quiet-legacy.css?v=1778886020">
+<link rel="stylesheet" href="style.css?v=1778886311">
+<link rel="stylesheet" href="quiet-tokens.css?v=1778886311">
+<link rel="stylesheet" href="quiet.css?v=1778886311">
+<link rel="stylesheet" href="quiet-extras.css?v=1778886311">
+<link rel="stylesheet" href="quiet-legacy.css?v=1778886311">
 <style>
   .hd-section { max-width: 1080px; margin: 0 auto; padding: 24px 0 48px; }
   .hd-section h1 {
@@ -265,50 +265,55 @@
   .hd-team-week-person {
     display: grid;
     grid-template-columns: 180px repeat(7, minmax(0, 1fr));
-    gap: 2px;
+    gap: 1px;
     align-items: stretch;
+    /* Slate background so the 1px grid gaps render as crisp ledger
+       lines on every side of every cell — paper bg bleeding through
+       was rendering inconsistently at sub-pixel widths. */
+    background: var(--ink-300, #B6BECF);
   }
   .hd-team-dow-head {
     position: sticky; top: 0; z-index: 4;
-    background: var(--paper-50, white);
     border-bottom: 1px solid var(--ink-700);
-    padding: 6px 0;
+    padding: 0;
     font: 700 11px/1 var(--font-mono, 'JetBrains Mono', monospace);
     letter-spacing: 0.10em;
     text-transform: uppercase;
     color: var(--ink-700);
   }
-  .hd-team-dow-cell {
-    padding: 6px 4px;
-    text-align: center;
-  }
+  .hd-team-dow-head > * { background: var(--paper-50, white); padding: 8px 4px; text-align: center; }
   .hd-team-dow-cell.is-weekend { color: var(--brass-600, #A47829); }
+  /* The "Week of" header cell flips to italic Newsreader (the
+     adjacent date column is mono — match the body convention). */
   .hd-team-dow-name {
-    padding: 6px 10px;
-    font: italic 500 11px/1.2 var(--font-display, 'Newsreader', serif);
+    font: italic 500 11px/1.2 var(--font-display, 'Newsreader', serif) !important;
     color: var(--ink-500);
-    text-transform: none;
-    letter-spacing: 0;
+    text-transform: none !important;
+    letter-spacing: 0 !important;
+    text-align: left !important;
+    padding: 8px 10px !important;
   }
   .hd-team-week {
-    padding: 6px 0;
-    border-bottom: 1px solid var(--ink-300);
+    padding: 0;
+    margin-top: 1px;
+    background: var(--ink-300, #B6BECF);
   }
   .hd-team-week-dates {
     font: 600 11px/1 var(--font-mono, 'JetBrains Mono', monospace);
     color: var(--ink-700);
-    margin-bottom: 2px;
   }
   .hd-team-week-label {
-    padding: 4px 10px;
+    padding: 6px 10px;
     font: italic 500 12px/1.2 var(--font-display, 'Newsreader', serif);
     color: var(--ink-700);
     text-transform: none;
     display: flex; align-items: center;
+    background: var(--paper-50, white);
   }
   .hd-team-week-date {
     text-align: center;
-    padding: 3px 0;
+    padding: 5px 0;
+    background: var(--paper-50, white);
   }
   .hd-team-week-date.is-outside { color: var(--ink-300); }
   .hd-team-week-date.is-new-month {
@@ -329,15 +334,14 @@
     color: var(--ink-900);
     display: flex; align-items: center;
     background: var(--paper-50, white);
-    border-right: 1px solid var(--ink-300);
   }
   .hd-team-cell {
     height: 22px;
     cursor: pointer;
     position: relative;
-    background: transparent;
+    background: var(--paper-50, white);
   }
-  .hd-team-cell.is-empty { cursor: default; background: transparent; }
+  .hd-team-cell.is-empty { cursor: default; background: var(--paper-50, white); }
   .hd-team-cell:hover:not(.is-empty) {
     outline: 2px solid var(--ink-900, #11192E); outline-offset: -2px; z-index: 1;
   }
@@ -441,7 +445,7 @@
 
 <header class="qb-topbar">
   <a class="qb-brand" href="index.html" aria-label="TogetherBOOK — home">
-    <img class="qb-brand-logo" src="togetherbook-logo.png?v=1778886020" alt="TogetherBOOK">
+    <img class="qb-brand-logo" src="togetherbook-logo.png?v=1778886311" alt="TogetherBOOK">
   </a>
   <button class="qb-hamburger" aria-label="Toggle navigation menu" aria-expanded="false"
           onclick="document.body.classList.toggle('nav-open');this.setAttribute('aria-expanded',document.body.classList.contains('nav-open'))">
