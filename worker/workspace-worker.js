@@ -1148,7 +1148,7 @@ async function modifyAdminList(env, action, targetRaw, actor) {
   if (getRes.ok) {
     const data = await getRes.json();
     sha = data.sha;
-    try { current = JSON.parse(atob(data.content.replace(/\s/g, ""))); }
+    try { const bin = atob(data.content.replace(/\s/g, "")); current = JSON.parse(new TextDecoder("utf-8").decode(Uint8Array.from(bin, c => c.charCodeAt(0)))); }
     catch (e) {}
   } else if (getRes.status !== 404) {
     return { ok: false, error: `failed to read admins.json: ${getRes.status}` };
@@ -1227,7 +1227,7 @@ async function appendPendingTransfer(env, entry) {
   if (getRes.ok) {
     const data = await getRes.json();
     sha = data.sha;
-    try { current = JSON.parse(atob(data.content.replace(/\s/g, ""))); }
+    try { const bin = atob(data.content.replace(/\s/g, "")); current = JSON.parse(new TextDecoder("utf-8").decode(Uint8Array.from(bin, c => c.charCodeAt(0)))); }
     catch (e) { /* fresh file */ }
   } else if (getRes.status !== 404) {
     throw new Error(`pending-transfers.json read failed: HTTP ${getRes.status}`);
@@ -1275,7 +1275,7 @@ async function appendAudit(env, entry) {
   if (getRes.ok) {
     const data = await getRes.json();
     sha = data.sha;
-    try { current = JSON.parse(atob(data.content.replace(/\s/g, ""))); }
+    try { const bin = atob(data.content.replace(/\s/g, "")); current = JSON.parse(new TextDecoder("utf-8").decode(Uint8Array.from(bin, c => c.charCodeAt(0)))); }
     catch (e) { /* fresh file */ }
   }
   current.schema_version = 1;
@@ -1509,7 +1509,13 @@ async function updateGhJson(env, path, mutate, commitMsg) {
     if (getRes.ok) {
       const meta = await getRes.json();
       sha = meta.sha;
-      try { doc = JSON.parse(atob(meta.content.replace(/\s/g, ""))); } catch (e) { doc = {}; }
+      try {
+        // atob gives back a Latin-1-interpreted binary string. For emojis +
+        // any non-ASCII we have to decode the underlying bytes as UTF-8.
+        const bin = atob(meta.content.replace(/\s/g, ""));
+        const bytes = Uint8Array.from(bin, c => c.charCodeAt(0));
+        doc = JSON.parse(new TextDecoder("utf-8").decode(bytes));
+      } catch (e) { doc = {}; }
     } else if (getRes.status !== 404) {
       throw new Error(`read ${path} failed: HTTP ${getRes.status}`);
     }
