@@ -99,6 +99,12 @@ export default {
     if (url0.pathname.startsWith("/api/wall/")) {
       return await handleWall(req, env, url0);
     }
+    // ── Holidays API ──────────────────────────────────────────────────
+    // /api/holidays/* — per-user attendance calendars. Any signed-in
+    // user can edit their own days; admins can edit anyone's.
+    if (url0.pathname.startsWith("/api/holidays/")) {
+      return await handleHolidays(req, env, url0);
+    }
 
     // GET /api/workspace/payroll — returns the payroll JSON stored in the
     // PAYROLL_KV namespace under the key `current`. Behind Cloudflare Access
@@ -1795,6 +1801,120 @@ async function updateGhJson(env, path, mutate, commitMsg) {
     throw new Error(`write ${path} failed: HTTP ${putRes.status} ${detail}`);
   }
   throw new Error(`write ${path} failed after retries (concurrent writers)`);
+}
+
+/* ============================================================
+ * Holidays API
+ *
+ * /api/holidays/whoami      GET  — { email, name } (mirror of /api/wall/whoami)
+ * /api/holidays/set         POST — { email, date: "YYYY-MM-DD", status: "office"|...|null }
+ *                                  → { ok, log_entry, updated_at }
+ *                                  status === null clears the day back to the
+ *                                  natural default (weekend / BH / office).
+ *
+ * Authorisation: a caller can always set days on their own email; admins
+ * (admins.json members) can set days for any user.
+ *
+ * Storage: holidays.json at the repo root, with shape
+ *   { schema_version, updated_at, year_start, year_end,
+ *     by_user: { "email": { days: { "YYYY-MM-DD": "<status>" } } },
+ *     log: [ { user_email, date, from, to, changed_by, changed_at } ] }
+ * Log is FIFO-trimmed at 5000 entries.
+ * ============================================================ */
+
+const HOLIDAYS_PATH = "holidays.json";
+const HOLIDAY_LOG_MAX = 5000;
+const HOLIDAY_STATUSES = new Set([
+  "office", "wfh", "non-working", "holiday",
+  "half-am", "half-pm", "sick", "maternity",
+]);
+
+async function handleHolidays(req, env, url) {
+  if (req.method === "OPTIONS") {
+    return new Response(null, { status: 204, headers: cors(req) });
+  }
+  const action = url.pathname.replace(/^\/api\/holidays\/?/, "").split("/")[0];
+  if (!req.headers.get("Cf-Access-Jwt-Assertion")) {
+    return json({ error: "not authenticated via Cloudflare Access" }, 401, req);
+  }
+
+  const viewerEmail = (req.headers.get("Cf-Access-Authenticated-User-Email") || "").toLowerCase();
+  const viewerName  = (req.headers.get("Cf-Access-Authenticated-User-Name") || "").trim();
+
+  if (action === "whoami") {
+    return json({ ok: true, email: viewerEmail, name: viewerName }, 200, req);
+  }
+  if (req.method !== "POST") {
+    return json({ error: "method not allowed" }, 405, req);
+  }
+
+  let body = {};
+  try { body = await req.json(); } catch (e) { return json({ error: "bad JSON body" }, 400, req); }
+
+  try {
+    switch (action) {
+      case "set": return json(await holidaysSet(env, viewerEmail, body), 200, req);
+      default:    return json({ error: `unknown holidays action: ${action}` }, 404, req);
+    }
+  } catch (e) {
+    return json({ ok: false, error: e.message || String(e) }, 500, req);
+  }
+}
+
+async function holidaysSet(env, viewerEmail, body) {
+  if (!viewerEmail) throw new Error("not authenticated");
+  const target = (body.email || "").toString().trim().toLowerCase();
+  const date   = (body.date || "").toString().trim();
+  // status === null means "clear" — back to the natural default.
+  let status = body.status;
+  if (status !== null && status !== undefined) {
+    status = String(status);
+    if (!HOLIDAY_STATUSES.has(status)) throw new Error(`unknown status: ${status}`);
+  } else {
+    status = null;
+  }
+  if (!target) throw new Error("missing email");
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(date)) throw new Error("date must be YYYY-MM-DD");
+
+  const admins = await fetchAdmins();
+  const isAdmin = admins.includes(viewerEmail);
+  if (target !== viewerEmail && !isAdmin) {
+    throw new Error("not allowed — only admins can edit another user's calendar");
+  }
+
+  let logEntry = null;
+  let updatedAt = null;
+
+  await updateGhJson(env, HOLIDAYS_PATH, doc => {
+    doc.schema_version = doc.schema_version || 1;
+    doc.by_user = doc.by_user || {};
+    doc.by_user[target] = doc.by_user[target] || {};
+    doc.by_user[target].days = doc.by_user[target].days || {};
+    const days = doc.by_user[target].days;
+    const prev = days[date] || null;
+    if (status === null) {
+      delete days[date];
+    } else {
+      days[date] = status;
+    }
+    updatedAt = new Date().toISOString();
+    doc.updated_at = updatedAt;
+    logEntry = {
+      user_email: target,
+      date,
+      from: prev,
+      to: status,
+      changed_by: viewerEmail,
+      changed_at: updatedAt,
+    };
+    doc.log = doc.log || [];
+    doc.log.push(logEntry);
+    if (doc.log.length > HOLIDAY_LOG_MAX) {
+      doc.log = doc.log.slice(-HOLIDAY_LOG_MAX);
+    }
+  }, `Holidays: ${viewerEmail} set ${target} ${date} → ${status || "(default)"}`);
+
+  return { ok: true, log_entry: logEntry, updated_at: updatedAt };
 }
 
 /* ----------- helpers ----------- */

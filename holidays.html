@@ -1,0 +1,799 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>BOOK — Holidays</title>
+<link rel="icon" type="image/png" href="site-icon.png">
+<link rel="apple-touch-icon" href="site-icon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&family=Newsreader:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500;1,600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css?v=1778879500">
+<link rel="stylesheet" href="quiet-tokens.css?v=1778879500">
+<link rel="stylesheet" href="quiet.css?v=1778879500">
+<link rel="stylesheet" href="quiet-extras.css?v=1778879500">
+<link rel="stylesheet" href="quiet-legacy.css?v=1778879500">
+<style>
+  .hd-section { max-width: 1080px; margin: 0 auto; padding: 24px 0 48px; }
+  .hd-section h1 {
+    font-family: var(--font-display, 'Newsreader', serif);
+    font-size: clamp(2rem, 5vw, 3rem);
+    font-weight: 800;
+    letter-spacing: 0.02em;
+    text-transform: uppercase;
+    margin: 0 0 12px;
+    color: var(--ink);
+  }
+
+  /* Header row with the person picker + stats. Stacks on narrow viewports. */
+  .hd-header {
+    display: flex; align-items: baseline; flex-wrap: wrap;
+    gap: 18px 32px;
+    margin-bottom: 18px;
+    padding-bottom: 14px;
+    border-bottom: 1px solid var(--ink-500);
+  }
+  .hd-header h1 { flex: 0 0 auto; }
+  .hd-picker {
+    display: flex; align-items: baseline; gap: 8px;
+    font-family: var(--font-display, 'Newsreader', serif);
+    color: var(--ink-700);
+  }
+  .hd-picker label { font: italic 500 14px/1.2 var(--font-display, 'Newsreader', serif); }
+  .hd-picker select {
+    font: 500 14px/1 var(--font-mono, 'JetBrains Mono', monospace);
+    padding: 6px 10px;
+    border: 1px solid var(--ink-500);
+    background: var(--bg-soft, white);
+    color: var(--ink-900);
+    border-radius: 4px;
+    min-width: 240px;
+  }
+  .hd-stats {
+    margin-left: auto;
+    display: flex; flex-direction: column; align-items: flex-end;
+    gap: 4px;
+  }
+  .hd-stat {
+    font-family: var(--font-display, 'Newsreader', serif);
+    font-size: 1rem;
+    color: var(--ink-700);
+  }
+  .hd-stat strong {
+    font-family: var(--font-mono, 'JetBrains Mono', monospace);
+    font-size: 1.6rem;
+    color: var(--brass-600, #c8a142);
+    font-weight: 700;
+    margin-right: 6px;
+  }
+  .hd-meta {
+    font: 400 11px/1 var(--font-mono, 'JetBrains Mono', monospace);
+    color: var(--muted, var(--ink-500));
+  }
+
+  /* Legend */
+  .hd-legend {
+    display: flex; flex-wrap: wrap; gap: 14px 22px;
+    margin: 12px 0 22px;
+    padding: 10px 14px;
+    background: var(--paper-50, transparent);
+    border: 1px solid var(--ink-300);
+    font: 400 12px/1 var(--font-mono, 'JetBrains Mono', monospace);
+    color: var(--ink-700);
+  }
+  .hd-legend-item { display: inline-flex; align-items: center; gap: 6px; }
+  .hd-legend-sw {
+    width: 14px; height: 14px;
+    border: 1px solid var(--ink-700);
+    display: inline-block;
+  }
+
+  /* Calendar grid */
+  .hd-cal-headers, .hd-week {
+    display: grid;
+    grid-template-columns: 100px repeat(7, minmax(0, 1fr));
+    gap: 2px;
+  }
+  .hd-cal-headers {
+    margin-bottom: 4px;
+    font: 700 10px/1 var(--font-mono, 'JetBrains Mono', monospace);
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--ink-500);
+  }
+  .hd-cal-headers > div { padding: 6px 4px; }
+  .hd-cal-headers > div:first-child { color: var(--ink-700); }
+  .hd-cal { display: flex; flex-direction: column; gap: 2px; }
+  .hd-week-label {
+    background: var(--paper-100, transparent);
+    border-left: 2px solid var(--brass-500, #c8a142);
+    padding: 8px 10px;
+    font: italic 500 12px/1.2 var(--font-display, 'Newsreader', serif);
+    color: var(--ink-700);
+    display: flex; align-items: center;
+  }
+  .hd-day {
+    min-height: 64px;
+    background: var(--paper-50, white);
+    border: 1px solid var(--ink-300);
+    padding: 6px 8px 6px 8px;
+    cursor: pointer;
+    position: relative;
+    display: flex; flex-direction: column; justify-content: space-between;
+    transition: outline 80ms ease;
+  }
+  .hd-day:hover { outline: 2px solid var(--brass-500, #c8a142); outline-offset: -2px; }
+  .hd-day:focus-visible { outline: 2px solid var(--ink-700); outline-offset: -2px; }
+  .hd-day.is-disabled { cursor: not-allowed; opacity: 0.7; }
+  .hd-day.is-disabled:hover { outline: none; }
+  .hd-day.is-out-of-year { background: transparent; border-color: transparent; cursor: default; }
+  .hd-day.is-out-of-year .hd-day-num { color: var(--ink-300); }
+  .hd-day-num {
+    font: 600 14px/1 var(--font-mono, 'JetBrains Mono', monospace);
+    color: var(--ink-900);
+  }
+  .hd-day-month {
+    font: italic 400 10px/1 var(--font-display, 'Newsreader', serif);
+    color: var(--ink-500);
+    margin-left: 4px;
+  }
+  .hd-day-label {
+    font: 500 10px/1.1 var(--font-mono, 'JetBrains Mono', monospace);
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: var(--ink-700);
+    text-align: right;
+    word-break: break-word;
+  }
+  .hd-day-today { box-shadow: inset 0 0 0 2px var(--red-500, #b14040); }
+
+  /* Status colours. Office + WFH = saturated green; non-working = grey;
+     holiday + maternity = yellow; half-day variants = light green;
+     sickness = red. Numbers stay readable on every background. */
+  .hd-day[data-status="office"]      { background: #c7e7b8; }
+  .hd-day[data-status="wfh"]         { background: #b7dfc9; }
+  .hd-day[data-status="non-working"] { background: #d8d8df; }
+  .hd-day[data-status="holiday"]     { background: #f3d97a; }
+  .hd-day[data-status="half-am"]     { background: linear-gradient(180deg, #e4f1cc 0 50%, #c7e7b8 50% 100%); }
+  .hd-day[data-status="half-pm"]     { background: linear-gradient(180deg, #c7e7b8 0 50%, #e4f1cc 50% 100%); }
+  .hd-day[data-status="sick"]        { background: #f5b5b5; }
+  .hd-day[data-status="maternity"]   { background: #f3d97a; }
+  .hd-day[data-default-bh="1"]       { background: #f3d97a; }
+
+  /* Status picker — small popover anchored to the clicked day. */
+  .hd-pop {
+    position: absolute; z-index: 200;
+    min-width: 230px;
+    background: white;
+    border: 1px solid var(--ink-700);
+    box-shadow: 0 6px 18px rgba(17, 25, 46, 0.16);
+    padding: 8px 0;
+    font: 500 13px/1.2 var(--font-display, 'Newsreader', serif);
+    color: var(--ink-900);
+  }
+  .hd-pop-head {
+    padding: 6px 14px 8px;
+    font: italic 500 12px/1.1 var(--font-display, 'Newsreader', serif);
+    color: var(--ink-700);
+    border-bottom: 1px solid var(--ink-300);
+    margin-bottom: 4px;
+  }
+  .hd-pop-opt {
+    width: 100%;
+    background: none; border: none;
+    text-align: left;
+    padding: 7px 14px;
+    display: flex; align-items: center; gap: 10px;
+    cursor: pointer;
+    font: inherit; color: inherit;
+  }
+  .hd-pop-opt:hover { background: var(--paper-100, #f6efd6); }
+  .hd-pop-opt[disabled] { opacity: 0.5; cursor: default; }
+  .hd-pop-opt[disabled]:hover { background: none; }
+  .hd-pop-sw {
+    width: 14px; height: 14px;
+    border: 1px solid var(--ink-700);
+    display: inline-block;
+    flex-shrink: 0;
+  }
+  .hd-pop-clear { color: var(--red-500, #b14040); font-style: italic; }
+  .hd-pop-clear:disabled { color: var(--ink-500); }
+
+  /* Audit log */
+  .hd-log-section { margin-top: 36px; }
+  .hd-log-section h2 {
+    font: 700 14px/1 var(--font-mono, 'JetBrains Mono', monospace);
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--ink-500);
+    margin: 0 0 12px;
+  }
+  .hd-log {
+    list-style: none;
+    margin: 0; padding: 0;
+    font: 400 13px/1.5 var(--font-display, 'Newsreader', serif);
+    color: var(--ink-800);
+  }
+  .hd-log li {
+    padding: 8px 0;
+    border-bottom: 1px solid var(--ink-300);
+    display: grid;
+    grid-template-columns: 150px 1fr;
+    gap: 14px;
+  }
+  .hd-log time {
+    font: 400 11px/1.4 var(--font-mono, 'JetBrains Mono', monospace);
+    color: var(--ink-600);
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+  }
+  .hd-log-empty {
+    padding: 18px;
+    text-align: center;
+    color: var(--ink-500);
+    font-style: italic;
+  }
+  .hd-log .from-to {
+    font-family: var(--font-mono, 'JetBrains Mono', monospace);
+    font-size: 0.78rem;
+    color: var(--ink-700);
+  }
+  .hd-log .by {
+    color: var(--ink-500);
+    font-style: italic;
+    font-size: 0.85rem;
+    margin-left: 6px;
+  }
+
+  /* Banner for save errors */
+  .hd-banner {
+    position: fixed; left: 50%; transform: translateX(-50%);
+    top: 80px; z-index: 600;
+    background: var(--ink-900); color: white;
+    padding: 10px 18px;
+    font: italic 500 14px/1 var(--font-display, 'Newsreader', serif);
+    box-shadow: 0 6px 18px rgba(0,0,0,0.25);
+    display: none;
+  }
+  .hd-banner.is-error { background: var(--red-500, #b14040); }
+  .hd-banner.is-shown { display: block; }
+
+  @media (max-width: 640px) {
+    .hd-cal-headers, .hd-week {
+      grid-template-columns: 56px repeat(7, minmax(0, 1fr));
+    }
+    .hd-week-label {
+      font-size: 10px;
+      padding: 6px;
+      line-height: 1.1;
+    }
+    .hd-day { min-height: 44px; padding: 4px 5px; }
+    .hd-day-num { font-size: 11px; }
+    .hd-day-label { font-size: 8px; }
+  }
+</style>
+</head>
+<body>
+
+<header class="qb-topbar">
+  <a class="qb-brand" href="index.html" aria-label="TogetherBOOK — home">
+    <img class="qb-brand-logo" src="togetherbook-logo.png?v=1778879500" alt="TogetherBOOK">
+  </a>
+  <button class="qb-hamburger" aria-label="Toggle navigation menu" aria-expanded="false"
+          onclick="document.body.classList.toggle('nav-open');this.setAttribute('aria-expanded',document.body.classList.contains('nav-open'))">
+    <span></span><span></span><span></span>
+  </button>
+    <nav class="qb-nav">
+    <a class="qb-nav-link" href="wall.html">Wall</a>
+    <a class="qb-nav-link" href="index.html" data-sub='[{"href": "database.html", "label": "Schema"}, {"href": "stats.html", "label": "Code"}]'>About our systems</a>
+    <a class="qb-nav-link" href="yesterday.html">Payouts</a>
+    <a class="qb-nav-link is-active" href="holidays.html">Holidays</a>
+    <a class="qb-nav-link" href="brandwatch.html">Brandwatch</a>
+    <a class="qb-nav-link" href="directory.html">Directory</a>
+    <a class="qb-nav-link" href="reports.html" data-sub='[{"href": "1stcontact.html", "label": "1st Contact"}, {"href": "topups.html", "label": "Top Ups"}, {"href": "pipeline.html", "label": "Pipeline"}, {"href": "brokers.html", "label": "Brokers"}, {"href": "comms.html", "label": "Comms"}]'>Reports</a>
+  </nav>
+</header>
+<div class="qb-nav-backdrop" onclick="document.body.classList.remove('nav-open')"></div>
+
+<main class="qb-page">
+  <section class="hd-section">
+    <div class="hd-header">
+      <h1>Holidays</h1>
+      <div class="hd-picker" id="hdPickerWrap" style="display:none;">
+        <label for="hdPerson">Calendar for</label>
+        <select id="hdPerson"></select>
+      </div>
+      <div class="hd-stats">
+        <span class="hd-stat"><strong id="hdHolidayCount">—</strong>Holiday days marked this year</span>
+        <span class="hd-meta" id="hdMeta">Loading…</span>
+      </div>
+    </div>
+
+    <div class="hd-legend" aria-label="Status colour legend">
+      <span class="hd-legend-item"><span class="hd-legend-sw" style="background:#c7e7b8"></span>Worked at Office</span>
+      <span class="hd-legend-item"><span class="hd-legend-sw" style="background:#b7dfc9"></span>Worked From Home</span>
+      <span class="hd-legend-item"><span class="hd-legend-sw" style="background:linear-gradient(180deg,#e4f1cc 0 50%,#c7e7b8 50% 100%)"></span>Half Day AM</span>
+      <span class="hd-legend-item"><span class="hd-legend-sw" style="background:linear-gradient(180deg,#c7e7b8 0 50%,#e4f1cc 50% 100%)"></span>Half Day PM</span>
+      <span class="hd-legend-item"><span class="hd-legend-sw" style="background:#f3d97a"></span>Paid Holiday / Maternity</span>
+      <span class="hd-legend-item"><span class="hd-legend-sw" style="background:#d8d8df"></span>Non-working</span>
+      <span class="hd-legend-item"><span class="hd-legend-sw" style="background:#f5b5b5"></span>Sickness</span>
+    </div>
+
+    <div class="hd-cal-headers" aria-hidden="true">
+      <div>Week of</div>
+      <div>Sun</div><div>Mon</div><div>Tue</div><div>Wed</div><div>Thu</div><div>Fri</div><div>Sat</div>
+    </div>
+    <div class="hd-cal" id="hdCal" role="grid" aria-label="Holiday calendar grid"></div>
+
+    <div class="hd-log-section">
+      <h2>Change log</h2>
+      <ul class="hd-log" id="hdLog"><li class="hd-log-empty">Loading change log…</li></ul>
+    </div>
+  </section>
+</main>
+
+<div class="hd-banner" id="hdBanner"></div>
+
+<script>
+  // ──────────────────────────────────────────────────────────────────
+  // Holidays page — per-user calendar, Apr→Mar fiscal year, default
+  // Mon-Fri working / Sat-Sun non-working / UK BH on weekday = holiday.
+  // Click a day to set status; admins can switch person via the picker.
+  // ──────────────────────────────────────────────────────────────────
+
+  const HD_API = "/api/holidays";
+
+  // Status table. Stored under data-status; popover uses the same keys.
+  // The order here is the order they appear in the popover.
+  const STATUSES = [
+    { key: "office",      label: "Worked at Office",  swatch: "#c7e7b8" },
+    { key: "wfh",         label: "Worked from Home",  swatch: "#b7dfc9" },
+    { key: "half-am",     label: "Half Day – Morning",   swatch: "linear-gradient(180deg,#e4f1cc 0 50%,#c7e7b8 50% 100%)" },
+    { key: "half-pm",     label: "Half Day – Afternoon", swatch: "linear-gradient(180deg,#c7e7b8 0 50%,#e4f1cc 50% 100%)" },
+    { key: "holiday",     label: "Paid Holiday",      swatch: "#f3d97a" },
+    { key: "sick",        label: "Sickness",          swatch: "#f5b5b5" },
+    { key: "maternity",   label: "Maternity",         swatch: "#f3d97a" },
+    { key: "non-working", label: "Non-Working",       swatch: "#d8d8df" },
+  ];
+  const STATUS_LABEL = Object.fromEntries(STATUSES.map(s => [s.key, s.label]));
+
+  // UK Bank Holidays for the 2026-04-01 → 2027-03-31 fiscal window.
+  // Boxing Day 2026 falls on a Saturday → substitute Monday 28 Dec.
+  // Easter 2027 falls 26-29 Mar; Good Friday 26 Mar is in-window.
+  const UK_BANK_HOLIDAYS = new Set([
+    "2026-04-03", // Good Friday
+    "2026-04-06", // Easter Monday
+    "2026-05-04", // Early May BH
+    "2026-05-25", // Spring BH
+    "2026-08-31", // Summer BH
+    "2026-12-25", // Christmas Day (Fri)
+    "2026-12-28", // Boxing Day substitute (Mon — Boxing Day itself was Sat)
+    "2027-01-01", // New Year's Day (Fri)
+    "2027-03-26", // Good Friday 2027 (in last week of fiscal year)
+    "2027-03-29", // Easter Monday 2027 — out of window but listed for safety
+  ]);
+
+  let viewerEmail = "";
+  let viewerName  = "";
+  let viewerIsAdmin = false;
+  let adminEmails = new Set();
+  let staff = [];        // [{ email, name, suspended, ... }]
+  let staffByEmail = {};
+  let selectedEmail = ""; // whose calendar we're showing
+
+  let holidaysDoc = null; // full holidays.json
+  let yearStart = new Date(2026, 3, 1);  // 1 Apr 2026 — overwritten from doc
+  let yearEnd   = new Date(2027, 2, 31); // 31 Mar 2027 — overwritten from doc
+
+  // ── Boot ──────────────────────────────────────────────────────────
+  Promise.all([
+    fetch(`${HD_API}/whoami`, { cache: "no-store" }).then(r => r.ok ? r.json() : Promise.reject("not signed in")),
+    fetch("staff.json",       { cache: "no-store" }).then(r => r.ok ? r.json() : Promise.reject("staff.json missing")),
+    fetch("admins.json",      { cache: "no-store" }).then(r => r.ok ? r.json() : ({ admins: [] })),
+    fetch("holidays.json",    { cache: "no-store" }).then(r => r.ok ? r.json() : ({ by_user: {}, log: [] })),
+  ]).then(([who, s, ad, hd]) => {
+    viewerEmail = (who && who.email) || "";
+    viewerName  = (who && who.name)  || "";
+    adminEmails = new Set((ad.admins || []).map(e => (e || "").toLowerCase()));
+    viewerIsAdmin = adminEmails.has(viewerEmail.toLowerCase());
+    staff = (s.users || []).filter(u => !u.suspended && !u.deletion_time).sort((a, b) => (a.name || "").localeCompare(b.name || ""));
+    staffByEmail = Object.fromEntries(staff.map(u => [(u.email || "").toLowerCase(), u]));
+    holidaysDoc = hd;
+    if (hd.year_start) yearStart = parseISO(hd.year_start);
+    if (hd.year_end)   yearEnd   = parseISO(hd.year_end);
+    selectedEmail = viewerEmail.toLowerCase();
+    setupPicker();
+    renderAll();
+  }).catch(err => {
+    document.getElementById("hdMeta").textContent = "Could not load: " + (err.message || err);
+    document.getElementById("hdCal").innerHTML =
+      `<div class="hd-log-empty">Cloudflare Access must be signed in for the calendar to load.</div>`;
+  });
+
+  function setupPicker() {
+    if (!viewerIsAdmin) return;
+    const wrap = document.getElementById("hdPickerWrap");
+    const sel = document.getElementById("hdPerson");
+    wrap.style.display = "flex";
+    // Admin sees a sorted list of all non-suspended staff. Default is
+    // self; switching re-renders the calendar + log immediately.
+    sel.innerHTML = staff.map(u => {
+      const isSelf = (u.email || "").toLowerCase() === viewerEmail.toLowerCase();
+      return `<option value="${escapeHtml((u.email || "").toLowerCase())}" ${isSelf ? "selected" : ""}>${escapeHtml(u.name || u.email)}${isSelf ? "  ·  (you)" : ""}</option>`;
+    }).join("");
+    sel.addEventListener("change", () => {
+      selectedEmail = sel.value;
+      renderAll();
+    });
+  }
+
+  function renderAll() {
+    renderHeader();
+    renderCalendar();
+    renderLog();
+  }
+
+  function renderHeader() {
+    const u = staffByEmail[selectedEmail] || {};
+    const name = u.name || selectedEmail || "—";
+    document.getElementById("hdMeta").textContent =
+      `${name} · ${formatRangeLabel(yearStart, yearEnd)} · holidays.json updated ${holidaysDoc.updated_at ? new Date(holidaysDoc.updated_at).toLocaleString("en-GB") : "—"}`;
+    document.getElementById("hdHolidayCount").textContent = String(countHolidayDays(selectedEmail));
+  }
+
+  function countHolidayDays(email) {
+    const map = (holidaysDoc.by_user && holidaysDoc.by_user[email]) || {};
+    const days = map.days || {};
+    let count = 0;
+    for (const d of iterDates(yearStart, yearEnd)) {
+      const iso = isoDate(d);
+      const dow = d.getDay();
+      const stored = days[iso];
+      const isWeekend = (dow === 0 || dow === 6);
+      // A "holiday day marked" = an explicit 'holiday' or 'maternity'
+      // override, OR a default UK BH on a weekday with no override.
+      if (stored === "holiday" || stored === "maternity") { count += 1; continue; }
+      if (!stored && !isWeekend && UK_BANK_HOLIDAYS.has(iso)) { count += 1; continue; }
+    }
+    return count;
+  }
+
+  function renderCalendar() {
+    const root = document.getElementById("hdCal");
+    root.innerHTML = "";
+
+    // First displayed row is the Sunday at or before yearStart.
+    const firstSun = new Date(yearStart);
+    firstSun.setDate(firstSun.getDate() - firstSun.getDay()); // back up to Sun
+
+    // Last displayed row is the Saturday at or after yearEnd.
+    const lastSat = new Date(yearEnd);
+    lastSat.setDate(lastSat.getDate() + (6 - lastSat.getDay()));
+
+    const map = ((holidaysDoc.by_user || {})[selectedEmail] || {}).days || {};
+    const todayIso = isoDate(new Date());
+
+    let cursor = new Date(firstSun);
+    let weekIdx = 0;
+    while (cursor <= lastSat) {
+      const row = document.createElement("div");
+      row.className = "hd-week";
+      row.setAttribute("role", "row");
+
+      const weekLabel = document.createElement("div");
+      weekLabel.className = "hd-week-label";
+      weekLabel.textContent = formatWeekLabel(cursor);
+      row.appendChild(weekLabel);
+
+      for (let i = 0; i < 7; i++) {
+        const d = new Date(cursor);
+        d.setDate(cursor.getDate() + i);
+        const cell = renderCell(d, map, todayIso);
+        row.appendChild(cell);
+      }
+      root.appendChild(row);
+      cursor.setDate(cursor.getDate() + 7);
+      weekIdx++;
+      // Safety net so a runaway loop never builds an infinite calendar.
+      if (weekIdx > 56) break;
+    }
+  }
+
+  function renderCell(d, dayMap, todayIso) {
+    const iso = isoDate(d);
+    const cell = document.createElement("div");
+    cell.className = "hd-day";
+    cell.setAttribute("role", "gridcell");
+    cell.dataset.date = iso;
+    const inYear = (d >= yearStart && d <= yearEnd);
+    if (!inYear) {
+      cell.classList.add("is-out-of-year");
+    } else {
+      cell.tabIndex = 0;
+    }
+    const stored = dayMap[iso];
+    const dow = d.getDay();
+    const isWeekend = (dow === 0 || dow === 6);
+    const isBh = UK_BANK_HOLIDAYS.has(iso);
+
+    if (stored) {
+      cell.dataset.status = stored;
+    } else if (inYear) {
+      if (isWeekend) {
+        cell.dataset.status = "non-working";
+      } else if (isBh) {
+        cell.dataset.defaultBh = "1";
+      } else {
+        // Mon-Fri non-BH default: working office green
+        cell.dataset.status = "office";
+        cell.dataset.defaulted = "1"; // mark as default so the popover can show "clear" sensibly
+      }
+    }
+    if (iso === todayIso) cell.classList.add("hd-day-today");
+
+    // Day number; show month label on the 1st and on yearStart.
+    const dayNum = d.getDate();
+    const showMonth = (dayNum === 1) || (iso === isoDate(yearStart));
+    const monthLabel = showMonth ? `<span class="hd-day-month">${d.toLocaleDateString("en-GB", { month: "short" })}</span>` : "";
+    const labelTxt = inYear ? labelFor(stored, isWeekend, isBh) : "";
+    cell.innerHTML = `
+      <div class="hd-day-num">${dayNum}${monthLabel}</div>
+      ${labelTxt ? `<div class="hd-day-label">${labelTxt}</div>` : ""}
+    `;
+
+    if (inYear) {
+      cell.addEventListener("click", e => { e.stopPropagation(); openPicker(cell, d); });
+      cell.addEventListener("keydown", e => {
+        if (e.key === "Enter" || e.key === " ") { e.preventDefault(); openPicker(cell, d); }
+      });
+    }
+    return cell;
+  }
+
+  function labelFor(stored, isWeekend, isBh) {
+    if (stored) return STATUS_LABEL[stored] || "";
+    if (isWeekend) return "Weekend";
+    if (isBh) return "Bank Holiday";
+    return ""; // no label on plain office defaults — keeps rows clean
+  }
+
+  function renderLog() {
+    const root = document.getElementById("hdLog");
+    const entries = (holidaysDoc.log || []).filter(e => (e.user_email || "").toLowerCase() === selectedEmail);
+    if (!entries.length) {
+      root.innerHTML = `<li class="hd-log-empty">No changes recorded yet.</li>`;
+      return;
+    }
+    // Newest first
+    const sorted = entries.slice().sort((a, b) => (a.changed_at < b.changed_at ? 1 : -1));
+    root.innerHTML = sorted.slice(0, 200).map(e => {
+      const at = e.changed_at ? new Date(e.changed_at).toLocaleString("en-GB", { day: "numeric", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit" }) : "";
+      const day = e.date ? new Date(e.date).toLocaleDateString("en-GB", { weekday: "short", day: "numeric", month: "short", year: "numeric" }) : "";
+      const from = STATUS_LABEL[e.from] || e.from || "default";
+      const to   = STATUS_LABEL[e.to]   || e.to   || "default";
+      const who  = (e.changed_by || "").toLowerCase() === selectedEmail
+        ? "by themself"
+        : `by ${escapeHtml(displayName(e.changed_by))}`;
+      return `
+        <li>
+          <time>${escapeHtml(at)}</time>
+          <div>
+            <strong>${escapeHtml(day)}</strong>
+            <span class="from-to"> · ${escapeHtml(from)} → ${escapeHtml(to)}</span>
+            <span class="by">${who}</span>
+          </div>
+        </li>`;
+    }).join("");
+  }
+
+  // ── Status picker popover ─────────────────────────────────────────
+  let openPopEl = null;
+  function openPicker(anchor, d) {
+    closePicker();
+    if (!canEditOnBehalf(selectedEmail)) {
+      banner("You can only edit your own calendar.", true);
+      return;
+    }
+    const iso = anchor.dataset.date;
+    const dayMap = ((holidaysDoc.by_user || {})[selectedEmail] || {}).days || {};
+    const current = dayMap[iso] || null;
+    const dow = d.getDay();
+    const isWeekend = (dow === 0 || dow === 6);
+    const isBh = UK_BANK_HOLIDAYS.has(iso);
+    const defaultStatus = isWeekend ? "non-working" : (isBh ? "holiday" : "office");
+    const pop = document.createElement("div");
+    pop.className = "hd-pop";
+    const dateLabel = d.toLocaleDateString("en-GB", { weekday: "long", day: "numeric", month: "short", year: "numeric" });
+    pop.innerHTML = `
+      <div class="hd-pop-head">${escapeHtml(dateLabel)}${isBh ? " · UK Bank Holiday" : ""}</div>
+      ${STATUSES.map(s => `
+        <button type="button" class="hd-pop-opt" data-status="${s.key}" ${current === s.key ? "disabled" : ""}>
+          <span class="hd-pop-sw" style="background:${s.swatch}"></span>${s.label}${current === s.key ? "  · current" : ""}
+        </button>
+      `).join("")}
+      <button type="button" class="hd-pop-opt hd-pop-clear" data-clear ${current ? "" : "disabled"}>
+        Reset to default (${STATUS_LABEL[defaultStatus]})
+      </button>`;
+    document.body.appendChild(pop);
+    positionPop(pop, anchor);
+    openPopEl = pop;
+    pop.addEventListener("click", e => {
+      const btn = e.target.closest("button");
+      if (!btn || btn.disabled) return;
+      const next = btn.dataset.clear ? null : btn.dataset.status;
+      saveDay(iso, current, next);
+      closePicker();
+    });
+    // Close on outside click / Escape
+    setTimeout(() => {
+      document.addEventListener("click", outsideClose, { once: true });
+      document.addEventListener("keydown", escClose);
+    }, 0);
+    function outsideClose(e) {
+      if (pop.contains(e.target)) {
+        document.addEventListener("click", outsideClose, { once: true });
+        return;
+      }
+      closePicker();
+    }
+    function escClose(e) {
+      if (e.key === "Escape") { e.preventDefault(); closePicker(); }
+    }
+    pop._cleanup = () => { document.removeEventListener("keydown", escClose); };
+  }
+  function closePicker() {
+    if (openPopEl) {
+      if (openPopEl._cleanup) openPopEl._cleanup();
+      openPopEl.remove();
+      openPopEl = null;
+    }
+  }
+  function positionPop(pop, anchor) {
+    const r = anchor.getBoundingClientRect();
+    let left = window.scrollX + r.left;
+    let top  = window.scrollY + r.bottom + 4;
+    // Keep within viewport
+    const maxLeft = window.scrollX + document.documentElement.clientWidth - pop.offsetWidth - 8;
+    if (left > maxLeft) left = maxLeft;
+    if (left < window.scrollX + 8) left = window.scrollX + 8;
+    pop.style.left = left + "px";
+    pop.style.top  = top + "px";
+  }
+
+  function canEditOnBehalf(email) {
+    return viewerIsAdmin || (email === viewerEmail.toLowerCase());
+  }
+
+  async function saveDay(iso, fromStatus, toStatus) {
+    // Optimistic UI: paint the new value immediately, roll back on error.
+    const map = ensureUserMap(selectedEmail);
+    const prev = map.days[iso] || null;
+    if (toStatus === null) {
+      delete map.days[iso];
+    } else {
+      map.days[iso] = toStatus;
+    }
+    const cell = document.querySelector(`.hd-day[data-date="${iso}"]`);
+    if (cell) repaintCell(cell);
+    renderHeader(); // count may have changed
+
+    try {
+      const res = await fetch(`${HD_API}/set`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email: selectedEmail, date: iso, status: toStatus }),
+      });
+      const data = await res.json().catch(() => null);
+      if (!res.ok || (data && data.ok === false)) {
+        throw new Error((data && data.error) || `HTTP ${res.status}`);
+      }
+      // Append the server's log entry so the UI matches what landed.
+      if (data && data.log_entry) {
+        holidaysDoc.log = (holidaysDoc.log || []);
+        holidaysDoc.log.push(data.log_entry);
+        renderLog();
+      }
+      holidaysDoc.updated_at = data && data.updated_at || holidaysDoc.updated_at;
+      banner("Saved");
+    } catch (err) {
+      // Roll back
+      if (prev === null) delete map.days[iso]; else map.days[iso] = prev;
+      if (cell) repaintCell(cell);
+      renderHeader();
+      banner("Save failed: " + (err.message || err), true);
+      console.error("[holidays] save failed", err);
+    }
+  }
+  function ensureUserMap(email) {
+    holidaysDoc.by_user = holidaysDoc.by_user || {};
+    holidaysDoc.by_user[email] = holidaysDoc.by_user[email] || {};
+    holidaysDoc.by_user[email].days = holidaysDoc.by_user[email].days || {};
+    return holidaysDoc.by_user[email];
+  }
+  function repaintCell(cell) {
+    const iso = cell.dataset.date;
+    const dayMap = ((holidaysDoc.by_user || {})[selectedEmail] || {}).days || {};
+    const stored = dayMap[iso];
+    const d = parseISO(iso);
+    const dow = d.getDay();
+    const isWeekend = (dow === 0 || dow === 6);
+    const isBh = UK_BANK_HOLIDAYS.has(iso);
+    cell.removeAttribute("data-status");
+    cell.removeAttribute("data-default-bh");
+    cell.removeAttribute("data-defaulted");
+    if (stored) {
+      cell.dataset.status = stored;
+    } else {
+      if (isWeekend) cell.dataset.status = "non-working";
+      else if (isBh) cell.dataset.defaultBh = "1";
+      else { cell.dataset.status = "office"; cell.dataset.defaulted = "1"; }
+    }
+    // Update the label
+    const label = labelFor(stored, isWeekend, isBh);
+    const labelDiv = cell.querySelector(".hd-day-label");
+    if (label) {
+      if (labelDiv) labelDiv.textContent = label;
+      else {
+        const div = document.createElement("div");
+        div.className = "hd-day-label";
+        div.textContent = label;
+        cell.appendChild(div);
+      }
+    } else if (labelDiv) {
+      labelDiv.remove();
+    }
+  }
+
+  // ── Helpers ───────────────────────────────────────────────────────
+  function isoDate(d) {
+    const y = d.getFullYear();
+    const m = (d.getMonth() + 1).toString().padStart(2, "0");
+    const dd = d.getDate().toString().padStart(2, "0");
+    return `${y}-${m}-${dd}`;
+  }
+  function parseISO(s) {
+    const [y, m, d] = (s || "").split("-").map(n => parseInt(n, 10));
+    return new Date(y, (m || 1) - 1, d || 1);
+  }
+  function* iterDates(from, to) {
+    for (let d = new Date(from); d <= to; d.setDate(d.getDate() + 1)) yield new Date(d);
+  }
+  function formatWeekLabel(sunday) {
+    return sunday.toLocaleDateString("en-GB", { day: "numeric", month: "short" });
+  }
+  function formatRangeLabel(from, to) {
+    const f = from.toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" });
+    const t = to.toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" });
+    return `${f} → ${t}`;
+  }
+  function displayName(email) {
+    if (!email) return "Unknown";
+    const u = staffByEmail[(email || "").toLowerCase()];
+    return (u && u.name) || (email || "").split("@")[0];
+  }
+  function escapeHtml(s) {
+    return String(s || "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+  }
+  let bannerTimer = null;
+  function banner(text, isError) {
+    const el = document.getElementById("hdBanner");
+    el.textContent = text;
+    el.classList.toggle("is-error", !!isError);
+    el.classList.add("is-shown");
+    clearTimeout(bannerTimer);
+    bannerTimer = setTimeout(() => el.classList.remove("is-shown"), isError ? 4500 : 2200);
+  }
+</script>
+
+<script>
+  document.addEventListener('keydown', e => {
+    if (e.key === 'Escape') document.body.classList.remove('nav-open');
+  });
+  document.querySelectorAll('.qb-nav-link').forEach(a =>
+    a.addEventListener('click', () => document.body.classList.remove('nav-open'))
+  );
+</script>
+<script src="nav.js" defer></script>
+</body>
+</html>
