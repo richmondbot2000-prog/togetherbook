@@ -9,11 +9,11 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&family=Newsreader:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500;1,600&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="style.css?v=1778886311">
-<link rel="stylesheet" href="quiet-tokens.css?v=1778886311">
-<link rel="stylesheet" href="quiet.css?v=1778886311">
-<link rel="stylesheet" href="quiet-extras.css?v=1778886311">
-<link rel="stylesheet" href="quiet-legacy.css?v=1778886311">
+<link rel="stylesheet" href="style.css?v=1778886482">
+<link rel="stylesheet" href="quiet-tokens.css?v=1778886482">
+<link rel="stylesheet" href="quiet.css?v=1778886482">
+<link rel="stylesheet" href="quiet-extras.css?v=1778886482">
+<link rel="stylesheet" href="quiet-legacy.css?v=1778886482">
 <style>
   .hd-section { max-width: 1080px; margin: 0 auto; padding: 24px 0 48px; }
   .hd-section h1 {
@@ -445,7 +445,7 @@
 
 <header class="qb-topbar">
   <a class="qb-brand" href="index.html" aria-label="TogetherBOOK — home">
-    <img class="qb-brand-logo" src="togetherbook-logo.png?v=1778886311" alt="TogetherBOOK">
+    <img class="qb-brand-logo" src="togetherbook-logo.png?v=1778886482" alt="TogetherBOOK">
   </a>
   <button class="qb-hamburger" aria-label="Toggle navigation menu" aria-expanded="false"
           onclick="document.body.classList.toggle('nav-open');this.setAttribute('aria-expanded',document.body.classList.contains('nav-open'))">
@@ -648,16 +648,46 @@
     wrap.style.display = "flex";
     count.textContent = String(directReports.size);
     wrap.querySelectorAll(".hd-view-tab").forEach(btn => {
-      btn.addEventListener("click", () => {
+      btn.addEventListener("click", async () => {
         currentView = btn.dataset.view;
         wrap.querySelectorAll(".hd-view-tab").forEach(b => {
           const on = (b === btn);
           b.classList.toggle("is-active", on);
           b.setAttribute("aria-selected", String(on));
         });
+        // Switching to Team re-fetches annotations.json from raw GH —
+        // so a Line Manager edit made on the Directory page in another
+        // tab shows up here without a hard-refresh.
+        if (currentView === "team") {
+          await refreshLineManagers();
+          if (count) count.textContent = String(directReports.size);
+        }
         renderAll();
       });
     });
+  }
+
+  // Pull annotations.json straight from raw.githubusercontent.com and
+  // rebuild lineManagerByEmail + directReports. Idempotent — safe to
+  // call repeatedly.
+  async function refreshLineManagers() {
+    try {
+      const res = await fetch(`${ANNOTATIONS_RAW_URL}?ts=${Date.now()}`, { cache: "no-store" });
+      if (!res.ok) return;
+      const an = await res.json();
+      lineManagerByEmail = {};
+      for (const [k, v] of Object.entries((an && an.annotations) || {})) {
+        const mgr = (v && v.line_manager) ? String(v.line_manager).toLowerCase() : "";
+        if (mgr) lineManagerByEmail[k.toLowerCase()] = mgr;
+      }
+      directReports = new Set(
+        Object.entries(lineManagerByEmail)
+          .filter(([_, mgr]) => mgr === viewerEmail.toLowerCase())
+          .map(([emp]) => emp.toLowerCase())
+      );
+    } catch (e) {
+      console.warn("[holidays] refreshLineManagers failed", e);
+    }
   }
   function renderAll() {
     document.getElementById("hdOwnView").style.display  = (currentView === "own")  ? "" : "none";
