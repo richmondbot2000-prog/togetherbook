@@ -1,7 +1,20 @@
 {
   "schema_version": 1,
-  "updated_at": "2026-05-15T15:01:28.144Z",
+  "updated_at": "2026-05-15T17:11:31.427Z",
   "posts": [
+    {
+      "id": "post_mp76cgvu_z1f6a5",
+      "author_email": "james.benamor@letme.com",
+      "author_name": "james.benamor",
+      "created_at": "2026-05-15T17:11:31.194Z",
+      "body": "Happy Weekend everyone",
+      "photos": [
+        "https://media1.giphy.com/media/v1.Y2lkPWYzOWU3YTk3bjBueTYzeTh4cjlmaHFuMjN6eWdpNHhidXRnc2l0dXR2MnJycnczNCZlcD12MV9naWZzX3NlYXJjaCZjdD1n/vIpCeF7YcCrygqAn3R/giphy.gif"
+      ],
+      "channel": null,
+      "reactions": {},
+      "comments": []
+    },
     {
       "id": "post_mp6zxv0t_4pj7yu",
       "author_email": "james.benamor@letme.com",
