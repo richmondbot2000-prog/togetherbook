@@ -1,8 +1,23 @@
 {
   "schema_version": 1,
-  "updated_at": "2026-05-15T21:30:00.000Z",
+  "updated_at": "2026-05-15T21:41:10.630Z",
   "year_start": "2026-04-01",
-  "year_end":   "2027-03-31",
-  "by_user": {},
-  "log": []
+  "year_end": "2027-03-31",
+  "by_user": {
+    "james.benamor@letme.com": {
+      "days": {
+        "2026-04-07": "sick"
+      }
+    }
+  },
+  "log": [
+    {
+      "user_email": "james.benamor@letme.com",
+      "date": "2026-04-07",
+      "from": null,
+      "to": "sick",
+      "changed_by": "james.benamor@letme.com",
+      "changed_at": "2026-05-15T21:41:10.630Z"
+    }
+  ]
 }
