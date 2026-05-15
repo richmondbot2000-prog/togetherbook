@@ -1,15 +1,15 @@
 {
   "schema_version": 1,
-  "updated_at": "2026-05-14T09:18:31.409080Z",
-  "snapshot_date": "2026-05-14",
+  "updated_at": "2026-05-15T16:17:35.278304Z",
+  "snapshot_date": "2026-05-15",
   "window_months": 3,
   "totals": {
-    "items": 140,
+    "items": 142,
     "by_lender": {
-      "Together Loans / TransformCredit": 140
+      "Together Loans / TransformCredit": 142
     },
     "by_role": {
-      "BRW": 138,
+      "BRW": 140,
       "GT": 2
     }
   },
@@ -20,7 +20,7 @@
     ],
     [
       "loan",
-      82
+      84
     ],
     [
       "together",
@@ -71,6 +71,10 @@
       17
     ],
     [
+      "required",
+      16
+    ],
+    [
       "date",
       16
     ],
@@ -87,15 +91,23 @@
       16
     ],
     [
+      "action",
+      15
+    ],
+    [
       "back",
       15
     ],
     [
-      "payments",
+      "bounced",
       14
     ],
     [
-      "required",
+      "payout",
+      14
+    ],
+    [
+      "payments",
       14
     ],
     [
@@ -111,12 +123,12 @@
       13
     ],
     [
-      "action",
+      "due",
       13
     ],
     [
-      "due",
-      13
+      "office",
+      12
     ],
     [
       "app",
@@ -124,14 +136,6 @@
     ],
     [
       "receipt",
-      12
-    ],
-    [
-      "bounced",
-      12
-    ],
-    [
-      "payout",
       12
     ],
     [
@@ -163,12 +167,16 @@
       11
     ],
     [
-      "office",
-      11
-    ],
-    [
       "mail",
       10
+    ],
+    [
+      "good",
+      9
+    ],
+    [
+      "morning",
+      9
     ],
     [
       "message",
@@ -231,12 +239,8 @@
       8
     ],
     [
-      "good",
-      8
-    ],
-    [
-      "morning",
-      8
+      "take",
+      7
     ],
     [
       "via",
@@ -276,10 +280,6 @@
     ],
     [
       "sure",
-      6
-    ],
-    [
-      "take",
       6
     ],
     [
@@ -333,6 +333,10 @@
     [
       "address",
       6
+    ],
+    [
+      "funds",
+      5
     ],
     [
       "active",
@@ -415,6 +419,10 @@
       5
     ],
     [
+      "said",
+      4
+    ],
+    [
       "use",
       4
     ],
@@ -452,10 +460,6 @@
     ],
     [
       "late",
-      4
-    ],
-    [
-      "funds",
       4
     ],
     [
@@ -609,13 +613,27 @@
     [
       "returned",
       3
-    ],
-    [
-      "full",
-      3
     ]
   ],
   "items": [
+    {
+      "received_utc": "2026-05-14T15:56:02",
+      "received_date": "2026-05-14",
+      "days_after_payout": 2,
+      "role": "BRW",
+      "lender_name": "Together Loans / TransformCredit",
+      "subject": "Action Required: **** Bounced Loan Payout",
+      "body": ""
+    },
+    {
+      "received_utc": "2026-05-14T15:34:40",
+      "received_date": "2026-05-14",
+      "days_after_payout": 2,
+      "role": "BRW",
+      "lender_name": "Together Loans / TransformCredit",
+      "subject": "Action Required: **** Bounced Loan Payout",
+      "body": "Good morning, I spoke with **** and she said that she has fixed the issue with your office. Do you know approximately how long this will take so the funds can be resent? Thank you, **** ****"
+    },
     {
       "received_utc": "2026-05-13T15:21:58",
       "received_date": "2026-05-13",
