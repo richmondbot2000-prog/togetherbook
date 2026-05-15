@@ -3,17 +3,17 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>BOOK — Yesterday's payouts</title>
+<title>BOOK — Payouts</title>
 <link rel="icon" type="image/png" href="site-icon.png">
 <link rel="apple-touch-icon" href="site-icon.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&family=Orbitron:wght@500;600;700;800&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="style.css?v=1778743524">
-<link rel="stylesheet" href="quiet-tokens.css?v=1778791697">
-<link rel="stylesheet" href="quiet.css?v=1778791697">
-<link rel="stylesheet" href="quiet-extras.css?v=1778792419">
-<link rel="stylesheet" href="quiet-legacy.css?v=1778791697">
+<link rel="stylesheet" href="style.css?v=1778865773">
+<link rel="stylesheet" href="quiet-tokens.css?v=1778865773">
+<link rel="stylesheet" href="quiet.css?v=1778865773">
+<link rel="stylesheet" href="quiet-extras.css?v=1778865773">
+<link rel="stylesheet" href="quiet-legacy.css?v=1778865773">
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
       integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
       crossorigin="">
@@ -166,13 +166,48 @@
     text-align: right;
     white-space: nowrap;
   }
+
+  /* Range selector — three tabs that switch the data range. Italic
+     Newsreader buttons with brass underlines (Quiet Edition rhythm).
+     The selected tab carries a manuscript-red rule + bold weight so
+     the user can see at a glance which dataset they are looking at. */
+  .yp-range {
+    display: flex; gap: 28px; align-items: baseline;
+    margin: 0 0 24px;
+    border-bottom: 1px solid var(--ink-500);
+    padding-bottom: 0;
+  }
+  .yp-range-btn {
+    background: none; border: none;
+    padding: 10px 4px;
+    margin-bottom: -1px;
+    font: italic 500 18px/1 var(--font-display, 'Newsreader', serif);
+    color: var(--ink-600);
+    border-bottom: 2px solid transparent;
+    cursor: pointer;
+  }
+  .yp-range-btn:hover { color: var(--ink-900); }
+  .yp-range-btn.is-active {
+    color: var(--red-500);
+    font-weight: 700;
+    border-bottom-color: var(--red-500);
+  }
+  .yp-range-pending {
+    padding: 48px 24px;
+    text-align: center;
+    background: var(--paper-50, transparent);
+    border: 1px dashed var(--ink-300);
+    color: var(--ink-700);
+    font: italic 400 16px/1.5 var(--font-display, 'Newsreader', serif);
+  }
+  .yp-range-pending strong { display: block; margin-bottom: 6px; color: var(--ink-900); font-style: normal; font-weight: 600; }
 </style>
 </head>
 <body>
 
 <header class="qb-topbar">
   <a class="qb-brand" href="index.html" aria-label="TogetherBOOK — home">
-    <img class="qb-brand-logo" src="togetherbook-logo.png?v=1778791697" alt="TogetherBOOK">
+    <img class="qb-brand-logo" src="togetherbook-logo.png?v=1778865773" alt="TogetherBOOK">
   </a>
   <button class="qb-hamburger" aria-label="Toggle navigation menu" aria-expanded="false"
           onclick="document.body.classList.toggle('nav-open');this.setAttribute('aria-expanded',document.body.classList.contains('nav-open'))">
@@ -181,7 +216,7 @@
     <nav class="qb-nav">
     <a class="qb-nav-link" href="wall.html">Wall</a>
     <a class="qb-nav-link" href="index.html" data-sub='[{"href": "database.html", "label": "Schema"}, {"href": "stats.html", "label": "Code"}]'>About our systems</a>
-    <a class="qb-nav-link is-active" href="yesterday.html">Payout</a>
+    <a class="qb-nav-link is-active" href="yesterday.html">Payouts</a>
     <a class="qb-nav-link" href="brandwatch.html">Brandwatch</a>
     <a class="qb-nav-link" href="directory.html">Directory</a>
     <a class="qb-nav-link" href="reports.html" data-sub='[{"href": "1stcontact.html", "label": "1st Contact"}, {"href": "topups.html", "label": "Top Ups"}, {"href": "pipeline.html", "label": "Pipeline"}, {"href": "brokers.html", "label": "Brokers"}, {"href": "comms.html", "label": "Comms"}]'>Reports</a>
@@ -190,20 +225,27 @@
 <div class="qb-nav-backdrop" onclick="document.body.classList.remove('nav-open')"></div>
 <main class="qb-page">
     <section class="yp-section">
-      <h1>Yesterday's payouts</h1>
-      <p class="lead">US borrowers whose loans paid out on <strong id="ypDate">…</strong>.</p>
+      <h1>Payouts</h1>
+      <nav class="yp-range" id="ypRange" role="tablist" aria-label="Payout date range">
+        <button type="button" class="yp-range-btn is-active" data-range="yesterday" role="tab" aria-selected="true">Yesterday</button>
+        <button type="button" class="yp-range-btn" data-range="week" role="tab" aria-selected="false">Last Week</button>
+        <button type="button" class="yp-range-btn" data-range="year" role="tab" aria-selected="false">Last Year</button>
+      </nav>
+      <p class="lead" id="ypLead">US borrowers whose loans paid out on <strong id="ypDate">…</strong>.</p>
       <p class="yp-meta" id="ypMeta">Loading…</p>
 
-      <p class="yp-map-caption">Where the borrowers are</p>
-      <div class="yp-map" id="ypMap"></div>
+      <div id="ypContent">
+        <p class="yp-map-caption">Where the borrowers are</p>
+        <div class="yp-map" id="ypMap"></div>
 
-      <p class="yp-map-caption">Total paid out by state</p>
-      <div class="yp-map-states" id="ypStateMap"></div>
+        <p class="yp-map-caption">Total paid out by state</p>
+        <div class="yp-map-states" id="ypStateMap"></div>
 
-      <p class="yp-map-caption">Average loan amount by state</p>
-      <div class="yp-map-states" id="ypAvgStateMap"></div>
+        <p class="yp-map-caption">Average loan amount by state</p>
+        <div class="yp-map-states" id="ypAvgStateMap"></div>
 
-      <div class="yp-states" id="ypStates"></div>
+        <div class="yp-states" id="ypStates"></div>
+      </div>
     </section>
   </main>
 
@@ -368,72 +410,180 @@
     });
   }
 
-  // Load Leaflet first, THEN the plugins (cluster + heat). The plugins
-  // both need `L` to be defined at parse time — running them in parallel
-  // races the leaflet bundle and silently drops one of the layers.
-  loadScript('https://unpkg.com/leaflet@1.9.4/dist/leaflet.js')
-    .then(() => loadScript('https://unpkg.com/leaflet.markercluster@1.5.3/dist/leaflet.markercluster.js'))
-    .catch(err => console.warn('leaflet plugin load failed', err))
-    .finally(() => {
-    fetch('yesterday-payouts.json', { cache: 'no-cache' })
-      .then(r => { if (!r.ok) throw new Error('HTTP ' + r.status); return r.json(); })
-      .then(data => {
-      const dateLabel = data.target_date
-        ? new Date(data.target_date).toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'short', year: 'numeric' })
-        : 'unknown date';
-      document.getElementById('ypDate').textContent = dateLabel;
-      const updated = data.updated_at ? new Date(data.updated_at).toLocaleString('en-GB') : '';
+  // Map range key → { url, lead text builder when data lands }. Last
+  // Week + Last Year files are produced by scan_payouts_history.py
+  // (committed alongside yesterday-payouts.json by the daily refresh
+  // workflow). If a tab points at a missing JSON, the page shows a
+  // friendly "refreshes overnight" placeholder rather than an error.
+  const RANGES = {
+    yesterday: {
+      url: 'yesterday-payouts.json',
+      label: data => {
+        const d = data.target_date
+          ? new Date(data.target_date).toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'short', year: 'numeric' })
+          : 'unknown date';
+        return `US borrowers whose loans paid out on <strong>${d}</strong>.`;
+      },
+    },
+    week: {
+      url: 'payouts-week.json',
+      label: data => {
+        const from = data.range && data.range.from
+          ? new Date(data.range.from).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' }) : '';
+        const to = data.range && data.range.to
+          ? new Date(data.range.to).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' }) : '';
+        return `US borrowers whose loans paid out from <strong>${from}</strong> to <strong>${to}</strong>.`;
+      },
+    },
+    year: {
+      url: 'payouts-year.json',
+      label: data => {
+        const from = data.range && data.range.from
+          ? new Date(data.range.from).toLocaleDateString('en-GB', { month: 'short', year: 'numeric' }) : '';
+        const to = data.range && data.range.to
+          ? new Date(data.range.to).toLocaleDateString('en-GB', { month: 'short', year: 'numeric' }) : '';
+        return `US borrowers whose loans paid out across <strong>${from}</strong> – <strong>${to}</strong> (last 12 completed months).`;
+      },
+    },
+  };
 
-      const items = data.items || [];
-      const total = items.reduce((s, i) => s + (i.amount || 0), 0);
-      document.getElementById('ypMeta').textContent =
-        `${items.length} borrowers · ${fmtUSD0.format(total)} paid out · last refreshed ${updated}`;
+  let currentRange = 'yesterday';
+  let leafletReady = null;
+  function ensureLeaflet() {
+    if (!leafletReady) {
+      leafletReady = loadScript('https://unpkg.com/leaflet@1.9.4/dist/leaflet.js')
+        .then(() => loadScript('https://unpkg.com/leaflet.markercluster@1.5.3/dist/leaflet.markercluster.js'))
+        .catch(err => console.warn('leaflet plugin load failed', err));
+    }
+    return leafletReady;
+  }
 
-      // Group by state
-      const byState = new Map();
-      for (const it of items) {
-        const s = it.state || '—';
-        if (!byState.has(s)) byState.set(s, []);
-        byState.get(s).push(it);
-      }
-      const sortedStates = [...byState.entries()].sort((a, b) => a[0].localeCompare(b[0]));
+  function clearContent() {
+    const content = document.getElementById('ypContent');
+    content.innerHTML = `
+      <p class="yp-map-caption">Where the borrowers are</p>
+      <div class="yp-map" id="ypMap"></div>
 
-      const root = document.getElementById('ypStates');
-      const frag = document.createDocumentFragment();
-      for (const [state, list] of sortedStates) {
-        const stateTotal = list.reduce((s, i) => s + (i.amount || 0), 0);
-        const card = document.createElement('div');
-        card.className = 'yp-state';
-        const rows = list.map(it =>
-          `<tr>` +
-            `<td class="first-name">${it.first_name || ''}</td>` +
-            `<td class="city" title="${(it.county || '') + (it.county ? ' County' : '')}">${it.city || ''}</td>` +
-            `<td class="amount">${fmtUSD2.format(it.amount || 0)}</td>` +
-          `</tr>`
-        ).join('');
-        card.innerHTML = `
-          <h3 class="yp-state-h">
-            <span>${state}</span>
-            <span class="yp-state-meta">${list.length} · ${fmtUSD0.format(stateTotal)}</span>
-          </h3>
-          <table class="yp-table">
-            <thead><tr><th>First name</th><th>City</th><th style="text-align:right">Amount</th></tr></thead>
-            <tbody>${rows}</tbody>
-          </table>
-        `;
-        frag.appendChild(card);
-      }
-      root.appendChild(frag);
+      <p class="yp-map-caption">Total paid out by state</p>
+      <div class="yp-map-states" id="ypStateMap"></div>
 
-      try { renderMap(items); }         catch (e) { console.error('pin map failed', e); }
-      try { renderStateMap(items); }    catch (e) { console.error('state map failed', e); }
-      try { renderAvgStateMap(items); } catch (e) { console.error('avg state map failed', e); }
-    })
-    .catch(err => {
-      const meta = document.getElementById('ypMeta');
-      if (meta) meta.textContent = 'Could not load yesterday\'s payouts: ' + err.message;
+      <p class="yp-map-caption">Average loan amount by state</p>
+      <div class="yp-map-states" id="ypAvgStateMap"></div>
+
+      <div class="yp-states" id="ypStates"></div>`;
+  }
+
+  function showPending(message) {
+    document.getElementById('ypContent').innerHTML =
+      `<div class="yp-range-pending"><strong>Not refreshed yet</strong>${message}</div>`;
+  }
+
+  function paint(data) {
+    const items = data.items || [];
+    const total = items.reduce((s, i) => s + (i.amount || 0), 0);
+    const updated = data.updated_at ? new Date(data.updated_at).toLocaleString('en-GB') : '';
+    document.getElementById('ypMeta').textContent =
+      `${items.length.toLocaleString('en-GB')} borrowers · ${fmtUSD0.format(total)} paid out · last refreshed ${updated}`;
+
+    // Group by state
+    const byState = new Map();
+    for (const it of items) {
+      const s = it.state || '—';
+      if (!byState.has(s)) byState.set(s, []);
+      byState.get(s).push(it);
+    }
+    const sortedStates = [...byState.entries()].sort((a, b) => a[0].localeCompare(b[0]));
+
+    const root = document.getElementById('ypStates');
+    const frag = document.createDocumentFragment();
+    for (const [state, list] of sortedStates) {
+      const stateTotal = list.reduce((s, i) => s + (i.amount || 0), 0);
+      const card = document.createElement('div');
+      card.className = 'yp-state';
+      // Cap each per-state list at 200 rows for the long-window views.
+      // The Yearly tab can have 5k+ borrowers per state and dropping
+      // every name into the DOM bricks the page on mobile Safari.
+      const cap = 200;
+      const visible = list.slice(0, cap);
+      const overflow = list.length - visible.length;
+      const rows = visible.map(it =>
+        `<tr>` +
+          `<td class="first-name">${it.first_name || ''}</td>` +
+          `<td class="city" title="${(it.county || '') + (it.county ? ' County' : '')}">${it.city || ''}</td>` +
+          `<td class="amount">${fmtUSD2.format(it.amount || 0)}</td>` +
+        `</tr>`
+      ).join('');
+      const more = overflow > 0
+        ? `<tr><td colspan="3" style="text-align:center; font-style:italic; color: var(--muted); padding: 8px 14px;">+${overflow.toLocaleString('en-GB')} more borrowers in ${state}</td></tr>`
+        : '';
+      card.innerHTML = `
+        <h3 class="yp-state-h">
+          <span>${state}</span>
+          <span class="yp-state-meta">${list.length.toLocaleString('en-GB')} · ${fmtUSD0.format(stateTotal)}</span>
+        </h3>
+        <table class="yp-table">
+          <thead><tr><th>First name</th><th>City</th><th style="text-align:right">Amount</th></tr></thead>
+          <tbody>${rows}${more}</tbody>
+        </table>
+      `;
+      frag.appendChild(card);
+    }
+    root.appendChild(frag);
+
+    try { renderMap(items); }         catch (e) { console.error('pin map failed', e); }
+    try { renderStateMap(items); }    catch (e) { console.error('state map failed', e); }
+    try { renderAvgStateMap(items); } catch (e) { console.error('avg state map failed', e); }
+  }
+
+  function loadRange(key) {
+    currentRange = key;
+    document.querySelectorAll('.yp-range-btn').forEach(b => {
+      const on = b.dataset.range === key;
+      b.classList.toggle('is-active', on);
+      b.setAttribute('aria-selected', String(on));
     });
+    const cfg = RANGES[key];
+    if (!cfg) return;
+    clearContent();
+    document.getElementById('ypMeta').textContent = 'Loading…';
+    document.getElementById('ypLead').innerHTML = '&nbsp;';
+
+    ensureLeaflet().finally(() => {
+      fetch(cfg.url, { cache: 'no-cache' })
+        .then(r => {
+          if (r.status === 404) {
+            throw Object.assign(new Error('not-yet-built'), { code: 'missing' });
+          }
+          if (!r.ok) throw new Error('HTTP ' + r.status);
+          return r.json();
+        })
+        .then(data => {
+          document.getElementById('ypLead').innerHTML = cfg.label(data);
+          paint(data);
+        })
+        .catch(err => {
+          if (err.code === 'missing') {
+            showPending(
+              key === 'week'
+                ? '<p>The 7-day payouts dataset is generated by the overnight refresh and has not landed yet.</p>'
+                : key === 'year'
+                  ? '<p>The 12-month payouts dataset is generated by the overnight refresh and has not landed yet.</p>'
+                  : '<p>The payouts dataset has not landed yet.</p>'
+            );
+            document.getElementById('ypMeta').textContent = '';
+            document.getElementById('ypLead').textContent = '';
+          } else {
+            const meta = document.getElementById('ypMeta');
+            if (meta) meta.textContent = 'Could not load payouts: ' + err.message;
+          }
+        });
+    });
+  }
+
+  document.querySelectorAll('.yp-range-btn').forEach(b => {
+    b.addEventListener('click', () => loadRange(b.dataset.range));
   });
+  loadRange('yesterday');
 </script>
 
 <script>
