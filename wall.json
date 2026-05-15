@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "updated_at": "2026-05-15T13:22:36.823Z",
+  "updated_at": "2026-05-15T13:22:42.788Z",
   "posts": [
     {
       "id": "post_mp6nxwud_wm5rl2",
@@ -42,7 +42,11 @@
           "photos": [
             "wall-media/img_mp6trkn2_ai96j5.jpg"
           ],
-          "reactions": {}
+          "reactions": {
+            "👍": [
+              "james.benamor@letme.com"
+            ]
+          }
         },
         {
           "id": "reply_mp6tscyd_41j2ko",
