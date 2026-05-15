@@ -1,4 +1,9 @@
 {
   "schema_version": 1,
-  "by_user": {}
+  "by_user": {
+    "james.benamor@letme.com": {
+      "posts": {},
+      "last_marked_at": "2026-05-15T09:05:22.336Z"
+    }
+  }
 }
