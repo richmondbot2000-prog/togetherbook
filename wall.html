@@ -6,9 +6,9 @@
 <title>TogetherBOOK — Wall</title>
 <link rel="icon" type="image/png" href="site-icon.png">
 <link rel="apple-touch-icon" href="site-icon.png">
-<link rel="stylesheet" href="quiet-tokens.css?v=1778852178">
-<link rel="stylesheet" href="quiet.css?v=1778852178">
-<link rel="stylesheet" href="quiet-extras.css?v=1778852178">
+<link rel="stylesheet" href="quiet-tokens.css?v=1778852742">
+<link rel="stylesheet" href="quiet.css?v=1778852742">
+<link rel="stylesheet" href="quiet-extras.css?v=1778852742">
 <style>
   /* 648 px column — sweet spot per editorial line-length research
      (60–75 chars per line at 15 px body). Wider feels marketing-y. */
@@ -365,7 +365,7 @@
   }
   @media (max-width: 480px) {
     .wl-action-label { display: none; }
-    .wl-action-icon { font-size: 20px; }
+    .wl-action-icon svg { width: 26px; height: 26px; }
   }
 
   /* Comment composer */
@@ -650,7 +650,7 @@
 
 <header class="qb-topbar">
   <a class="qb-brand" href="index.html" aria-label="TogetherBOOK — home">
-    <img class="qb-brand-logo" src="togetherbook-logo.png?v=1778852178" alt="TogetherBOOK">
+    <img class="qb-brand-logo" src="togetherbook-logo.png?v=1778852742" alt="TogetherBOOK">
   </a>
   <button class="qb-hamburger" aria-label="Toggle navigation menu" aria-expanded="false"
           onclick="document.body.classList.toggle('nav-open');this.setAttribute('aria-expanded',document.body.classList.contains('nav-open'))">
@@ -1132,6 +1132,10 @@
         <input type="file" accept="image/*" data-cm-photo="${escapeHtml(key)}">
         ${icon("photo", false)}
       </label>
+      <label class="wl-comment-attach" title="Add video">
+        <input type="file" accept="video/*" data-cm-video="${escapeHtml(key)}">
+        ${icon("video", false)}
+      </label>
       <button type="button" class="wl-comment-attach" data-cm-gif="${escapeHtml(key)}" title="Add a GIF">
         ${icon("gif", false)}
       </button>`;
@@ -1144,7 +1148,7 @@
       const url = mediaUrl(p);
       return isVideo
         ? `<video src="${escapeHtml(url)}" controls playsinline></video>`
-        : `<img src="${escapeHtml(url)}" alt="" loading="lazy" data-cm-open-lightbox="${escapeHtml(commentId)}::${i}" onerror="this.style.opacity=0.3;this.alt='still publishing — refresh in 30 s';">`;
+        : `<img class="wl-media-img" src="${escapeHtml(url)}" alt="" loading="lazy" data-cm-open-lightbox="${escapeHtml(commentId)}::${i}" tabindex="0" role="button" aria-label="Open image">`;
     }).join("");
     return `<div class="wl-comment-photos cm-${n}">${tiles}</div>`;
   }
@@ -1180,10 +1184,10 @@
     const tiles = visible.map((p, i) => {
       const overlay = (overlayN > 0 && i === visible.length - 1)
         ? `<div class="wl-more-overlay">+${overlayN}</div>` : "";
-      // onerror dims + relabels while GitHub Pages publishes (30-60 s).
-      return `<div class="wl-photo" data-open-lightbox="${escapeHtml(postId)}::${i}">
-                <img src="${escapeHtml(mediaUrl(p))}" alt="" loading="lazy"
-                     onerror="this.style.opacity=0.3;this.alt='still publishing — refresh in 30 s';">${overlay}
+      // Error fallback (still publishing 30-60s window) handled by an
+      // attached listener in wireFeed, not inline onerror.
+      return `<div class="wl-photo" data-open-lightbox="${escapeHtml(postId)}::${i}" role="button" tabindex="0" aria-label="Open image">
+                <img class="wl-media-img" src="${escapeHtml(mediaUrl(p))}" alt="" loading="lazy">${overlay}
               </div>`;
     }).join("");
     return `<div class="wl-photos ${cls}">${tiles}</div>`;
@@ -1367,6 +1371,20 @@
         img.replaceWith(div);
       });
     });
+    // Wall media (post + comment photos): dim + relabel while GitHub Pages
+    // is still publishing the just-uploaded file (30-60s window).
+    document.querySelectorAll(".wl-media-img").forEach(img => {
+      img.addEventListener("error", () => {
+        img.style.opacity = "0.3";
+        img.alt = "still publishing — refresh in 30 s";
+      });
+    });
+    // Keyboard support for photo tiles (Enter / Space opens lightbox).
+    document.querySelectorAll("[data-open-lightbox], [data-cm-open-lightbox]").forEach(el => {
+      el.addEventListener("keydown", e => {
+        if (e.key === "Enter" || e.key === " ") { e.preventDefault(); el.click(); }
+      });
+    });
     // Like buttons: tap = default reaction toggle; long-press = picker.
     document.querySelectorAll("[data-like]").forEach(el => {
       attachLikeButton(el);
@@ -1387,6 +1405,14 @@
         e.target.value = "";
         if (!file) return;
         await submitCommentWithMedia(el.dataset.cmPhoto, file, "photo");
+      });
+    });
+    document.querySelectorAll("[data-cm-video]").forEach(el => {
+      el.addEventListener("change", async e => {
+        const file = (e.target.files || [])[0];
+        e.target.value = "";
+        if (!file) return;
+        await submitCommentWithMedia(el.dataset.cmVideo, file, "video");
       });
     });
     document.querySelectorAll("[data-cm-gif]").forEach(el => {
