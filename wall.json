@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "updated_at": "2026-05-15T11:19:57.763Z",
+  "updated_at": "2026-05-15T13:22:26.574Z",
   "posts": [
     {
       "id": "post_mp6nxwud_wm5rl2",
@@ -10,7 +10,11 @@
       "body": "Hi, I am writing a post to test our new Wall.",
       "photos": [],
       "channel": null,
-      "reactions": {},
+      "reactions": {
+        "👍": [
+          "james.benamor@letme.com"
+        ]
+      },
       "comments": [
         {
           "id": "com_mp6qxmpt_ejiuwv",
