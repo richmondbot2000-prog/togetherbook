@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "updated_at": "2026-05-16T21:51:35.007Z",
+  "updated_at": "2026-05-16T21:53:36.794Z",
   "posts": [
     {
       "id": "post_mp8t9vc4_9jhkrf",
@@ -77,6 +77,16 @@
               "mourad.malki@letme.com"
             ]
           }
+        },
+        {
+          "id": "reply_mp8vv3aa_9f4c7e",
+          "parent_comment_id": "reply_mp8vov41_isl2fe",
+          "author_email": "mourad.malki@letme.com",
+          "author_name": "mourad.malki",
+          "created_at": "2026-05-16T21:53:36.610Z",
+          "body": "@james.benamor  i don't think there is a need for the 'mark all read' button, as a comment should auto be marked read, when its read. I would rather have a button to mark a specific comment unread, so i can get back to it",
+          "photos": [],
+          "reactions": {}
         }
       ],
       "react_events": [
