@@ -128,6 +128,13 @@ def main() -> None:
     # only populates on Description IN (5,6,7) for outbound; for inbound
     # we don't have a staff binding so they won't roll up. We still
     # query all six so any future agent-on-inbound table change works.
+    # Scope: only human-initiated outbound. The Messages table is
+    # ~4M rows / 16 days because MessageFactory + Responder bots
+    # share the same agent ClientUsername. Drill-down is meant to
+    # show "what the person actually did" — so filter to ClientType
+    # matching '%CRM%' (the wiki's documented human-CRM tag). That
+    # drops the volume by ~2 orders of magnitude and makes a full
+    # month fit comfortably in the 15-min job budget.
     q = f"""
       SELECT LOWER(ClientUsername) AS un,
              CAST(UTCTime AS DATE) AS dt,
@@ -145,6 +152,7 @@ def main() -> None:
         AND ClientUsername IS NOT NULL
         AND (ClientUsername LIKE '%@%' OR ClientUsername LIKE '%.%')
         AND [Description] IN (5, 6, 7)
+        AND ClientType LIKE '%CRM%'
     """
     print(f"# querying Messages …", flush=True)
     t0 = time.time()
