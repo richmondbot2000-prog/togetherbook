@@ -173,8 +173,15 @@
   </section>
 </main>
 
-<!-- d3 + d3-org-chart (MIT). d3@7 + d3-org-chart@3.1.1. -->
+<!-- d3 + d3-flextree + d3-org-chart (all MIT).
+     d3-org-chart's UMD bundle assumes d3.flextree() exists on the
+     global `d3` object, but d3-flextree is a separate package
+     (Brad Jubinville's port of Buchheim/Lippman) — d3@7 doesn't
+     include it. Load it BEFORE d3-org-chart so the bundle finds
+     `d3.flextree`; otherwise it crashes with "r.flextree is not a
+     function" and the chart never renders. -->
 <script src="https://cdn.jsdelivr.net/npm/d3@7.9.0/dist/d3.min.js" crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/d3-flextree@2.1.2/build/d3-flextree.js" crossorigin="anonymous"></script>
 <script src="https://cdn.jsdelivr.net/npm/d3-org-chart@3.1.1" crossorigin="anonymous"></script>
 
 <script>
