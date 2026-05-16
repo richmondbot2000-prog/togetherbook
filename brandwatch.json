@@ -1,17 +1,17 @@
 {
   "schema_version": 1,
-  "snapshot_date": "2026-05-15",
-  "updated_at": "2026-05-15T08:30:42Z",
+  "snapshot_date": "2026-05-16",
+  "updated_at": "2026-05-16T00:04:54Z",
   "brands": [
     "Together Loans",
     "TransformCredit"
   ],
   "totals": {
-    "all": 335,
+    "all": 310,
     "by_source": {
       "trustpilot": 281,
       "bbb": 16,
-      "reddit": 25,
+      "reddit": 0,
       "bluesky": 0,
       "lemmy": 0,
       "hackernews": 0,
@@ -21,25 +21,25 @@
       "youtube": 7
     },
     "by_brand": {
-      "together_loans": 318,
-      "transform_credit": 17
+      "together_loans": 302,
+      "transform_credit": 8
     }
   },
   "source_status": {
     "trustpilot": {
-      "ok": true,
-      "fetched": 10,
-      "error": null
+      "ok": false,
+      "fetched": 0,
+      "error": "HTTPError: 403 Client Error: Forbidden for url: https://api.scraperapi.com/?<redacted>"
     },
     "bbb": {
-      "ok": true,
-      "fetched": 2,
-      "error": null
+      "ok": false,
+      "fetched": 0,
+      "error": "HTTPError: 403 Client Error: Forbidden for url: https://api.scraperapi.com/?<redacted>"
     },
     "reddit": {
-      "ok": true,
-      "fetched": 52,
-      "error": null
+      "ok": false,
+      "fetched": 0,
+      "error": "HTTPError: 403 Client Error: Forbidden for url: https://api.scraperapi.com/?<redacted>"
     },
     "bluesky": {
       "ok": true,
@@ -63,7 +63,7 @@
     },
     "google_news": {
       "ok": true,
-      "fetched": 60,
+      "fetched": 67,
       "error": null
     },
     "cfpb": {
@@ -721,20 +721,6 @@
       "score_max": 5,
       "site_name": "Trustpilot",
       "site_domain": "trustpilot.com"
-    },
-    {
-      "source": "reddit",
-      "brand": "together_loans",
-      "id": "rd-1t7wy3h",
-      "title": "Anyone know about Together Loans? I co-signed for a family member and he can’t…..",
-      "snippet": "(link post — no text body)",
-      "url": "https://www.reddit.com/r/Loan_/comments/1t7wy3h/anyone_know_about_together_loans_i_cosigned_for_a/",
-      "date": "2026-05-09",
-      "author": "u/uncommonbrand",
-      "score": 1,
-      "score_max": null,
-      "site_name": "r/Loan_",
-      "site_domain": "reddit.com"
     },
     {
       "source": "bbb",
@@ -2011,20 +1997,6 @@
       "site_domain": "bbb.org"
     },
     {
-      "source": "reddit",
-      "brand": "transform_credit",
-      "id": "rd-1sy3qyl",
-      "title": "Transform credit co-signer needed",
-      "snippet": "I need to get a loan to help pay for bills for a few months that my paycheck barely covers",
-      "url": "https://www.reddit.com/r/findacosigner/comments/1sy3qyl/transform_credit_cosigner_needed/",
-      "date": "2026-04-28",
-      "author": "u/Acceptable-Lemon4979",
-      "score": 0,
-      "score_max": null,
-      "site_name": "r/findacosigner",
-      "site_domain": "reddit.com"
-    },
-    {
       "source": "trustpilot",
       "brand": "together_loans",
       "id": "tp-69fb42a8f54ffcf2fedc803b",
@@ -2905,34 +2877,6 @@
       "score_max": 5,
       "site_name": "BBB",
       "site_domain": "bbb.org"
-    },
-    {
-      "source": "reddit",
-      "brand": "together_loans",
-      "id": "rd-1srsej6",
-      "title": "Has anyone dealt with a company called together loans? I’ve been getting charged $5 a month for their “credit builder” and I have no recollection of signing up for that.",
-      "snippet": "I’ve called customer service time after time and have to leave a voicemail every time. I haven’t received any callbacks and my banking is saying the only thing I can do is completely change my checking account.",
-      "url": "https://www.reddit.com/r/Mortgages/comments/1srsej6/has_anyone_dealt_with_a_company_called_together/",
-      "date": "2026-04-21",
-      "author": "u/pizza_with_ranch",
-      "score": 2,
-      "score_max": null,
-      "site_name": "r/Mortgages",
-      "site_domain": "reddit.com"
-    },
-    {
-      "source": "reddit",
-      "brand": "together_loans",
-      "id": "rd-1srscfn",
-      "title": "Has anyone had experience with a company called together loans? I’ve been getting charged $5 a month for a year for their “credit builder” thing I have no recollection of signing up for",
-      "snippet": "They’ve been pulling directly from my checking account. I have called customer service and left voicemail after voicemail and have gotten no callback. My bank won’t dispute the charges and I’ll have to get a completely new checking account and I’d rather not have to do that.",
-      "url": "https://www.reddit.com/r/CRedit/comments/1srscfn/has_anyone_had_experience_with_a_company_called/",
-      "date": "2026-04-21",
-      "author": "u/pizza_with_ranch",
-      "score": 1,
-      "score_max": null,
-      "site_name": "r/CRedit",
-      "site_domain": "reddit.com"
     },
     {
       "source": "trustpilot",
@@ -4097,48 +4041,6 @@
       "site_domain": "trustpilot.com"
     },
     {
-      "source": "reddit",
-      "brand": "together_loans",
-      "id": "rd-1sdiu9h",
-      "title": "Seeking co-signer 700 or up credit",
-      "snippet": "Cosigner needed for Together Loan of $4500, I'll pay 10% of the loan to the cosigner ($450,) and am open to offering other services as well. Need a credit score over 700, and they prefer homeowners. My monthly payment will be around $250, which will be withdrawn from my checking…",
-      "url": "https://www.reddit.com/r/findacosigner/comments/1sdiu9h/seeking_cosigner_700_or_up_credit/",
-      "date": "2026-04-05",
-      "author": "u/Mathematic66",
-      "score": 2,
-      "score_max": null,
-      "site_name": "r/findacosigner",
-      "site_domain": "reddit.com"
-    },
-    {
-      "source": "reddit",
-      "brand": "together_loans",
-      "id": "rd-1sa4v8k",
-      "title": "Scammer Alert",
-      "snippet": "Hi everyone. I got this email early in the morning \"Together Loans\". This week I got scammed and ended up getting blocked by them. (pretty much asking at this point) So it could or could not be them, but wh…",
-      "url": "https://www.reddit.com/r/findacosigner/comments/1sa4v8k/scammer_alert/",
-      "date": "2026-04-02",
-      "author": "u/dlopez2018",
-      "score": 4,
-      "score_max": null,
-      "site_name": "r/findacosigner",
-      "site_domain": "reddit.com"
-    },
-    {
-      "source": "reddit",
-      "brand": "together_loans",
-      "id": "rd-1s9l1i7",
-      "title": "Cosigner needed, will pay 20% upfront",
-      "snippet": "[**FOUND**] Cosigner needed for Together Loan of 3k, I'll pay 20% of the loan to the cosigner ($600,) and am open to offering other services as well. Need a credit score over 700, and they prefer homeowners. My monthly payment will be $137, which will be withdrawn from \\_my\\_ ch…",
-      "url": "https://www.reddit.com/r/findacosigner/comments/1s9l1i7/cosigner_needed_will_pay_20_upfront/",
-      "date": "2026-04-01",
-      "author": "u/Training-Judge4883",
-      "score": 1,
-      "score_max": null,
-      "site_name": "r/findacosigner",
-      "site_domain": "reddit.com"
-    },
-    {
       "source": "trustpilot",
       "brand": "together_loans",
       "id": "tp-6a04837eab5fba3b22331c7e",
@@ -4181,20 +4083,6 @@
       "site_domain": "trustpilot.com"
     },
     {
-      "source": "reddit",
-      "brand": "together_loans",
-      "id": "rd-1s727c9",
-      "title": "I have a $5000 loan approved with co-signer",
-      "snippet": "I need a co-signer to get the final approval for this loan to be paid out. It’s through together loans. My fiancé just had surgery and they screwed up his short term disability and we’re out half our monthly income for the next 2 months. I’m …",
-      "url": "https://www.reddit.com/r/findacosigner/comments/1s727c9/i_have_a_5000_loan_approved_with_cosigner/",
-      "date": "2026-03-29",
-      "author": "u/Defiant_Cat_646",
-      "score": 1,
-      "score_max": null,
-      "site_name": "r/findacosigner",
-      "site_domain": "reddit.com"
-    },
-    {
       "source": "trustpilot",
       "brand": "together_loans",
       "id": "tp-69ec6624da02139cece9e4fe",
@@ -4209,34 +4097,6 @@
       "site_domain": "trustpilot.com"
     },
     {
-      "source": "reddit",
-      "brand": "together_loans",
-      "id": "rd-1rorn42",
-      "title": "👋 Welcome to r/togetherloans - Introduce Yourself and Read First!",
-      "snippet": "…r. Bad credit, thin credit, bank rejections, payday loan alternatives, cosigner loans, credit building. All of it is fair game here. We run Together Loans, a cosigner loan lender in the US. We're not here to sell to you. We're here because the conversations around bad credit borro",
-      "url": "https://www.reddit.com/r/togetherloans/comments/1rorn42/welcome_to_rtogetherloans_introduce_yourself_and/",
-      "date": "2026-03-09",
-      "author": "u/togetherLoans",
-      "score": 1,
-      "score_max": null,
-      "site_name": "r/togetherloans",
-      "site_domain": "reddit.com"
-    },
-    {
-      "source": "reddit",
-      "brand": "together_loans",
-      "id": "rd-1rjs7hz",
-      "title": "Anyone have experience with Together Loans? Seems predatory",
-      "snippet": "I've been looking at Together Loans because they say they don't care about credit history. They market themselves as being based on trust instead of credit scores. But I found…",
-      "url": "https://www.reddit.com/r/debtfree/comments/1rjs7hz/anyone_have_experience_with_together_loans_seems/",
-      "date": "2026-03-03",
-      "author": "u/PM_Me_Money_Daddy",
-      "score": 6,
-      "score_max": null,
-      "site_name": "r/debtfree",
-      "site_domain": "reddit.com"
-    },
-    {
       "source": "cfpb",
       "brand": "transform_credit",
       "id": "cfpb-19936383",
@@ -4249,62 +4109,6 @@
       "score_max": null,
       "site_name": "CFPB",
       "site_domain": "consumerfinance.gov"
-    },
-    {
-      "source": "reddit",
-      "brand": "together_loans",
-      "id": "rd-1rc6xcy",
-      "title": "TogetherLoans",
-      "snippet": "I’ve been approved for a $5000 loan with TogetherLoans but I need a co-signer. Please, no scammers. I’ve honestly been through enough these past few months. I’ll GLADLY pay you once the loan comes through, but I HAVE NO MONEY TO GIVE UPFRONT.",
-      "url": "https://www.reddit.com/r/findacosigner/comments/1rc6xcy/togetherloans/",
-      "date": "2026-02-23",
-      "author": "u/Character-Ranger-944",
-      "score": 2,
-      "score_max": null,
-      "site_name": "r/findacosigner",
-      "site_domain": "reddit.com"
-    },
-    {
-      "source": "reddit",
-      "brand": "together_loans",
-      "id": "rd-1r8j5km",
-      "title": "[US] tcrdt. com /s/TKGPBBBG Phishing/Smishing Scam?",
-      "snippet": "…e application here: [Link I reasonably refused to click] If you're stuck, reply and I'll get back to you. Reply CANCEL to unsubscribe. Ben, Together Loans\" I have already blocked the spoofed number, because there is no way I'm falling for something so evident. For your own safety,",
-      "url": "https://www.reddit.com/r/Scams/comments/1r8j5km/us_tcrdt_com_stkgpbbbg_phishingsmishing_scam/",
-      "date": "2026-02-18",
-      "author": "u/ImplementLong5304",
-      "score": 3,
-      "score_max": null,
-      "site_name": "r/Scams",
-      "site_domain": "reddit.com"
-    },
-    {
-      "source": "reddit",
-      "brand": "together_loans",
-      "id": "rd-1r0lvjq",
-      "title": "Help a Family with Nonverbal Autistic Toddler to Finally Gain Financial Stability (when no one you know who can, will...) -- $3K personal loan and/or $12K student loan",
-      "snippet": "…ed spazztastic me didn't handle finances so well, so my credit sucks and my savings are ...less than $0, really. I've been approved through Together Loans for $3,000 -- which would pay our shut-off and past due Xfinity bill, our about to shut off T-Mobile bill, and most of what we",
-      "url": "https://www.reddit.com/r/findacosigner/comments/1r0lvjq/help_a_family_with_nonverbal_autistic_toddler_to/",
-      "date": "2026-02-10",
-      "author": "u/padfootliveson",
-      "score": 2,
-      "score_max": null,
-      "site_name": "r/findacosigner",
-      "site_domain": "reddit.com"
-    },
-    {
-      "source": "reddit",
-      "brand": "together_loans",
-      "id": "rd-1qxthrq",
-      "title": "Looking for co-signer",
-      "snippet": "Looking for a co-signer on a loan from Together Loans. We are in the process of moving and to hold our new home they want the deposit right away. Loan will be paid back in full ahead of schedul…",
-      "url": "https://www.reddit.com/r/findacosigner/comments/1qxthrq/looking_for_cosigner/",
-      "date": "2026-02-06",
-      "author": "u/Former_Base6157",
-      "score": 1,
-      "score_max": null,
-      "site_name": "r/findacosigner",
-      "site_domain": "reddit.com"
     },
     {
       "source": "cfpb",
@@ -4361,62 +4165,6 @@
       "score_max": 5,
       "site_name": "Trustpilot",
       "site_domain": "trustpilot.com"
-    },
-    {
-      "source": "reddit",
-      "brand": "together_loans",
-      "id": "rd-1q7tsyq",
-      "title": "Just need a co-signer $3k Nothing crazy.",
-      "snippet": "I am looking at creating a positive loan history as I have none. As we all k ow Together Loans is always willing it's a 3k w/ 177 per month payment. Have zero issue with the monthly just hoping for someone to help out, willing to disc…",
-      "url": "https://www.reddit.com/r/findacosigner/comments/1q7tsyq/just_need_a_cosigner_3k_nothing_crazy/",
-      "date": "2026-01-09",
-      "author": "u/ZealousLich",
-      "score": 1,
-      "score_max": null,
-      "site_name": "r/findacosigner",
-      "site_domain": "reddit.com"
-    },
-    {
-      "source": "reddit",
-      "brand": "together_loans",
-      "id": "rd-1q7hl9n",
-      "title": "Co Signers beware",
-      "snippet": "A sad part of co signing on like Together Loans ? Is when and if the the person you co signed for defaults as my person did, And YOU end up paying the loan off...... The person that defau…",
-      "url": "https://www.reddit.com/r/findacosigner/comments/1q7hl9n/co_signers_beware/",
-      "date": "2026-01-08",
-      "author": "u/Dirftboat95",
-      "score": 11,
-      "score_max": null,
-      "site_name": "r/findacosigner",
-      "site_domain": "reddit.com"
-    },
-    {
-      "source": "reddit",
-      "brand": "transform_credit",
-      "id": "rd-1pt473f",
-      "title": "Does Transform Credit do settlements?",
-      "snippet": "… debt settlement services? My brother had me co-sign for a loan right before he passed away and the interest rate is 35.99%. Have you known Transform Credit to negotiate settlements?",
-      "url": "https://www.reddit.com/r/Debt/comments/1pt473f/does_transform_credit_do_settlements/",
-      "date": "2025-12-22",
-      "author": "u/dearjule",
-      "score": 3,
-      "score_max": null,
-      "site_name": "r/Debt",
-      "site_domain": "reddit.com"
-    },
-    {
-      "source": "reddit",
-      "brand": "together_loans",
-      "id": "rd-1pofpzi",
-      "title": "Looking for help 🙇‍♂️🙏",
-      "snippet": "Hi my name is Corey and I'm looking for a cosigner for a $5000 loan I got pre-approved for on TogetherLoans.com. I have a part time job and going back to school on January 5, so I'll be able to pay back the loan, but I need cosigner because I don't ha…",
-      "url": "https://www.reddit.com/r/askgaybros/comments/1pofpzi/looking_for_help/",
-      "date": "2025-12-16",
-      "author": "u/CuteWhiteBoi69",
-      "score": 0,
-      "score_max": null,
-      "site_name": "r/askgaybros",
-      "site_domain": "reddit.com"
     },
     {
       "source": "youtube",
@@ -4517,20 +4265,6 @@
       "site_domain": "trustpilot.com"
     },
     {
-      "source": "reddit",
-      "brand": "transform_credit",
-      "id": "rd-1p728ea",
-      "title": "Transform Credit reviews. Legitimate help or just another scam?",
-      "snippet": "I've been researching lenders for people with bad credit and Transform Credit keeps popping up in my results. I need to borrow about $3000 to consolidate some credit card debt that's eating me alive with interest char…",
-      "url": "https://www.reddit.com/r/financialhelping/comments/1p728ea/transform_credit_reviews_legitimate_help_or_just/",
-      "date": "2025-11-26",
-      "author": "u/Hopeful-Run-7950",
-      "score": 1,
-      "score_max": null,
-      "site_name": "r/financialhelping",
-      "site_domain": "reddit.com"
-    },
-    {
       "source": "cfpb",
       "brand": "transform_credit",
       "id": "cfpb-17875787",
@@ -4545,76 +4279,6 @@
       "site_domain": "consumerfinance.gov"
     },
     {
-      "source": "reddit",
-      "brand": "transform_credit",
-      "id": "rd-1oto5r6",
-      "title": "Need a cosigner can make the payments easy",
-      "snippet": "I got approved for a loan with a co signer from transform credit my payments will be 137.39 a month I am needing to move out of a very bad situation as soon as possible I have a guaranteed income I get ss…",
-      "url": "https://www.reddit.com/r/findacosigner/comments/1oto5r6/need_a_cosigner_can_make_the_payments_easy/",
-      "date": "2025-11-10",
-      "author": "u/Rare_Zombie5217",
-      "score": 1,
-      "score_max": null,
-      "site_name": "r/findacosigner",
-      "site_domain": "reddit.com"
-    },
-    {
-      "source": "reddit",
-      "brand": "transform_credit",
-      "id": "rd-1ol0wu4",
-      "title": "Looking for a co-signer for a $3k Transform Credit loan.",
-      "snippet": "(link post — no text body)",
-      "url": "https://www.reddit.com/r/needcosigners/comments/1ol0wu4/looking_for_a_cosigner_for_a_3k_transform_credit/",
-      "date": "2025-10-31",
-      "author": "u/Immabee__86",
-      "score": 1,
-      "score_max": null,
-      "site_name": "r/needcosigners",
-      "site_domain": "reddit.com"
-    },
-    {
-      "source": "reddit",
-      "brand": "transform_credit",
-      "id": "rd-1okzgv7",
-      "title": "Looking for a co-signer for a $3k loan.",
-      "snippet": "This is probably a shot in the dark, but I am looking for a co-signer for a Transform Credit loan. I don’t even need the full amount, but this is the lowest amount they offer and it’s the only loan I qualify for right now. Co-signer…",
-      "url": "https://www.reddit.com/r/findacosigner/comments/1okzgv7/looking_for_a_cosigner_for_a_3k_loan/",
-      "date": "2025-10-31",
-      "author": "u/Immabee__86",
-      "score": 2,
-      "score_max": null,
-      "site_name": "r/findacosigner",
-      "site_domain": "reddit.com"
-    },
-    {
-      "source": "reddit",
-      "brand": "transform_credit",
-      "id": "rd-1oh5p65",
-      "title": "Co sign",
-      "snippet": "I will co sign for you transform credit loan either cosign for cosign or $200 off your loan send a dm if you’re looking for working together Update = My credit is excellent but tr…",
-      "url": "https://www.reddit.com/r/findacosigner/comments/1oh5p65/co_sign/",
-      "date": "2025-10-27",
-      "author": "u/Flimsy_Suspect3208",
-      "score": 3,
-      "score_max": null,
-      "site_name": "r/findacosigner",
-      "site_domain": "reddit.com"
-    },
-    {
-      "source": "reddit",
-      "brand": "transform_credit",
-      "id": "rd-1ocmme8",
-      "title": "Need a co-signer",
-      "snippet": "Hello, I'm looking for a co-signer for my transform credit loan so I can get back on track with bills. First off though, I'm not paying anything upfront. Zero negotiations on that. If you want payme…",
-      "url": "https://www.reddit.com/r/findacosigner/comments/1ocmme8/need_a_cosigner/",
-      "date": "2025-10-21",
-      "author": "u/CodyPalmer7",
-      "score": 3,
-      "score_max": null,
-      "site_name": "r/findacosigner",
-      "site_domain": "reddit.com"
-    },
-    {
       "source": "trustpilot",
       "brand": "together_loans",
       "id": "tp-69fb77ecbf7e9a48b1e4d424",
@@ -4627,20 +4291,6 @@
       "score_max": 5,
       "site_name": "Trustpilot",
       "site_domain": "trustpilot.com"
-    },
-    {
-      "source": "reddit",
-      "brand": "transform_credit",
-      "id": "rd-1o6vuv0",
-      "title": "Need Co-Signer after death of roommate",
-      "snippet": "…ng them in half. I am slotted for a promotion and a raise at my job and I am waiting for that to take place. I am trying to get a loan with transform credit for about 6000. I want to try to have at least 3500 - 4000 and you can keep the rest. I just need that to pay off my rent an",
-      "url": "https://www.reddit.com/r/findacosigner/comments/1o6vuv0/need_cosigner_after_death_of_roommate/",
-      "date": "2025-10-14",
-      "author": "u/LazyLet152",
-      "score": 2,
-      "score_max": null,
-      "site_name": "r/findacosigner",
-      "site_domain": "reddit.com"
     },
     {
       "source": "trustpilot",
