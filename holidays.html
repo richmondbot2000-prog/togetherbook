@@ -9,11 +9,11 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&family=Newsreader:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500;1,600&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="style.css?v=1778887035">
-<link rel="stylesheet" href="quiet-tokens.css?v=1778887035">
-<link rel="stylesheet" href="quiet.css?v=1778887035">
-<link rel="stylesheet" href="quiet-extras.css?v=1778887035">
-<link rel="stylesheet" href="quiet-legacy.css?v=1778887035">
+<link rel="stylesheet" href="style.css?v=1778923955">
+<link rel="stylesheet" href="quiet-tokens.css?v=1778923955">
+<link rel="stylesheet" href="quiet.css?v=1778923955">
+<link rel="stylesheet" href="quiet-extras.css?v=1778923955">
+<link rel="stylesheet" href="quiet-legacy.css?v=1778923955">
 <style>
   .hd-section { max-width: 1080px; margin: 0 auto; padding: 24px 0 48px; }
   .hd-section h1 {
@@ -445,7 +445,7 @@
 
 <header class="qb-topbar">
   <a class="qb-brand" href="index.html" aria-label="TogetherBOOK — home">
-    <img class="qb-brand-logo" src="togetherbook-logo.png?v=1778887035" alt="TogetherBOOK">
+    <img class="qb-brand-logo" src="togetherbook-logo.png?v=1778923955" alt="TogetherBOOK">
   </a>
   <button class="qb-hamburger" aria-label="Toggle navigation menu" aria-expanded="false"
           onclick="document.body.classList.toggle('nav-open');this.setAttribute('aria-expanded',document.body.classList.contains('nav-open'))">
@@ -553,7 +553,7 @@
     "2026-12-28", // Boxing Day substitute (Mon — Boxing Day itself was Sat)
     "2027-01-01", // New Year's Day (Fri)
     "2027-03-26", // Good Friday 2027 (in last week of fiscal year)
-    "2027-03-29", // Easter Monday 2027 — out of window but listed for safety
+    "2027-03-29", // Easter Monday 2027 — in-window (before yearEnd 2027-03-31)
   ]);
 
   let viewerEmail = "";
@@ -1336,6 +1336,6 @@
     a.addEventListener('click', () => document.body.classList.remove('nav-open'))
   );
 </script>
-<script src="nav.js?v=1778923469" defer></script>
+<script src="nav.js?v=1778923955" defer></script>
 </body>
 </html>
