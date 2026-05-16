@@ -479,13 +479,20 @@
   .wl-edit-input:focus { border-color: var(--ink-700); }
   /* "(edited)" suffix on the timestamp — same style as the date overline. */
   .wl-edited-tag {
-    font: 400 10px/1 var(--font-body);
-    letter-spacing: 0.14em;
-    text-transform: uppercase;
+    font: italic 400 11px/1 var(--font-display);
     color: var(--ink-500);
-    margin-left: 8px;
-    font-style: italic;
+    margin-left: 6px;
   }
+  /* Shrink the edit / delete buttons inside comment headers so they
+     don't inflate the row height. The 32 px hit target stays on posts
+     (where vertical space is plentiful), but comments use a 22 px box. */
+  .wl-comment .wl-edit-btn,
+  .wl-comment .wl-delete-btn {
+    padding: 2px;
+    min-width: 22px; min-height: 22px;
+  }
+  .wl-comment .wl-edit-btn svg,
+  .wl-comment .wl-delete-btn svg { width: 14px; height: 14px; }
 
   /* Confirm modal — small dialog with ink-900 backdrop */
   .wl-confirm-panel {
@@ -531,47 +538,47 @@
   }
   .wl-confirm-ok:hover { color: var(--red-700); border-bottom-color: var(--red-700); }
 
-  /* Comments — hairline-divided rows, no chat-bubble fill. */
-  .wl-comments { margin-top: 6px; }
+  /* Comments — hairline-divided rows, tighter than the editorial post
+     header. Density target borrowed from Nextdoor's mobile feed: name +
+     relative time on a single line, body immediately under, tight
+     action row. */
+  .wl-comments { margin-top: 4px; }
   .wl-comment {
-    display: flex; gap: 12px; align-items: flex-start;
-    padding: 12px 0;
+    display: flex; gap: 10px; align-items: flex-start;
+    padding: 8px 0 6px;
     border-top: 1px dashed var(--divider);
-    /* Flex children default to min-width: auto, which lets long words
-       (URLs, @mentions, etc.) push the flex item wider than the parent
-       and bust the post container's max-width. Force shrink-to-fit at
-       every level of the comment tree. */
     min-width: 0;
   }
   .wl-comment > * { min-width: 0; }
   .wl-comment:first-child { border-top: none; }
-  .wl-comment .wl-avatar { width: 32px; height: 32px; font-size: 11px; }
+  .wl-comment .wl-avatar { width: 28px; height: 28px; font-size: 10px; }
   .wl-comment-body { flex: 1 1 auto; background: none; border-radius: 0; padding: 0; min-width: 0; }
-  .wl-comment-name { font: 500 14px/1.3 var(--font-display); color: var(--ink-900); }
+  .wl-comment-name { font: 600 13px/1.25 var(--font-display); color: var(--ink-900); }
+  /* Compact inline timestamp ("12h" / "Yesterday" / "16 May"). Mixed case,
+     no letter-spacing, no middot — fits next to the name on one line so
+     no header ever wraps. The full ISO is on the <time title="…"> for
+     hover. */
   .wl-comment-time {
-    font: 400 10px/1 var(--font-body);
-    letter-spacing: 0.14em;
-    text-transform: uppercase;
+    font: 400 12px/1.25 var(--font-display);
     color: var(--ink-500);
-    margin-left: 8px;
+    margin-left: 6px;
+    text-transform: none;
+    letter-spacing: 0;
   }
-  .wl-comment-time .wl-time-dot { color: var(--brass-500); margin: 0 4px; }
   .wl-comment-text {
-    font: 400 15px/1.55 var(--font-display); color: var(--ink-800);
-    margin-top: 3px; white-space: pre-wrap; word-wrap: break-word;
-    /* anywhere is stronger than break-word: a long unbroken URL or
-       @handle will break mid-glyph rather than push the parent wide. */
+    font: 400 14px/1.45 var(--font-display); color: var(--ink-800);
+    margin-top: 2px; white-space: pre-wrap; word-wrap: break-word;
     overflow-wrap: anywhere;
     min-width: 0;
   }
-  .wl-comment-actions { display: flex; gap: 12px; align-items: center; margin-top: 6px; }
+  .wl-comment-actions { display: flex; gap: 14px; align-items: center; margin-top: 2px; }
   .wl-comment-actions .wl-react-pill { font-size: 11px; padding: 1px 7px; }
   .wl-reply-link {
     color: var(--ink-600); cursor: pointer;
     font: 600 12px/1 var(--font-display);
     background: none; border: none;
-    padding: 8px 0;          /* 44 pt hit area */
-    min-height: 28px;
+    padding: 4px 0;
+    min-height: 24px;
   }
   .wl-reply-link:hover { color: var(--teal-500); }
   /* Replies: cap nesting at ONE visual level. All descendants of a top-level
@@ -2055,7 +2062,7 @@
             <div style="display:flex; align-items:center; justify-content:space-between; gap:6px;">
               <div>
                 <span class="wl-comment-name">${escapeHtml(name)}</span>
-                <span class="wl-comment-time">${formatTime(comment.created_at)}${comment.edited_at ? ` <span class="wl-edited-tag">edited</span>` : ""}</span>
+                <span class="wl-comment-time">${formatTimeShort(comment.created_at)}${comment.edited_at ? ` <span class="wl-edited-tag">edited</span>` : ""}</span>
               </div>
               ${(canEditThis || canDel) ? `<div style="display:flex;gap:2px;align-items:center;">
                 ${canEditThis ? `<button class="wl-edit-btn" data-edit-comment="${escapeHtml(post.id)}::${escapeHtml(comment.id)}" title="Edit this ${isReply ? "reply" : "comment"}" aria-label="Edit">${icon("edit", false)}</button>` : ""}
@@ -3106,7 +3113,8 @@
     return `<div>${escapeHtml(init)}</div>`;
   }
   // Editorial overline format: "WED, 15 MAY 2026 · 09:36" with a brass
-  // middot. Wraps in <time datetime> for screen-reader semantics.
+  // middot. Wraps in <time datetime> for screen-reader semantics. Used on
+  // posts where the date carries editorial weight.
   function formatTime(iso) {
     if (!iso) return "";
     const d = new Date(iso);
@@ -3115,6 +3123,29 @@
     const time = d.toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit", hourCycle: "h23" });
     const datePart = date.toUpperCase().replace(",", "");
     return `<time datetime="${escapeHtml(iso)}">${escapeHtml(datePart)}<span class="wl-time-dot">·</span>${escapeHtml(time)}</time>`;
+  }
+  // Nextdoor-style compact relative time for comments / replies — fits on
+  // the same line as the author name so every comment header is one row.
+  // < 1 min → "now"; < 60 min → "Nm"; < 24 h → "Nh"; < 7 d → "Nd";
+  // older → "16 May" or "16 May 2024". Full ISO is on the title attr.
+  function formatTimeShort(iso) {
+    if (!iso) return "";
+    const d = new Date(iso);
+    if (isNaN(d.getTime())) return escapeHtml(iso);
+    const now = new Date();
+    const secs = Math.max(0, (now - d) / 1000);
+    let label;
+    if (secs < 60) label = "now";
+    else if (secs < 3600) label = `${Math.floor(secs / 60)}m`;
+    else if (secs < 86400) label = `${Math.floor(secs / 3600)}h`;
+    else if (secs < 86400 * 7) label = `${Math.floor(secs / 86400)}d`;
+    else if (d.getFullYear() === now.getFullYear()) {
+      label = d.toLocaleDateString("en-GB", { day: "numeric", month: "short" });
+    } else {
+      label = d.toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" });
+    }
+    const full = d.toLocaleString("en-GB", { weekday: "short", day: "numeric", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit", hourCycle: "h23" });
+    return `<time datetime="${escapeHtml(iso)}" title="${escapeHtml(full)}">${escapeHtml(label)}</time>`;
   }
   function escapeHtml(s) {
     return String(s == null ? "" : s)
