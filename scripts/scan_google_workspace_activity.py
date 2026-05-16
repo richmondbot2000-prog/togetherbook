@@ -60,7 +60,6 @@ APPLICATIONS = [
     "admin",
 ]
 
-WINDOW_DAYS = 14
 PAGE_SIZE = 1000  # API max
 
 
@@ -146,10 +145,26 @@ def pull_app(service, app: str, start: datetime.datetime, end: datetime.datetime
     print(f"  - {seen} events", flush=True)
 
 
+def parse_date(s: str | None):
+    if not s: return None
+    try:
+        return datetime.datetime.strptime(s.strip(), "%Y-%m-%d").replace(tzinfo=datetime.timezone.utc)
+    except Exception:
+        sys.exit(f"error: bad date '{s}' — expected YYYY-MM-DD")
+
+
 def main():
     started = datetime.datetime.now(datetime.timezone.utc)
-    cutoff = started - datetime.timedelta(days=WINDOW_DAYS)
-    print(f"# scan_google_workspace_activity start {started.isoformat()}  cutoff={cutoff.isoformat()}", flush=True)
+    today = started.date()
+    yesterday = today - datetime.timedelta(days=1)
+    start = parse_date(os.environ.get("ACTIVITY_START_DATE")) or datetime.datetime(
+        yesterday.year, yesterday.month, yesterday.day, tzinfo=datetime.timezone.utc)
+    end_inclusive = parse_date(os.environ.get("ACTIVITY_END_DATE")) or datetime.datetime(
+        yesterday.year, yesterday.month, yesterday.day, tzinfo=datetime.timezone.utc)
+    end_exclusive = end_inclusive + datetime.timedelta(days=1)
+
+    print(f"# scan_google_workspace_activity start {started.isoformat()}", flush=True)
+    print(f"# range: {start.date().isoformat()} → {end_inclusive.date().isoformat()} (inclusive)", flush=True)
 
     out_path = Path("staff-activity-buckets.json").resolve()
     if not out_path.exists():
@@ -158,17 +173,38 @@ def main():
     doc = json.loads(out_path.read_text())
     by_user = doc.setdefault("by_email", {})
 
+    # ISO dates inside the requested window.
+    window_set = set()
+    d = start.date()
+    while d <= end_inclusive.date():
+        window_set.add(d.isoformat())
+        d = d + datetime.timedelta(days=1)
+
     try:
         service = build_service()
     except Exception as e:
         print(f"# could not build reports service: {e}", flush=True)
         sys.exit(0)
 
+    # First — drop existing google.* events in the requested window
+    # from every existing user, so a forced refresh is idempotent
+    # without nuking warehouse rows on the same days.
+    for email, rec in by_user.items():
+        evs_by_date = rec.get("events") or {}
+        for iso in list(evs_by_date.keys()):
+            if iso not in window_set: continue
+            kept = [e for e in evs_by_date[iso] if not (e.get("src", "").startswith("google."))]
+            if kept:
+                evs_by_date[iso] = kept
+            else:
+                del evs_by_date[iso]
+
     # event_agg keyed by (email, iso, bucket, app) → {writes, first_at, last_at}
     event_agg: dict[tuple[str, str, int, str], dict] = {}
 
     for app in APPLICATIONS:
-        for email, iso, bucket, t in pull_app(service, app, cutoff, started):
+        for email, iso, bucket, t in pull_app(service, app, start, end_exclusive):
+            if iso not in window_set: continue
             k = (email, iso, bucket, app)
             cur = event_agg.get(k)
             if cur is None:
@@ -178,20 +214,17 @@ def main():
                 if t < cur["first_at"]: cur["first_at"] = t
                 if t > cur["last_at"]:  cur["last_at"]  = t
 
-    # Merge into doc.
     added_events = 0
     added_buckets = 0
     for (email, iso, bucket, app), v in event_agg.items():
         rec = by_user.setdefault(email, {"buckets": {}, "events": {}})
         rec.setdefault("buckets", {})
         rec.setdefault("events", {})
-        # Bucket bitset (sorted list of indices)
         b = set(rec["buckets"].get(iso, []))
         if bucket not in b:
             b.add(bucket)
             rec["buckets"][iso] = sorted(b)
             added_buckets += 1
-        # Detail event list — keep the same shape the warehouse side uses.
         evs = rec["events"].setdefault(iso, [])
         evs.append({
             "src": f"google.{app}",
@@ -203,19 +236,22 @@ def main():
         })
         added_events += 1
 
-    # Sort each day's events by bucket for stable output.
     for rec in by_user.values():
         for iso in (rec.get("events") or {}):
             rec["events"][iso].sort(key=lambda e: (e.get("bucket") or 0, e.get("src") or ""))
 
     doc["google_workspace"] = {
-        "snapshot_at": started.isoformat(),
-        "window_days": WINDOW_DAYS,
+        "last_pull_at": started.isoformat(),
         "applications": APPLICATIONS,
-        "events_merged": added_events,
-        "buckets_added": added_buckets,
     }
     doc["active_count"] = len(by_user)
+    pulled = doc.setdefault("pulled", {})
+    # Tag each in-window date as having been pulled — the bucket
+    # scanner already marks the warehouse side; we annotate google too
+    # by leaving the existing pulled[iso] timestamp alone if it exists,
+    # else writing the merge time.
+    for iso in window_set:
+        pulled.setdefault(iso, started.isoformat())
     out_path.write_text(json.dumps(doc, indent=2))
     print(f"# merged {added_events} Workspace event groups (+{added_buckets} new 15-min buckets)", flush=True)
     print(f"# wrote {out_path}", flush=True)

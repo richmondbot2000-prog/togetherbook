@@ -1,15 +1,34 @@
 name: Refresh staff activity
 
-# Joins staff.json against the warehouse's ClientUsername columns to find
-# which Workspace users wrote anything in the last 60 days. Output:
-# staff-activity.json — read by directory.html to render last-active
-# date / tenants / top-warehouse per staff and to filter the visible
-# directory to active people only.
+# Two outputs:
+#   staff-activity.json          legacy 60-d aggregate (last-active +
+#                                 write-count per Workspace user)
+#   staff-activity-buckets.json  permanent per-(user, date, 15-min)
+#                                 bucket store + warehouse + Google
+#                                 detail events.
+#
+# Scheduled run: 12:00 UTC every day. Pulls yesterday's bucket data
+# once and merges it into the permanent store; the 60-day aggregate
+# always overwrites.
+#
+# Manual run (workflow_dispatch): accepts a date range so an Org admin
+# can force-refresh a whole month from the Activity page's "Refresh
+# data" button. The worker triggers this with `start_date` /
+# `end_date` inputs.
 
 on:
   schedule:
-    - cron: '15 6-23 * * *'
+    - cron: '17 12 * * *'      # 12:17 UTC daily — one-shot for yesterday
   workflow_dispatch:
+    inputs:
+      start_date:
+        description: 'Buckets start date (YYYY-MM-DD, inclusive). Default = yesterday UTC.'
+        required: false
+        default: ''
+      end_date:
+        description: 'Buckets end date (YYYY-MM-DD, inclusive). Default = same as start.'
+        required: false
+        default: ''
 
 permissions:
   contents: write
@@ -74,13 +93,15 @@ jobs:
           FABRIC_CLIENT_SECRET: ${{ secrets.FABRIC_CLIENT_SECRET }}
         run: python scripts/scan_staff_activity.py
 
-      - name: Scan staff activity buckets (15-min granularity, last 14 d)
+      - name: Scan staff activity buckets (merge yesterday or admin-selected range)
         if: steps.guard.outputs.skip != 'true'
         env:
           FABRIC_SQL_ENDPOINT: d76gbn5gtayeppltcrsxsvkluq-ruqkpz7fkwpelmnjh4kbg2lqpi.datawarehouse.fabric.microsoft.com
           FABRIC_TENANT_ID:    b760fc1f-98a6-4730-bd73-146579554ba4
           FABRIC_CLIENT_ID:    b8fb2709-6e42-4a1e-91e6-8a3807a9884d
           FABRIC_CLIENT_SECRET: ${{ secrets.FABRIC_CLIENT_SECRET }}
+          ACTIVITY_START_DATE: ${{ inputs.start_date }}
+          ACTIVITY_END_DATE:   ${{ inputs.end_date }}
         continue-on-error: true
         run: python scripts/scan_staff_activity_buckets.py
 
@@ -93,6 +114,8 @@ jobs:
         env:
           WORKSPACE_SERVICE_ACCOUNT_JSON: ${{ secrets.WORKSPACE_SERVICE_ACCOUNT_JSON }}
           WORKSPACE_DELEGATE_USER:        ${{ secrets.WORKSPACE_DELEGATE_USER }}
+          ACTIVITY_START_DATE: ${{ inputs.start_date }}
+          ACTIVITY_END_DATE:   ${{ inputs.end_date }}
         # No-ops cleanly if the SA doesn't have the
         # admin.reports.audit.readonly scope yet — logs the 403 and
         # leaves staff-activity-buckets.json as the warehouse scanner

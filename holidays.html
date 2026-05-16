@@ -9,11 +9,11 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&family=Newsreader:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500;1,600&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="style.css?v=1778931261">
-<link rel="stylesheet" href="quiet-tokens.css?v=1778931261">
-<link rel="stylesheet" href="quiet.css?v=1778931261">
-<link rel="stylesheet" href="quiet-extras.css?v=1778931261">
-<link rel="stylesheet" href="quiet-legacy.css?v=1778931261">
+<link rel="stylesheet" href="style.css?v=1778940663">
+<link rel="stylesheet" href="quiet-tokens.css?v=1778940663">
+<link rel="stylesheet" href="quiet.css?v=1778940663">
+<link rel="stylesheet" href="quiet-extras.css?v=1778940663">
+<link rel="stylesheet" href="quiet-legacy.css?v=1778940663">
 <style>
   .hd-section { max-width: 1080px; margin: 0 auto; padding: 24px 0 48px; }
   .hd-section h1 {
@@ -474,6 +474,21 @@
     font: italic 400 14px/1.4 var(--font-display, 'Newsreader', serif);
   }
 
+  .hd-act-toolbar {
+    display: flex; gap: 18px; align-items: baseline; flex-wrap: wrap;
+    margin: 0 0 18px;
+  }
+  .hd-act-toolbar .hd-meta { margin: 0; flex: 1 1 auto; min-width: 0; }
+  .hd-act-refresh {
+    background: none; border: none;
+    font: italic 500 13px/1 var(--font-display, 'Newsreader', serif);
+    color: var(--ink-700);
+    border-bottom: 1.5px solid var(--brass-300, #E2BF74);
+    padding: 4px 2px; cursor: pointer;
+  }
+  .hd-act-refresh:hover { color: var(--red-500, #b14040); border-bottom-color: var(--red-500); }
+  .hd-act-refresh:disabled { color: var(--ink-300); cursor: default; border-bottom-color: transparent; }
+
   /* Activity view — one row per direct report. Each row shows N day-
      columns. Each day is a thin vertical 24-hour bar; horizontal
      hairlines mark the 15-min windows where the user actually wrote
@@ -674,7 +689,7 @@
 
 <header class="qb-topbar">
   <a class="qb-brand" href="index.html" aria-label="TogetherBOOK — home">
-    <img class="qb-brand-logo" src="togetherbook-logo.png?v=1778931261" alt="TogetherBOOK">
+    <img class="qb-brand-logo" src="togetherbook-logo.png?v=1778940663" alt="TogetherBOOK">
   </a>
   <button class="qb-hamburger" aria-label="Toggle navigation menu" aria-expanded="false"
           onclick="document.body.classList.toggle('nav-open');this.setAttribute('aria-expanded',document.body.classList.contains('nav-open'))">
@@ -735,7 +750,10 @@
       <div class="hd-team" id="hdTeam" role="grid" aria-label="Team calendar strip"></div>
     </div>
     <div id="hdActivityView" style="display:none;">
-      <p class="hd-meta" id="hdActivityMeta">Loading 14-day activity…</p>
+      <div class="hd-act-toolbar">
+        <p class="hd-meta" id="hdActivityMeta">Loading activity…</p>
+        <button type="button" id="hdActRefresh" class="hd-act-refresh" style="display:none;">Refresh data (this month)</button>
+      </div>
       <div class="hd-act" id="hdAct" aria-label="Team data-warehouse activity"></div>
     </div>
 
@@ -1335,24 +1353,60 @@
     }
 
     const data = await ensureActivityData();
-    const windowDays = data && data.window_days ? data.window_days : 14;
     const byEmail = (data && data.by_email) || {};
-    const snapshotAt = data && data.snapshot_at ? new Date(data.snapshot_at).toLocaleString("en-GB") : null;
+    const pulled  = (data && data.pulled)   || {};
+    const lastPullAt = data && data.last_pull_at ? new Date(data.last_pull_at).toLocaleString("en-GB") : null;
+
+    // Days: from the 1st of the current month through today.
+    const today = new Date();
+    const monthStart = new Date(today.getFullYear(), today.getMonth(), 1);
+    const days = [];
+    for (let d = new Date(monthStart); d <= today; d.setDate(d.getDate() + 1)) days.push(new Date(d));
+    const todayIso = isoDate(today);
+    const monthLabel = today.toLocaleDateString("en-GB", { month: "long", year: "numeric" });
+
     if (data.missing) {
-      meta.innerHTML = `<em>staff-activity-buckets.json hasn't landed yet — trigger <code>refresh-staff-activity</code> to populate it.</em>`;
+      meta.innerHTML = `<em>staff-activity-buckets.json hasn't landed yet — admins can click <strong>Refresh data</strong> to seed the month.</em>`;
     } else {
-      meta.textContent = `Last ${windowDays} days of warehouse activity · snapshot ${snapshotAt || "—"} · click a day for the detail`;
+      meta.innerHTML = `${monthLabel} · last pull ${lastPullAt || "—"} · click a day for the detail`;
     }
 
-    // Days: descending from today (most recent on the right).
-    const days = [];
-    const today = new Date();
-    for (let i = windowDays - 1; i >= 0; i--) {
-      const d = new Date(today);
-      d.setDate(d.getDate() - i);
-      days.push(d);
+    // Admin-only "Refresh data (this month)" button. Calls the worker
+    // which dispatches the GitHub Actions workflow with the month
+    // range. Disabled until the dispatch lands; toast on success.
+    const btn = document.getElementById("hdActRefresh");
+    if (btn) {
+      if (viewerIsAdmin) {
+        btn.style.display = "";
+        btn.disabled = false;
+        btn.onclick = async () => {
+          btn.disabled = true;
+          const orig = btn.textContent;
+          btn.textContent = "Triggering…";
+          const startISO = isoDate(monthStart);
+          const endISO   = isoDate(today);
+          try {
+            const res = await fetch("/api/workspace/refresh-activity", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ start_date: startISO, end_date: endISO }),
+            });
+            if (!res.ok) {
+              const d = await res.json().catch(() => null);
+              throw new Error((d && d.error) || `HTTP ${res.status}`);
+            }
+            btn.textContent = "Refresh queued — check back in a few minutes";
+            banner("Refresh triggered for " + monthLabel);
+          } catch (err) {
+            btn.disabled = false;
+            btn.textContent = orig;
+            banner("Refresh failed: " + (err.message || err), true);
+          }
+        };
+      } else {
+        btn.style.display = "none";
+      }
     }
-    const todayIso = isoDate(today);
 
     const reports = [...directReports]
       .map(e => ({ email: e, user: staffByEmail[e] || { email: e, name: e } }))
@@ -1372,7 +1426,7 @@
       name.className = "hd-act-name";
       name.innerHTML = `
         <span>${escapeHtml(r.user.name || r.email)}</span>
-        <span class="hd-act-sub">${totalBuckets} active 15-min slot${totalBuckets === 1 ? "" : "s"} in ${windowDays} d</span>`;
+        <span class="hd-act-sub">${totalBuckets} active 15-min slot${totalBuckets === 1 ? "" : "s"} this month</span>`;
       row.appendChild(name);
 
       const daysWrap = document.createElement("div");
@@ -1899,6 +1953,6 @@
     a.addEventListener('click', () => document.body.classList.remove('nav-open'))
   );
 </script>
-<script src="nav.js?v=1778931261" defer></script>
+<script src="nav.js?v=1778940663" defer></script>
 </body>
 </html>

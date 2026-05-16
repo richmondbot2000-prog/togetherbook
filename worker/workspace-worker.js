@@ -140,6 +140,47 @@ export default {
       return json({ error: "not authenticated via Cloudflare Access" }, 401, req);
     }
 
+    // POST /api/workspace/refresh-activity — admin-only. Dispatches the
+    // refresh-staff-activity workflow with start_date + end_date inputs
+    // (defaults to "the calendar month containing today"). Lets an
+    // admin click "Refresh data" on the Activity tab and trigger a
+    // backfill without leaving the page.
+    if (new URL(req.url).pathname.replace(/\/$/, "").endsWith("/refresh-activity")) {
+      const viewer = (req.headers.get("Cf-Access-Authenticated-User-Email") || "").toLowerCase();
+      const admins = await fetchAdmins();
+      if (!admins.includes(viewer)) {
+        return json({ error: "admin only" }, 403, req);
+      }
+      let body = {};
+      try { body = await req.json(); } catch (e) {}
+      const start_date = String(body.start_date || "").trim();
+      const end_date   = String(body.end_date || "").trim();
+      if (!/^\d{4}-\d{2}-\d{2}$/.test(start_date) || !/^\d{4}-\d{2}-\d{2}$/.test(end_date)) {
+        return json({ error: "start_date / end_date required as YYYY-MM-DD" }, 400, req);
+      }
+      if (!env.GITHUB_TOKEN) {
+        return json({ error: "GITHUB_TOKEN not configured on the worker" }, 500, req);
+      }
+      const dispatch = await fetch(
+        `https://api.github.com/repos/${REPO}/actions/workflows/refresh-staff-activity.yml/dispatches`,
+        {
+          method: "POST",
+          headers: {
+            "Authorization": `Bearer ${env.GITHUB_TOKEN}`,
+            "Accept": "application/vnd.github+json",
+            "User-Agent": "apifk-workspace-worker",
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ ref: BRANCH, inputs: { start_date, end_date } }),
+        },
+      );
+      if (!dispatch.ok) {
+        const detail = (await dispatch.text()).slice(0, 200);
+        return json({ error: `dispatch failed: HTTP ${dispatch.status} ${detail}` }, 502, req);
+      }
+      return json({ ok: true, start_date, end_date, triggered_by: viewer }, 200, req);
+    }
+
     const url = new URL(req.url);
     const action = url.pathname.replace(/^\/api\/workspace\/?/, "").replace(/\/$/, "");
 
