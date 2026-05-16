@@ -803,6 +803,49 @@
   .wl-notif-item-time { font: 500 11px/1 var(--font-mono); color: var(--ink-500); margin-top: 2px; }
   .wl-notif-empty { padding: 24px 14px; text-align: center; color: var(--ink-500); font-style: italic; }
 
+  /* @-mention chip inside a post / comment / reply body. Blue, links to
+     user.html?email=<addr>. The chip survives bodyTeaser truncation
+     because mention rendering runs on the truncated escaped text. */
+  .wl-mention {
+    color: #2c6cb8;
+    text-decoration: none;
+    font-weight: 600;
+  }
+  .wl-mention:hover { text-decoration: underline; }
+
+  /* Autocomplete picker that appears under the compose textarea / comment /
+     reply input when the user types @. Fixed-position floating panel. */
+  .wl-mention-picker {
+    position: fixed;
+    z-index: 1100;
+    background: var(--paper-50, white);
+    border: 1px solid var(--ink-300, #B6BECF);
+    max-height: 220px;
+    overflow-y: auto;
+    padding: 4px;
+    font: 500 13px/1.3 var(--font-display, 'Newsreader', serif);
+    min-width: 240px;
+  }
+  .wl-mention-item {
+    display: flex; align-items: center; justify-content: space-between;
+    width: 100%;
+    padding: 6px 10px;
+    background: transparent;
+    border: 0;
+    cursor: pointer;
+    text-align: left;
+    color: var(--ink-900);
+  }
+  .wl-mention-item:hover, .wl-mention-item.is-hl {
+    background: var(--paper-200, #F5ECD4);
+  }
+  .wl-mention-item-name { font-weight: 600; }
+  .wl-mention-item-local {
+    font: 500 11px/1 var(--font-mono, 'JetBrains Mono', monospace);
+    color: var(--ink-500);
+    margin-left: 12px;
+  }
+
   /* States */
   .wl-loading {
     text-align: center; padding: 24px;
@@ -1028,6 +1071,7 @@
         if (k) staffByEmail[k] = u;
       }
     }
+    buildStaffByLocal();
     if (annFile && annFile.annotations && typeof annFile.annotations === "object") {
       annotationsMap = annFile.annotations;
     }
@@ -1458,8 +1502,160 @@
     });
   }
   function enrichBody(rawText) {
-    return linkifyBody(escapeHtml(rawText || ""));
+    return renderMentionsInHtml(linkifyBody(escapeHtml(rawText || "")));
   }
+
+  // === @-mentions ===========================================================
+  // Two halves: rendering and autocomplete. Rendering replaces "@local" in
+  // post bodies with a blue link to user.html when local matches a known
+  // staff member. Autocomplete watches the compose textarea / comment / reply
+  // inputs for "@..." and pops a filtered staff list under the caret.
+  let staffByLocal = {};
+  function buildStaffByLocal() {
+    staffByLocal = {};
+    for (const u of Object.values(staffByEmail)) {
+      const lp = ((u.email || "").split("@")[0] || "").toLowerCase();
+      if (lp) staffByLocal[lp] = u;
+    }
+  }
+  function localPart(email) { return ((email || "").split("@")[0] || "").toLowerCase(); }
+  // Match "@local" only when preceded by start-of-string or whitespace; the
+  // local-part runs as long as it's a-z, 0-9, dot, dash, or underscore.
+  // Operates on already-escaped + linkified HTML — URLs end up wrapped in
+  // <a> tags whose visible href content doesn't contain "@\w" preceded by
+  // whitespace, so we don't double-process them.
+  const MENTION_RX_RENDER = /(^|\s)@([a-z0-9._-]+)/gi;
+  function renderMentionsInHtml(html) {
+    return html.replace(MENTION_RX_RENDER, (full, lead, local) => {
+      const u = staffByLocal[local.toLowerCase()];
+      if (!u) return full;
+      const name = u.name || u.email;
+      return `${lead}<a class="wl-mention" href="user.html?email=${escapeHtml(u.email.toLowerCase())}" onclick="event.stopPropagation();">@${escapeHtml(name)}</a>`;
+    });
+  }
+
+  // Picker — single DOM element reused across all input fields.
+  const mentionPicker = document.createElement("div");
+  mentionPicker.className = "wl-mention-picker";
+  mentionPicker.style.display = "none";
+  document.body.appendChild(mentionPicker);
+  let mentionState = null; // { input, atIdx, query, matches, hl }
+
+  function findMentionContext(input) {
+    const v = input.value || "";
+    const pos = input.selectionStart || 0;
+    const before = v.slice(0, pos);
+    const atIdx = before.lastIndexOf("@");
+    if (atIdx < 0) return null;
+    // Must be start-of-string OR whitespace before the @
+    if (atIdx > 0 && !/\s/.test(before[atIdx - 1])) return null;
+    const query = before.slice(atIdx + 1);
+    // Stop the picker if the query has any whitespace or invalid chars —
+    // the user has moved past the @-token.
+    if (!/^[a-z0-9._-]*$/i.test(query)) return null;
+    return { atIdx, query };
+  }
+  function showMentionPicker(input, ctx) {
+    const q = ctx.query.toLowerCase();
+    const all = Object.values(staffByEmail);
+    // Match by local-part prefix, then by name word-prefix as a secondary.
+    const byLocal = all.filter(u => localPart(u.email).startsWith(q));
+    const byName = q.length >= 2
+      ? all.filter(u => {
+          if (byLocal.includes(u)) return false;
+          return (u.name || "").toLowerCase().split(/\s+/).some(w => w.startsWith(q));
+        })
+      : [];
+    const matches = [...byLocal, ...byName]
+      .sort((a, b) => (a.name || a.email).localeCompare(b.name || b.email))
+      .slice(0, 8);
+    if (!matches.length) { hideMentionPicker(); return; }
+    mentionState = { input, atIdx: ctx.atIdx, query: ctx.query, matches, hl: 0 };
+    renderMentionPicker();
+    positionMentionPicker(input);
+    mentionPicker.style.display = "";
+  }
+  function renderMentionPicker() {
+    if (!mentionState) return;
+    mentionPicker.innerHTML = mentionState.matches.map((u, i) => {
+      const lp = localPart(u.email);
+      return `<button type="button" class="wl-mention-item ${i === mentionState.hl ? "is-hl" : ""}" data-mention-pick="${escapeHtml(u.email)}">
+        <span class="wl-mention-item-name">${escapeHtml(u.name || u.email)}</span>
+        <span class="wl-mention-item-local">@${escapeHtml(lp)}</span>
+      </button>`;
+    }).join("");
+    mentionPicker.querySelectorAll("[data-mention-pick]").forEach(btn => {
+      // mousedown — not click — so it fires before the input's blur handler
+      // (otherwise the picker dismisses before we can read its value).
+      btn.addEventListener("mousedown", e => {
+        e.preventDefault();
+        pickMention(btn.dataset.mentionPick);
+      });
+    });
+  }
+  function positionMentionPicker(input) {
+    const rect = input.getBoundingClientRect();
+    mentionPicker.style.left = `${Math.max(8, rect.left)}px`;
+    mentionPicker.style.top  = `${rect.bottom + 4}px`;
+    mentionPicker.style.width = `${Math.max(240, Math.min(rect.width, 360))}px`;
+  }
+  function hideMentionPicker() {
+    mentionPicker.style.display = "none";
+    mentionState = null;
+  }
+  function pickMention(email) {
+    if (!mentionState) return;
+    const { input, atIdx } = mentionState;
+    const v = input.value || "";
+    const pos = input.selectionStart || 0;
+    const lp = localPart(email);
+    const replacement = `@${lp} `;
+    const before = v.slice(0, atIdx);
+    const after = v.slice(pos);
+    input.value = before + replacement + after;
+    const newPos = atIdx + replacement.length;
+    input.setSelectionRange(newPos, newPos);
+    hideMentionPicker();
+    input.focus();
+    input.dispatchEvent(new Event("input", { bubbles: true }));
+  }
+  function maybeOpenMention(input) {
+    const ctx = findMentionContext(input);
+    if (!ctx) { hideMentionPicker(); return; }
+    showMentionPicker(input, ctx);
+  }
+  function isMentionTarget(t) {
+    return !!t && (t.id === "wlComposeText" || (t.classList && t.classList.contains("wl-comment-input")));
+  }
+  document.addEventListener("input", e => {
+    if (isMentionTarget(e.target)) maybeOpenMention(e.target);
+  });
+  document.addEventListener("keydown", e => {
+    if (!mentionState || e.target !== mentionState.input) return;
+    if (e.key === "ArrowDown") {
+      e.preventDefault();
+      mentionState.hl = (mentionState.hl + 1) % mentionState.matches.length;
+      renderMentionPicker();
+    } else if (e.key === "ArrowUp") {
+      e.preventDefault();
+      mentionState.hl = (mentionState.hl - 1 + mentionState.matches.length) % mentionState.matches.length;
+      renderMentionPicker();
+    } else if (e.key === "Enter" || e.key === "Tab") {
+      e.preventDefault();
+      pickMention(mentionState.matches[mentionState.hl].email);
+    } else if (e.key === "Escape") {
+      e.preventDefault();
+      hideMentionPicker();
+    }
+  });
+  document.addEventListener("click", e => {
+    if (!mentionState) return;
+    if (!mentionPicker.contains(e.target) && e.target !== mentionState.input) {
+      hideMentionPicker();
+    }
+  }, true);
+  window.addEventListener("scroll", () => { if (mentionState) hideMentionPicker(); }, true);
+  // ==========================================================================
 
   // Detect YouTube vs other URLs in the body, render the appropriate
   // block below the body in expanded view.
@@ -2224,11 +2420,19 @@
     } else {
       list.innerHTML = events.slice(0, 30).map(ev => {
         const name = displayName(ev.actor_email, ev.actor_name);
-        const verb = ev.kind === "react"
-          ? `${emojiGlyph(ev.emoji)} ${reactionPast(ev.emoji)} your`
-          : (ev.parent_comment_id ? "replied to a comment on your" : "commented on your");
+        let line;
+        if (ev.kind === "mention") {
+          const where = ev.target_kind === "post" ? "a post" :
+            (ev.target_kind === "reply" ? "a reply" : "a comment");
+          line = `<strong>${escapeHtml(name)}</strong> mentioned you in ${where}.`;
+        } else if (ev.kind === "react") {
+          line = `<strong>${escapeHtml(name)}</strong> ${emojiGlyph(ev.emoji)} ${reactionPast(ev.emoji)} your post.`;
+        } else {
+          const verb = ev.parent_comment_id ? "replied to a comment on your" : "commented on your";
+          line = `<strong>${escapeHtml(name)}</strong> ${verb} post.`;
+        }
         return `<a class="wl-notif-item" href="#post-${escapeHtml(ev.post_id)}" data-jump="${escapeHtml(ev.post_id)}">
-          <div><strong>${escapeHtml(name)}</strong> ${verb} post.</div>
+          <div>${line}</div>
           <div class="wl-notif-item-time">${formatTime(ev.at)}</div>
         </a>`;
       }).join("");
@@ -2251,9 +2455,38 @@
       }
     }
   }
+  function postsMentioningViewer() {
+    // Scan all posts + nested comments for "@<viewerLocal>" in their body.
+    // Returns the set of post ids where the viewer is mentioned by someone
+    // other than themselves. Used by mark-seen so the bell clears.
+    if (!viewerEmail) return new Set();
+    const viewerLocal = localPart(viewerEmail);
+    if (!viewerLocal) return new Set();
+    const rx = mentionRxFor(viewerLocal);
+    const ids = new Set();
+    for (const post of posts) {
+      if ((post.author_email || "").toLowerCase() !== viewerEmail && rx.test(post.body || "")) {
+        ids.add(post.id);
+      }
+      for (const c of (post.comments || [])) {
+        if ((c.author_email || "").toLowerCase() !== viewerEmail && rx.test(c.body || "")) {
+          ids.add(post.id);
+        }
+      }
+    }
+    return ids;
+  }
+  function mentionRxFor(local) {
+    const esc = local.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+    return new RegExp(`(^|\\s)@${esc}(?![a-z0-9._-])`, "i");
+  }
   function collectNotifications() {
     if (!viewerEmail) return [];
     const events = [];
+    const viewerLocal = localPart(viewerEmail);
+    const viewerRx = viewerLocal ? mentionRxFor(viewerLocal) : null;
+
+    // Pass 1: posts authored by viewer — comments / reactions on those.
     for (const post of posts) {
       if ((post.author_email || "").toLowerCase() !== viewerEmail) continue;
       const seen = lastSeenByPost[post.id] || "";
@@ -2287,8 +2520,59 @@
         });
       }
     }
-    events.sort((a, b) => (a.at < b.at ? 1 : -1));
-    return events;
+    // Pass 2: mentions of viewer in any post / comment / reply.
+    if (viewerRx) {
+      for (const post of posts) {
+        const seen = lastSeenByPost[post.id] || "";
+        if ((post.author_email || "").toLowerCase() !== viewerEmail
+            && (post.created_at || "") > seen
+            && viewerRx.test(post.body || "")) {
+          events.push({
+            kind: "mention",
+            at: post.created_at,
+            post_id: post.id,
+            actor_email: post.author_email,
+            actor_name: post.author_name,
+            target_kind: "post",
+          });
+        }
+        for (const c of (post.comments || [])) {
+          if ((c.author_email || "").toLowerCase() === viewerEmail) continue;
+          if ((c.created_at || "") <= seen) continue;
+          if (!viewerRx.test(c.body || "")) continue;
+          events.push({
+            kind: "mention",
+            at: c.created_at,
+            post_id: post.id,
+            actor_email: c.author_email,
+            actor_name: c.author_name,
+            target_kind: c.parent_comment_id ? "reply" : "comment",
+            comment_id: c.id,
+            parent_comment_id: c.parent_comment_id || null,
+          });
+        }
+      }
+    }
+    // De-duplicate: an actor that comments AND mentions the viewer in the
+    // same comment should not show two entries. Prefer the mention entry.
+    const seenKeys = new Set();
+    const deduped = [];
+    for (const ev of events) {
+      const key = `${ev.post_id}|${ev.comment_id || ""}|${ev.actor_email || ""}|${ev.kind}`;
+      if (seenKeys.has(key)) continue;
+      seenKeys.add(key);
+      // Drop a plain comment event if there's also a mention event for the
+      // same comment by the same actor.
+      if (ev.kind === "comment") {
+        const dupMention = events.find(o => o.kind === "mention"
+          && o.post_id === ev.post_id && o.comment_id === ev.comment_id
+          && (o.actor_email || "") === (ev.actor_email || ""));
+        if (dupMention) continue;
+      }
+      deduped.push(ev);
+    }
+    deduped.sort((a, b) => (a.at < b.at ? 1 : -1));
+    return deduped;
   }
 
   document.getElementById("wlNotifBtn").addEventListener("click", e => {
@@ -2306,8 +2590,10 @@
     const now = new Date().toISOString();
     // Snapshot the prior state so we can roll back if the worker errors.
     const snapshot = { ...lastSeenByPost };
+    const mentionPostIds = postsMentioningViewer();
     for (const post of posts) {
-      if ((post.author_email || "").toLowerCase() === viewerEmail) {
+      if ((post.author_email || "").toLowerCase() === viewerEmail
+          || mentionPostIds.has(post.id)) {
         lastSeenByPost[post.id] = now;
       }
     }

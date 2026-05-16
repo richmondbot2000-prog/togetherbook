@@ -1,0 +1,223 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>BOOK — Profile</title>
+<link rel="icon" type="image/png" href="site-icon.png">
+<link rel="apple-touch-icon" href="site-icon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&family=Newsreader:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500;1,600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css?v=1778923602">
+<link rel="stylesheet" href="quiet-tokens.css?v=1778923602">
+<link rel="stylesheet" href="quiet.css?v=1778923602">
+<link rel="stylesheet" href="quiet-extras.css?v=1778923602">
+<style>
+  .up-section { padding: 24px 16px 64px; max-width: 760px; margin: 0 auto; }
+  .up-card {
+    display: grid; grid-template-columns: 160px 1fr; gap: 28px;
+    align-items: start;
+    background: var(--paper-50, white);
+    border: 1px solid var(--ink-300, #B6BECF);
+    padding: 24px;
+    margin-top: 12px;
+  }
+  @media (max-width: 640px) {
+    .up-card { grid-template-columns: 1fr; gap: 16px; padding: 16px; }
+    .up-avatar { margin: 0 auto; }
+  }
+  .up-avatar {
+    width: 160px; height: 160px;
+    border-radius: 50%;
+    background: var(--paper-200, #F5ECD4);
+    color: var(--ink-700);
+    overflow: hidden;
+    display: flex; align-items: center; justify-content: center;
+    font: 600 48px/1 var(--font-display, 'Newsreader', serif);
+    border: 1px solid var(--ink-300, #B6BECF);
+  }
+  .up-avatar img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .up-name {
+    font: 700 28px/1.15 var(--font-display, 'Newsreader', serif);
+    color: var(--ink-900);
+    margin: 0 0 4px;
+  }
+  .up-sub {
+    font: 500 13px/1.4 var(--font-mono, 'JetBrains Mono', monospace);
+    color: var(--ink-500);
+    margin-bottom: 18px;
+    word-break: break-all;
+  }
+  .up-fields { display: grid; grid-template-columns: 1fr; gap: 14px; }
+  .up-field-label {
+    font: 600 10px/1 var(--font-body, 'Inter', sans-serif);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--ink-500);
+    margin-bottom: 4px;
+  }
+  .up-field-value {
+    font: 500 15px/1.5 var(--font-display, 'Newsreader', serif);
+    color: var(--ink-900);
+    white-space: pre-wrap;
+  }
+  .up-field-value--empty {
+    font-style: italic;
+    color: var(--ink-500);
+  }
+  .up-mgr-link {
+    color: #2c6cb8;
+    text-decoration: none;
+    font-weight: 600;
+  }
+  .up-mgr-link:hover { text-decoration: underline; }
+  .up-mgr-local {
+    margin-left: 8px;
+    color: var(--ink-500);
+    font: 500 12px/1 var(--font-mono, 'JetBrains Mono', monospace);
+  }
+  .up-back {
+    display: inline-block;
+    margin-top: 18px;
+    font: italic 500 13px/1 var(--font-display, 'Newsreader', serif);
+    color: var(--ink-600);
+    text-decoration: none;
+  }
+  .up-back:hover { color: var(--ink-900); }
+  .up-back::before { content: "← "; color: var(--brass-500); }
+  .up-loading, .up-error {
+    padding: 40px 0; text-align: center;
+    color: var(--ink-500);
+    font: italic 400 15px/1.4 var(--font-display, 'Newsreader', serif);
+  }
+  .up-error { color: var(--red-500, #C0392B); }
+</style>
+</head>
+<body>
+
+<header class="qb-topbar">
+  <a class="qb-brand" href="index.html" aria-label="TogetherBOOK — home">
+    <img class="qb-brand-logo" src="togetherbook-logo.png?v=1778923602" alt="TogetherBOOK">
+  </a>
+  <button class="qb-hamburger" aria-label="Toggle navigation menu" aria-expanded="false"
+          onclick="document.body.classList.toggle('nav-open');this.setAttribute('aria-expanded',document.body.classList.contains('nav-open'))">
+    <span></span><span></span><span></span>
+  </button>
+  <nav class="qb-nav">
+    <a class="qb-nav-link" href="wall.html">Wall</a>
+    <a class="qb-nav-link" href="index.html" data-sub='[{"href": "database.html", "label": "Schema"}, {"href": "stats.html", "label": "Code"}]'>About our systems</a>
+    <a class="qb-nav-link" href="yesterday.html">Payouts</a>
+    <a class="qb-nav-link" href="holidays.html">Holidays</a>
+    <a class="qb-nav-link" href="brandwatch.html">Brandwatch</a>
+    <a class="qb-nav-link is-active" href="directory.html">Directory</a>
+    <a class="qb-nav-link" href="reports.html" data-sub='[{"href": "1stcontact.html", "label": "1st Contact"}, {"href": "topups.html", "label": "Top Ups"}, {"href": "pipeline.html", "label": "Pipeline"}, {"href": "brokers.html", "label": "Brokers"}, {"href": "comms.html", "label": "Comms"}]'>Reports</a>
+  </nav>
+</header>
+
+<main class="qb-page">
+  <section class="up-section">
+    <div id="upBody"><div class="up-loading">Loading…</div></div>
+  </section>
+</main>
+
+<script>
+  const qs = new URLSearchParams(location.search || "");
+  const targetEmail = (qs.get("email") || "").toLowerCase().trim();
+
+  let staffByEmail = {};
+  let staffByLocal = {};
+  let annotationsMap = {};
+
+  function escapeHtml(s) {
+    return String(s == null ? "" : s)
+      .replaceAll("&", "&amp;").replaceAll("<", "&lt;").replaceAll(">", "&gt;")
+      .replaceAll('"', "&quot;").replaceAll("'", "&#39;");
+  }
+  function localPart(email) { return (email || "").split("@")[0].toLowerCase(); }
+  function initials(name) {
+    return (name || "").split(/\s+/).filter(Boolean).map(p => p.charAt(0).toUpperCase()).slice(0, 2).join("") || "?";
+  }
+  function dirPhotoKey(email) {
+    return (email || "").toString().trim().toLowerCase().replace(/@/g, "_at_");
+  }
+  function photoUrlFor(u) {
+    if (!u || !u.email) return "";
+    const email = u.email.toLowerCase();
+    const ann = annotationsMap[email];
+    if (ann && ann.directory_photo_uploaded_at) {
+      return `assets/photos/${dirPhotoKey(email)}.jpg?v=${encodeURIComponent(ann.directory_photo_uploaded_at)}`;
+    }
+    return u.photo_url || "";
+  }
+
+  function renderEmpty(msg) {
+    document.getElementById("upBody").innerHTML = `<div class="up-error">${escapeHtml(msg)}</div>`;
+  }
+
+  function renderProfile() {
+    if (!targetEmail) { renderEmpty("No user specified. Use ?email=<address> in the URL."); return; }
+    const u = staffByEmail[targetEmail];
+    if (!u) { renderEmpty(`No staff record found for ${targetEmail}.`); return; }
+    const ann = annotationsMap[targetEmail] || {};
+    const photo = photoUrlFor(u);
+    const avatar = photo
+      ? `<img src="${escapeHtml(photo)}" alt="" onerror="this.replaceWith(Object.assign(document.createElement('div'),{textContent:'${escapeHtml(initials(u.name))}'}))">`
+      : escapeHtml(initials(u.name));
+    const address = (ann.address || "").trim();
+    const lineMgrEmail = (ann.line_manager || "").toLowerCase().trim();
+    const lineMgr = lineMgrEmail ? staffByEmail[lineMgrEmail] : null;
+    const mgrHtml = lineMgrEmail
+      ? (lineMgr
+          ? `<a class="up-mgr-link" href="user.html?email=${escapeHtml(lineMgrEmail)}">${escapeHtml(lineMgr.name || lineMgrEmail)}</a><span class="up-mgr-local">@${escapeHtml(localPart(lineMgrEmail))}</span>`
+          : `<span>${escapeHtml(lineMgrEmail)}</span>`)
+      : `<span class="up-field-value--empty">Not set</span>`;
+    const addrHtml = address
+      ? escapeHtml(address)
+      : `<span class="up-field-value--empty">Not set</span>`;
+
+    document.getElementById("upBody").innerHTML = `
+      <div class="up-card">
+        <div class="up-avatar">${avatar}</div>
+        <div>
+          <h1 class="up-name">${escapeHtml(u.name || targetEmail)}</h1>
+          <div class="up-sub">${escapeHtml(u.email)}</div>
+          <div class="up-fields">
+            <div>
+              <div class="up-field-label">Address</div>
+              <div class="up-field-value">${addrHtml}</div>
+            </div>
+            <div>
+              <div class="up-field-label">Line manager</div>
+              <div class="up-field-value">${mgrHtml}</div>
+            </div>
+          </div>
+          <a class="up-back" href="directory.html">Back to directory</a>
+        </div>
+      </div>
+    `;
+    document.title = `${u.name || u.email} — BOOK Profile`;
+  }
+
+  Promise.all([
+    fetch("staff.json",       { cache: "no-store" }).then(r => r.ok ? r.json() : null).catch(() => null),
+    fetch("annotations.json", { cache: "no-store" }).then(r => r.ok ? r.json() : null).catch(() => null),
+  ]).then(([staff, annFile]) => {
+    if (staff && Array.isArray(staff.users)) {
+      for (const u of staff.users) {
+        const k = (u.email || "").toLowerCase();
+        if (!k) continue;
+        staffByEmail[k] = u;
+        const lp = localPart(u.email);
+        if (lp) staffByLocal[lp] = u;
+      }
+    }
+    if (annFile && annFile.annotations && typeof annFile.annotations === "object") {
+      annotationsMap = annFile.annotations;
+    }
+    renderProfile();
+  }).catch(err => renderEmpty("Failed to load: " + String(err)));
+</script>
+<script src="nav.js?v=1778923602" defer></script>
+</body>
+</html>

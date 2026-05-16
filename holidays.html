@@ -431,6 +431,18 @@
     display: flex; align-items: center;
     background: var(--paper-50, white);
   }
+  /* Profile link styling — used wherever a user's name appears as a link
+     to user.html (team view, activity view, changelog, page header). */
+  .tb-profile-link {
+    color: #2c6cb8;
+    text-decoration: none;
+    font-weight: inherit;
+  }
+  .tb-profile-link:hover { text-decoration: underline; }
+  .hd-team-month-name .tb-profile-link { color: inherit; }
+  .hd-team-month-name .tb-profile-link:hover {
+    color: #2c6cb8; text-decoration: underline;
+  }
   .hd-team-cell {
     height: 22px;
     cursor: pointer;
@@ -1099,8 +1111,9 @@
   function renderHeader() {
     const u = staffByEmail[selectedEmail] || {};
     const name = u.name || selectedEmail || "—";
-    document.getElementById("hdMeta").textContent =
-      `${name} · ${formatRangeLabel(yearStart, yearEnd)} · holidays.json updated ${holidaysDoc.updated_at ? new Date(holidaysDoc.updated_at).toLocaleString("en-GB") : "—"}`;
+    const updated = holidaysDoc.updated_at ? new Date(holidaysDoc.updated_at).toLocaleString("en-GB") : "—";
+    document.getElementById("hdMeta").innerHTML =
+      `${profileLink(selectedEmail, name)} · ${escapeHtml(formatRangeLabel(yearStart, yearEnd))} · holidays.json updated ${escapeHtml(updated)}`;
     document.getElementById("hdHolidayCount").textContent = formatHolidayCount(countHolidayDays(selectedEmail));
   }
 
@@ -1348,7 +1361,7 @@
         if (!onPayroll) row.classList.add("is-not-on-payroll");
         const name = document.createElement("div");
         name.className = "hd-team-month-name";
-        name.textContent = r.user.name || r.email;
+        name.innerHTML = profileLink(r.email, r.user.name || r.email);
         if (!onPayroll) name.title = "Not on payroll — calendar disabled";
         row.appendChild(name);
 
@@ -1519,7 +1532,7 @@
       const name = document.createElement("div");
       name.className = "hd-act-name";
       name.innerHTML = `
-        <span>${escapeHtml(r.user.name || r.email)}</span>
+        <span>${profileLink(r.email, r.user.name || r.email)}</span>
         <span class="hd-act-sub">${totalBuckets} active 15-min slot${totalBuckets === 1 ? "" : "s"} this month</span>`;
       row.appendChild(name);
 
@@ -1870,10 +1883,10 @@
       const byIsMe   = (e.changed_by || "").toLowerCase() === me;
       let who;
       if (userIsMe && byIsMe) who = "by you";
-      else if (currentView === "team" && byIsMe) who = `${escapeHtml(displayName(e.user_email))} — by you`;
+      else if (currentView === "team" && byIsMe) who = `${profileLink(e.user_email, displayName(e.user_email))} — by you`;
       else if (byIsMe) who = "by you";
-      else if (userIsMe) who = `by ${escapeHtml(displayName(e.changed_by))}`;
-      else who = `${escapeHtml(displayName(e.user_email))} — by ${escapeHtml(displayName(e.changed_by))}`;
+      else if (userIsMe) who = `by ${profileLink(e.changed_by, displayName(e.changed_by))}`;
+      else who = `${profileLink(e.user_email, displayName(e.user_email))} — by ${profileLink(e.changed_by, displayName(e.changed_by))}`;
       return `
         <li>
           <time>${escapeHtml(at)}</time>
@@ -2178,6 +2191,13 @@
     if (!email) return "Unknown";
     const u = staffByEmail[(email || "").toLowerCase()];
     return (u && u.name) || (email || "").split("@")[0];
+  }
+  // Wrap a name in a link to the user's profile page. Falls back to plain
+  // escaped text if no email is known.
+  function profileLink(email, label) {
+    const safeLabel = escapeHtml(label || (email || "—"));
+    if (!email) return safeLabel;
+    return `<a class="tb-profile-link" href="user.html?email=${escapeHtml((email || "").toLowerCase())}">${safeLabel}</a>`;
   }
   function escapeHtml(s) {
     return String(s || "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));

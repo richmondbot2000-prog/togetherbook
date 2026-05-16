@@ -1802,12 +1802,16 @@ async function wallMarkSeen(env, viewerEmail, body) {
   if (!viewerEmail) throw new Error("not authenticated");
   const at = (body.at || new Date().toISOString()).toString();
 
-  // Read wall.json to find every post the viewer authored — those are
-  // the posts whose comment/reaction events they own and want stamped
-  // as "seen up to <at>". Without this, the client's per-post
-  // lastSeenByPost map stays empty across reloads and the bell
-  // re-shows the same events forever.
-  let myPostIds = [];
+  // Read wall.json to find every post the viewer either authored OR was
+  // mentioned in (via "@<viewer-local>"). Both are events the viewer "owns"
+  // for notification purposes — without stamping them as seen, the bell
+  // re-shows the same events forever across reloads.
+  const viewerLocal = (viewerEmail.split("@")[0] || "").toLowerCase();
+  const escLocal = viewerLocal.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  const mentionRx = viewerLocal
+    ? new RegExp(`(^|\\s)@${escLocal}(?![a-z0-9._-])`, "i")
+    : null;
+  let postIds = [];
   try {
     const wallRes = await fetch(
       `https://raw.githubusercontent.com/${REPO}/${BRANCH}/${WALL_PATH}?_=${Date.now()}`,
@@ -1815,9 +1819,15 @@ async function wallMarkSeen(env, viewerEmail, body) {
     );
     if (wallRes.ok) {
       const wall = await wallRes.json();
-      myPostIds = (wall.posts || [])
-        .filter(p => (p.author_email || "").toLowerCase() === viewerEmail)
-        .map(p => p.id);
+      const ids = new Set();
+      for (const p of (wall.posts || [])) {
+        if ((p.author_email || "").toLowerCase() === viewerEmail) { ids.add(p.id); continue; }
+        if (mentionRx && mentionRx.test(p.body || "")) { ids.add(p.id); continue; }
+        for (const c of (p.comments || [])) {
+          if (mentionRx && mentionRx.test(c.body || "")) { ids.add(p.id); break; }
+        }
+      }
+      postIds = [...ids];
     }
   } catch (e) { /* fall through with empty list */ }
 
@@ -1826,11 +1836,11 @@ async function wallMarkSeen(env, viewerEmail, body) {
     doc.by_user = doc.by_user || {};
     const me = doc.by_user[viewerEmail] = doc.by_user[viewerEmail] || { posts: {} };
     me.posts = me.posts || {};
-    for (const pid of myPostIds) me.posts[pid] = at;
+    for (const pid of postIds) me.posts[pid] = at;
     me.last_marked_at = at;
   }, `Wall: mark-seen by ${viewerEmail}`);
 
-  return { ok: true, at, marked: myPostIds.length };
+  return { ok: true, at, marked: postIds.length };
 }
 
 /** Read → mutate → write wall.json with retry-on-409 (sha conflict). */

@@ -251,6 +251,38 @@
     font-size: 0.98rem;
     color: var(--ink);
   }
+  /* Small ↗ next to the name on each directory row — opens user.html in
+     the same tab. Stops propagation so it doesn't trigger the row's
+     modal-open click handler. */
+  .dir-profile-link {
+    display: inline-flex; align-items: center; justify-content: center;
+    width: 18px; height: 18px;
+    margin-left: 4px;
+    border-radius: 3px;
+    background: transparent;
+    color: var(--brass-500, #C8973F);
+    font: 600 12px/1 var(--font-mono, 'JetBrains Mono', monospace);
+    cursor: pointer;
+    border: 1px solid transparent;
+    text-decoration: none;
+    transition: background-color 120ms, color 120ms, border-color 120ms;
+  }
+  .dir-profile-link:hover {
+    background: var(--paper-200, #F5ECD4);
+    border-color: var(--brass-500, #C8973F);
+    color: var(--ink-900, #11192E);
+  }
+  /* "View profile" link in the edit modal header — sits below the
+     name + subtitle, blue text. */
+  .dir-modal-profile-link {
+    display: inline-block;
+    margin-top: 6px;
+    font: italic 500 13px/1 var(--font-display, 'Newsreader', serif);
+    color: #2c6cb8;
+    text-decoration: none;
+  }
+  .dir-modal-profile-link:hover { text-decoration: underline; }
+  .dir-modal-profile-link::after { content: " ↗"; color: var(--brass-500, #C8973F); font-style: normal; }
   .dir-title {
     font-size: 0.82rem;
     color: var(--ink-soft);
@@ -1959,6 +1991,7 @@
         <div class="dir-row-body">
           <div class="dir-row-headline">
             <span class="dir-name">${escapeHtml(u.name || u.email)}</span>
+            <span class="dir-profile-link" data-profile-link="${escapeHtml((u.email || "").toLowerCase())}" title="Open ${escapeHtml(u.name || u.email)}'s profile page">↗</span>
             ${liveGws}
             ${u.title ? `<span class="dir-title">${escapeHtml(u.title)}</span>` : ""}
             ${emailHtml}
@@ -2592,6 +2625,7 @@
           ${renameDecayLine}
           ${liveGwsWordmark}
           ${suspendedBadge}
+          ${u && u.email ? `<a class="dir-modal-profile-link" href="user.html?email=${escapeHtml(u.email.toLowerCase())}">View profile</a>` : ""}
         </div>
       </div>
 
@@ -4585,8 +4619,16 @@
     return out;
   }
 
-  // Click delegation: opening a row -> openCard().
+  // Click delegation: opening a row -> openCard(). The small ↗ profile-link
+  // chip inside the row is intercepted first so it opens user.html instead
+  // of triggering the modal.
   document.getElementById("dirGrid").addEventListener("click", e => {
+    const profile = e.target.closest("[data-profile-link]");
+    if (profile) {
+      e.stopPropagation();
+      location.href = `user.html?email=${encodeURIComponent(profile.dataset.profileLink)}`;
+      return;
+    }
     const row = e.target.closest(".dir-row[data-key]");
     if (!row) return;
     openCard(row.dataset.key);
