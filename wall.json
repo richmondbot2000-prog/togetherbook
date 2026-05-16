@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "updated_at": "2026-05-16T21:37:35.197Z",
+  "updated_at": "2026-05-16T21:46:44.533Z",
   "posts": [
     {
       "id": "post_mp8t9vc4_9jhkrf",
@@ -58,7 +58,11 @@
           "created_at": "2026-05-16T21:36:52.225Z",
           "body": "@james.benamor I will go for the $50 as i want to finish this before monday",
           "photos": [],
-          "reactions": {}
+          "reactions": {
+            "👍": [
+              "james.benamor@letme.com"
+            ]
+          }
         }
       ],
       "react_events": [
@@ -85,6 +89,14 @@
           "target_id": "reply_mp8uzu34_6m0ibg",
           "at": "2026-05-16T21:34:40.306Z",
           "kind": "removed"
+        },
+        {
+          "actor_email": "james.benamor@letme.com",
+          "emoji": "👍",
+          "target_kind": "comment",
+          "target_id": "reply_mp8v9kap_gdhjsa",
+          "at": "2026-05-16T21:46:44.289Z",
+          "kind": "added"
         }
       ]
     },
