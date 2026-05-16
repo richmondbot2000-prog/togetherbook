@@ -1892,22 +1892,29 @@
   function renderLog() {
     const root = document.getElementById("hdLog");
     const all = (holidaysDoc.log || []);
-    // In Team view, the manager sees the union of (their own changes) +
-    // (changes they made to any direct report). In My-calendar view, we
-    // show changes for whoever is selected (own + any manager-made
-    // changes on that person's days, since both share user_email).
+    const me = viewerEmail.toLowerCase();
+    // Filter rules:
+    //   Team view  — own days + any change I made to a direct report.
+    //   My view    — changes on the selected calendar + any change I made,
+    //                anywhere. The "I made it anywhere" clause means that
+    //                when I edit Amber's June 18 from my own calendar tab,
+    //                that change still shows up here instead of being
+    //                silently filtered out for not being on my calendar.
     let entries;
     if (currentView === "team") {
-      const me = viewerEmail.toLowerCase();
       entries = all.filter(e => {
         const u = (e.user_email || "").toLowerCase();
         const by = (e.changed_by || "").toLowerCase();
-        if (u === me) return true;                                 // my own days
-        if (by === me && directReports.has(u)) return true;        // changes I made to a report
+        if (u === me) return true;
+        if (by === me && directReports.has(u)) return true;
         return false;
       });
     } else {
-      entries = all.filter(e => (e.user_email || "").toLowerCase() === selectedEmail);
+      entries = all.filter(e => {
+        const u = (e.user_email || "").toLowerCase();
+        const by = (e.changed_by || "").toLowerCase();
+        return u === selectedEmail || by === me;
+      });
     }
     if (!entries.length) {
       root.innerHTML = `<li class="hd-log-empty">No changes recorded yet.</li>`;
@@ -1920,15 +1927,24 @@
       const day = e.date ? new Date(e.date).toLocaleDateString("en-GB", { weekday: "short", day: "numeric", month: "short", year: "numeric" }) : "";
       const from = STATUS_LABEL[e.from] || e.from || "default";
       const to   = STATUS_LABEL[e.to]   || e.to   || "default";
-      const me = viewerEmail.toLowerCase();
       const userIsMe = (e.user_email || "").toLowerCase() === me;
       const byIsMe   = (e.changed_by || "").toLowerCase() === me;
+      // "who" tells the reader two things: whose calendar this change
+      // landed on, and who made it. Both are shown when they aren't the
+      // viewer; "you" substitutes whichever role the viewer played.
       let who;
-      if (userIsMe && byIsMe) who = "by you";
-      else if (currentView === "team" && byIsMe) who = `${profileLink(e.user_email, displayName(e.user_email))} — by you`;
-      else if (byIsMe) who = "by you";
-      else if (userIsMe) who = `by ${profileLink(e.changed_by, displayName(e.changed_by))}`;
-      else who = `${profileLink(e.user_email, displayName(e.user_email))} — by ${profileLink(e.changed_by, displayName(e.changed_by))}`;
+      if (userIsMe && byIsMe) {
+        who = "by you";
+      } else if (byIsMe) {
+        // I made this change to someone else's calendar.
+        who = `${profileLink(e.user_email, displayName(e.user_email))} — by you`;
+      } else if (userIsMe) {
+        // Someone else changed my calendar.
+        who = `by ${profileLink(e.changed_by, displayName(e.changed_by))}`;
+      } else {
+        // Cross — neither side is the viewer.
+        who = `${profileLink(e.user_email, displayName(e.user_email))} — by ${profileLink(e.changed_by, displayName(e.changed_by))}`;
+      }
       return `
         <li>
           <time>${escapeHtml(at)}</time>
