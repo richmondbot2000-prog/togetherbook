@@ -6,9 +6,9 @@
 <title>TogetherBOOK — Wall</title>
 <link rel="icon" type="image/png" href="site-icon.png">
 <link rel="apple-touch-icon" href="site-icon.png">
-<link rel="stylesheet" href="quiet-tokens.css?v=1778887303">
-<link rel="stylesheet" href="quiet.css?v=1778887303">
-<link rel="stylesheet" href="quiet-extras.css?v=1778887303">
+<link rel="stylesheet" href="quiet-tokens.css?v=1778923602">
+<link rel="stylesheet" href="quiet.css?v=1778923602">
+<link rel="stylesheet" href="quiet-extras.css?v=1778923602">
 <style>
   /* 648 px column — sweet spot per editorial line-length research
      (60–75 chars per line at 15 px body). Wider feels marketing-y. */
@@ -841,7 +841,7 @@
 
 <header class="qb-topbar">
   <a class="qb-brand" href="index.html" aria-label="TogetherBOOK — home">
-    <img class="qb-brand-logo" src="togetherbook-logo.png?v=1778887303" alt="TogetherBOOK">
+    <img class="qb-brand-logo" src="togetherbook-logo.png?v=1778923602" alt="TogetherBOOK">
   </a>
   <button class="qb-hamburger" aria-label="Toggle navigation menu" aria-expanded="false"
           onclick="document.body.classList.toggle('nav-open');this.setAttribute('aria-expanded',document.body.classList.contains('nav-open'))">
@@ -905,7 +905,7 @@
   </section>
 </main>
 
-<script src="nav.js" defer></script>
+<script src="nav.js?v=1778923602" defer></script>
 <script>
 (function () {
   "use strict";
@@ -1769,11 +1769,20 @@
             const post = posts.find(p => p.id === postId);
             if (post) { post.comments = post.comments || []; post.comments.push(res.comment); }
             el.value = "";
-            sortPosts(); renderFeed();
+            // The reply may have bubbled the post to the top — keep the
+            // viewer staring at it (not staring at the empty slot it
+            // left behind on page N) by jumping to its new page.
+            sortPosts();
+            const idx = posts.findIndex(p => p.id === postId);
+            if (idx >= 0) currentPage = Math.floor(idx / POSTS_PER_PAGE);
+            renderFeed();
+            // After renderFeed re-creates the DOM, re-focus the fresh
+            // composer input for the same post so a user can keep typing.
+            const fresh = document.querySelector(`[data-add-comment="${cssAttr(postId)}"]`);
+            if (fresh) fresh.focus();
           }
         } catch (err) {
           showBanner(err.message || String(err), true);
-        } finally {
           el.disabled = false; el.focus();
         }
       });
@@ -1801,7 +1810,10 @@
             const post = posts.find(p => p.id === pid);
             if (post) { post.comments = post.comments || []; post.comments.push(res.comment); }
             openReplyTo.delete(`${pid}::${parent}`);
-            sortPosts(); renderFeed();
+            sortPosts();
+            const idx = posts.findIndex(p => p.id === pid);
+            if (idx >= 0) currentPage = Math.floor(idx / POSTS_PER_PAGE);
+            renderFeed();
           }
         } catch (err) {
           showBanner(err.message || String(err), true);
@@ -2292,17 +2304,21 @@
   document.getElementById("wlNotifMark").addEventListener("click", async () => {
     if (!viewerEmail) return;
     const now = new Date().toISOString();
+    // Snapshot the prior state so we can roll back if the worker errors.
+    const snapshot = { ...lastSeenByPost };
     for (const post of posts) {
       if ((post.author_email || "").toLowerCase() === viewerEmail) {
         lastSeenByPost[post.id] = now;
       }
     }
+    renderNotifications();
     try {
       await wallAction("mark-seen", { at: now });
-      renderNotifications();
       showBanner("Marked all as read");
     } catch (err) {
-      showBanner(err.message || String(err), true);
+      lastSeenByPost = snapshot;
+      renderNotifications();
+      showBanner("Mark-as-read failed: " + (err.message || String(err)), true);
     }
   });
 

@@ -6,9 +6,9 @@
 <title>TogetherBOOK — Pipeline</title>
 <link rel="icon" type="image/png" href="site-icon.png">
 <link rel="apple-touch-icon" href="site-icon.png">
-<link rel="stylesheet" href="quiet-tokens.css?v=1778791697">
-<link rel="stylesheet" href="quiet.css?v=1778791697">
-<link rel="stylesheet" href="quiet-extras.css?v=1778792419">
+<link rel="stylesheet" href="quiet-tokens.css?v=1778923602">
+<link rel="stylesheet" href="quiet.css?v=1778923602">
+<link rel="stylesheet" href="quiet-extras.css?v=1778923602">
 <script src="https://cdn.jsdelivr.net/npm/d3@7.9.0/dist/d3.min.js" crossorigin="anonymous"></script>
 <script src="https://cdn.jsdelivr.net/npm/d3-sankey@0.12.3/dist/d3-sankey.min.js" crossorigin="anonymous"></script>
 <style>
@@ -390,7 +390,7 @@
 
 <header class="qb-topbar">
   <a class="qb-brand" href="index.html" aria-label="TogetherBOOK — home">
-    <img class="qb-brand-logo" src="togetherbook-logo.png?v=1778791697" alt="TogetherBOOK">
+    <img class="qb-brand-logo" src="togetherbook-logo.png?v=1778923602" alt="TogetherBOOK">
   </a>
   <button class="qb-hamburger" aria-label="Toggle navigation menu" aria-expanded="false"
           onclick="document.body.classList.toggle('nav-open');this.setAttribute('aria-expanded',document.body.classList.contains('nav-open'))">
@@ -506,8 +506,13 @@
 
   function render(d) {
     document.getElementById("plMonth").textContent = `in ${d.month_label || d.month}`;
+    // Guard against partial payloads — a workflow that committed mid-write
+    // could ship a JSON without leads or apps; without these guards the
+    // .toLocaleString() call throws and the whole page stays on "Loading…".
+    const leadsPresented = (d && d.leads && d.leads.presented) || 0;
+    const appsTotal      = (d && d.apps  && d.apps.total)      || 0;
     document.getElementById("plMeta").textContent =
-      `${d.lender_label} · ${d.month_label} · ${(d.leads.presented).toLocaleString()} leads presented · ${(d.apps.total).toLocaleString()} applications started`;
+      `${d.lender_label || ""} · ${d.month_label || ""} · ${leadsPresented.toLocaleString()} leads presented · ${appsTotal.toLocaleString()} applications started`;
     renderRefresh(d);
     drawLeadFunnel(d);
     drawAppProgression(d);
@@ -1082,6 +1087,6 @@
   );
 </script>
 
-<script src="nav.js" defer></script>
+<script src="nav.js?v=1778923602" defer></script>
 </body>
 </html>

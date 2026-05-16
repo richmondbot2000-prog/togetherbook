@@ -49,123 +49,121 @@ export default {
       "Accept": "application/vnd.github+json",
       "User-Agent": "apifk-annotations-worker",
     };
-
-    // 1. Read current annotations.json (need the SHA for the PUT).
-    const getRes = await fetch(
-      `https://api.github.com/repos/${OWNER}/${REPO}/contents/${FILE_PATH}?ref=${BRANCH}`,
-      { headers: ghHeaders },
-    );
-    let current = { schema_version: 1, updated_at: null, annotations: {} };
-    let sha = null;
-    if (getRes.ok) {
-      const data = await getRes.json();
-      sha = data.sha;
-      try {
-        const parsed = JSON.parse(atob(data.content.replace(/\s/g, "")));
-        if (parsed && typeof parsed === "object") current = parsed;
-      } catch (e) { /* malformed file — treat as fresh */ }
-    } else if (getRes.status !== 404) {
-      const err = await getRes.text();
-      return json({ error: "failed to read annotations.json", status: getRes.status, details: err.slice(0, 200) }, 502, req);
-    }
-
-    const annotations = (current.annotations && typeof current.annotations === "object")
-      ? current.annotations
-      : {};
-
-    // Field-by-field preservation: if the caller didn't include a field in the
-    // payload at all, we keep the existing value. If they sent an empty
-    // string, we clear it. If they sent a value, we set it. This lets clients
-    // do partial updates without clobbering fields they don't touch.
     const has = (k) => Object.prototype.hasOwnProperty.call(body || {}, k);
-    const existing = (annotations[key] && typeof annotations[key] === "object") ? annotations[key] : {};
-    const next = { ...existing };
 
-    const setScalar = (k, val) => {
-      if (!has(k)) return;
-      const t = (val || "").trim();
-      if (t) next[k] = t; else delete next[k];
-    };
-    setScalar("phone", phone);
-    setScalar("start_date", start_date);
-    setScalar("address", address);
-    setScalar("forward_to", forward_to);
-    // Cache-bust for the Directory profile photo. Set to an ISO timestamp when
-    // a new upload commits to assets/photos/, or to "" to clear when removed.
-    setScalar("directory_photo_uploaded_at", directory_photo_uploaded_at);
-    // The user's identified line manager — email of another staff member.
-    // Used by the Holidays page to build the manager view + by the workspace
-    // worker's holidays handler to authorise manager edits.
-    setScalar("line_manager", (line_manager || "").toLowerCase());
+    // Retry the read-merge-write on 409 / 422 so concurrent annotation
+    // saves never silently drop a field. (Two cards closed in quick
+    // succession, photo-upload + notes auto-save on the same user,
+    // etc. — without this, one of the writes was lost prior to the
+    // 2026-05-16 QA round.)
+    let attempt = 0;
+    while (attempt < 4) {
+      attempt++;
 
-    // payroll_match is an object (not a string) — handle separately.
-    if (has("payroll_match")) {
-      const m = (payroll_match && typeof payroll_match === "object") ? payroll_match : null;
-      if (m) next.payroll_match = m;
-      else delete next.payroll_match;
-    }
+      // 1. Read current annotations.json (need the SHA for the PUT).
+      const getRes = await fetch(
+        `https://api.github.com/repos/${OWNER}/${REPO}/contents/${FILE_PATH}?ref=${BRANCH}&_=${Date.now()}`,
+        { headers: ghHeaders },
+      );
+      let current = { schema_version: 1, updated_at: null, annotations: {} };
+      let sha = null;
+      if (getRes.ok) {
+        const data = await getRes.json();
+        sha = data.sha;
+        try {
+          const parsed = JSON.parse(atob(data.content.replace(/\s/g, "")));
+          if (parsed && typeof parsed === "object") current = parsed;
+        } catch (e) { /* malformed file — treat as fresh */ }
+      } else if (getRes.status !== 404) {
+        const err = await getRes.text();
+        return json({ error: "failed to read annotations.json", status: getRes.status, details: err.slice(0, 200) }, 502, req);
+      }
 
-    // rename_decay: { old_address, renamed_at } — set when a primary email is
-    // renamed via the Directory page so the card can show the ~21-day
-    // auto-alias countdown. Cleared by sending null.
-    if (has("rename_decay")) {
-      const m = (rename_decay && typeof rename_decay === "object") ? rename_decay : null;
-      if (m) next.rename_decay = m;
-      else delete next.rename_decay;
-    }
+      const annotations = (current.annotations && typeof current.annotations === "object")
+        ? current.annotations
+        : {};
 
-    // pending_conversion: { forward_to, queued_at, ready_after } — set on the
-    // immediate convert-to-group leaver path so the daily
-    // finalise_pending_conversions.py cron can create the forwarding Group
-    // when Google's 20-day address-reuse lockout expires. Cleared by sending
-    // null. Without this, the immediate-convert flow silently loses the
-    // forwarding intent (see commit log 2026-05-16 QA round).
-    if (has("pending_conversion")) {
-      const m = (pending_conversion && typeof pending_conversion === "object") ? pending_conversion : null;
-      if (m) next.pending_conversion = m;
-      else delete next.pending_conversion;
-    }
+      // Field-by-field preservation: if the caller didn't include a field in
+      // the payload, we keep the existing value. Empty string clears it. A
+      // value sets it. Each retry re-merges against the latest read so a
+      // parallel writer's fields are preserved.
+      const existing = (annotations[key] && typeof annotations[key] === "object") ? annotations[key] : {};
+      const next = { ...existing };
 
-    if (Object.keys(next).length === 0) {
-      delete annotations[key];
-    } else {
-      annotations[key] = next;
-    }
+      const setScalar = (k, val) => {
+        if (!has(k)) return;
+        const t = (val || "").trim();
+        if (t) next[k] = t; else delete next[k];
+      };
+      setScalar("phone", phone);
+      setScalar("start_date", start_date);
+      setScalar("address", address);
+      setScalar("forward_to", forward_to);
+      setScalar("directory_photo_uploaded_at", directory_photo_uploaded_at);
+      setScalar("line_manager", (line_manager || "").toLowerCase());
 
-    const out = {
-      schema_version: 1,
-      updated_at: new Date().toISOString(),
-      annotations,
-    };
-    const newContent = b64Encode(JSON.stringify(out, null, 2) + "\n");
-    const action = !annotations[key]
-      ? "clear"
-      : has("payroll_match") && payroll_match
-        ? "link payroll"
-        : has("payroll_match") && !payroll_match
-          ? "unlink payroll"
-          : "set";
-    const commitMsg = `Directory note: ${action} ${key}`;
+      if (has("payroll_match")) {
+        const m = (payroll_match && typeof payroll_match === "object") ? payroll_match : null;
+        if (m) next.payroll_match = m;
+        else delete next.payroll_match;
+      }
+      if (has("rename_decay")) {
+        const m = (rename_decay && typeof rename_decay === "object") ? rename_decay : null;
+        if (m) next.rename_decay = m;
+        else delete next.rename_decay;
+      }
+      if (has("pending_conversion")) {
+        const m = (pending_conversion && typeof pending_conversion === "object") ? pending_conversion : null;
+        if (m) next.pending_conversion = m;
+        else delete next.pending_conversion;
+      }
 
-    const putRes = await fetch(
-      `https://api.github.com/repos/${OWNER}/${REPO}/contents/${FILE_PATH}`,
-      {
-        method: "PUT",
-        headers: { ...ghHeaders, "Content-Type": "application/json" },
-        body: JSON.stringify({
-          message: commitMsg,
-          content: newContent,
-          branch: BRANCH,
-          sha: sha || undefined,
-        }),
-      },
-    );
-    if (!putRes.ok) {
+      if (Object.keys(next).length === 0) {
+        delete annotations[key];
+      } else {
+        annotations[key] = next;
+      }
+
+      const out = {
+        schema_version: 1,
+        updated_at: new Date().toISOString(),
+        annotations,
+      };
+      const newContent = b64Encode(JSON.stringify(out, null, 2) + "\n");
+      const action = !annotations[key]
+        ? "clear"
+        : has("payroll_match") && payroll_match
+          ? "link payroll"
+          : has("payroll_match") && !payroll_match
+            ? "unlink payroll"
+            : "set";
+      const commitMsg = `Directory note: ${action} ${key}`;
+
+      const putRes = await fetch(
+        `https://api.github.com/repos/${OWNER}/${REPO}/contents/${FILE_PATH}`,
+        {
+          method: "PUT",
+          headers: { ...ghHeaders, "Content-Type": "application/json" },
+          body: JSON.stringify({
+            message: commitMsg,
+            content: newContent,
+            branch: BRANCH,
+            sha: sha || undefined,
+          }),
+        },
+      );
+      if (putRes.ok) {
+        return json({ ok: true, key, value: annotations[key] || null, all: out }, 200, req);
+      }
+      if (putRes.status === 409 || putRes.status === 422) {
+        // sha conflict — wait briefly + retry.
+        await new Promise(r => setTimeout(r, 200 * attempt));
+        continue;
+      }
       const err = await putRes.text();
       return json({ error: "failed to commit", status: putRes.status, details: err.slice(0, 200) }, 502, req);
     }
-
-    return json({ ok: true, key, value: annotations[key] || null, all: out }, 200, req);
+    return json({ error: "failed to commit after retries (concurrent writers)" }, 503, req);
   },
 };
 
