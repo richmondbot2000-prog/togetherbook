@@ -1612,11 +1612,29 @@
     const cell = expand.querySelector("td");
     cell.innerHTML = `<div class="hd-act-items hd-act-items-loading">Loading drill-down…</div>`;
     expand.hidden = false;
+    // Two parallel inputs to the drill-down: (a) D1 per-message items
+    // for sources that have been seeded with row-level detail (today:
+    // communications.Messages); (b) the per-(src, bucket) aggregates
+    // that the page already has cached locally — used as a fallback
+    // so every source contributes a section to the expansion, even
+    // when we don't yet capture row-level detail for it.
     const params = new URLSearchParams({
       email:  tr.dataset.email,
       date:   tr.dataset.iso,
       bucket: tr.dataset.bucket,
     });
+    const targetBucket = parseInt(tr.dataset.bucket, 10);
+    const rec = (activityData && activityData.by_email && activityData.by_email[tr.dataset.email]) || {};
+    const dayEvents = (rec.events || {})[tr.dataset.iso] || [];
+    const aggBySrc = {};
+    for (const e of dayEvents) {
+      if ((e.bucket || 0) !== targetBucket) continue;
+      aggBySrc[e.src || "?"] = {
+        writes: e.writes || 0,
+        first_at: e.first_at || null,
+        last_at:  e.last_at  || null,
+      };
+    }
     try {
       const r = await fetch(`/api/workspace/activity-items?${params}`, { cache: "no-store" });
       if (!r.ok) {
@@ -1624,59 +1642,85 @@
         throw new Error((j && j.error) || `HTTP ${r.status}`);
       }
       const data = await r.json();
-      cell.innerHTML = renderActivityItems(data.items || []);
+      cell.innerHTML = renderActivityItems(data.items || [], aggBySrc);
     } catch (err) {
       cell.innerHTML = `<div class="hd-act-items hd-act-items-empty">Couldn't load detail: ${escapeHtml(err.message || String(err))}</div>`;
     }
   }
 
-  // Render the per-message detail returned by /api/workspace/activity-items.
-  // Items are grouped by source so a manager sees the comm rows, the
-  // application rows, the loanbook rows, etc. in clearly-separated
-  // sections. Comm rows carry body excerpt + ComType pill + meta;
-  // other rows currently fall back to "captured-as-aggregate-only".
-  function renderActivityItems(items) {
+  // Render the drill-down: one section per source contributing to
+  // this bucket. Sources we've seeded with per-row detail in D1
+  // (currently only communications.Messages) render full item cards
+  // with body excerpt + ComType + ClientType + Client + Campaign +
+  // AutoProcessed. Sources we don't yet have row-level detail for
+  // get an aggregate line (writes + first/last UTC) so the manager
+  // can still see something was happening there.
+  function renderActivityItems(items, aggBySrc) {
     const bySrc = new Map();
     for (const it of items) {
       const s = it.src || "?";
       if (!bySrc.has(s)) bySrc.set(s, []);
       bySrc.get(s).push(it);
     }
-    const sections = [];
-    for (const [src, list] of bySrc) {
-      const blocks = list.map(it => {
-        const t = (it.occurred_at || "").slice(11, 19) || "—";
-        const commType = (it.comm_type || "").toString();
-        const ct = commType.toLowerCase();
-        const pill = commType
-          ? `<span class="hd-act-items-pill is-${escapeHtml(ct)}">${escapeHtml(commType)}</span>`
-          : "";
-        const auto = it.auto_processed
-          ? `<span class="hd-act-items-pill is-auto">Auto</span>` : "";
-        const fields = [];
-        if (it.client_type)     fields.push(`<span>ClientType <b>${escapeHtml(it.client_type)}</b></span>`);
-        if (it.client_username) fields.push(`<span>Client <b>${escapeHtml(it.client_username)}</b></span>`);
-        if (it.campaign_name)   fields.push(`<span>Campaign <b>${escapeHtml(it.campaign_name)}</b></span>`);
-        const recId = it.record_id ? `<span class="hd-act-src-count">#${escapeHtml(it.record_id)}</span>` : "";
-        const body = it.body_excerpt
-          ? `<div class="hd-act-items-body">${escapeHtml(it.body_excerpt)}</div>`
-          : "";
-        return `<div class="hd-act-items-item">
-          <div class="hd-act-items-meta">
-            <span><b>${escapeHtml(t)}</b> UTC</span>
-            ${pill}${auto}${fields.join("")}${recId}
-          </div>
-          ${body}
-        </div>`;
-      }).join("");
-      sections.push(`<div class="hd-act-items-section">
-        <div class="hd-act-items-section-head">${escapeHtml(src)} · ${list.length} item${list.length === 1 ? "" : "s"}</div>
-        ${blocks}
-      </div>`);
+    // Build a single ordered set of sources from BOTH inputs so
+    // sources that appear only as aggregates still get rendered.
+    const allSources = new Set([...bySrc.keys(), ...Object.keys(aggBySrc || {})]);
+    if (!allSources.size) {
+      return `<div class="hd-act-items hd-act-items-empty">No detail captured for this 15-min slot.</div>`;
     }
-    if (!sections.length) {
-      return `<div class="hd-act-items hd-act-items-empty">Aggregate-only for these sources — per-row detail isn't captured yet outside comm tables. Today's comms are seeding now; click again in a few minutes.</div>`;
-    }
+    const ordered = [...allSources].sort((a, b) => {
+      const wa = (aggBySrc && aggBySrc[a] && aggBySrc[a].writes) || (bySrc.get(a) || []).length;
+      const wb = (aggBySrc && aggBySrc[b] && aggBySrc[b].writes) || (bySrc.get(b) || []).length;
+      return wb - wa;
+    });
+    const sections = ordered.map(src => {
+      const list = bySrc.get(src) || [];
+      const agg  = (aggBySrc && aggBySrc[src]) || null;
+      const head = (() => {
+        if (list.length) return `${escapeHtml(src)} · ${list.length} item${list.length === 1 ? "" : "s"}`;
+        if (agg) {
+          const span = (agg.first_at && agg.last_at)
+            ? ` · first ${escapeHtml(agg.first_at.slice(11,19))} · last ${escapeHtml(agg.last_at.slice(11,19))} UTC`
+            : "";
+          return `${escapeHtml(src)} · ${agg.writes.toLocaleString("en-GB")} write${agg.writes === 1 ? "" : "s"}${span}`;
+        }
+        return escapeHtml(src);
+      })();
+      let body = "";
+      if (list.length) {
+        body = list.map(it => {
+          const t = (it.occurred_at || "").slice(11, 19) || "—";
+          const commType = (it.comm_type || "").toString();
+          const ct = commType.toLowerCase();
+          const pill = commType
+            ? `<span class="hd-act-items-pill is-${escapeHtml(ct)}">${escapeHtml(commType)}</span>`
+            : "";
+          const auto = it.auto_processed
+            ? `<span class="hd-act-items-pill is-auto">Auto</span>` : "";
+          const fields = [];
+          if (it.client_type)     fields.push(`<span>ClientType <b>${escapeHtml(it.client_type)}</b></span>`);
+          if (it.client_username) fields.push(`<span>Client <b>${escapeHtml(it.client_username)}</b></span>`);
+          if (it.campaign_name)   fields.push(`<span>Campaign <b>${escapeHtml(it.campaign_name)}</b></span>`);
+          const recId = it.record_id ? `<span class="hd-act-src-count">#${escapeHtml(it.record_id)}</span>` : "";
+          const txt = it.body_excerpt
+            ? `<div class="hd-act-items-body">${escapeHtml(it.body_excerpt)}</div>`
+            : "";
+          return `<div class="hd-act-items-item">
+            <div class="hd-act-items-meta">
+              <span><b>${escapeHtml(t)}</b> UTC</span>
+              ${pill}${auto}${fields.join("")}${recId}
+            </div>
+            ${txt}
+          </div>`;
+        }).join("");
+      } else {
+        body = `<div class="hd-act-items-item hd-act-items-empty">Aggregate only — per-row detail not yet captured for this source.</div>`;
+      }
+      return `<div class="hd-act-items-section">
+        <div class="hd-act-items-section-head">${head}</div>
+        ${body}
+      </div>`;
+    });
     return `<div class="hd-act-items">${sections.join("")}</div>`;
   }
   function bucketTime(bucket) {
