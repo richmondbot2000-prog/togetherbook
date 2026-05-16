@@ -154,6 +154,13 @@ def scan_database(database: str, cutoff: datetime.datetime, buckets_out, events_
     for schema, table, ts in targets:
         src = f"{db_short}.{table}"
         try:
+            # Filter: ClientUsername must look like a person identifier —
+            # either email-form (contains @) or dotted-name form (e.g.
+            # `jack.bassilious`). The dotted form matters for
+            # ReportingCommunications.dbo.Messages where agent usernames
+            # are stored as bare local-parts (no @<domain>), so the
+            # original @-only filter was silently dropping every comm
+            # sent by an employee.
             q = (
                 f"SELECT LOWER(ClientUsername) AS un, "
                 f"       CAST([{ts}] AS DATE) AS dt, "
@@ -162,7 +169,9 @@ def scan_database(database: str, cutoff: datetime.datetime, buckets_out, events_
                 f"       MIN([{ts}]) AS first_at, "
                 f"       MAX([{ts}]) AS last_at "
                 f"FROM [{schema}].[{table}] "
-                f"WHERE [{ts}] >= ? AND ClientUsername LIKE '%@%' "
+                f"WHERE [{ts}] >= ? "
+                f"  AND ClientUsername IS NOT NULL "
+                f"  AND (ClientUsername LIKE '%@%' OR ClientUsername LIKE '%.%') "
                 f"GROUP BY LOWER(ClientUsername), CAST([{ts}] AS DATE), "
                 f"         (DATEPART(HOUR, [{ts}]) * 4 + DATEPART(MINUTE, [{ts}]) / 15)"
             )
@@ -198,8 +207,13 @@ def scan_database(database: str, cutoff: datetime.datetime, buckets_out, events_
 
 
 def domain_local_variants(workspace_email: str):
-    """Local-part @ every domain we know staff write under (matches the
-    scan_staff_activity convention)."""
+    """Every ClientUsername form this Workspace user might appear under.
+    Includes:
+      - the Workspace email itself
+      - local-part @ every known tenant domain
+      - the bare local-part (no @) — Communications.Messages stores
+        agent usernames in this form for outbound CRM messages
+    """
     local = workspace_email.split("@")[0].lower()
     domains = [
         "rgroup.co.uk", "letme.co.uk", "letme.com",
@@ -210,6 +224,7 @@ def domain_local_variants(workspace_email: str):
     ]
     s = {f"{local}@{d}" for d in domains}
     s.add(workspace_email.lower())
+    s.add(local)  # bare local-part (Comms agent username form)
     return s
 
 
