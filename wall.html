@@ -1523,6 +1523,7 @@
     const channelTag = post.channel
       ? ` <span class="wl-channel-tag">${escapeHtml(post.channel)}</span>` : "";
     const canDeletePost = canDelete(post.author_email);
+    const canEditPost = canEdit(post.author_email);
     const editedTag = post.edited_at ? ` <span class="wl-edited-tag">edited</span>` : "";
     return `
       <div class="wl-post-head">
@@ -1531,9 +1532,9 @@
           <div class="wl-post-name">${escapeHtml(name)}${channelTag}</div>
           <div class="wl-post-time">${formatTime(post.created_at)}${editedTag}</div>
         </div>
-        ${canDeletePost ? `<div class="wl-post-head-actions">
-          <button class="wl-edit-btn" data-edit-post="${escapeHtml(post.id)}" title="Edit this post" aria-label="Edit post" data-stop-card-click>${icon("edit", false)}</button>
-          <button class="wl-delete-btn" data-delete-post="${escapeHtml(post.id)}" title="Delete this post" aria-label="Delete post" data-stop-card-click>${icon("trash", false)}</button>
+        ${(canEditPost || canDeletePost) ? `<div class="wl-post-head-actions">
+          ${canEditPost ? `<button class="wl-edit-btn" data-edit-post="${escapeHtml(post.id)}" title="Edit this post" aria-label="Edit post" data-stop-card-click>${icon("edit", false)}</button>` : ""}
+          ${canDeletePost ? `<button class="wl-delete-btn" data-delete-post="${escapeHtml(post.id)}" title="Delete this post" aria-label="Delete post" data-stop-card-click>${icon("trash", false)}</button>` : ""}
         </div>` : ""}
       </div>`;
   }
@@ -1857,6 +1858,12 @@
     if (viewerIsAdmin) return true;
     return (authorEmail || "").toLowerCase() === viewerEmail;
   }
+  // Edit is author-only — admins can take a post down (canDelete) but not
+  // rewrite someone else's words.
+  function canEdit(authorEmail) {
+    if (!viewerEmail) return false;
+    return (authorEmail || "").toLowerCase() === viewerEmail;
+  }
   function commentAttachButtons(postId, parentCommentId) {
     if (!viewerEmail) return "";
     const key = parentCommentId ? `${postId}::${parentCommentId}` : postId;
@@ -1984,6 +1991,7 @@
     const replyComposerOpen = openReplyTo.has(replyKey);
     const myReaction = mineReactionOn(comment.reactions || {});
     const canDel = canDelete(comment.author_email);
+    const canEditThis = canEdit(comment.author_email);
 
     // Render-time "↳ ParentName" prefix on replies whose parent is itself a
     // reply (i.e. depth ≥ 2 in the data tree). Suppressed if the body
@@ -2028,9 +2036,9 @@
                 <span class="wl-comment-name">${escapeHtml(name)}</span>
                 <span class="wl-comment-time">${formatTime(comment.created_at)}${comment.edited_at ? ` <span class="wl-edited-tag">edited</span>` : ""}</span>
               </div>
-              ${canDel ? `<div style="display:flex;gap:2px;align-items:center;">
-                <button class="wl-edit-btn" data-edit-comment="${escapeHtml(post.id)}::${escapeHtml(comment.id)}" title="Edit this ${isReply ? "reply" : "comment"}" aria-label="Edit">${icon("edit", false)}</button>
-                <button class="wl-delete-btn" data-delete-comment="${escapeHtml(post.id)}::${escapeHtml(comment.id)}" title="Delete this ${isReply ? "reply" : "comment"}" aria-label="Delete">${icon("trash", false)}</button>
+              ${(canEditThis || canDel) ? `<div style="display:flex;gap:2px;align-items:center;">
+                ${canEditThis ? `<button class="wl-edit-btn" data-edit-comment="${escapeHtml(post.id)}::${escapeHtml(comment.id)}" title="Edit this ${isReply ? "reply" : "comment"}" aria-label="Edit">${icon("edit", false)}</button>` : ""}
+                ${canDel ? `<button class="wl-delete-btn" data-delete-comment="${escapeHtml(post.id)}::${escapeHtml(comment.id)}" title="Delete this ${isReply ? "reply" : "comment"}" aria-label="Delete">${icon("trash", false)}</button>` : ""}
               </div>` : ""}
             </div>
             ${editingKey === `comment:${post.id}::${comment.id}`
@@ -2681,7 +2689,13 @@
     const key = t.dataset.editSave || editingKey;
     if (!key) return;
     const nextBody = (t.value || "").trim();
-    const [kind, rest] = key.split(":");
+    // Key is "post:<id>" or "comment:<postId>::<commentId>". The naive
+    // `key.split(":")` drops the `::` half on comments because destructuring
+    // only takes the first two elements — manually slice at the first colon.
+    const firstColon = key.indexOf(":");
+    if (firstColon < 0) { editingKey = null; renderFeed(); return; }
+    const kind = key.slice(0, firstColon);
+    const rest = key.slice(firstColon + 1);
     if (kind === "post") {
       const id = rest;
       const post = posts.find(p => p.id === id);

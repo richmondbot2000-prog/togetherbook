@@ -1514,16 +1514,16 @@ async function wallEdit(env, viewerEmail, body) {
   if (!id) throw new Error("missing id");
   if (newBody.length > 10000) throw new Error("body too long");
 
-  const admins = await fetchAdmins();
-  const isAdmin = admins.includes(viewerEmail);
   const editedAt = new Date().toISOString();
 
   await updateWallJson(env, doc => {
     if (kind === "post") {
       const post = (doc.posts || []).find(p => p.id === id);
       if (!post) throw new Error("post not found");
-      if (!isAdmin && (post.author_email || "").toLowerCase() !== viewerEmail) {
-        throw new Error("not allowed — you can only edit your own posts");
+      // Edit is author-only — admins can delete but not rewrite someone
+      // else's words. Stricter than delete on purpose.
+      if ((post.author_email || "").toLowerCase() !== viewerEmail) {
+        throw new Error("not allowed — only the author can edit a post");
       }
       if (!newBody.trim() && (!post.photos || !post.photos.length)) {
         throw new Error("a post needs either text or a photo");
@@ -1536,8 +1536,8 @@ async function wallEdit(env, viewerEmail, body) {
       if (!post) throw new Error("post not found");
       const c = (post.comments || []).find(x => x.id === id);
       if (!c) throw new Error("comment not found");
-      if (!isAdmin && (c.author_email || "").toLowerCase() !== viewerEmail) {
-        throw new Error("not allowed — you can only edit your own comments");
+      if ((c.author_email || "").toLowerCase() !== viewerEmail) {
+        throw new Error("not allowed — only the author can edit a comment");
       }
       if (!newBody.trim() && (!c.photos || !c.photos.length)) {
         throw new Error("a comment needs either text or a photo");
