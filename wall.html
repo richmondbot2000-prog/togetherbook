@@ -1827,7 +1827,7 @@
               </div>
               ${canDel ? `<button class="wl-delete-btn" data-delete-comment="${escapeHtml(post.id)}::${escapeHtml(comment.id)}" title="Delete this ${isReply ? "reply" : "comment"}" aria-label="Delete">${icon("trash", false)}</button>` : ""}
             </div>
-            ${comment.body ? `<div class="wl-comment-text">${escapeHtml(comment.body)}</div>` : ""}
+            ${comment.body ? `<div class="wl-comment-text">${enrichBody(comment.body)}</div>` : ""}
             ${renderCommentMedia(comment.photos || [], comment.id)}
             ${renderReactionPills(comment.reactions || {}, comment.id, "comment")}
           </div>
