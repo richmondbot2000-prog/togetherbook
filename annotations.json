@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "updated_at": "2026-05-16T13:28:42.024Z",
+  "updated_at": "2026-05-16T13:28:54.494Z",
   "annotations": {
     "adnan.turken@letme.co.uk": {
       "directory_photo_uploaded_at": "2026-05-14T09:09:07+01:00"
@@ -18,7 +18,8 @@
       "directory_photo_uploaded_at": "2026-05-14T09:06:25+01:00"
     },
     "ashwin.john@togetherloans.com": {
-      "directory_photo_uploaded_at": "2026-05-14T09:05:41+01:00"
+      "directory_photo_uploaded_at": "2026-05-14T09:05:41+01:00",
+      "line_manager": "james.benamor@letme.com"
     },
     "axel.horsfall@togetherloans.com": {
       "directory_photo_uploaded_at": "2026-05-14T09:02:42+01:00"
