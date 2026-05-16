@@ -972,21 +972,38 @@
   let payrollByNameNorm = new Map();
 
   // ── Boot ──────────────────────────────────────────────────────────
-  // holidays.json is read straight from raw.githubusercontent.com so it
-  // bypasses the 30–60 s GitHub Pages rebuild lag. Without this, every
-  // save would take a minute to become visible after a page reload.
-  // staff.json + admins.json change rarely; the small lag there is fine.
+  // holidays.json is fetched via api.github.com's contents endpoint, NOT
+  // raw.githubusercontent.com. raw.gh's CDN caches each file path for up to
+  // ~5 minutes and silently ignores `?ts=` cache-busters in the URL, so a
+  // save followed by a quick page reload would show the pre-save state and
+  // make it look like the change reverted. api.github.com always reflects
+  // the latest commit. Falls back to raw.gh on rate-limit / failure.
   const HOLIDAYS_RAW_URL = "https://raw.githubusercontent.com/richmondbot2000-prog/togetherbook/main/holidays.json";
-  // annotations.json is also read from raw to bypass the GH Pages lag.
   const ANNOTATIONS_RAW_URL = "https://raw.githubusercontent.com/richmondbot2000-prog/togetherbook/main/annotations.json";
+  async function fetchFreshJson(path, fallbackRawUrl, defaultValue) {
+    try {
+      const r = await fetch(
+        `https://api.github.com/repos/richmondbot2000-prog/togetherbook/contents/${path}?ref=main`,
+        { cache: "no-store", headers: { "Accept": "application/vnd.github+json" } },
+      );
+      if (!r.ok) throw new Error("api.github.com " + r.status);
+      const data = await r.json();
+      const txt = atob((data.content || "").replace(/\s/g, ""));
+      return JSON.parse(txt);
+    } catch (e) {
+      try {
+        const r = await fetch(`${fallbackRawUrl}?ts=${Date.now()}`, { cache: "no-store" });
+        if (r.ok) return await r.json();
+      } catch (_) {}
+      return defaultValue;
+    }
+  }
   Promise.all([
     fetch(`${HD_API}/whoami`, { cache: "no-store" }).then(r => r.ok ? r.json() : Promise.reject("not signed in")),
     fetch("staff.json",       { cache: "no-store" }).then(r => r.ok ? r.json() : Promise.reject("staff.json missing")),
     fetch("admins.json",      { cache: "no-store" }).then(r => r.ok ? r.json() : ({ admins: [] })),
-    fetch(`${HOLIDAYS_RAW_URL}?ts=${Date.now()}`, { cache: "no-store" })
-      .then(r => r.ok ? r.json() : ({ by_user: {}, log: [] })),
-    fetch(`${ANNOTATIONS_RAW_URL}?ts=${Date.now()}`, { cache: "no-store" })
-      .then(r => r.ok ? r.json() : ({ annotations: {} })).catch(() => ({ annotations: {} })),
+    fetchFreshJson("holidays.json",    HOLIDAYS_RAW_URL,    { by_user: {}, log: [] }),
+    fetchFreshJson("annotations.json", ANNOTATIONS_RAW_URL, { annotations: {} }),
     fetch("/api/workspace/payroll", { cache: "no-store" })
       .then(r => r.ok ? r.json() : null).catch(() => null),
   ]).then(([who, s, ad, hd, an, pr]) => {
@@ -1089,9 +1106,8 @@
   // call repeatedly.
   async function refreshLineManagers() {
     try {
-      const res = await fetch(`${ANNOTATIONS_RAW_URL}?ts=${Date.now()}`, { cache: "no-store" });
-      if (!res.ok) return;
-      const an = await res.json();
+      const an = await fetchFreshJson("annotations.json", ANNOTATIONS_RAW_URL, null);
+      if (!an) return;
       lineManagerByEmail = {};
       for (const [k, v] of Object.entries((an && an.annotations) || {})) {
         const mgr = (v && v.line_manager) ? String(v.line_manager).toLowerCase() : "";
