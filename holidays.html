@@ -41,6 +41,24 @@
     color: var(--ink-700);
   }
   .hd-picker label { font: italic 500 14px/1.2 var(--font-display, 'Newsreader', serif); }
+  /* Bottom-of-page admin picker — sits below the calendar, not in the
+     header. Right-aligned, indented from the page edge, italic label. */
+  .hd-picker.hd-picker--bottom {
+    margin: 28px 0 4px;
+    padding: 12px 0;
+    border-top: 1px dashed var(--brass-300);
+    justify-content: flex-end;
+  }
+  /* Page-level updated-at footer — relocated from the header. Shows on
+     all views so you always know the freshness of the data. */
+  .hd-meta-footer {
+    margin: 18px 0 4px;
+    padding: 10px 0 0;
+    border-top: 1px solid var(--paper-300, #ECDFB6);
+    text-align: right;
+    font: italic 400 11px/1.3 var(--font-display, 'Newsreader', serif);
+    color: var(--ink-500);
+  }
   .hd-picker select {
     font: 500 14px/1 var(--font-mono, 'JetBrains Mono', monospace);
     padding: 6px 10px;
@@ -526,6 +544,100 @@
     background: #C8CCD3 !important;
     cursor: not-allowed;
   }
+
+  /* ── Mobile team view (≤720 px) ──────────────────────────────────
+     The desktop wide-grid is unusable on phones — the 180 px name
+     column + 42-column day strip leaves ~4 px per day cell. This
+     layout stacks one person at a time, with full-width 7-cell
+     week strips so each day clears the 44 px Apple HIG tap target.
+     Both DOMs are populated by renderTeam(); CSS swaps them. */
+  .hd-team-mobile { display: none; }
+  @media (max-width: 720px) {
+    .hd-team { display: none; }
+    .hd-team-mobile { display: block; background: var(--paper-50, white); }
+    .hd-team-mobile-dow {
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      gap: 2px;
+      position: sticky;
+      top: 0;
+      z-index: 5;
+      background: var(--paper-100, #FBF6E9);
+      border-bottom: 1px solid var(--brass-300);
+      padding: 8px 6px;
+      font: 600 11px/1 var(--font-mono, 'JetBrains Mono', monospace);
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--ink-700);
+      text-align: center;
+    }
+    .hd-team-mobile-dow > * { padding: 3px 0; }
+    .hd-team-mobile-dow .is-weekend-dow { color: var(--brass-600, #A47829); }
+    .hd-team-mobile-person {
+      margin-top: 14px;
+      padding: 0 6px 6px;
+    }
+    .hd-team-mobile-person:first-child { margin-top: 4px; }
+    .hd-team-mobile-name {
+      padding: 8px 4px;
+      font: italic 600 16px/1.2 var(--font-display, 'Newsreader', serif);
+      color: var(--ink-900);
+      background: var(--paper-100, #FBF6E9);
+      border-left: 3px solid var(--brass-500, #C8973F);
+      padding-left: 10px;
+      margin-bottom: 4px;
+    }
+    .hd-team-mobile-name .tb-profile-link { color: inherit; }
+    .hd-team-mobile-month {
+      font: 600 10px/1 var(--font-mono, 'JetBrains Mono', monospace);
+      letter-spacing: 0.1em;
+      color: var(--ink-500);
+      text-transform: uppercase;
+      padding: 10px 4px 4px;
+    }
+    .hd-team-mobile-week {
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      gap: 2px;
+      margin-bottom: 2px;
+    }
+    .hd-team-mobile-week .hd-team-cell {
+      aspect-ratio: 1;
+      height: auto;
+      min-height: 44px;
+      display: flex;
+      align-items: flex-start;
+      justify-content: flex-end;
+      padding: 3px 5px;
+    }
+    .hd-team-mobile-week .hd-team-cell.is-pad {
+      background: transparent !important;
+      cursor: default;
+    }
+    .hd-team-mobile-week .hd-team-cell .hd-team-mobile-daynum {
+      font: 500 11px/1 var(--font-mono, 'JetBrains Mono', monospace);
+      color: var(--ink-700);
+      pointer-events: none;
+      text-shadow: 0 0 2px rgba(253,251,244,0.55);
+    }
+    .hd-team-mobile-week .hd-team-cell[data-status]:not([data-status="office"]) .hd-team-mobile-daynum {
+      color: rgba(253,251,244,0.95);
+      text-shadow: 0 0 2px rgba(0,0,0,0.4);
+    }
+    .hd-team-mobile-week .hd-team-cell.has-note::before {
+      width: 6px; height: 6px; top: 4px; left: 4px; right: auto;
+    }
+    /* Non-payroll people fade as a block. */
+    .hd-team-mobile-person.is-not-on-payroll {
+      opacity: 0.55;
+    }
+    .hd-team-mobile-person.is-not-on-payroll .hd-team-mobile-name::after {
+      content: " · read-only";
+      font-style: normal;
+      font-size: 11px;
+      color: var(--ink-500);
+    }
+  }
   .hd-team-month-person.is-not-on-payroll .hd-team-cell::after { content: none !important; }
   .hd-team-month-person.is-not-on-payroll .hd-team-month-name {
     color: var(--ink-500);
@@ -838,10 +950,6 @@
   <section class="hd-section">
     <div class="hd-header">
       <h1>Holidays</h1>
-      <div class="hd-picker" id="hdPickerWrap" style="display:none;">
-        <label for="hdPerson">Calendar for</label>
-        <select id="hdPerson"></select>
-      </div>
       <div class="hd-stats">
         <span class="hd-stat"><strong id="hdHolidayCount">—</strong>Holiday days marked this year</span>
         <span class="hd-meta" id="hdMeta">Loading…</span>
@@ -872,9 +980,22 @@
         <div>Sun</div><div>Mon</div><div>Tue</div><div>Wed</div><div>Thu</div><div>Fri</div><div>Sat</div>
       </div>
       <div class="hd-cal" id="hdCal" role="grid" aria-label="Holiday calendar grid"></div>
+      <!-- Admin-only "view another person's calendar" picker. Lives at the
+           bottom of the My-calendar view; hidden on Team + Activity views,
+           hidden entirely for non-admins. -->
+      <div class="hd-picker hd-picker--bottom" id="hdPickerWrap" style="display:none;">
+        <label for="hdPerson">Calendar for</label>
+        <select id="hdPerson"></select>
+      </div>
     </div>
     <div id="hdTeamView" style="display:none;">
+      <!-- Desktop layout (≥721 px): wide horizontal month grid with names
+           in a 180 px left column. -->
       <div class="hd-team" id="hdTeam" role="grid" aria-label="Team calendar strip"></div>
+      <!-- Mobile layout (≤720 px): one block per person with a full-width
+           name header + per-week 7-cell strips. Both are populated by
+           renderTeam(); CSS shows whichever fits the viewport. -->
+      <div class="hd-team-mobile" id="hdTeamMobile" role="grid" aria-label="Team calendar strip (mobile)"></div>
     </div>
     <div id="hdActivityView" style="display:none;">
       <div class="hd-act-toolbar">
@@ -888,6 +1009,9 @@
       <h2>Change log</h2>
       <ul class="hd-log" id="hdLog"><li class="hd-log-empty">Loading change log…</li></ul>
     </div>
+    <!-- Page-level data freshness footer — was in the header next to the
+         stats, moved here so the top stays focused on the user + count. -->
+    <div class="hd-meta-footer" id="hdMetaFooter"></div>
   </section>
 </main>
 
@@ -1139,6 +1263,19 @@
     document.getElementById("hdOwnView").style.display      = (currentView === "own")      ? "" : "none";
     document.getElementById("hdTeamView").style.display     = (currentView === "team")     ? "" : "none";
     document.getElementById("hdActivityView").style.display = (currentView === "activity") ? "" : "none";
+    // The "Holiday days marked this year" stat block + the admin-only
+    // person picker are only relevant on the My-calendar view. Hide them
+    // on Team / Activity. Picker stays admin-gated by setupPicker().
+    const isOwn = currentView === "own";
+    const statsEl  = document.querySelector(".hd-header .hd-stats");
+    const pickerEl = document.getElementById("hdPickerWrap");
+    if (statsEl)  statsEl.style.display  = isOwn ? "" : "none";
+    if (pickerEl) {
+      // setupPicker() flips display to "flex" only for admins; respect that
+      // by only re-showing if the picker has already been set up.
+      if (isOwn && viewerIsAdmin) pickerEl.style.display = "flex";
+      else pickerEl.style.display = "none";
+    }
     if (currentView === "team") {
       renderHeader();
       renderTeam();
@@ -1159,8 +1296,10 @@
     const name = u.name || selectedEmail || "—";
     const updated = holidaysDoc.updated_at ? new Date(holidaysDoc.updated_at).toLocaleString("en-GB") : "—";
     document.getElementById("hdMeta").innerHTML =
-      `${profileLink(selectedEmail, name)} · ${escapeHtml(formatRangeLabel(yearStart, yearEnd))} · holidays.json updated ${escapeHtml(updated)}`;
+      `${profileLink(selectedEmail, name)} · ${escapeHtml(formatRangeLabel(yearStart, yearEnd))}`;
     document.getElementById("hdHolidayCount").textContent = formatHolidayCount(countHolidayDays(selectedEmail));
+    const footer = document.getElementById("hdMetaFooter");
+    if (footer) footer.textContent = `holidays.json updated ${updated}`;
   }
 
   function countHolidayDays(email) {
@@ -1471,6 +1610,145 @@
       }
 
       root.appendChild(block);
+    }
+    // Populate the sibling mobile container with a stacked-per-person
+    // layout so phones get usable tap targets. CSS shows only one of
+    // the two containers based on the viewport (≤720 px → mobile).
+    renderTeamMobile();
+  }
+
+  // Mobile-only stacked layout. One block per direct report; inside each
+  // block, the year breaks into Sun-anchored week strips of 7 cells that
+  // span the full viewport width. A sticky S-M-T-W-T-F-S header at the
+  // top keeps the column meaning anchored as you scroll.
+  function renderTeamMobile() {
+    const root = document.getElementById("hdTeamMobile");
+    if (!root) return;
+    root.innerHTML = "";
+    if (directReports.size === 0) {
+      root.innerHTML = `<div class="hd-team-empty">You have no direct reports on file. Have admins set you as someone's line manager on the Directory page.</div>`;
+      return;
+    }
+    const reports = [...directReports]
+      .map(e => ({ email: e, user: staffByEmail[e] || { email: e, name: e } }))
+      .sort((a, b) => (a.user.name || a.email).localeCompare(b.user.name || b.email));
+
+    // Sticky day-of-week header.
+    const dow = document.createElement("div");
+    dow.className = "hd-team-mobile-dow";
+    ["S","M","T","W","T","F","S"].forEach((d, i) => {
+      const c = document.createElement("div");
+      c.textContent = d;
+      if (i === 0 || i === 6) c.classList.add("is-weekend-dow");
+      dow.appendChild(c);
+    });
+    root.appendChild(dow);
+
+    // Build the Sun-anchored week list spanning the fiscal year.
+    const weeks = [];
+    const firstSun = new Date(yearStart);
+    firstSun.setDate(firstSun.getDate() - firstSun.getDay());
+    for (let d = new Date(firstSun); d <= yearEnd; d.setDate(d.getDate() + 7)) {
+      const wk = [];
+      for (let i = 0; i < 7; i++) {
+        const dd = new Date(d);
+        dd.setDate(dd.getDate() + i);
+        wk.push(dd);
+      }
+      weeks.push(wk);
+    }
+
+    const today = new Date(); today.setHours(0, 0, 0, 0);
+    const todayIso = isoDate(today);
+
+    for (const r of reports) {
+      const person = document.createElement("div");
+      person.className = "hd-team-mobile-person";
+      person.dataset.email = r.email;
+      const onPayroll = isOnPayroll(r.email);
+      if (!onPayroll) person.classList.add("is-not-on-payroll");
+
+      const name = document.createElement("div");
+      name.className = "hd-team-mobile-name";
+      name.innerHTML = profileLink(r.email, r.user.name || r.email);
+      person.appendChild(name);
+
+      const userMap = (holidaysDoc.by_user || {})[r.email] || {};
+      const dayMap = userMap.days || {};
+      const noteMap = userMap.notes || {};
+
+      let lastMonthShown = -1;
+      let lastYearShown = -1;
+      for (const week of weeks) {
+        // Skip weeks entirely outside the fiscal year.
+        if (week[6] < yearStart || week[0] > yearEnd) continue;
+
+        // Month divider when the first in-year day of this week starts a
+        // new calendar month.
+        const firstInYear = week.find(d => d >= yearStart && d <= yearEnd);
+        if (firstInYear && (firstInYear.getMonth() !== lastMonthShown || firstInYear.getFullYear() !== lastYearShown)) {
+          lastMonthShown = firstInYear.getMonth();
+          lastYearShown = firstInYear.getFullYear();
+          const ml = document.createElement("div");
+          ml.className = "hd-team-mobile-month";
+          ml.textContent = firstInYear.toLocaleDateString("en-GB", { month: "long", year: "numeric" });
+          person.appendChild(ml);
+        }
+
+        const wkRow = document.createElement("div");
+        wkRow.className = "hd-team-mobile-week";
+        for (const d of week) {
+          const cell = document.createElement("div");
+          cell.className = "hd-team-cell";
+          const inYear = d >= yearStart && d <= yearEnd;
+          if (!inYear) {
+            cell.classList.add("is-pad");
+            wkRow.appendChild(cell);
+            continue;
+          }
+          const iso = isoDate(d);
+          const stored = dayMap[iso];
+          const dowi = d.getDay();
+          const isWeekend = (dowi === 0 || dowi === 6);
+          const isBh = UK_BANK_HOLIDAYS.has(iso);
+          cell.dataset.date = iso;
+          if (stored) {
+            cell.dataset.status = stored;
+            if (STATUS_MARK[stored]) cell.dataset.mark = STATUS_MARK[stored];
+          } else if (isWeekend) {
+            cell.classList.add("is-weekend-default");
+          } else if (isBh) {
+            cell.classList.add("is-bh-default");
+            cell.dataset.defaultBh = "1";
+          } else {
+            cell.dataset.status = "office";
+          }
+          if (noteMap[iso]) cell.classList.add("has-note");
+          if (iso === todayIso) cell.classList.add("is-today");
+
+          // Day-of-month number tucked top-right of the cell so the
+          // viewer can tell Tue 12 from Tue 19 on a small screen.
+          const dnum = document.createElement("span");
+          dnum.className = "hd-team-mobile-daynum";
+          dnum.textContent = d.getDate();
+          cell.appendChild(dnum);
+
+          const human = d.toLocaleDateString("en-GB", { weekday: "short", day: "numeric", month: "short" });
+          cell.title = `${r.user.name || r.email} · ${human}` +
+            (stored ? ` · ${STATUS_LABEL[stored] || stored}` :
+              (isBh ? " · UK Bank Holiday" :
+                (isWeekend ? " · Weekend" : "")));
+          if (onPayroll) {
+            cell.addEventListener("click", e => {
+              e.stopPropagation();
+              openTeamPicker(cell, d, r.email);
+            });
+          }
+          wkRow.appendChild(cell);
+        }
+        person.appendChild(wkRow);
+      }
+      root.appendChild(person);
     }
   }
 
