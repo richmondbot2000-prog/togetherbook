@@ -38,6 +38,7 @@ import sys
 import time
 import urllib.request
 from collections import defaultdict
+from concurrent.futures import ThreadPoolExecutor, as_completed
 from pathlib import Path
 
 import pyodbc
@@ -200,31 +201,53 @@ def main() -> None:
         print("# nothing to insert.", flush=True)
         return
 
-    # Step 2 — batched INSERT OR REPLACE.
+    # Step 2 — batched INSERT OR REPLACE, parallel over the batches.
+    # D1 caps each statement at 100 SQL variables (so ~7 rows / call for
+    # the 13-column items), and the round-trip is ~30/s serial — the
+    # 15-min job timeout was hit at ~21k rows in the prior run. Eight
+    # concurrent workers cut that to ~3 min for the same payload while
+    # staying well under any sensible RPS ceiling on D1.
     cols = 13
     batch_size = max(1, (D1_VARS_CAP - 2) // cols)
-    inserted = 0
-    t0 = time.time()
     sql_head = (
         "INSERT OR REPLACE INTO activity_items "
         "(email, iso_date, bucket, src, occurred_at, record_id, kind, "
         " comm_type, client_type, client_username, campaign_name, "
         " auto_processed, body_excerpt) VALUES "
     )
-    for chunk in chunked(items, batch_size):
-        placeholders = ",".join(["(" + ",".join(["?"] * cols) + ")"] * len(chunk))
-        params = [v for row in chunk for v in row]
-        out = d1_query(account, token, db_id, sql_head + placeholders, params)
-        if not out.get("success"):
-            print(f"INSERT FAIL after {inserted:,} rows:")
-            print(json.dumps(out.get("errors") or out, indent=2)[:1500])
-            sys.exit(1)
-        inserted += len(chunk)
-        if inserted % (batch_size * 50) == 0:
-            elapsed = time.time() - t0
-            print(f"    {inserted:,}/{len(items):,} ({inserted/max(elapsed,0.001):,.0f}/s)", flush=True)
+    batches = list(chunked(items, batch_size))
+    print(f"# {len(batches):,} batches × {batch_size} rows; 8-way parallel", flush=True)
+    t0 = time.time()
+    inserted = 0
+    failed = []
+    progress_every = max(1, len(batches) // 20)
+    with ThreadPoolExecutor(max_workers=8) as ex:
+        futures = {}
+        for idx, chunk in enumerate(batches):
+            placeholders = ",".join(["(" + ",".join(["?"] * cols) + ")"] * len(chunk))
+            params = [v for row in chunk for v in row]
+            fut = ex.submit(d1_query, account, token, db_id, sql_head + placeholders, params)
+            futures[fut] = (idx, len(chunk))
+        done = 0
+        for fut in as_completed(futures):
+            idx, n = futures[fut]
+            out = fut.result()
+            if not out.get("success"):
+                failed.append((idx, out.get("errors") or out))
+            else:
+                inserted += n
+            done += 1
+            if done % progress_every == 0:
+                elapsed = time.time() - t0
+                rate = inserted / max(elapsed, 0.001)
+                print(f"    {done:,}/{len(batches):,} batches · {inserted:,}/{len(items):,} rows ({rate:,.0f}/s)", flush=True)
     elapsed = time.time() - t0
-    print(f"# inserted {inserted:,} comm item(s) in {elapsed:.1f}s", flush=True)
+    if failed:
+        print(f"# {len(failed):,} batches FAILED — first error:")
+        print(json.dumps(failed[0][1], indent=2)[:1500])
+    print(f"# inserted {inserted:,}/{len(items):,} comm item(s) in {elapsed:.1f}s", flush=True)
+    if failed and not inserted:
+        sys.exit(1)
 
 
 if __name__ == "__main__":
