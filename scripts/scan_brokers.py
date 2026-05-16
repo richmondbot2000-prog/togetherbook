@@ -524,7 +524,14 @@ def main() -> None:
         # Conversion rates (denominators are 0-safe)
         slot["purchase_rate"]    = (slot["leads_purchased"] / slot["leads_presented"]) if slot["leads_presented"] else None
         slot["app_rate"]         = (slot["applications"]    / slot["leads_purchased"]) if slot["leads_purchased"] else None
-        slot["apply1_rate"]      = (slot["apply1"]          / slot["applications"]) if apps_n else None
+        # Apply rate denominator = leads_purchased (the partnerships
+        # handbook's canonical definition, also used by AutoBlock's
+        # "≤10% apply rate" threshold). Was previously dividing by
+        # `applications`, which is a narrower denominator (only ARefs
+        # that successfully promoted into Applications), making this
+        # column read higher than the same broker's apply rate in the
+        # Source-quality section on the same page.
+        slot["apply1_rate"]      = (slot["apply1"]          / slot["leads_purchased"]) if slot["leads_purchased"] else None
         slot["brw_signed_rate"]  = (slot["brw_signed"]      / slot["applications"]) if apps_n else None
         slot["gt_accepted_rate"] = (slot["gt_accepted"]     / slot["applications"]) if apps_n else None
         slot["vc_ready_rate"]    = (slot["vc_ready"]        / slot["applications"]) if apps_n else None

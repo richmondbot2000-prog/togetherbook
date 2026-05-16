@@ -692,6 +692,7 @@
   <section class="br-section">
     <h1>Brokers</h1>
     <p class="lead">Every affiliate <em>source</em> we bought a lead from in the last 90 days, scored end-to-end. Presented &rarr; purchased &rarr; page 1 &rarr; BRW signed &rarr; GT accepted &rarr; VC ready &rarr; paid out.</p>
+    <p class="lead" style="font-size:13px;color:var(--ink-500);font-style:italic;">"Paid out" here means the application is <em>currently</em> in the Live-Loan state (ApplicationStatusTypeId&nbsp;= 5). Loans that have since been settled or paid off drop out, so the count understates total funded loans for brokers whose paid leads run quickly. This will be retired in favour of the LeadOutcomes paid-event signal in a follow-up.</p>
     <p class="lead">Sources at the top of the table sent us the most volume. Click any row to expand the stage-by-stage detail and the top three rejection reasons that source produced.</p>
 
     <div class="br-refresh" id="brRefresh" hidden>
@@ -723,7 +724,7 @@
       </div>
       <div class="br-leaderboard-wrap">
         <h2 class="br-canvas-title">Top 10 by cost per loan</h2>
-        <p class="br-canvas-sub">Brokers ranked by <strong>cost per paid loan</strong> — total spend (lead-price × leads bought, summed per broker from <code>source-quality.json</code>) divided by paid loans. Cheapest at top. PPC and Organic excluded since we don't track a per-lead cost for those channels. Bar width is proportional to cost in the visible set.</p>
+        <p class="br-canvas-sub">Brokers ranked by <strong>cost per paid loan</strong> — total spend (lead-price × leads bought, summed per broker from <code>source-quality.json</code>) divided by paid loans. Cheapest at top. PPC and Organic excluded since we don't track a per-lead cost for those channels. Bar width is proportional to cost in the visible set. <em>Window:</em> 60 days ending 30 days ago — matches the source-quality 30-day maturation lag, NOT the 90-day window the two leaderboards above use. A broker that has tapered off in the last 30 days will look strong here and weak there.</p>
         <div id="brLeaderboardCost"></div>
         <div class="br-leaderboard-toggle-row">
           <button id="brLeaderboardCostToggle" class="br-pill" type="button" hidden>Show all sources</button>
@@ -773,7 +774,7 @@
       </div>
       <div class="br-canvas-wrap">
         <h2 class="br-canvas-title">Blocked Sources to consider <em>re-enabling</em><a class="br-rec-reporting-link" href="https://reporting.rgcore.com" target="_blank" rel="noopener">Blocked Refs with Accepts →</a></h2>
-        <p class="br-canvas-sub">(Broker, Source) cells where we currently reject leads (LeadResultTypeId = -1 — <em>Source excluded</em>). We identity-match each rejected lead against subsequent purchases via a <strong>different (Broker, Source) cell</strong> — by SSN, Phone+DOB, or Email+DOB — counting only matches landing <strong>strictly after the rejection</strong> and within <strong>30 days</strong>. High bounceback-paid counts mean blocking this cell is forfeiting funded loans we'd otherwise have written.</p>
+        <p class="br-canvas-sub">(Broker, Source) cells where we currently reject leads (LeadResultTypeId = -1 — <em>Source excluded</em>). We identity-match each rejected lead against subsequent purchases via a <strong>different (Broker, Source) cell</strong> — by SSN, Phone+DOB, or Email+DOB — counting only matches landing <strong>strictly after the rejection</strong> and within <strong>30 days</strong>. High bounceback-paid counts mean blocking this cell is forfeiting funded loans we'd otherwise have written. <em>Caveat:</em> the cheaper-elsewhere "overspend" metric (further down) currently uses the broader 60-day analysis window to find matches, so it includes cells the live dedup system would not have caught — read it as a ceiling, not an actuarial figure.</p>
         <div class="br-recommend-meta" id="brBlockedMeta"></div>
         <div id="brBlockedList"></div>
       </div>

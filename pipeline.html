@@ -421,6 +421,7 @@
     <h1>Application pipeline</h1>
     <p class="lead">How customers who started a Transform Credit application <em id="plMonth">in March 2026</em> are progressing through underwriting, as of today. Outcomes still develop — applicants from late in the month are mostly still in flight.</p>
     <p class="lead">Two entry points converge: <strong>leads we purchased</strong> from affiliates (broker / PPC inventory bid in the Brokers API) and <strong>direct applications</strong> that came straight to the website without a paid lead.</p>
+    <p class="lead" style="font-size:13px;color:var(--ink-500);font-style:italic;">Caveats: (a) the "paid out" stage counts loans currently in the Live-Loan state, so loans already settled / paid off drop out — the funnel understates total funded volume; (b) the "March cohort" is defined by <code>InterestingDateTimeUtc</code>, which is the application's most-recent status-update timestamp, not its creation date — a late-March application whose next status change was on 1 April moves out of the cohort.</p>
 
     <div class="pl-refresh" id="plRefresh" hidden>
       <span class="pl-refresh-label">Last refreshed</span>
