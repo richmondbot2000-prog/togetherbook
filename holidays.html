@@ -9,11 +9,11 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&family=Newsreader:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500;1,600&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="style.css?v=1778927010">
-<link rel="stylesheet" href="quiet-tokens.css?v=1778927010">
-<link rel="stylesheet" href="quiet.css?v=1778927010">
-<link rel="stylesheet" href="quiet-extras.css?v=1778927010">
-<link rel="stylesheet" href="quiet-legacy.css?v=1778927010">
+<link rel="stylesheet" href="style.css?v=1778927147">
+<link rel="stylesheet" href="quiet-tokens.css?v=1778927147">
+<link rel="stylesheet" href="quiet.css?v=1778927147">
+<link rel="stylesheet" href="quiet-extras.css?v=1778927147">
+<link rel="stylesheet" href="quiet-legacy.css?v=1778927147">
 <style>
   .hd-section { max-width: 1080px; margin: 0 auto; padding: 24px 0 48px; }
   .hd-section h1 {
@@ -260,19 +260,26 @@
     color: var(--ink-500);
     font: italic 400 14px/1.4 var(--font-display, 'Newsreader', serif);
   }
-  /* Team view (month-per-line layout): each month gets a block. The
-     block carries its own DOW + date header (months don't share a
-     fixed DOW alignment), then one row per direct report with 31
-     status cells. Days that don't exist in a 30-day or 28-day month
-     are rendered as empty trailing cells so widths stay aligned. */
+  /* Team view (month-per-line layout, Sunday-anchored): each month is
+     a 42-column block (6 weeks × 7 days). The 1st of the month lands
+     in whichever DOW column it actually falls; leading + trailing
+     cells are empty pads. Because every row starts on Sunday, day-of-
+     week columns line up vertically across all 12 months — column N
+     is always (N % 7) day-of-week. */
   .hd-team-month-dow,
   .hd-team-month-dates,
   .hd-team-month-person {
     display: grid;
-    grid-template-columns: 180px repeat(31, minmax(0, 1fr));
+    grid-template-columns: 180px repeat(42, minmax(0, 1fr));
     gap: 1px;
     align-items: stretch;
     background: var(--ink-300, #B6BECF);
+  }
+  /* Pad cells go transparent so the month boundaries read as gaps. */
+  .hd-team-cell.is-pad,
+  .hd-team-month-date.is-pad,
+  .hd-team-month-dow .is-pad {
+    background: transparent;
   }
   .hd-team-month {
     margin-top: 12px;
@@ -441,7 +448,7 @@
 
 <header class="qb-topbar">
   <a class="qb-brand" href="index.html" aria-label="TogetherBOOK — home">
-    <img class="qb-brand-logo" src="togetherbook-logo.png?v=1778927010" alt="TogetherBOOK">
+    <img class="qb-brand-logo" src="togetherbook-logo.png?v=1778927147" alt="TogetherBOOK">
   </a>
   <button class="qb-hamburger" aria-label="Toggle navigation menu" aria-expanded="false"
           onclick="document.body.classList.toggle('nav-open');this.setAttribute('aria-expanded',document.body.classList.contains('nav-open'))">
@@ -858,11 +865,11 @@
   // Team view — Sunday-anchored calendar grid. ONE shared DOW header
   // (Sun→Sat) at the top; then a week block per fiscal-year week,
   // each block holding a date strip + one row per direct report.
-  // Team view — month-per-line layout. Each fiscal-year month is its
-  // own block carrying a DOW + date header row and one row per direct
-  // report (31 status cells; days that don't exist in 28/30-day
-  // months are rendered as empty trailing cells so widths stay
-  // aligned across all months).
+  // Team view — Sunday-anchored 42-col month-per-line. Each month is
+  // its own block, 6 weeks × 7 days wide. The 1st of the month falls
+  // in its actual DOW column; leading + trailing cells are transparent
+  // pads. Because every row starts on Sunday, column N has the same
+  // day-of-week across all months — DOWs line up vertically.
   function renderTeam() {
     const root = document.getElementById("hdTeam");
     root.innerHTML = "";
@@ -889,53 +896,62 @@
 
     const todayIso = isoDate(new Date());
     const DOW_INITIALS = ["S","M","T","W","T","F","S"];
+    const COLS = 42; // 6 weeks × 7 days — fits every month with room to spare.
 
     for (const { y, m } of months) {
       const block = document.createElement("div");
       block.className = "hd-team-month";
       const daysInMonth = new Date(y, m + 1, 0).getDate();
+      const lead = new Date(y, m, 1).getDay(); // 0=Sun
       const monthLabel = new Date(y, m, 1).toLocaleDateString("en-GB", { month: "long", year: "numeric" });
 
-      // Row 1 — month label (spans 2 rows down the left) + DOW initials
-      // for each day of this month.
+      // dayNumForCol: returns the calendar day-of-month at column index
+      // i (0..COLS-1), or 0 if the cell is a leading/trailing pad.
+      const dayNumForCol = i => {
+        const n = i - lead + 1;
+        return (n >= 1 && n <= daysInMonth) ? n : 0;
+      };
+
+      // Row 1 — month label + DOW initials. Initials are S/M/T/W/T/F/S
+      // repeating because every row is Sunday-anchored at column 0.
       const dowRow = document.createElement("div");
       dowRow.className = "hd-team-month-dow";
       const lab = document.createElement("div");
       lab.className = "hd-team-month-label";
       lab.textContent = monthLabel;
       dowRow.appendChild(lab);
-      for (let i = 0; i < 31; i++) {
+      for (let i = 0; i < COLS; i++) {
         const cell = document.createElement("div");
-        if (i < daysInMonth) {
-          const d = new Date(y, m, i + 1);
-          const dow = d.getDay();
+        const dn = dayNumForCol(i);
+        if (dn === 0) {
+          cell.classList.add("is-pad");
+        } else {
+          const dow = i % 7;
           cell.textContent = DOW_INITIALS[dow];
           if (dow === 0 || dow === 6) cell.classList.add("is-weekend-dow");
-        } else {
-          cell.textContent = "";
         }
         dowRow.appendChild(cell);
       }
       block.appendChild(dowRow);
 
-      // Row 2 — date numbers. (Label cell auto-spans from row 1.)
+      // Row 2 — date numbers. Spacer in column 1 keeps the grid aligned
+      // (the month label sat in the label slot of the DOW row above).
       const dateRow = document.createElement("div");
       dateRow.className = "hd-team-month-dates";
-      // Spacer cell so the grid columns align — the month label uses
-      // `grid-row: span 2` so we just skip the first column on row 2.
       const spacer = document.createElement("div");
       spacer.style.visibility = "hidden";
       spacer.textContent = " ";
       dateRow.appendChild(spacer);
-      for (let i = 0; i < 31; i++) {
+      for (let i = 0; i < COLS; i++) {
         const cell = document.createElement("div");
         cell.className = "hd-team-month-date";
-        if (i < daysInMonth) {
-          const iso = isoDate(new Date(y, m, i + 1));
-          cell.textContent = String(i + 1);
-          if (iso === todayIso) cell.classList.add("is-today");
+        const dn = dayNumForCol(i);
+        if (dn === 0) {
+          cell.classList.add("is-pad");
         } else {
-          cell.classList.add("is-empty");
+          const iso = isoDate(new Date(y, m, dn));
+          cell.textContent = String(dn);
+          if (iso === todayIso) cell.classList.add("is-today");
         }
         dateRow.appendChild(cell);
       }
@@ -952,18 +968,19 @@
         row.appendChild(name);
 
         const dayMap = ((holidaysDoc.by_user || {})[r.email] || {}).days || {};
-        for (let i = 0; i < 31; i++) {
+        for (let i = 0; i < COLS; i++) {
           const cell = document.createElement("div");
           cell.className = "hd-team-cell";
-          if (i >= daysInMonth) {
-            cell.classList.add("is-empty");
+          const dn = dayNumForCol(i);
+          if (dn === 0) {
+            cell.classList.add("is-pad");
             row.appendChild(cell);
             continue;
           }
-          const d = new Date(y, m, i + 1);
+          const d = new Date(y, m, dn);
           const inYear = (d >= yearStart && d <= yearEnd);
           if (!inYear) {
-            cell.classList.add("is-empty");
+            cell.classList.add("is-pad");
             row.appendChild(cell);
             continue;
           }
@@ -1358,6 +1375,6 @@
     a.addEventListener('click', () => document.body.classList.remove('nav-open'))
   );
 </script>
-<script src="nav.js?v=1778927010" defer></script>
+<script src="nav.js?v=1778927147" defer></script>
 </body>
 </html>
