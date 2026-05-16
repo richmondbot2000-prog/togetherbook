@@ -1405,6 +1405,7 @@ async function handleWall(req, env, url) {
       case "comment":      return json(await wallComment(env, viewerEmail, viewerName, body), 200, req);
       case "react":        return json(await wallReact(env, viewerEmail, body), 200, req);
       case "mark-seen":    return json(await wallMarkSeen(env, viewerEmail, body), 200, req);
+      case "seen-event":   return json(await wallSeenEvent(env, viewerEmail, body), 200, req);
       case "upload-media": return json(await wallUploadMedia(env, viewerEmail, body), 200, req);
       case "gif-search":   return json(await wallGifSearch(env, body), 200, req);
       case "delete":       return json(await wallDelete(env, viewerEmail, body), 200, req);
@@ -1841,6 +1842,32 @@ async function wallMarkSeen(env, viewerEmail, body) {
   }, `Wall: mark-seen by ${viewerEmail}`);
 
   return { ok: true, at, marked: postIds.length };
+}
+
+// Per-notification "I clicked this one" marker. Persists a stable event ID
+// into by_user[viewer].seen_events so the client can filter it out on next
+// render — survives reloads, distinct from the bulk mark-seen timestamp.
+// Capped at 2000 most-recent IDs per user to bound storage growth.
+async function wallSeenEvent(env, viewerEmail, body) {
+  if (!viewerEmail) throw new Error("not authenticated");
+  const evId = (body.event_id || "").toString().trim();
+  if (!evId) throw new Error("event_id required");
+  if (evId.length > 240) throw new Error("event_id too long");
+
+  await updateGhJson(env, WALL_SEEN_PATH, doc => {
+    doc.schema_version = 1;
+    doc.by_user = doc.by_user || {};
+    const me = doc.by_user[viewerEmail] = doc.by_user[viewerEmail] || { posts: {} };
+    const arr = Array.isArray(me.seen_events) ? me.seen_events : [];
+    if (!arr.includes(evId)) {
+      arr.push(evId);
+      me.seen_events = arr.length > 2000 ? arr.slice(-2000) : arr;
+    } else {
+      me.seen_events = arr;
+    }
+  }, `Wall: notif seen ${evId} by ${viewerEmail}`);
+
+  return { ok: true, event_id: evId };
 }
 
 /** Read → mutate → write wall.json with retry-on-409 (sha conflict). */

@@ -1027,6 +1027,11 @@
   let viewerPhoto = "";
   let viewerIsAdmin = false; // true → can delete anyone's post / comment / reply
   let lastSeenByPost = {};
+  // Notification events the viewer has individually clicked on. Each is a
+  // stable string ID computed by eventIdFor(); persisted server-side under
+  // by_user[viewer].seen_events in wall-seen.json. Independent of the
+  // post-level lastSeenByPost timestamp — that's the "mark all read" path.
+  let seenEvents = new Set();
   const openPostIds   = new Set();
   const expandedPostIds = new Set();
   const openReplyTo   = new Set();
@@ -1151,8 +1156,9 @@
       document.getElementById("wlMyAvatar").innerHTML = avatarInner(viewerName, viewerPhoto);
       document.getElementById("wlCompose").style.display = "";
     }
-    if (seen && seen.by_user && seen.by_user[viewerEmail] && seen.by_user[viewerEmail].posts) {
+    if (seen && seen.by_user && seen.by_user[viewerEmail]) {
       lastSeenByPost = seen.by_user[viewerEmail].posts || {};
+      seenEvents = new Set(seen.by_user[viewerEmail].seen_events || []);
     }
     sortPosts();
     // Initial deep-link jump (if any) — relies on jumpToPost which
@@ -2546,6 +2552,21 @@
     }
   }
 
+  // Mark a single notification event as seen-by-click. Optimistic local
+  // update + worker persist. On worker failure we keep the local mark — the
+  // worker call will resync on next load; preserving the click-feeling is
+  // worth a tiny chance of "the bell came back" after a reload.
+  async function markEventSeen(evId) {
+    if (!evId || !viewerEmail) return;
+    if (seenEvents.has(evId)) return;
+    seenEvents.add(evId);
+    renderNotifications();
+    try {
+      await wallAction("seen-event", { event_id: evId });
+    } catch (err) {
+      /* non-fatal; will resync */
+    }
+  }
   function renderNotifications() {
     const events = collectNotifications();
     const btn = document.getElementById("wlNotifBtn");
@@ -2572,7 +2593,7 @@
           const verb = ev.parent_comment_id ? "replied to a comment on your" : "commented on your";
           line = `<strong>${escapeHtml(name)}</strong> ${verb} post.`;
         }
-        return `<a class="wl-notif-item" href="#post-${escapeHtml(ev.post_id)}" data-jump="${escapeHtml(ev.post_id)}">
+        return `<a class="wl-notif-item" href="#post-${escapeHtml(ev.post_id)}" data-jump="${escapeHtml(ev.post_id)}" data-event-id="${escapeHtml(eventIdFor(ev))}">
           <div>${line}</div>
           <div class="wl-notif-item-time">${formatTime(ev.at)}</div>
         </a>`;
@@ -2581,6 +2602,8 @@
         a.addEventListener("click", e => {
           e.preventDefault();
           const id = a.dataset.jump;
+          const evId = a.dataset.eventId;
+          if (evId) markEventSeen(evId);
           jumpToPost(id);
         });
       });
@@ -2621,6 +2644,17 @@
     const esc = local.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
     return new RegExp(`(^|\\s)@${esc}(?![a-z0-9._-])`, "i");
   }
+  // Stable identifier for a notification event. Used to track which
+  // individual notifications the viewer has clicked through (seenEvents set,
+  // persisted server-side). Format choices are append-only — older IDs are
+  // already stored, never rename fields.
+  function eventIdFor(ev) {
+    const actor = (ev.actor_email || "").toLowerCase();
+    if (ev.kind === "comment") return `c:${ev.post_id}:${ev.comment_id || ev.at}`;
+    if (ev.kind === "mention") return `m:${ev.post_id}:${ev.comment_id || "post"}:${actor}`;
+    if (ev.kind === "react")   return `r:${ev.post_id}:${ev.target_kind || ""}:${ev.target_id || ""}:${actor}:${ev.emoji || ""}`;
+    return `${ev.kind}:${ev.post_id}:${ev.at}`;
+  }
   function collectNotifications() {
     if (!viewerEmail) return [];
     const events = [];
@@ -2639,6 +2673,7 @@
           kind: "comment",
           at: c.created_at,
           post_id: post.id,
+          comment_id: c.id,
           actor_email: c.author_email,
           actor_name: c.author_name,
           parent_comment_id: c.parent_comment_id || null,
@@ -2713,7 +2748,8 @@
       deduped.push(ev);
     }
     deduped.sort((a, b) => (a.at < b.at ? 1 : -1));
-    return deduped;
+    // Drop anything the viewer has already clicked through.
+    return deduped.filter(ev => !seenEvents.has(eventIdFor(ev)));
   }
 
   document.getElementById("wlNotifBtn").addEventListener("click", e => {
