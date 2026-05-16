@@ -1398,67 +1398,25 @@
         for (const e of activity.external_users || []) externalUsers.push(e);
       }
 
-      // Build the merged entry list. Workspace seats belonging to the same
-      // person (matched by lowercase given+family) collapse into a single
-      // entry so e.g. Mourad Malki @letme.com and @clearloans.com.au render
-      // as ONE row. The merged entry keeps every seat in `accounts[]` so
-      // per-seat actions (suspend a specific email) still work; the primary
-      // user is chosen as the most-active or first-alphabetical account.
+      // Build the entry list — one entry per Workspace seat.
+      //
+      // SPEC §11.1.5 explicitly says siblings (same person across
+      // multiple tenant domains, e.g. Mourad Malki @letme.com +
+      // @clearloans.com.au) should render as TWO rows so per-tenant
+      // activity stays visible. The detail card's "Other emails"
+      // surfaces the relationship via `workspaceSiblings()`; the rows
+      // themselves stay distinct so suspending the "less active" seat
+      // doesn't hide that it was actually carrying half the writes.
+      //
+      // Earlier behaviour merged seats by (tenant, given, family),
+      // but `tenant` normalises alias-domains (clearloans → letme),
+      // which silently collapsed those siblings into one row. Removed.
       allEntries = [];
-      const personGroups = new Map();
-      const orphan = [];
-      for (const u of allWorkspaceUsers) {
-        const g = (u.given || "").trim().toLowerCase();
-        const f = (u.family || "").trim().toLowerCase();
-        if (!g || !f) { orphan.push(u); continue; }   // no name -> can't merge safely
-        // Include tenant in the merge key so seats in DIFFERENT Workspace
-        // customers DON'T merge (e.g. James Benamor on letme + Together
-        // Loans renders as two separate rows). Same person on multiple
-        // domains within ONE customer still merges.
-        const key = `${(u.tenant || "").toLowerCase()}|${g}|${f}`;
-        if (!personGroups.has(key)) personGroups.set(key, []);
-        personGroups.get(key).push(u);
-      }
-      const pushStaff = (user, accounts) => {
-        const activities = accounts.map(a => activityByEmail[(a.email || "").toLowerCase()]).filter(Boolean);
-        const mergedActivity = activities.length === 0 ? null : (activities.length === 1 ? activities[0] : {
-          email: user.email,
-          writes_60d: activities.reduce((n, x) => n + (x.writes_60d || 0), 0),
-          last_active_utc: activities.map(x => x.last_active_utc).filter(Boolean).sort().slice(-1)[0] || null,
-          tenants: [...new Set(activities.flatMap(x => x.tenants || []))],
-          primary_tenant: activities.sort((a, b) => (b.writes_60d || 0) - (a.writes_60d || 0))[0].primary_tenant,
-          top_warehouse: activities.sort((a, b) => (b.writes_60d || 0) - (a.writes_60d || 0))[0].top_warehouse,
-        });
-        allEntries.push({ type: "staff", user, accounts, activity: mergedActivity });
+      const pushStaff = (user) => {
+        const act = activityByEmail[(user.email || "").toLowerCase()] || null;
+        allEntries.push({ type: "staff", user, accounts: [user], activity: act });
       };
-      for (const u of orphan) pushStaff(u, [u]);
-      for (const [, members] of personGroups) {
-        if (members.length === 1) { pushStaff(members[0], members); continue; }
-        // Pick primary: most-recent active, then alphabetical email.
-        const scored = members.map(m => {
-          const act = activityByEmail[(m.email || "").toLowerCase()];
-          return { m, score: act ? (act.writes_60d || 1) : 0 };
-        });
-        scored.sort((a, b) => (b.score - a.score) || (a.m.email || "").localeCompare(b.m.email || ""));
-        const primary = scored[0].m;
-        // Synthesise a merged "user" — primary fields, but emails + aliases of every seat unioned.
-        const allAliases = new Set();
-        for (const m of members) {
-          for (const a of (m.aliases || [])) if (a) allAliases.add(a.toLowerCase());
-          if (m.email && m.email.toLowerCase() !== (primary.email || "").toLowerCase()) {
-            allAliases.add(m.email.toLowerCase());
-          }
-        }
-        const mergedUser = {
-          ...primary,
-          aliases: [...allAliases].sort(),
-          suspended: members.every(m => m.suspended),    // greyed only if ALL seats are suspended
-          deletion_time: members.every(m => m.deletion_time) ? members[0].deletion_time : "",
-          admin: members.some(m => m.admin),
-          tenants: [...new Set(members.flatMap(m => m.tenants || (m.tenant ? [m.tenant] : [])))],
-        };
-        pushStaff(mergedUser, members);
-      }
+      for (const u of allWorkspaceUsers) pushStaff(u);
       // Absorb external (warehouse-only) entries into matching staff entries
       // by email/alias OR by derived name. Only render as a standalone
       // external entry when there's no staff match — typically warehouse

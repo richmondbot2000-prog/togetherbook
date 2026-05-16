@@ -1026,7 +1026,10 @@
     const totalCost = cohort.reduce((a, s) => a + (s.total_cost || 0), 0);
     const totalRevenue = cohort.reduce((a, s) => a + (s.paid_loan_total || 0), 0);
     const totalLeads = cohort.reduce((a, s) => a + (s.leads_purchased || 0), 0);
-    const totalApps = cohort.reduce((a, s) => a + (s.applications || 0), 0);
+    // `applications` was removed from each cell in the 2026-05-12
+    // LeadOutcomes refactor (SPEC §11.5.8b). Reading it made the
+    // "Blended apply rate" tile render 0.0% on every cohort.
+    const totalApps = cohort.reduce((a, s) => a + (s.apply1 || 0), 0);
     const totalPaidOut = cohort.reduce((a, s) => a + (s.paid_out || 0), 0);
     const cohortCpa = totalRevenue ? (totalCost / totalRevenue) : null;
     const cohortApply = totalLeads ? (totalApps / totalLeads) : null;

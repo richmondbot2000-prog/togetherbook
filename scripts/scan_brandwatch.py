@@ -1362,19 +1362,30 @@ def run() -> dict:
                 kept = True
                 break
 
-        # Tiers 2+3 only for non-news sources (social, etc.). News headlines
-        # capitalize phrases regardless of brand-vs-verb, so the strict /
-        # contextual signals don't disambiguate there.
+        # Tier 2 (case-sensitive strict) only for non-news sources —
+        # headlines title-case verb phrases regardless of brand-vs-verb,
+        # so the proper-noun signal is meaningless there.
         if not kept and src not in NEWS_LIKE_SOURCES:
             for t in cfg.get("precision_terms_strict", []):
                 if t in haystack_cs:
                     kept = True
                     break
-            if not kept:
-                for trigger, ctx_words in cfg.get("contextual_pairs", []):
-                    if trigger.lower() in haystack_ci and any(w.lower() in haystack_ci for w in ctx_words):
-                        kept = True
-                        break
+
+        # Tier 3 (contextual pairs) applies to ALL sources including
+        # news. The borrower-context guard ("co-signer", "scam",
+        # "denied", "applied") prevents the verb-phrase headlines we
+        # care about excluding ("Transform Credit Markets",
+        # "transform credit accessibility") while keeping legitimate
+        # news mentions ("Together Loans denied my application",
+        # "Transform Credit complaint filed with CFPB"). Without
+        # this, the spaced canonical brand names "Together Loans" /
+        # "Transform Credit" never matched in Google News + YouTube +
+        # CourtListener, so those sources silently returned ~0 hits.
+        if not kept:
+            for trigger, ctx_words in cfg.get("contextual_pairs", []):
+                if trigger.lower() in haystack_ci and any(w.lower() in haystack_ci for w in ctx_words):
+                    kept = True
+                    break
 
         if kept:
             filtered.append(m)

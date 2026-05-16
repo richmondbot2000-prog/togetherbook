@@ -189,7 +189,13 @@ def main() -> None:
     cur.execute(q, [month_start, month_end, LENDER_ID])
     leads_by_result = {int(r[0]) if r[0] is not None else None: int(r[1]) for r in cur.fetchall()}
     leads_presented = sum(leads_by_result.values())
-    leads_purchased = leads_by_result.get(1, 0)
+    # Result IDs 1 and 30 are both effectively "purchased":
+    #   1  = Sold to Customer (canonical)
+    #   30 = Pre-check passed (lead accepted into pipeline)
+    # The page (`pipeline.html` `categoriseResult` + `bucketReason`)
+    # treats both as purchased; counting only 1 here makes the
+    # rejection-bucket sum disagree with `leads_presented`.
+    leads_purchased = leads_by_result.get(1, 0) + leads_by_result.get(30, 0)
     leads_rejected = leads_presented - leads_purchased
     print(f"#   presented={leads_presented:,} purchased={leads_purchased:,} rejected={leads_rejected:,}", flush=True)
     print(f"#   by_result_type: {leads_by_result}", flush=True)
@@ -249,6 +255,33 @@ def main() -> None:
     task_reach = {(r[0], int(r[1]), r[2]): int(r[3]) for r in cur.fetchall()}
     print(f"#   task counts: {task_reach}", flush=True)
 
+    # Q3b: VC-ready needs a SEPARATE DISTINCT count across tasks 62 OR
+    # 146 (per wiki §1137 these are alternative VC flow variants for
+    # the same application). Summing the per-task COUNT(DISTINCT ARef)
+    # values from Q3 double-counts any ARef that completed both
+    # variants, inflating the "VC ready" funnel stage.
+    q_vc = f"""
+        WITH cohort AS (
+            SELECT [{apps_aref_col}] AS ARef,
+                   CASE WHEN [{apps_leadid_col}] IS NULL THEN 'direct' ELSE 'purchased' END AS entry_path
+            FROM dbo.Applications
+            WHERE [{apps_date_col}] >= ? AND [{apps_date_col}] < ?
+              AND [{apps_lender_col}] = ?
+        )
+        SELECT
+            c.entry_path,
+            COUNT(DISTINCT c.ARef) AS n
+        FROM dbo.Tasks t
+        INNER JOIN cohort c ON c.ARef = t.[{tasks_aref_col}]
+        WHERE t.[{tasks_done_col}] IS NOT NULL
+          AND t.[{tasks_type_col}] IN (62, 146)
+          AND t.[{tasks_gtref_col}] IS NOT NULL
+        GROUP BY c.entry_path
+    """
+    cur.execute(q_vc, [month_start, month_end, LENDER_ID])
+    vc_reach = {r[0]: int(r[1]) for r in cur.fetchall()}
+    print(f"#   VC ready (distinct ARefs over tasks 62|146): {vc_reach}", flush=True)
+
     # ─────────────────────────────────────────────────────────────────
     # Q4: Paid-out — uniform via ApplicationStatusTypeId = 5 (LiveLoan)
     #     on the Applications table, current-state. This avoids the
@@ -285,13 +318,13 @@ def main() -> None:
     pur_apply1   = task_reach.get(('purchased', 41, 'BRW'), 0)
     pur_invite   = task_reach.get(('purchased', 48, 'BRW'), 0)
     pur_accepted = task_reach.get(('purchased', 54, 'GT'),  0)
-    pur_vcready  = task_reach.get(('purchased', 62, 'GT'),  0) + task_reach.get(('purchased', 146, 'GT'), 0)
+    pur_vcready  = vc_reach.get('purchased', 0)
     pur_paid     = paid_by_path.get('purchased', 0)
 
     dir_apply1   = task_reach.get(('direct',    41, 'BRW'), 0)
     dir_invite   = task_reach.get(('direct',    48, 'BRW'), 0)
     dir_accepted = task_reach.get(('direct',    54, 'GT'),  0)
-    dir_vcready  = task_reach.get(('direct',    62, 'GT'),  0) + task_reach.get(('direct', 146, 'GT'), 0)
+    dir_vcready  = vc_reach.get('direct', 0)
     dir_paid     = paid_by_path.get('direct', 0)
 
     apps_started_total = apps_purchased + apps_direct

@@ -156,6 +156,29 @@
   .tu-dot-app  { fill: #2c6cb8; stroke: var(--paper-50); stroke-width: 1.5; }
   .tu-grid { stroke: var(--ink-300); stroke-width: 0.5; opacity: 0.4; stroke-dasharray: 2 3; }
   .tu-axis { stroke: var(--ink-700); stroke-width: 1; }
+  /* Partial (month-to-date) styling. */
+  .tu-bar-partial { opacity: 0.45; stroke-dasharray: 2 2; }
+  .tu-line-partial { fill: none; stroke: var(--red-500); stroke-width: 2; stroke-dasharray: 4 4; }
+  .tu-line-app-partial { fill: none; stroke: #2c6cb8; stroke-width: 1.8; stroke-dasharray: 2 4; opacity: 0.6; }
+  .tu-dot-partial { fill: var(--paper-50) !important; stroke: var(--red-500); stroke-width: 1.5; }
+  .tu-dot-app-partial { fill: var(--paper-50) !important; stroke: #2c6cb8; stroke-width: 1.5; }
+  .tu-trim-note {
+    margin: 6px 0 0;
+    font: italic 400 12px/1.45 var(--font-display, 'Newsreader', serif);
+    color: var(--ink-600);
+  }
+  .tu-partial-cell { color: var(--ink-500); }
+  .tu-partial-tag {
+    display: inline-block;
+    margin-left: 4px;
+    padding: 1px 5px;
+    border: 1px solid var(--ink-500);
+    border-radius: 3px;
+    font: 600 9px/1 var(--font-mono, 'JetBrains Mono', monospace);
+    color: var(--ink-500);
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+  }
 
   .tu-tooltip-bg { fill: var(--ink-900); opacity: 0.95; }
   .tu-tooltip-text { fill: var(--paper-50); font: 500 11px/1.4 var(--font-mono); }
@@ -269,6 +292,8 @@
         <span class="tu-legend-item"><span class="tu-legend-swatch line-app"></span>Eligible &amp; logged into app</span>
       </div>
       <div id="tuChart"></div>
+      <p class="tu-trim-note" id="tuTrimNote" hidden></p>
+      <p class="tu-trim-note" id="tuPartialNote" hidden></p>
     </div>
 
     <div class="tu-table-wrap">
@@ -299,7 +324,17 @@
     });
 
   function render(d) {
-    const series = d.series || [];
+    const raw = d.series || [];
+    // Drop leading months where the warehouse has no TUE / top-up rows
+    // (TueStatus + LoanAtInception.TopUpAmountAtInception weren't
+    // populated on Loan_History before the source system began writing
+    // them, ~Mar 2025). Rendering those months as zero falsely tells
+    // the user the TUE programme started then.
+    let firstReal = raw.findIndex(s => (s.tue_eligible || 0) > 0 || (s.live_topup || 0) > 0);
+    if (firstReal < 0) firstReal = 0;
+    const dropped = firstReal;
+    const todayMonth = new Date().toISOString().slice(0, 7);
+    const series = raw.slice(firstReal).map(s => ({ ...s, is_partial: s.month === todayMonth }));
     const updated = (d.snapshot_at || "").replace("T", " ").slice(0, 19) + " UTC";
     if (d.lender_label) document.getElementById("tuScope").textContent = d.lender_label;
     if (d.live_filter) document.getElementById("tuLiveFilter").textContent = d.live_filter;
@@ -307,6 +342,21 @@
     renderRefreshBadge(d);
     document.getElementById("tuMeta").textContent =
       `${d.window_months} months · source ${d.source_table} (${d.timestamp_column}) · updated ${updated}`;
+    const trimNote = document.getElementById("tuTrimNote");
+    if (dropped > 0 && series.length) {
+      trimNote.innerHTML = `<em>${dropped} earlier month${dropped === 1 ? "" : "s"} omitted — the data warehouse did not carry top-up-eligibility before ${shortMonth(series[0].month)}, so charting those months as zero would falsely suggest the TUE programme started then.</em>`;
+      trimNote.hidden = false;
+    } else {
+      trimNote.hidden = true;
+    }
+    const partialNote = document.getElementById("tuPartialNote");
+    const partial = series.find(s => s.is_partial);
+    if (partial) {
+      partialNote.innerHTML = `<em>The final month (${shortMonth(partial.month)}) is month-to-date — bars and dots are rendered with reduced opacity. The dashed-line segment connecting it to the prior month signals the same. Login counts grow over the month, so the blue dot will rise as more borrowers sign in.</em>`;
+      partialNote.hidden = false;
+    } else {
+      partialNote.hidden = true;
+    }
     drawChart(series);
     drawTable(series);
   }
@@ -382,34 +432,47 @@
       const baseline = PAD.top + innerH;
       const hPrimary = baseline - yPrimary;
       const hTopup = yPrimary - yTotal;
-      svg.push(`<rect class="tu-bar-primary" x="${x.toFixed(1)}" y="${yPrimary.toFixed(1)}" width="${barW.toFixed(1)}" height="${hPrimary.toFixed(1)}"><title>${escapeHtml(s.month)}: ${formatNumber(s.live_primary)} primary loans</title></rect>`);
+      const partialMod = s.is_partial ? " tu-bar-partial" : "";
+      const partialTip = s.is_partial ? " (month-to-date)" : "";
+      svg.push(`<rect class="tu-bar-primary${partialMod}" x="${x.toFixed(1)}" y="${yPrimary.toFixed(1)}" width="${barW.toFixed(1)}" height="${hPrimary.toFixed(1)}"><title>${escapeHtml(s.month)}: ${formatNumber(s.live_primary)} primary loans${partialTip}</title></rect>`);
       if (hTopup > 0.5) {
-        svg.push(`<rect class="tu-bar-topup" x="${x.toFixed(1)}" y="${yTotal.toFixed(1)}" width="${barW.toFixed(1)}" height="${hTopup.toFixed(1)}"><title>${escapeHtml(s.month)}: ${formatNumber(s.live_topup)} top-up loans</title></rect>`);
+        svg.push(`<rect class="tu-bar-topup${partialMod}" x="${x.toFixed(1)}" y="${yTotal.toFixed(1)}" width="${barW.toFixed(1)}" height="${hTopup.toFixed(1)}"><title>${escapeHtml(s.month)}: ${formatNumber(s.live_topup)} top-up loans${partialTip}</title></rect>`);
       }
     });
 
-    // Line (TUE eligible)
-    const linePts = series.map((s, i) => `${xScale(i, true).toFixed(1)},${yScale(s.tue_eligible).toFixed(1)}`).join(" ");
-    svg.push(`<polyline class="tu-line" points="${linePts}"/>`);
+    // TUE-eligible line. If the last month is partial, render the line
+    // as two pieces — solid for the complete months, dashed for the
+    // final hop into the partial month — so the eye doesn't read the
+    // drop as a real decline.
+    const partialIdx = series.findIndex(s => s.is_partial);
+    const drawDualLine = (cls, partialCls, val) => {
+      const solidPts = series.slice(0, partialIdx < 0 ? series.length : partialIdx)
+        .map((s, i) => `${xScale(i, true).toFixed(1)},${yScale(val(s)).toFixed(1)}`).join(" ");
+      if (solidPts) svg.push(`<polyline class="${cls}" points="${solidPts}"/>`);
+      if (partialIdx > 0) {
+        const a = series[partialIdx - 1], b = series[partialIdx];
+        svg.push(`<polyline class="${partialCls}" points="${xScale(partialIdx - 1, true).toFixed(1)},${yScale(val(a)).toFixed(1)} ${xScale(partialIdx, true).toFixed(1)},${yScale(val(b)).toFixed(1)}"/>`);
+      }
+    };
+    drawDualLine("tu-line", "tu-line-partial", s => s.tue_eligible);
 
-    // Dots on the line
     series.forEach((s, i) => {
       const cx = xScale(i, true);
       const cy = yScale(s.tue_eligible);
-      svg.push(`<circle class="tu-dot" cx="${cx.toFixed(1)}" cy="${cy.toFixed(1)}" r="3.5"><title>${escapeHtml(s.month)}: ${formatNumber(s.tue_eligible)} top-up eligible</title></circle>`);
+      const cls = s.is_partial ? "tu-dot tu-dot-partial" : "tu-dot";
+      const tip = s.is_partial ? " (month-to-date)" : "";
+      svg.push(`<circle class="${cls}" cx="${cx.toFixed(1)}" cy="${cy.toFixed(1)}" r="3.5"><title>${escapeHtml(s.month)}: ${formatNumber(s.tue_eligible)} top-up eligible${tip}</title></circle>`);
     });
 
-    // Line (TUE-eligible AND logged into app). Subset of the red line, so it
-    // necessarily sits at or below it. Only rendered if the scanner had
-    // AppLoginSuccesses available (older snapshots before the field landed
-    // will have all zeros — we keep drawing it so the legend stays honest).
-    const appPts = series.map((s, i) => `${xScale(i, true).toFixed(1)},${yScale(s.tue_logged_in || 0).toFixed(1)}`).join(" ");
-    svg.push(`<polyline class="tu-line-app" points="${appPts}"/>`);
+    // "Eligible AND logged into app" line.
+    drawDualLine("tu-line-app", "tu-line-app-partial", s => s.tue_logged_in || 0);
     series.forEach((s, i) => {
       const cx = xScale(i, true);
       const cy = yScale(s.tue_logged_in || 0);
       const pct = (s.tue_eligible || 0) > 0 ? Math.round(100 * (s.tue_logged_in || 0) / s.tue_eligible) : 0;
-      svg.push(`<circle class="tu-dot-app" cx="${cx.toFixed(1)}" cy="${cy.toFixed(1)}" r="3"><title>${escapeHtml(s.month)}: ${formatNumber(s.tue_logged_in || 0)} eligible &amp; logged into app (${pct}% of eligible)</title></circle>`);
+      const cls = s.is_partial ? "tu-dot-app tu-dot-app-partial" : "tu-dot-app";
+      const tip = s.is_partial ? " (month-to-date — login counts grow through the month)" : "";
+      svg.push(`<circle class="${cls}" cx="${cx.toFixed(1)}" cy="${cy.toFixed(1)}" r="3"><title>${escapeHtml(s.month)}: ${formatNumber(s.tue_logged_in || 0)} eligible &amp; logged into app (${pct}% of eligible)${tip}</title></circle>`);
     });
 
     // X-axis labels (every Nth month so labels don't overlap; current month highlighted)
@@ -440,8 +503,10 @@
       const pct = s.live_loans > 0 ? ((s.tue_eligible / s.live_loans) * 100) : 0;
       const app = s.tue_logged_in || 0;
       const appPct = (s.tue_eligible || 0) > 0 ? (100 * app / s.tue_eligible) : 0;
-      return `<tr>
-        <td>${escapeHtml(longMonth(s.month))}</td>
+      const cls = s.is_partial ? " class=\"tu-partial-cell\"" : "";
+      const partialTag = s.is_partial ? ` <span class="tu-partial-tag">MTD</span>` : "";
+      return `<tr${cls}>
+        <td>${escapeHtml(longMonth(s.month))}${partialTag}</td>
         <td class="num">${formatNumber(s.live_primary)}</td>
         <td class="num">${formatNumber(s.live_topup)}</td>
         <td class="num">${formatNumber(s.live_loans)}</td>

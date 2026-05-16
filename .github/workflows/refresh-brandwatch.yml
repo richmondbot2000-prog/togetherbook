@@ -139,7 +139,12 @@ jobs:
           convert_markdown: false
 
       - name: Commit if brandwatch.json or seen-state changed
-        if: steps.guard.outputs.skip != 'true'
+        # Gated on success() so a Send email failure does NOT push the
+        # updated brandwatch-seen.json — otherwise the new mentions would
+        # be silently marked as already-emailed and never re-tried. With
+        # success() the next run starts from the last good seen-state
+        # and will re-send the email when SMTP comes back.
+        if: steps.guard.outputs.skip != 'true' && success()
         run: |
           set -euo pipefail
           git add brandwatch.json brandwatch-seen.json

@@ -50,12 +50,14 @@ KNOWN_DOMAINS = [
     "letme.co.uk",         # current internal
     "letme.com",            # most Workspace primary emails
     "transformcredit.com", # Together Loans / Transform Credit tenant
+    "togetherloans.com",   # TL tenant (added 2026-05-16 — was being missed)
     "lendingmate.ca",      # Lending Mate
     "rapida.bg",
     "rapidamoney.pl",
     "clearloans.com.au",
     "fianceo.com",
     "tandolan.dk",
+    "tando.dk",            # Tando tenant short form (added 2026-05-16)
     "tandolaina.fi",
 ]
 
@@ -99,13 +101,23 @@ def conn_str(database: str) -> str:
 def candidate_usernames(staff_email: str) -> set[str]:
     """All ClientUsername values that plausibly belong to this Workspace user.
 
-    We deliberately exclude bare local-part / first-name matches because they
-    risk colliding across staff with the same first name. Strict
-    local-part@known-domain matching only.
+    Includes (a) `local-part@<known-domain>` (strict email form, used by
+    most reporting tables) AND (b) the bare local-part — because
+    `ReportingCommunications.dbo.Messages` stores the *agent's*
+    `ClientUsername` as the bare local-part (no `@<domain>`) for outbound
+    CRM messages. Without (b) every comm sent by a staff member is
+    invisible to this 60-day rollup, which makes real CRM agents show as
+    inactive on the Directory page. The buckets scanner already does this.
+
+    Bare-local-part collisions across staff with the same first name are
+    a risk in theory, but the only tables that store agent usernames as
+    bare strings are Communications.Messages-like, where the dotted form
+    (`firstname.surname`) is universally used — so the actual risk is low.
     """
     local = staff_email.split("@")[0].lower()
     out = {f"{local}@{d}" for d in KNOWN_DOMAINS}
     out.add(staff_email.lower())  # the Workspace email itself
+    out.add(local)                 # bare local-part (Communications.Messages)
     return out
 
 
@@ -225,7 +237,8 @@ def scan_database(database: str, cutoff: datetime.datetime) -> dict[str, dict]:
                 f"       COUNT_BIG(*) AS writes, "
                 f"       MAX([{ts}]) AS last_at "
                 f"FROM [{schema}].[{table}] "
-                f"WHERE [{ts}] >= ? AND ClientUsername LIKE '%@%' "
+                f"WHERE [{ts}] >= ? AND ClientUsername IS NOT NULL "
+                f"  AND (ClientUsername LIKE '%@%' OR ClientUsername LIKE '%.%') "
                 f"GROUP BY LOWER(ClientUsername)"
             )
             cur.execute(q, [cutoff_str])

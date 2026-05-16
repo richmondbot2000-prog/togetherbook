@@ -272,9 +272,9 @@
 
     <div class="cm-filters">
       <label>
-        <input type="checkbox" id="cmExcludeRR">
+        <input type="checkbox" id="cmExcludeRR" checked>
         Exclude <strong>Robot Responder</strong>
-        <span class="cm-filter-sub">(only count human-agent replies)</span>
+        <span class="cm-filter-sub">(only count human-agent replies — default ON because the bot auto-acks within seconds, which makes raw curves look unrealistically fast)</span>
       </label>
       <label>
         <input type="checkbox" id="cmExcludeNoReply" checked>
@@ -284,8 +284,8 @@
       <label style="margin-left:auto;">
         <strong>Metric</strong>
         <select id="cmMetric" style="margin-left:6px;padding:4px 8px;font-family:inherit;font-size:13px;border:1px solid var(--paper-300);background:white;">
-          <option value="mean" selected>Mean</option>
-          <option value="median">Median</option>
+          <option value="median" selected>Median</option>
+          <option value="mean">Mean</option>
         </select>
       </label>
       <button type="button" id="cmCsvLink"
