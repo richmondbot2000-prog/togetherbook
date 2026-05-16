@@ -599,6 +599,56 @@
   }
   .hd-act-detail td.num { text-align: right; color: var(--ink-700); }
   .hd-act-detail-source { color: var(--ink-900); }
+  .hd-act-detail tr.slot-row { cursor: pointer; }
+  .hd-act-detail tr.slot-row:hover td { background: var(--paper-100, #f7f1e5); }
+  .hd-act-detail tr.slot-row.is-open td { background: var(--paper-200, #efe5d3); font-weight: 600; }
+  .hd-act-detail tr.slot-expand td {
+    background: var(--paper-50);
+    padding: 0;
+    border-bottom: 1px solid var(--ink-300);
+  }
+  .hd-act-items {
+    margin: 0;
+    padding: 8px 14px 12px;
+    font: 400 12px/1.45 var(--font-mono, 'JetBrains Mono', monospace);
+    color: var(--ink-800);
+  }
+  .hd-act-items-item {
+    padding: 6px 0;
+    border-top: 1px dashed var(--ink-300);
+  }
+  .hd-act-items-item:first-child { border-top: 0; }
+  .hd-act-items-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px 14px;
+    font-size: 11px;
+    color: var(--ink-600);
+  }
+  .hd-act-items-meta b { color: var(--ink-900); font-weight: 600; }
+  .hd-act-items-body {
+    margin: 4px 0 0;
+    color: var(--ink-900);
+    white-space: pre-wrap;
+    word-break: break-word;
+  }
+  .hd-act-items-empty { color: var(--ink-500); font-style: italic; padding: 8px 0; }
+  .hd-act-items-loading { color: var(--ink-500); padding: 8px 0; }
+  .hd-act-items-pill {
+    display: inline-block;
+    padding: 1px 6px;
+    border: 1px solid var(--ink-400);
+    border-radius: 3px;
+    font: 600 9px/1 var(--font-mono, 'JetBrains Mono', monospace);
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--ink-800);
+    background: var(--paper-50);
+  }
+  .hd-act-items-pill.is-sms   { border-color: var(--teal-600, #2F8F87); color: var(--teal-600, #2F8F87); }
+  .hd-act-items-pill.is-email { border-color: var(--ink-blue, #1f3a6b);  color: var(--ink-blue, #1f3a6b); }
+  .hd-act-items-pill.is-call  { border-color: var(--brass-600, #8b6f2a); color: var(--brass-600, #8b6f2a); }
+  .hd-act-items-pill.is-auto  { border-color: var(--ink-500); color: var(--ink-500); }
   .hd-act-detail-tag {
     display: inline-block;
     margin-left: 6px;
@@ -1481,18 +1531,20 @@
         panel.innerHTML = head + `<div class="hd-act-detail-empty">No detail events captured for this day.</div>`;
       } else {
         events.sort((a, b) => (a.bucket || 0) - (b.bucket || 0));
-        const rows = events.map(e => {
+        const rows = events.map((e, i) => {
           const from = bucketTime(e.bucket || 0);
           const to   = bucketTime((e.bucket || 0) + 1);
           const src  = e.src || "?";
           const writes = e.writes || 0;
           const kind = e.kind === "login" ? `<span class="hd-act-detail-tag">login</span>` : "";
+          const bid = e.bucket || 0;
           return `
-            <tr>
+            <tr class="slot-row" data-slot="${i}" data-email="${escapeHtml(activityFocus.email)}" data-iso="${escapeHtml(activityFocus.iso)}" data-bucket="${bid}" data-src="${escapeHtml(src)}">
               <td class="num">${escapeHtml(from)}–${escapeHtml(to)}</td>
               <td class="hd-act-detail-source">${escapeHtml(src)}${kind}</td>
               <td class="num">${writes.toLocaleString("en-GB")}</td>
-            </tr>`;
+            </tr>
+            <tr class="slot-expand" data-slot-expand="${i}" hidden><td colspan="3"></td></tr>`;
         }).join("");
         panel.innerHTML = head + `
           <table>
@@ -1501,9 +1553,82 @@
             </thead>
             <tbody>${rows}</tbody>
           </table>`;
+        panel.querySelectorAll("tr.slot-row").forEach(tr => {
+          tr.addEventListener("click", () => toggleSlotExpand(tr));
+        });
       }
       root.appendChild(panel);
     }
+  }
+
+  // Click a 15-min slot row → fetch /api/workspace/activity-items and
+  // render the per-message detail in the expansion row underneath.
+  // Idempotent: a second click closes it; loading state is shown while
+  // the fetch is in flight.
+  async function toggleSlotExpand(tr) {
+    const slotIdx = tr.dataset.slot;
+    const expand = tr.parentElement.querySelector(`tr.slot-expand[data-slot-expand="${slotIdx}"]`);
+    if (!expand) return;
+    if (!expand.hidden) {
+      expand.hidden = true;
+      tr.classList.remove("is-open");
+      return;
+    }
+    // Close any other expanded row in this panel first.
+    tr.closest("tbody").querySelectorAll("tr.slot-expand:not([hidden])").forEach(r => { r.hidden = true; });
+    tr.closest("tbody").querySelectorAll("tr.slot-row.is-open").forEach(r => r.classList.remove("is-open"));
+    tr.classList.add("is-open");
+    const cell = expand.querySelector("td");
+    cell.innerHTML = `<div class="hd-act-items hd-act-items-loading">Loading drill-down…</div>`;
+    expand.hidden = false;
+    const params = new URLSearchParams({
+      email:  tr.dataset.email,
+      date:   tr.dataset.iso,
+      bucket: tr.dataset.bucket,
+      src:    tr.dataset.src,
+    });
+    try {
+      const r = await fetch(`/api/workspace/activity-items?${params}`, { cache: "no-store" });
+      if (!r.ok) {
+        const j = await r.json().catch(() => null);
+        throw new Error((j && j.error) || `HTTP ${r.status}`);
+      }
+      const data = await r.json();
+      cell.innerHTML = renderActivityItems(data.items || [], tr.dataset.src);
+    } catch (err) {
+      cell.innerHTML = `<div class="hd-act-items hd-act-items-empty">Couldn't load detail: ${escapeHtml(err.message || String(err))}</div>`;
+    }
+  }
+
+  function renderActivityItems(items, src) {
+    if (!items.length) {
+      return `<div class="hd-act-items hd-act-items-empty">No per-item detail captured yet for <code>${escapeHtml(src)}</code>. Comm sources are seeded on the next daily refresh; other sources show aggregate writes only.</div>`;
+    }
+    const parts = items.map(it => {
+      const t = (it.occurred_at || "").slice(11, 19) || "—";
+      const commType = (it.comm_type || "").toString();
+      const ct = commType.toLowerCase();
+      const pill = commType
+        ? `<span class="hd-act-items-pill is-${escapeHtml(ct)}">${escapeHtml(commType)}</span>`
+        : "";
+      const auto = it.auto_processed
+        ? `<span class="hd-act-items-pill is-auto">Auto</span>` : "";
+      const fields = [];
+      if (it.client_type)     fields.push(`<span>ClientType <b>${escapeHtml(it.client_type)}</b></span>`);
+      if (it.client_username) fields.push(`<span>Client <b>${escapeHtml(it.client_username)}</b></span>`);
+      if (it.campaign_name)   fields.push(`<span>Campaign <b>${escapeHtml(it.campaign_name)}</b></span>`);
+      const body = it.body_excerpt
+        ? `<div class="hd-act-items-body">${escapeHtml(it.body_excerpt)}</div>`
+        : "";
+      return `<div class="hd-act-items-item">
+        <div class="hd-act-items-meta">
+          <span><b>${escapeHtml(t)}</b> UTC</span>
+          ${pill}${auto}${fields.join("")}
+        </div>
+        ${body}
+      </div>`;
+    });
+    return `<div class="hd-act-items">${parts.join("")}</div>`;
   }
   function bucketTime(bucket) {
     const h = Math.floor(bucket / 4);

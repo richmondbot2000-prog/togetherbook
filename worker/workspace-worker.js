@@ -140,6 +140,13 @@ export default {
       if (url.pathname.replace(/\/$/, "").endsWith("/activity")) {
         return await handleActivityRead(req, env, url);
       }
+      // GET /api/activity-items — per-item drill-down for a single
+      // (email, iso_date, bucket) cell.  For comm sources, includes
+      // body excerpt + ComType + ClientType + ClientUsername +
+      // CampaignName + AutoProcessed.
+      if (url.pathname.replace(/\/$/, "").endsWith("/activity-items")) {
+        return await handleActivityItemsRead(req, env, url);
+      }
       return json({ error: "unknown GET endpoint" }, 404, req);
     }
 
@@ -2014,6 +2021,45 @@ async function handleActivityRead(req, env, url) {
     if (!last_pull_at || r.pulled_at > last_pull_at) last_pull_at = r.pulled_at;
   }
   return json({ by_email, pulled, last_pull_at }, 200, req);
+}
+
+// GET /api/workspace/activity-items?email=&date=&bucket=[&src=]
+// Returns the per-message detail rows for one (email, iso_date,
+// bucket) cell. Same auth/authorisation model as /activity.
+async function handleActivityItemsRead(req, env, url) {
+  if (!env.ACTIVITY_DB) {
+    return json({ error: "ACTIVITY_DB binding not configured" }, 503, req);
+  }
+  const viewer = (req.headers.get("Cf-Access-Authenticated-User-Email") || "").toLowerCase();
+  if (!viewer) return json({ error: "not authenticated" }, 401, req);
+
+  const target = (url.searchParams.get("email") || "").toLowerCase().trim();
+  const iso    = (url.searchParams.get("date")  || "").slice(0, 10);
+  const bucket = parseInt(url.searchParams.get("bucket") || "", 10);
+  const srcFilter = url.searchParams.get("src") || "";
+  if (!target || !/^\d{4}-\d{2}-\d{2}$/.test(iso) || !Number.isInteger(bucket)) {
+    return json({ error: "need email, date (YYYY-MM-DD), bucket (int 0-95)" }, 400, req);
+  }
+
+  const admins = await fetchAdmins();
+  const isAdmin = admins.includes(viewer);
+  let allowed = (target === viewer) || isAdmin;
+  if (!allowed) {
+    const lms = await fetchLineManagers();
+    allowed = lms[target] === viewer;
+  }
+  if (!allowed) return json({ error: "not authorised for this user" }, 403, req);
+
+  let sql = `SELECT src, occurred_at, record_id, kind, comm_type, client_type,
+                    client_username, campaign_name, auto_processed, body_excerpt
+             FROM activity_items
+             WHERE email = ? AND iso_date = ? AND bucket = ?`;
+  const params = [target, iso, bucket];
+  if (srcFilter) { sql += " AND src = ?"; params.push(srcFilter); }
+  sql += " ORDER BY occurred_at ASC, record_id ASC LIMIT 500";
+
+  const out = await env.ACTIVITY_DB.prepare(sql).bind(...params).all();
+  return json({ items: out.results || [] }, 200, req);
 }
 
 async function handleHolidays(req, env, url) {

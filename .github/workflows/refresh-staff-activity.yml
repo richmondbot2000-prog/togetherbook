@@ -105,6 +105,21 @@ jobs:
         continue-on-error: true
         run: python scripts/scan_staff_activity_buckets.py
 
+      - name: Scan comm items (per-message detail for activity drill-down)
+        if: steps.guard.outputs.skip != 'true'
+        env:
+          FABRIC_SQL_ENDPOINT: d76gbn5gtayeppltcrsxsvkluq-ruqkpz7fkwpelmnjh4kbg2lqpi.datawarehouse.fabric.microsoft.com
+          FABRIC_TENANT_ID:    b760fc1f-98a6-4730-bd73-146579554ba4
+          FABRIC_CLIENT_ID:    b8fb2709-6e42-4a1e-91e6-8a3807a9884d
+          FABRIC_CLIENT_SECRET: ${{ secrets.FABRIC_CLIENT_SECRET }}
+          ACTIVITY_START_DATE:  ${{ inputs.start_date }}
+          ACTIVITY_END_DATE:    ${{ inputs.end_date }}
+          CLOUDFLARE_API_TOKEN:  ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          D1_ACTIVITY_DB_ID:     ${{ secrets.D1_ACTIVITY_DB_ID }}
+        continue-on-error: true
+        run: python scripts/scan_comm_items.py
+
       - name: Install Google API deps (for Workspace activity merge)
         if: steps.guard.outputs.skip != 'true'
         run: pip install --quiet google-api-python-client==2.* google-auth==2.*
