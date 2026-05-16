@@ -199,15 +199,45 @@
     letter-spacing: 0;
   }
   .hd-day[data-default-bh="1"]       { background: #E8A82A; color: #fff; }
-  /* Note-present indicator: a small brass dot in the top-right corner. */
-  .hd-day.has-note::before {
+  /* Note indicator: a small black triangle in the top-right corner —
+     ONLY for the two half-day statuses that carry notes in the data
+     model. Hovering the cell reveals the note text in a small box
+     overlaying the day; pure-CSS, no JS, reads from data-note. */
+  .hd-day.has-note[data-status="part-paid-unpaid"]::before,
+  .hd-day.has-note[data-status="part-holiday-paid"]::before {
     content: "";
     position: absolute;
-    top: 4px; right: 4px;
-    width: 6px; height: 6px;
-    border-radius: 50%;
-    background: var(--ink-900, #11192E);
-    box-shadow: 0 0 0 1px rgba(253,251,244,0.75);
+    top: 0; right: 0;
+    width: 0; height: 0;
+    border-style: solid;
+    border-width: 0 11px 11px 0;
+    border-color: transparent var(--ink-900, #11192E) transparent transparent;
+    background: transparent;
+    border-radius: 0;
+    box-shadow: none;
+    pointer-events: none;
+    z-index: 2;
+  }
+  .hd-day.has-note[data-status="part-paid-unpaid"]:hover::after,
+  .hd-day.has-note[data-status="part-holiday-paid"]:hover::after {
+    content: attr(data-note);
+    position: absolute;
+    bottom: calc(100% + 4px);
+    left: 50%;
+    transform: translateX(-50%);
+    background: var(--paper-50, #FDFBF4);
+    color: var(--ink-900, #11192E);
+    border: 1px solid var(--ink-700, #2C3E66);
+    padding: 6px 10px;
+    font: 400 12px/1.35 var(--font-display, 'Newsreader', serif);
+    white-space: normal;
+    width: max-content;
+    max-width: 200px;
+    z-index: 100;
+    pointer-events: none;
+    text-align: left;
+    letter-spacing: 0;
+    text-transform: none;
   }
   /* Greyed-out for users with no payroll record. */
   .hd-day.is-not-on-payroll {
@@ -1215,9 +1245,13 @@
       }
     }
     if (iso === todayIso) cell.classList.add("hd-day-today");
-    // Note indicator dot (small ink dot in top-right).
+    // Note indicator (black triangle in the top-right corner for part-day
+     // statuses with a note). data-note feeds the CSS hover tooltip.
     const noteMap = ((holidaysDoc.by_user || {})[selectedEmail] || {}).notes || {};
-    if (noteMap[iso]) cell.classList.add("has-note");
+    if (noteMap[iso]) {
+      cell.classList.add("has-note");
+      cell.dataset.note = noteMap[iso];
+    }
     if (!isOnPayroll(selectedEmail)) cell.classList.add("is-not-on-payroll");
 
     // Day number; show month label on the 1st and on yearStart.
@@ -1795,7 +1829,6 @@
     pop.className = "hd-pop";
     const who = (staffByEmail[reportEmail] || {}).name || reportEmail;
     const dateLabel = d.toLocaleDateString("en-GB", { weekday: "long", day: "numeric", month: "short", year: "numeric" });
-    const noteVisible = STATUS_HAS_NOTE.has(current);
     pop.innerHTML = `
       <div class="hd-pop-head">${escapeHtml(who)}<br>${escapeHtml(dateLabel)}${isBh ? " · UK Bank Holiday" : ""}</div>
       ${opts.map(s => `
@@ -1806,14 +1839,13 @@
       <button type="button" class="hd-pop-opt hd-pop-clear" data-clear ${current ? "" : "disabled"}>
         Reset to default (${STATUS_LABEL[defaultStatus]})
       </button>
-      <div class="hd-pop-note" style="display:${noteVisible ? "block" : "none"};">
-        <label class="hd-pop-note-label">Note <span class="hd-pop-note-hint">(≤100 chars · part-day only)</span></label>
+      <div class="hd-pop-note">
+        <label class="hd-pop-note-label">Note <span class="hd-pop-note-hint">(≤100 chars · saved only on part-day choices)</span></label>
         <textarea class="hd-pop-note-input" maxlength="100" rows="2" placeholder="e.g. half day off — back from 1pm">${escapeHtml(currentNote)}</textarea>
       </div>`;
     document.body.appendChild(pop);
     positionPop(pop, anchor);
     openPopEl = pop;
-    const noteWrap = pop.querySelector(".hd-pop-note");
     const noteInput = pop.querySelector(".hd-pop-note-input");
     pop.addEventListener("click", e => {
       const btn = e.target.closest("button");
@@ -1824,13 +1856,7 @@
       saveDayFor(reportEmail, iso, current, next, nextNote);
       closePicker();
     });
-    pop.querySelectorAll("[data-status]").forEach(b => {
-      b.addEventListener("mouseenter", () => {
-        const k = b.dataset.status;
-        if (noteWrap) noteWrap.style.display = STATUS_HAS_NOTE.has(k) ? "block" : "none";
-      });
-    });
-    if (noteVisible && noteInput) setTimeout(() => noteInput.focus(), 0);
+    if (STATUS_HAS_NOTE.has(current) && noteInput) setTimeout(() => noteInput.focus(), 0);
     const onKey = e => {
       if (e.key === "Escape") { e.preventDefault(); closePicker(); }
     };
@@ -1927,7 +1953,9 @@
     const pop = document.createElement("div");
     pop.className = "hd-pop";
     const dateLabel = d.toLocaleDateString("en-GB", { weekday: "long", day: "numeric", month: "short", year: "numeric" });
-    const noteVisible = STATUS_HAS_NOTE.has(current);
+    // Note input is always visible while the picker is open — easier to
+     // reach and the "(part-day only)" hint tells the user it's only saved
+     // when a half-day status is chosen.
     pop.innerHTML = `
       <div class="hd-pop-head">${escapeHtml(dateLabel)}${isBh ? " · UK Bank Holiday" : ""}</div>
       ${opts.map(s => `
@@ -1938,14 +1966,13 @@
       <button type="button" class="hd-pop-opt hd-pop-clear" data-clear ${current ? "" : "disabled"}>
         Reset to default (${STATUS_LABEL[defaultStatus]})
       </button>
-      <div class="hd-pop-note" style="display:${noteVisible ? "block" : "none"};">
-        <label class="hd-pop-note-label" for="hdPopNote">Note <span class="hd-pop-note-hint">(≤100 chars · part-day only)</span></label>
+      <div class="hd-pop-note">
+        <label class="hd-pop-note-label" for="hdPopNote">Note <span class="hd-pop-note-hint">(≤100 chars · saved only on part-day choices)</span></label>
         <textarea id="hdPopNote" class="hd-pop-note-input" maxlength="100" rows="2" placeholder="e.g. half day off — back from 1pm">${escapeHtml(currentNote)}</textarea>
       </div>`;
     document.body.appendChild(pop);
     positionPop(pop, anchor);
     openPopEl = pop;
-    const noteWrap = pop.querySelector(".hd-pop-note");
     const noteInput = pop.querySelector("#hdPopNote");
     pop.addEventListener("click", e => {
       const btn = e.target.closest("button");
@@ -1956,16 +1983,10 @@
       saveDayFor(selectedEmail, iso, current, next, nextNote);
       closePicker();
     });
-    // Toggle note input visibility as user mouses over the status
-    // options — gives them a preview of which options carry a note.
-    pop.querySelectorAll("[data-status]").forEach(b => {
-      b.addEventListener("mouseenter", () => {
-        const k = b.dataset.status;
-        if (noteWrap) noteWrap.style.display = STATUS_HAS_NOTE.has(k) ? "block" : "none";
-      });
-    });
-    // Autofocus the note input when shown.
-    if (noteVisible && noteInput) setTimeout(() => noteInput.focus(), 0);
+    // Autofocus the note input if the day already carries a part-day status
+    // — the user is most likely here to edit the note. Otherwise leave focus
+    // on the popover so the user can pick a status first.
+    if (STATUS_HAS_NOTE.has(current) && noteInput) setTimeout(() => noteInput.focus(), 0);
     // Close on outside click / Escape
     setTimeout(() => {
       document.addEventListener("click", outsideClose, { once: true });
@@ -2126,7 +2147,12 @@
       else if (isBh) cell.dataset.defaultBh = "1";
       else { cell.dataset.status = "office"; cell.dataset.defaulted = "1"; }
     }
-    if (noteMap[iso]) cell.classList.add("has-note");
+    cell.classList.remove("has-note");
+    delete cell.dataset.note;
+    if (noteMap[iso]) {
+      cell.classList.add("has-note");
+      cell.dataset.note = noteMap[iso];
+    }
     // Update the label
     const label = labelFor(stored, isWeekend, isBh);
     const labelDiv = cell.querySelector(".hd-day-label");
