@@ -1885,6 +1885,30 @@ A short list of footguns to avoid, kept brief; longer detail in `~/Desktop/wiki/
 
 ---
 
+## 16.5 Reporting audit — 2026-05-16
+
+A 6-agent parallel audit traced every report's metrics back to the warehouse tables looking for misleading interpretations. Twelve bugs fixed and shipped; six deeper issues disclosed on the page pending DB-level verification before scanner rewrites. Detail:
+
+**Fixed**
+- **Brokers**: "Blended apply rate" KPI was hardcoded to 0.0% because it read a field removed on 2026-05-12 (`s.applications`). Switched to `s.apply1`. Per-broker `apply1_rate` denominator changed from `applications` to `leads_purchased` to match the handbook's canonical definition + the AutoBlock ≤10% threshold.
+- **TopUps**: 9 leading months of phantom-zero `tue_eligible` / `live_topup` (Jun 2024 – Feb 2025) are now trimmed from the chart with an explanatory footnote — those columns weren't populated on `Loan_History` rows before ~Mar 2025, so rendering them as 0 falsely told the user the TUE programme started then. Current month renders striped bars + dashed final line segment + hollow dots + `MTD` table tag.
+- **Comms response**: Robot Responder excluded by default (bot auto-acks within seconds made raw curves look magically fast). Default metric flipped Mean → Median.
+- **Brandwatch**: contextual-pairs filter now applies to news-style sources (Google News, YouTube, CourtListener) — was silently dropping every legit news mention. Workflow's commit step gated on `success()` so a Send-email failure no longer marks un-emailed mentions as already-emailed.
+- **Pipeline**: VC-ready stage now uses one `COUNT(DISTINCT ARef)` over task types 62 + 146 — was summing per-task DISTINCT counts and double-counting ARefs completing both variants. `leads_purchased` now includes `LeadResultTypeId = 30` (Pre-check passed) so the rejection-bucket totals reconcile with `leads_presented`.
+- **Directory**: sibling Workspace accounts (same person across multiple tenant domains) no longer collapse into one row — per SPEC §11.1.5 they should be two rows so per-tenant activity stays visible. The alias-domain normalisation (clearloans → letme) was making the merge fire unintentionally.
+- **`scan_staff_activity.py`**: added `togetherloans.com` + `tando.dk` to `KNOWN_DOMAINS`; relaxed the agent-username SQL filter to also accept bare-local-part identifiers (Communications.Messages stores CRM agents this way). Without the relaxation every comm sent by a CRM agent was invisible to the 60-day rollup, making real agents show as inactive on the Directory page. `active_count` 95 → 97 on the next run.
+- **`refresh-staff-activity.yml`** job timeout 15 → 20 min — the Google Workspace merge step was hitting the cap and being killed.
+
+**Flagged for follow-up (deferred — disclosed on the page)**
+- `scan_brokers.py` Q3/Q4 (paid_out via `ApplicationStatusTypeId = 5` + `MAX(CampaignId)` attribution): should use `LeadOutcomes.LeadOutcomeTypeID = 8` and join via `LeadOutcomes.LeadId` like `scan_source_quality.py` already does. ~3% paid-loan mis-attribution.
+- `scan_pipeline.py` Q4 (paid_out — same pattern). Also: cohort defined by `InterestingDateTimeUtc` (last status-update timestamp) rather than creation date, so cohort membership is unstable.
+- `scan_yesterday_payouts.py` + `scan_payouts_history.py`: UTC `GETDATE()` vs `LoanAgreementDateLocal` (US-Eastern) gives one-day drift on early-US-morning runs. Also: ignores transaction reversals + `Cancelled`/`DNL`/`FraudRisk` flags so paid-out volume is overstated.
+- `scan_brandwatch.py`: archived_reviews carry every TP review ever scraped — the 354-mention headline's 83% Trustpilot share is a storage artefact, not a real-world mix.
+- `scan_pipeline_samples.py`: identity-link by `(FirstName, Surname, DOB)` alone is collision-prone at US lending scale; should require phone or email as a second key.
+- `scan_brokers.py` apply1: sourced from a Tasks join that excludes ARefs not yet in `Applications`, inflating the "Ghost (no Apply 1)" share for brokers with recent volume — should pull from `LeadOutcomes`.
+
+---
+
 ## 17. Pending / blocked work
 
 | Item | Status | Blocker |
