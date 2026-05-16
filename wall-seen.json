@@ -3,7 +3,10 @@
   "by_user": {
     "james.benamor@letme.com": {
       "posts": {},
-      "last_marked_at": "2026-05-15T09:05:22.336Z"
+      "last_marked_at": "2026-05-15T09:05:22.336Z",
+      "seen_events": [
+        "m:post_mp6zxv0t_4pj7yu:reply_mp8so9zc_ogxyzx:mourad.malki@letme.com"
+      ]
     },
     "mourad.malki@letme.com": {
       "posts": {
