@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "updated_at": "2026-05-16T21:15:45.207Z",
+  "updated_at": "2026-05-16T21:15:48.310Z",
   "year_start": "2026-04-01",
   "year_end": "2027-03-31",
   "by_user": {
@@ -22,7 +22,7 @@
         "2026-06-19": "maternity",
         "2026-06-22": "approved-holiday",
         "2026-04-06": "approved-holiday",
-        "2026-05-06": "part-holiday-paid",
+        "2026-05-06": "part-paid-unpaid",
         "2026-05-07": "part-paid-unpaid"
       },
       "notes": {}
@@ -233,6 +233,14 @@
       "to": "part-paid-unpaid",
       "changed_by": "james.benamor@letme.com",
       "changed_at": "2026-05-16T21:15:45.207Z"
+    },
+    {
+      "user_email": "amber.cole@letme.com",
+      "date": "2026-05-06",
+      "from": "part-holiday-paid",
+      "to": "part-paid-unpaid",
+      "changed_by": "james.benamor@letme.com",
+      "changed_at": "2026-05-16T21:15:48.310Z"
     }
   ]
 }
