@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "updated_at": "2026-05-16T21:34:40.545Z",
+  "updated_at": "2026-05-16T21:36:52.620Z",
   "posts": [
     {
       "id": "post_mp8t9vc4_9jhkrf",
@@ -47,6 +47,16 @@
           "author_name": "james.benamor",
           "created_at": "2026-05-16T21:29:18.352Z",
           "body": "@james.benamor OK I clicked out of this and posted it too soon and now I've realised we need an Edit button. Building it now!",
+          "photos": [],
+          "reactions": {}
+        },
+        {
+          "id": "reply_mp8v9kap_gdhjsa",
+          "parent_comment_id": "reply_mp8uzu34_6m0ibg",
+          "author_email": "mourad.malki@letme.com",
+          "author_name": "mourad.malki",
+          "created_at": "2026-05-16T21:36:52.225Z",
+          "body": "@james.benamor I will go for the $50 as i want to finish this before monday",
           "photos": [],
           "reactions": {}
         }
