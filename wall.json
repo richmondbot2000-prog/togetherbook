@@ -1,7 +1,20 @@
 {
   "schema_version": 1,
-  "updated_at": "2026-05-16T20:32:58.735Z",
+  "updated_at": "2026-05-16T20:41:07.471Z",
   "posts": [
+    {
+      "id": "post_mp8t9vc4_9jhkrf",
+      "author_email": "mourad.malki@letme.com",
+      "author_name": "mourad.malki",
+      "created_at": "2026-05-16T20:41:07.300Z",
+      "body": "Saturday night with my mate Claude, building a cleaner, smarter collections training classroom that’s easier for newbies to follow and should hopefully save @berginie.botero from losing brain cells scoring modules for 2 hours 😅",
+      "photos": [
+        "wall-media/img_mp8t6q9z_y9ulmm.jpg"
+      ],
+      "channel": null,
+      "reactions": {},
+      "comments": []
+    },
     {
       "id": "post_mp76cgvu_z1f6a5",
       "author_email": "james.benamor@letme.com",
