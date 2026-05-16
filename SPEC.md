@@ -1513,6 +1513,41 @@ A baked list of 9 UK BHs for the 2026-04 → 2027-03 fiscal year (Good Friday, E
 - Active tab carries a manuscript-red rule + bold weight, mirroring the Payouts page selector.
 - Status colours are the only saturated hues on the page; everything else is paper/ink/brass.
 
+#### 11.9.8 Activity tab + D1-backed drill-down
+
+The Activity tab on the Holidays page lets a manager see when each of their direct reports was actually doing work — split into 15-minute UTC buckets across the current month. Data is **permanent**, not refreshed-on-load: each day is pulled once at 12:17 UTC the day after it happens (via `refresh-staff-activity.yml`), then never changes unless an admin clicks **Refresh data**.
+
+**Storage**: Cloudflare D1 database `apifk-activity` (UUID `cb23afae-…`) bound to `apifk-workspace-worker2` as `ACTIVITY_DB`. Three tables:
+
+| Table | Grain | Notes |
+|---|---|---|
+| `activity_buckets` | `(email, iso_date, bucket)` | One row per active 15-min slot. ~34k rows today. |
+| `activity_events` | `(email, iso_date, bucket, src)` | Per-source aggregate — writes / first_at / last_at / kind. ~49k rows. Powers the slot list. |
+| `activity_items` | `(email, iso_date, bucket, src, record_id)` | **Per-message detail** for comm sources. Carries `body_excerpt` (first 500 chars of `MessageBody`), `comm_type` (SMS/Email/Call from the `Description` enum), `client_type`, `client_username` (= `ExternalAddress` — phone or email of the client), `campaign_name`, `auto_processed`. Powers the drill-down. |
+| `activity_pulled` | `iso_date` | Audit log — when each date was last refreshed and from which source. |
+
+**Reads** (worker, both Cf-Access-gated):
+- `GET /api/workspace/activity?from=&to=&emails=` — slot grid + per-source events for the date range. Authorisation: viewer always; line manager → their direct reports; admin → anyone.
+- `GET /api/workspace/activity-items?email=&date=&bucket=[&src=]` — drill-down rows for one (email, date, 15-min bucket). Same auth model.
+
+**Writes**: the scanners run in GitHub Actions, not in the worker. Three steps in `refresh-staff-activity.yml`, all `continue-on-error: true` so a transient warehouse blip doesn't break the others:
+
+1. `scan_staff_activity_buckets.py` — pulls every `ClientUsername`-bearing table across the 7 reporting DBs, aggregates into per-15-min buckets, merges into `staff-activity-buckets.json` (legacy path — to be retired once the worker exclusively reads from D1).
+2. `scan_google_workspace_activity.py` — login/gmail/drive/meet/chat/calendar/admin from the Workspace Reports API. Merges into the same JSON with `kind: "google"`.
+3. `scan_comm_items.py` — per-row pull of `ReportingCommunications.dbo.Messages` (filtered to `Description IN (5,6,7)` — outbound SMS/Email/Call) and uploads to D1's `activity_items` table. Wipes the window first (DELETE per iso_date) for idempotency, then batched `INSERT OR REPLACE` (batch size auto-set to stay under D1's 100-var statement cap).
+
+**Admin "Refresh data" button** (top-right of the Activity tab, visible only to admins) → `POST /api/workspace/refresh-activity` → worker dispatches `refresh-staff-activity.yml` via the GitHub API with the current month as `start_date`/`end_date`. Takes ~1–2 minutes to land.
+
+**UI** — see `holidays.html` `renderActivity()` + `toggleSlotExpand()`:
+- The grid: one row per direct report, one box per day, 96 horizontal ticks (each = 15 min). Click a day → focused panel below the grid lists every active slot for that day.
+- Click a slot row → inline expansion underneath fetches `/api/workspace/activity-items?…` and renders the per-message detail. Comm rows show coloured pills (SMS / Email / Call / Auto) + meta line (`ClientType`, `Client`, `Campaign`) + body excerpt. Non-comm rows fall back to "aggregate only — comm sources are seeded on the next daily refresh" because no per-row detail is captured for them yet.
+
+**Required GH secrets** for the comm-items scanner: `CLOUDFLARE_API_TOKEN`, `CLOUDFLARE_ACCOUNT_ID`, `D1_ACTIVITY_DB_ID` (plus the existing `FABRIC_CLIENT_SECRET`).
+
+**Known limits**:
+- Inbound comms (`Description IN 0,1,2`) aren't currently captured — the agent identifier isn't stored on inbound rows in `Messages`. If the user wants "Comms read" tracked, that's a separate signal (e.g. mailbox read receipts, CRM open events) — not blocked but not built.
+- Drill-down for non-comm sources (loanbook.Events, applications.LeadOutcomes, etc.) returns an empty list with a "coming soon" hint. To extend, generalise `scan_comm_items.py` into a multi-table scanner that emits one item-row per warehouse-row with table-specific labels.
+
 ---
 
 ## 12. Concept reference: Top-Up Eligibility (TUE)
