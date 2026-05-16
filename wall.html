@@ -23,74 +23,86 @@
     border: 1px solid var(--paper-300);
     border-left: 4px solid var(--brass-500);
     border-radius: 0;
-    padding: 20px 22px;
+    padding: 12px 14px;
     margin: 0 0 24px;
   }
-  .wl-compose-eyebrow {
-    font: italic 500 13px/1 var(--font-body);
-    color: var(--red-500);
-    text-transform: lowercase;
-    letter-spacing: 0.02em;
-    margin: 0 0 12px;
+  /* Mobile-compose pattern borrowed from FB / X / LinkedIn / IG / Nextdoor:
+     small avatar + "Posting as" label on top, full-width textarea below
+     (no avatar gutter to share width with), and a single compact action
+     row at the bottom with icon-only attach buttons + counter + filled
+     Post button. The textarea is the dominant element. */
+  .wl-compose-head {
     display: flex; align-items: center; gap: 10px;
+    margin: 0 0 8px;
   }
-  .wl-compose-eyebrow::before {
-    content: ""; flex: 0 0 36px; height: 1px;
-    background: var(--brass-300);
+  .wl-compose-head .wl-avatar { width: 28px; height: 28px; font-size: 11px; flex: 0 0 auto; }
+  .wl-compose-as {
+    font: 500 13px/1.2 var(--font-body);
+    color: var(--ink-600);
   }
-  .wl-compose-row { display: flex; gap: 12px; align-items: flex-start; }
-  .wl-compose-row .wl-avatar { flex: 0 0 auto; }
   .wl-compose textarea {
-    flex: 1 1 auto;
-    width: 100%; min-height: 64px; max-height: 320px;
+    width: 100%; box-sizing: border-box;
+    min-height: 96px; max-height: 320px;
     border: 1px solid var(--paper-300);
     border-radius: 0;
     padding: 10px 12px;
-    font: 400 16px/1.55 var(--font-body);
+    font: 400 16px/1.5 var(--font-body);
     color: var(--ink-900);
     background: white;
     resize: vertical;
+    display: block;
   }
   .wl-compose textarea::placeholder { font-style: italic; color: var(--ink-500); }
   .wl-compose textarea:focus { outline: 1px solid var(--brass-500); border-color: var(--brass-500); }
   .wl-compose-actions {
-    display: flex; gap: 10px; align-items: center;
-    margin-top: 10px; justify-content: space-between;
+    display: flex; gap: 4px; align-items: center;
+    margin-top: 10px;
   }
-  .wl-compose-actions-left { display: flex; gap: 10px; align-items: center; }
-  .wl-char-count { font: 500 11px/1 var(--font-mono); color: var(--ink-500); }
+  .wl-compose-attach { display: flex; gap: 2px; align-items: center; }
+  .wl-char-count {
+    font: 500 11px/1 var(--font-mono);
+    color: var(--ink-500);
+    margin-left: auto;
+  }
   .wl-char-count.over { color: var(--red-500); font-weight: 700; }
-  /* Post action — italic Newsreader text label, brass underline. Echoes
-     the .qb-link-action pattern used elsewhere on the site (e.g. helper
-     "see more" links). Solid coloured buttons are explicitly out of the
-     Quiet Edition system. */
+  /* Post — filled brass, the page's primary CTA. Quiet Edition normally
+     avoids solid buttons, but compose-Post is the one action the page
+     genuinely needs to make obvious; this matches the FB / X / IG
+     "filled primary" pattern that users expect on a social compose. */
   .wl-btn-post {
-    background: none; border: none;
-    color: var(--ink-800);
-    font: italic 600 16px/1.2 var(--font-body);
-    padding: 8px 4px;
-    border-bottom: 1.5px solid var(--brass-500);
+    background: var(--brass-500, #C8973F);
+    color: var(--paper-50, white);
+    border: 0;
+    font: 600 14px/1 var(--font-body);
+    padding: 10px 20px;
     cursor: pointer;
-    min-height: 40px;
-    transition: color 120ms ease, border-color 120ms ease;
+    border-radius: 0;
+    min-height: 36px;
+    letter-spacing: 0.02em;
+    margin-left: 8px;
+    transition: background-color 140ms ease, color 140ms ease;
   }
-  .wl-btn-post::after { content: " →"; font-style: normal; }
-  .wl-btn-post:disabled { opacity: 0.45; cursor: not-allowed; }
-  .wl-btn-post:hover:not(:disabled) { color: var(--red-500); border-bottom-color: var(--red-500); }
-  /* Compose attach buttons (Photo / Video / GIF) — flat outline icons + label. */
+  .wl-btn-post:hover:not(:disabled) { background: var(--brass-600, #A47829); }
+  .wl-btn-post:disabled {
+    background: var(--paper-300, #ECDFB6);
+    color: var(--ink-500, #6B7794);
+    cursor: not-allowed;
+  }
+  /* Icon-only attach buttons — no rectangular border, no text label.
+     Hit area 36 × 36 px, hover background only. */
   .wl-attach-btn {
     background: transparent;
-    border: 1px solid var(--paper-300);
-    color: var(--ink-700);
+    border: 0;
+    color: var(--ink-600);
     border-radius: 4px;
-    padding: 6px 10px;
-    font: 500 12px/1 var(--font-body);
+    padding: 0;
     cursor: pointer;
-    display: inline-flex; align-items: center; gap: 6px;
-    min-height: 36px;
+    display: inline-flex; align-items: center; justify-content: center;
+    min-width: 36px; min-height: 36px;
+    transition: background-color 140ms ease, color 140ms ease;
   }
-  .wl-attach-btn:hover { color: var(--ink-900); border-color: var(--brass-500); }
-  .wl-attach-btn .wl-icon { width: 18px; height: 18px; }
+  .wl-attach-btn:hover { color: var(--brass-600, #A47829); background: var(--paper-100); }
+  .wl-attach-btn .wl-icon { width: 22px; height: 22px; }
   .wl-attach-btn input[type=file] { display: none; }
   .wl-compose-previews { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px; }
   .wl-compose-preview {
@@ -1065,29 +1077,28 @@
 <main class="qb-page">
   <section class="wl-section">
     <div class="wl-compose" id="wlCompose" style="display:none;">
-      <div class="wl-compose-row">
+      <div class="wl-compose-head">
         <div class="wl-avatar" id="wlMyAvatar">?</div>
-        <textarea id="wlComposeText" placeholder="Tell the team something they should know" maxlength="10000"></textarea>
+        <span class="wl-compose-as" id="wlComposeAs">Posting to the team</span>
       </div>
+      <textarea id="wlComposeText" placeholder="What's on your mind?" maxlength="10000"></textarea>
       <div class="wl-compose-previews" id="wlComposePreviews"></div>
       <div class="wl-compose-actions">
-        <div class="wl-compose-actions-left">
-          <label class="wl-attach-btn" title="Add photos (up to 10)">
+        <div class="wl-compose-attach">
+          <label class="wl-attach-btn" title="Add photos (up to 10)" aria-label="Add photos">
             <input type="file" id="wlComposePhotoInput" accept="image/*" multiple>
-            <span id="wlIconPhoto"></span><span>Photo</span>
+            <span id="wlIconPhoto"></span>
           </label>
-          <label class="wl-attach-btn" title="Add a video">
+          <label class="wl-attach-btn" title="Add a video" aria-label="Add a video">
             <input type="file" id="wlComposeVideoInput" accept="video/*">
-            <span id="wlIconVideo"></span><span>Video</span>
+            <span id="wlIconVideo"></span>
           </label>
-          <button type="button" class="wl-attach-btn" id="wlComposeGifBtn" title="Pick a GIF / meme">
-            <span id="wlIconGif"></span><span>GIF</span>
+          <button type="button" class="wl-attach-btn" id="wlComposeGifBtn" title="Pick a GIF / meme" aria-label="Add a GIF">
+            <span id="wlIconGif"></span>
           </button>
         </div>
-        <div class="wl-compose-actions-left">
-          <span class="wl-char-count" id="wlCharCount">0 / 10,000</span>
-          <button class="wl-btn-post" id="wlPostBtn" disabled>Post this page</button>
-        </div>
+        <span class="wl-char-count" id="wlCharCount">0 / 10,000</span>
+        <button class="wl-btn-post" id="wlPostBtn" disabled>Post</button>
       </div>
     </div>
 
@@ -1246,6 +1257,8 @@
       viewerPhoto = (me && photoUrlFor(me)) || "";
       viewerIsAdmin = adminEmails.has(viewerEmail);
       document.getElementById("wlMyAvatar").innerHTML = avatarInner(viewerName, viewerPhoto);
+      const asEl = document.getElementById("wlComposeAs");
+      if (asEl) asEl.textContent = `Posting as ${viewerName}`;
       document.getElementById("wlCompose").style.display = "";
     }
     if (seen && seen.by_user && seen.by_user[viewerEmail]) {
