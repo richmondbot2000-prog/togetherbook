@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "updated_at": "2026-05-16T19:48:16.327Z",
+  "updated_at": "2026-05-16T19:48:17.724Z",
   "posts": [
     {
       "id": "post_mp76cgvu_z1f6a5",
@@ -17,8 +17,7 @@
           "james.benamor@letme.com"
         ],
         "🎉": [
-          "james.benamor@letme.com",
-          "mourad.malki@letme.com"
+          "james.benamor@letme.com"
         ]
       },
       "comments": [],
@@ -78,6 +77,14 @@
           "target_id": "post_mp76cgvu_z1f6a5",
           "at": "2026-05-16T19:48:15.947Z",
           "kind": "added"
+        },
+        {
+          "actor_email": "mourad.malki@letme.com",
+          "emoji": "🎉",
+          "target_kind": "post",
+          "target_id": "post_mp76cgvu_z1f6a5",
+          "at": "2026-05-16T19:48:17.499Z",
+          "kind": "removed"
         }
       ]
     },
