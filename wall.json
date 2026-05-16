@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "updated_at": "2026-05-16T20:57:49.986Z",
+  "updated_at": "2026-05-16T20:57:51.261Z",
   "posts": [
     {
       "id": "post_mp8t9vc4_9jhkrf",
@@ -25,7 +25,11 @@
         "https://media1.giphy.com/media/v1.Y2lkPWYzOWU3YTk3bjBueTYzeTh4cjlmaHFuMjN6eWdpNHhidXRnc2l0dXR2MnJycnczNCZlcD12MV9naWZzX3NlYXJjaCZjdD1n/vIpCeF7YcCrygqAn3R/giphy.gif"
       ],
       "channel": null,
-      "reactions": {},
+      "reactions": {
+        "🎉": [
+          "james.benamor@letme.com"
+        ]
+      },
       "comments": [],
       "react_events": [
         {
@@ -139,6 +143,14 @@
           "target_id": "post_mp76cgvu_z1f6a5",
           "at": "2026-05-16T20:57:49.848Z",
           "kind": "removed"
+        },
+        {
+          "actor_email": "james.benamor@letme.com",
+          "emoji": "🎉",
+          "target_kind": "post",
+          "target_id": "post_mp76cgvu_z1f6a5",
+          "at": "2026-05-16T20:57:48.760Z",
+          "kind": "added"
         }
       ]
     },
