@@ -13,7 +13,7 @@
   /* 648 px column — sweet spot per editorial line-length research
      (60–75 chars per line at 15 px body). Wider feels marketing-y. */
   .wl-section { max-width: 648px; margin: 0 auto; padding: 18px 0 48px; }
-  @media (max-width: 800px) { .wl-section { padding: 8px 12px 32px; } }
+  @media (max-width: 800px) { .wl-section { padding: 8px 6px 32px; } }
 
   /* Compose form — the only true card on the page (the inkwell).
      Brass left rule + 'a new page' eyebrow makes the compose card
@@ -581,7 +581,7 @@
      Mirrors Facebook's pattern; survives narrow mobile viewports. */
   .wl-replies {
     position: relative;
-    padding-left: 40px;
+    padding-left: 20px;
     margin-left: 0;
     border-left: none;
   }
@@ -592,18 +592,19 @@
   }
   .wl-comment.is-reply .wl-avatar { width: 28px; height: 28px; font-size: 10px; }
   /* Elbow: vertical drop from the top of this reply row into the avatar,
-     then a curved 12 px corner reaching ~20 px right toward the avatar.
-     Total elbow occupies the first ~22 px of the row vertically. */
+     then a curved 6 px corner reaching ~10 px right toward the avatar.
+     Total elbow occupies the first ~20 px of the row vertically. Sized
+     to match a 20 px reply indent. */
   .wl-comment.is-reply::before {
     content: "";
     position: absolute;
-    left: -28px;
+    left: -14px;
     top: 0;
-    width: 20px;
-    height: 22px;
+    width: 10px;
+    height: 20px;
     border-left: 1px solid var(--brass-300);
     border-bottom: 1px solid var(--brass-300);
-    border-bottom-left-radius: 12px;
+    border-bottom-left-radius: 6px;
     pointer-events: none;
   }
   /* For replies that aren't the last sibling, extend the trunk vertically
@@ -611,8 +612,8 @@
   .wl-comment.is-reply:not(:last-child)::after {
     content: "";
     position: absolute;
-    left: -28px;
-    top: 22px;
+    left: -14px;
+    top: 20px;
     bottom: 0;
     width: 1px;
     background: var(--brass-300);
@@ -634,13 +635,13 @@
   }
   .wl-reply-target a:hover { text-decoration: underline; }
   @media (max-width: 480px) {
-    .wl-replies { padding-left: 28px; }
+    .wl-replies { padding-left: 14px; }
     .wl-comment.is-reply::before {
-      left: -20px; width: 14px; height: 18px;
-      border-bottom-left-radius: 8px;
+      left: -10px; width: 7px; height: 18px;
+      border-bottom-left-radius: 4px;
     }
     .wl-comment.is-reply:not(:last-child)::after {
-      left: -20px; top: 18px;
+      left: -10px; top: 18px;
     }
     .wl-comment.is-reply .wl-avatar { width: 24px; height: 24px; font-size: 9px; }
   }
