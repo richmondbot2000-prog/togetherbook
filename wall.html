@@ -23,40 +23,50 @@
     border: 1px solid var(--paper-300);
     border-left: 4px solid var(--brass-500);
     border-radius: 0;
-    padding: 12px 14px;
+    padding: 10px 14px 8px;
     margin: 0 0 24px;
   }
-  /* Mobile-compose pattern borrowed from FB / X / LinkedIn / IG / Nextdoor:
-     small avatar + "Posting as" label on top, full-width textarea below
-     (no avatar gutter to share width with), and a single compact action
-     row at the bottom with icon-only attach buttons + counter + filled
-     Post button. The textarea is the dominant element. */
-  .wl-compose-head {
+  /* Threads / Nextdoor-style compose: avatar inline with name on top,
+     borderless textarea flush with the card body, thin icon strip + Post
+     button along the bottom edge. The whole card looks like a sheet of
+     paper the viewer is writing on, rather than a form with fields. */
+  .wl-compose-top {
     display: flex; align-items: center; gap: 10px;
-    margin: 0 0 8px;
+    margin: 0 0 4px;
   }
-  .wl-compose-head .wl-avatar { width: 28px; height: 28px; font-size: 11px; flex: 0 0 auto; }
-  .wl-compose-as {
-    font: 500 13px/1.2 var(--font-body);
-    color: var(--ink-600);
+  .wl-compose-top .wl-avatar { width: 32px; height: 32px; font-size: 11px; flex: 0 0 auto; }
+  .wl-compose-meta { min-width: 0; flex: 1 1 auto; line-height: 1.2; }
+  .wl-compose-name {
+    font: 600 14px/1.2 var(--font-body);
+    color: var(--ink-900);
+  }
+  .wl-compose-sub {
+    font: 400 11px/1.2 var(--font-body);
+    color: var(--ink-500);
+    margin-top: 2px;
   }
   .wl-compose textarea {
     width: 100%; box-sizing: border-box;
-    min-height: 96px; max-height: 320px;
-    border: 1px solid var(--paper-300);
+    min-height: 80px; max-height: 320px;
+    border: 0;
     border-radius: 0;
-    padding: 10px 12px;
-    font: 400 16px/1.5 var(--font-body);
+    padding: 6px 0 4px;
+    font: 400 16px/1.45 var(--font-body);
     color: var(--ink-900);
-    background: white;
-    resize: vertical;
+    background: transparent;
+    resize: none;
     display: block;
+    outline: none;
   }
-  .wl-compose textarea::placeholder { font-style: italic; color: var(--ink-500); }
-  .wl-compose textarea:focus { outline: 1px solid var(--brass-500); border-color: var(--brass-500); }
+  .wl-compose textarea::placeholder { color: var(--ink-500); font-style: normal; }
+  .wl-compose textarea:focus { outline: none; }
+  /* Bottom strip — icon attach row on the left, counter + Post on the
+     right, all on one line. Hairline separator above so the user reads
+     the textarea + strip as one unit. */
   .wl-compose-actions {
-    display: flex; gap: 4px; align-items: center;
-    margin-top: 10px;
+    display: flex; gap: 2px; align-items: center;
+    margin-top: 6px; padding-top: 6px;
+    border-top: 1px solid var(--paper-300, #ECDFB6);
   }
   .wl-compose-attach { display: flex; gap: 2px; align-items: center; }
   .wl-char-count {
@@ -65,21 +75,20 @@
     margin-left: auto;
   }
   .wl-char-count.over { color: var(--red-500); font-weight: 700; }
-  /* Post — filled brass, the page's primary CTA. Quiet Edition normally
-     avoids solid buttons, but compose-Post is the one action the page
-     genuinely needs to make obvious; this matches the FB / X / IG
-     "filled primary" pattern that users expect on a social compose. */
+  /* Post — filled brass, the page's primary CTA. Same brass-on-paper
+     contrast as a Threads "Post" pill, sized to read as a button
+     rather than a chip. */
   .wl-btn-post {
     background: var(--brass-500, #C8973F);
     color: var(--paper-50, white);
     border: 0;
-    font: 600 14px/1 var(--font-body);
-    padding: 10px 20px;
+    font: 600 13px/1 var(--font-body);
+    padding: 8px 16px;
     cursor: pointer;
     border-radius: 0;
-    min-height: 36px;
+    min-height: 32px;
     letter-spacing: 0.02em;
-    margin-left: 8px;
+    margin-left: 10px;
     transition: background-color 140ms ease, color 140ms ease;
   }
   .wl-btn-post:hover:not(:disabled) { background: var(--brass-600, #A47829); }
@@ -1077,9 +1086,12 @@
 <main class="qb-page">
   <section class="wl-section">
     <div class="wl-compose" id="wlCompose" style="display:none;">
-      <div class="wl-compose-head">
+      <div class="wl-compose-top">
         <div class="wl-avatar" id="wlMyAvatar">?</div>
-        <span class="wl-compose-as" id="wlComposeAs">Posting to the team</span>
+        <div class="wl-compose-meta">
+          <div class="wl-compose-name" id="wlComposeName">You</div>
+          <div class="wl-compose-sub" id="wlComposeAs">Posting to the team</div>
+        </div>
       </div>
       <textarea id="wlComposeText" placeholder="What's on your mind?" maxlength="10000"></textarea>
       <div class="wl-compose-previews" id="wlComposePreviews"></div>
@@ -1257,8 +1269,10 @@
       viewerPhoto = (me && photoUrlFor(me)) || "";
       viewerIsAdmin = adminEmails.has(viewerEmail);
       document.getElementById("wlMyAvatar").innerHTML = avatarInner(viewerName, viewerPhoto);
+      const nameEl = document.getElementById("wlComposeName");
+      if (nameEl) nameEl.textContent = viewerName;
       const asEl = document.getElementById("wlComposeAs");
-      if (asEl) asEl.textContent = `Posting as ${viewerName}`;
+      if (asEl) asEl.textContent = "Posting to the team";
       document.getElementById("wlCompose").style.display = "";
     }
     if (seen && seen.by_user && seen.by_user[viewerEmail]) {
