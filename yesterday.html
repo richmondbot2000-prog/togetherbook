@@ -9,11 +9,11 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&family=Orbitron:wght@500;600;700;800&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="style.css?v=1778923602">
-<link rel="stylesheet" href="quiet-tokens.css?v=1778923602">
-<link rel="stylesheet" href="quiet.css?v=1778923602">
-<link rel="stylesheet" href="quiet-extras.css?v=1778923602">
-<link rel="stylesheet" href="quiet-legacy.css?v=1778923602">
+<link rel="stylesheet" href="style.css?v=1778923752">
+<link rel="stylesheet" href="quiet-tokens.css?v=1778923752">
+<link rel="stylesheet" href="quiet.css?v=1778923752">
+<link rel="stylesheet" href="quiet-extras.css?v=1778923752">
+<link rel="stylesheet" href="quiet-legacy.css?v=1778923752">
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
       integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
       crossorigin="">
@@ -249,7 +249,7 @@
 
 <header class="qb-topbar">
   <a class="qb-brand" href="index.html" aria-label="TogetherBOOK — home">
-    <img class="qb-brand-logo" src="togetherbook-logo.png?v=1778923602" alt="TogetherBOOK">
+    <img class="qb-brand-logo" src="togetherbook-logo.png?v=1778923752" alt="TogetherBOOK">
   </a>
   <button class="qb-hamburger" aria-label="Toggle navigation menu" aria-expanded="false"
           onclick="document.body.classList.toggle('nav-open');this.setAttribute('aria-expanded',document.body.classList.contains('nav-open'))">
@@ -597,7 +597,7 @@
         : fmtUSD0.format(value);
       const popupLine = capita
         ? `<strong>${state}</strong><br>${formatCapita(value)} per resident<br>${fmtUSD2.format(total)} total · ${pop.toLocaleString('en-US')} residents`
-        : `<strong>${state}</strong><br>${fmtUSD2.format(total)}<br>${(row.borrowers || 0).toLocaleString('en-GB')} loans`;
+        : `<strong>${state}</strong><br>${fmtUSD2.format(total)}<br>${(row.borrowers || 0).toLocaleString('en-GB')} loan${row.borrowers === 1 ? '' : 's'}`;
       const icon = L.divIcon({
         className: 'state-amount-icon',
         html: `<span class="amount-pill" title="${state}: ${display}">${display}</span>`,
@@ -872,6 +872,6 @@
     a.addEventListener('click', () => document.body.classList.remove('nav-open'))
   );
 </script>
-<script src="nav.js?v=1778923602" defer></script>
+<script src="nav.js?v=1778923752" defer></script>
 </body>
 </html>
