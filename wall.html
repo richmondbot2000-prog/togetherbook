@@ -2103,11 +2103,33 @@
     document.querySelectorAll("[data-reply]").forEach(el => {
       el.addEventListener("click", () => {
         const key = el.dataset.reply;
-        if (openReplyTo.has(key)) openReplyTo.delete(key);
+        const wasOpen = openReplyTo.has(key);
+        if (wasOpen) openReplyTo.delete(key);
         else openReplyTo.add(key);
-        const [pid] = key.split("::");
+        const [pid, parentCommentId] = key.split("::");
         openPostIds.add(pid);
         renderFeed();
+        // If we just opened the composer for a reply-to-a-reply, prefill the
+        // input with "@<parent-local> " so the thread context is preserved.
+        // Replies to top-level comments stay empty.
+        if (!wasOpen) {
+          const post = posts.find(p => p.id === pid);
+          const parentComment = post && (post.comments || []).find(c => c.id === parentCommentId);
+          if (parentComment && parentComment.parent_comment_id) {
+            const local = ((parentComment.author_email || "").split("@")[0] || "").toLowerCase();
+            if (local) {
+              for (const inp of document.querySelectorAll("[data-add-reply]")) {
+                if (inp.dataset.addReply === key) {
+                  inp.value = `@${local} `;
+                  const end = inp.value.length;
+                  inp.setSelectionRange(end, end);
+                  inp.focus();
+                  break;
+                }
+              }
+            }
+          }
+        }
       });
     });
     document.querySelectorAll("[data-add-reply]").forEach(el => {
