@@ -1,22 +1,22 @@
 {
   "schema_version": 1,
-  "updated_at": "2026-05-15T16:17:35.278304Z",
-  "snapshot_date": "2026-05-15",
+  "updated_at": "2026-05-16T00:06:49.012055Z",
+  "snapshot_date": "2026-05-16",
   "window_months": 3,
   "totals": {
-    "items": 142,
+    "items": 143,
     "by_lender": {
-      "Together Loans / TransformCredit": 142
+      "Together Loans / TransformCredit": 143
     },
     "by_role": {
-      "BRW": 140,
+      "BRW": 141,
       "GT": 2
     }
   },
   "word_cloud": [
     [
       "payment",
-      109
+      110
     ],
     [
       "loan",
@@ -24,15 +24,15 @@
     ],
     [
       "together",
-      72
+      73
+    ],
+    [
+      "loans",
+      69
     ],
     [
       "account",
       69
-    ],
-    [
-      "loans",
-      68
     ],
     [
       "statement",
@@ -115,6 +115,10 @@
       14
     ],
     [
+      "receipt",
+      13
+    ],
+    [
       "method",
       13
     ],
@@ -127,15 +131,19 @@
       13
     ],
     [
+      "change",
+      12
+    ],
+    [
+      "email",
+      12
+    ],
+    [
       "office",
       12
     ],
     [
       "app",
-      12
-    ],
-    [
-      "receipt",
       12
     ],
     [
@@ -147,19 +155,11 @@
       11
     ],
     [
-      "change",
-      11
-    ],
-    [
       "money",
       11
     ],
     [
       "phone",
-      11
-    ],
-    [
-      "email",
       11
     ],
     [
@@ -169,6 +169,10 @@
     [
       "mail",
       10
+    ],
+    [
+      "may",
+      9
     ],
     [
       "good",
@@ -215,10 +219,6 @@
       8
     ],
     [
-      "may",
-      8
-    ],
-    [
       "new",
       8
     ],
@@ -237,6 +237,14 @@
     [
       "received",
       8
+    ],
+    [
+      "address",
+      7
+    ],
+    [
+      "day",
+      7
     ],
     [
       "take",
@@ -269,6 +277,10 @@
     [
       "intended",
       7
+    ],
+    [
+      "contact",
+      6
     ],
     [
       "currently",
@@ -323,15 +335,7 @@
       6
     ],
     [
-      "day",
-      6
-    ],
-    [
       "automatic",
-      6
-    ],
-    [
-      "address",
       6
     ],
     [
@@ -364,10 +368,6 @@
     ],
     [
       "process",
-      5
-    ],
-    [
-      "contact",
       5
     ],
     [
@@ -539,6 +539,14 @@
       4
     ],
     [
+      "www",
+      3
+    ],
+    [
+      "think",
+      3
+    ],
+    [
       "however",
       3
     ],
@@ -605,17 +613,18 @@
     [
       "another",
       3
-    ],
-    [
-      "concern",
-      3
-    ],
-    [
-      "returned",
-      3
     ]
   ],
   "items": [
+    {
+      "received_utc": "2026-05-15T17:08:02",
+      "received_date": "2026-05-15",
+      "days_after_payout": 23,
+      "role": "BRW",
+      "lender_name": "Together Loans / TransformCredit",
+      "subject": "Your Together Loans Payment Receipt - ****",
+      "body": "Hello, Can you change my contact email address to ****? ***ALPHASTAFFHCM will be closed Monday, May 25th in observance of Memorial Day*** Best Regards, **** **** Payroll Specialist [cid:2f784a14-ab16-4460-9dc6-0864e2819f2c] P: **** | E: **** www.alphastaffhcm.com ****, Suite 220, Sunrise, FL 33323 Have I created a Raving Fan in you? Please tell us what you think at: ****"
+    },
     {
       "received_utc": "2026-05-14T15:56:02",
       "received_date": "2026-05-14",
