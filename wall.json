@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "updated_at": "2026-05-16T19:44:13.536Z",
+  "updated_at": "2026-05-16T19:47:38.017Z",
   "posts": [
     {
       "id": "post_mp76cgvu_z1f6a5",
@@ -363,7 +363,21 @@
           "created_at": "2026-05-16T19:23:28.754Z",
           "body": "8 ducks, I don't know how many chickens. Around 30 I think 🤦🏻‍♂️",
           "photos": [],
-          "reactions": {}
+          "reactions": {
+            "😂": [
+              "mourad.malki@letme.com"
+            ]
+          }
+        }
+      ],
+      "react_events": [
+        {
+          "actor_email": "mourad.malki@letme.com",
+          "emoji": "😂",
+          "target_kind": "comment",
+          "target_id": "reply_mp8qi0s2_rgur02",
+          "at": "2026-05-16T19:47:37.846Z",
+          "kind": "added"
         }
       ]
     }
