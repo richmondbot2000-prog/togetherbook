@@ -495,9 +495,11 @@
     const rows = payrollFields().map(([k, label]) => {
       const inputType = /date/i.test(k) ? "date" : (/salary|pay/.test(k) ? "number" : "text");
       const val = (r && r[k] != null) ? r[k] : "";
-      const big = k === "address" || k === "notes";
-      const field = big
-        ? `<textarea class="up-pay-input" name="${k}" rows="2">${escapeHtml(val)}</textarea>`
+      // Address shows 5 lines so a full UK address fits without
+      // scrolling; notes stays compact at 3.
+      const rowCount = k === "address" ? 5 : (k === "notes" ? 3 : null);
+      const field = rowCount
+        ? `<textarea class="up-pay-input" name="${k}" rows="${rowCount}">${escapeHtml(val)}</textarea>`
         : `<input class="up-pay-input" type="${inputType}" name="${k}" value="${escapeHtml(val)}">`;
       return `<div class="up-pay-row"><label class="up-field-label">${escapeHtml(label)}</label>${field}</div>`;
     }).join("");
@@ -562,8 +564,30 @@
     const st = accountState(rec);
     const email = rec.email;
     const aliases = (rec.aliases || []).filter(a => a !== email);
-    const aliasLine = aliases.length ? `<div class="up-acct-aliases">aliases: ${aliases.map(escapeHtml).join(", ")}</div>` : "";
     const isMine = (viewerEmail === email.toLowerCase());
+
+    // Editable alias chips. Each chip has a × to remove the alias and a
+    // small "→ group" link that promotes the alias to a Workspace Group
+    // at the same address (alias is freed → group created with the
+    // user as initial member). Admin-only; the section is read-only
+    // for non-admins. The "+ Add alias" button opens an inline form
+    // wired by handleAddAlias().
+    const aliasChips = aliases.map(a => `
+      <span class="up-acct-alias-chip">
+        <span class="up-acct-alias-email">${escapeHtml(a)}</span>
+        ${viewerIsAdmin && rec.tenant !== "external" ? `
+          <button class="up-acct-alias-x" title="Remove alias" data-acc-alias-remove="${escapeHtml(a)}">×</button>
+          <button class="up-acct-alias-group" title="Convert this alias into a forwarding Group at the same address" data-acc-alias-group="${escapeHtml(a)}">→ group</button>
+        ` : ""}
+      </span>`).join("");
+    const aliasAdd = (viewerIsAdmin && rec.tenant !== "external" && !st.deletion_time) ? `
+      <button class="up-acct-alias-add" data-acc-alias-add="1">+ Add alias</button>` : "";
+    const aliasBlock = (aliases.length || aliasAdd) ? `
+      <div class="up-acct-aliases">
+        ${aliases.length ? '<span class="up-acct-aliases-label">Aliases:</span>' : ""}
+        ${aliasChips}
+        ${aliasAdd}
+      </div>` : "";
 
     let badges = [];
     if (rec.tenant === "external")             badges.push(`<span class="up-acct-badge up-acct-badge--ext">External Gmail</span>`);
@@ -576,25 +600,25 @@
     if (st.admin)                              badges.push(`<span class="up-acct-badge up-acct-badge--admin">Workspace admin</span>`);
     if (st.forwarding_to)                      badges.push(`<span class="up-acct-badge up-acct-badge--forward">→ ${escapeHtml(st.forwarding_to)}</span>`);
 
-    const actions = (viewerIsAdmin && rec.tenant !== "external") ? renderAccountButtons(email, st, isMine) : "";
+    const actions = (viewerIsAdmin && rec.tenant !== "external") ? renderAccountButtons(email, st, isMine, rec) : "";
     const adminUnlink = viewerIsAdmin
       ? `<button class="up-acct-row-unlink" data-acc-unlink="${escapeHtml(rec.id)}" title="Remove this Google account row from the Person (does not touch the Workspace account itself)">Unlink</button>`
       : "";
 
     return `
-      <div class="up-acct" data-acc-email="${escapeHtml(email)}" data-acc-id="${escapeHtml(rec.id)}">
+      <div class="up-acct" data-acc-email="${escapeHtml(email)}" data-acc-id="${escapeHtml(rec.id)}" data-acc-is-primary="${rec.is_primary ? "1" : "0"}">
         <div class="up-acct-head">
           <div>
             <div class="up-acct-email">${escapeHtml(email)}</div>
-            ${aliasLine}
           </div>
           <div class="up-acct-badges">${badges.join("")} ${adminUnlink}</div>
         </div>
+        ${aliasBlock}
         ${actions}
         <div class="up-acct-form" hidden></div>
       </div>`;
   }
-  function renderAccountButtons(email, st, isMine) {
+  function renderAccountButtons(email, st, isMine, rec) {
     const buttons = [];
     if (st.deletion_time) {
       buttons.push(`<button data-acc-action="recover">Recover</button>`);
@@ -613,7 +637,25 @@
       }
       if (!isMine) buttons.push(`<button data-acc-action="suspend-route" class="up-acct-btn-primary">Suspend & forward</button>`);
       buttons.push(`<button data-acc-action="reset-password">Reset password</button>`);
+      // Alt → primary promotion (only meaningful on a non-primary,
+      // not-mine row that has a same-tenant primary it can replace).
+      if (rec && !rec.is_primary && !isMine) {
+        buttons.push(`<button data-acc-action="promote-primary" title="Rename this account to be the person's primary email">Make primary</button>`);
+      }
+      // Convert in-place — frees the email as a forwarding Group with
+      // the user themselves dropped as the initial member. Different
+      // from "Delete + convert to group" which migrates Drive/Mail to a
+      // colleague first.
+      if (!isMine) {
+        buttons.push(`<button data-acc-action="convert-to-group" title="Replace this user account with a forwarding Group at the same address — anyone you add as a member receives the mail">Convert to group</button>`);
+      }
       if (!isMine) buttons.push(`<button data-acc-action="transfer-delete" class="danger">Delete (transfer Drive + Mail first)</button>`);
+      // The 21-day delayed group flow: queues Drive + Mail transfer to
+      // a colleague, then converts the freed address into a forwarding
+      // Group after Google's 20-day reuse lockout expires (~+21 days).
+      if (!isMine) {
+        buttons.push(`<button data-acc-action="delete-and-group" class="danger" title="Migrate Drive + Mail to a colleague; in ~21 days the freed email becomes a forwarding Group that delivers to whoever you specify">Delete + replace with group in 21 days</button>`);
+      }
     }
     return `<div class="up-acct-actions">${buttons.join("")}</div>`;
   }
