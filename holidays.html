@@ -1213,14 +1213,30 @@
     setupPicker();
     setupViewTabs();
     setupHolidayNotifications();
-    // Deep-link: ?user=<email>&date=<YYYY-MM-DD> opens the page focused on
-    // that day with a pulsing highlight.
+    // Deep-link URL params:
+    //   ?view=team|own|activity   — which tab to land on
+    //   ?user=<email>             — which person's calendar to show
+    //   ?date=<YYYY-MM-DD>        — focus + pulse a specific day
     const qs = new URLSearchParams(location.search || "");
+    const deepView = (qs.get("view") || "").toLowerCase();
     const deepUser = qs.get("user");
     const deepDate = qs.get("date");
+    if (["own","team","activity"].includes(deepView)) currentView = deepView;
     if (deepUser && deepDate) {
       requestAnimationFrame(() => jumpToHolidayDay(deepUser, deepDate));
     } else {
+      if (deepUser) {
+        selectedEmail = deepUser.toLowerCase();
+        const sel = document.getElementById("hdPerson");
+        if (sel) sel.value = selectedEmail;
+      }
+      // Reflect any initial view= in the tab UI
+      const wrap = document.getElementById("hdViewTabs");
+      if (wrap) wrap.querySelectorAll(".hd-view-tab").forEach(b => {
+        const on = (b.dataset.view === currentView);
+        b.classList.toggle("is-active", on);
+        b.setAttribute("aria-selected", String(on));
+      });
       renderAll();
     }
   }).catch(err => {
@@ -1247,6 +1263,21 @@
   }
 
   let viewTabsWired = false;
+  // Reflect current view + selected user in the URL so a tab switch
+  // survives reload and is shareable. ?user=, ?date= already exist for
+  // the deep-link-into-a-cell flow; this adds ?view=team|own|activity.
+  function syncHolidaysUrl() {
+    try {
+      const url = new URL(location.href);
+      if (currentView && currentView !== "own") url.searchParams.set("view", currentView);
+      else url.searchParams.delete("view");
+      const me = (viewerEmail || "").toLowerCase();
+      if (selectedEmail && selectedEmail !== me) url.searchParams.set("user", selectedEmail);
+      else url.searchParams.delete("user");
+      history.replaceState({}, "", url.toString());
+    } catch (e) { /* noop */ }
+  }
+
   // ── Notification bell ─────────────────────────────────────────────
   // Stable ID for a log entry. Persisted in the seen-events set.
   function holidayEventId(e) {
@@ -1394,6 +1425,7 @@
     wrap.querySelectorAll(".hd-view-tab").forEach(btn => {
       btn.addEventListener("click", async () => {
         currentView = btn.dataset.view;
+        syncHolidaysUrl();
         wrap.querySelectorAll(".hd-view-tab").forEach(b => {
           const on = (b === btn);
           b.classList.toggle("is-active", on);
