@@ -170,6 +170,57 @@ export default {
           admins: isAdmin ? admins : null,
         }, 200, req);
       }
+      // GET /api/workspace/table?file=people|payroll-data|google-accounts|warehouse-activity
+      // Authoritative read: pulls the file from the GitHub Contents API
+      // at the CURRENT HEAD of main, bypassing both GitHub Pages publish
+      // lag (~30-60s) and Cloudflare's edge cache. The same SHA the
+      // Worker just wrote to is the SHA the next read returns.
+      //
+      // This is the read path for any table that must reflect the very
+      // last admin write without lag — people, payroll, google-accounts,
+      // warehouse-activity. Other static tables (staff, wall, holidays,
+      // brokers, etc.) can keep using /<file>.json from Pages.
+      if (url.pathname.replace(/\/$/, "").endsWith("/table")) {
+        if (!req.headers.get("Cf-Access-Jwt-Assertion")) {
+          return json({ error: "not authenticated via Cloudflare Access" }, 401, req);
+        }
+        const allowed = new Set(["people", "payroll-data", "google-accounts", "warehouse-activity"]);
+        const want = (url.searchParams.get("file") || "").toLowerCase();
+        if (!allowed.has(want)) return json({ error: `file must be one of: ${[...allowed].join(", ")}` }, 400, req);
+        if (!env.GITHUB_TOKEN)  return json({ error: "GITHUB_TOKEN not configured" }, 500, req);
+        try {
+          const res = await fetch(
+            `https://api.github.com/repos/${REPO}/contents/${want}.json?ref=${BRANCH}`,
+            {
+              headers: {
+                "Authorization": `Bearer ${env.GITHUB_TOKEN}`,
+                "Accept": "application/vnd.github+json",
+                "User-Agent": "apifk-workspace-worker",
+              },
+              // Don't let Cloudflare cache GitHub's response either —
+              // we want every call to hit the API.
+              cf: { cacheTtl: 0, cacheEverything: false },
+            },
+          );
+          if (!res.ok) return json({ error: `github contents API: ${res.status}` }, 502, req);
+          const data = await res.json();
+          const bin = atob((data.content || "").replace(/\s/g, ""));
+          const text = new TextDecoder("utf-8").decode(Uint8Array.from(bin, c => c.charCodeAt(0)));
+          // Return the table content plus the sha + commit timestamp
+          // so the client can show "as of <time>" + verify freshness.
+          const headers = {
+            "Content-Type": "application/json; charset=utf-8",
+            "Cache-Control": "no-store, no-cache, must-revalidate, max-age=0",
+            "Pragma": "no-cache",
+            "X-Table-Sha": data.sha || "",
+          };
+          for (const [k, v] of Object.entries(cors(req))) headers[k] = v;
+          return new Response(text, { status: 200, headers });
+        } catch (e) {
+          return json({ error: `table fetch failed: ${e.message}` }, 502, req);
+        }
+      }
+
       return json({ error: "unknown GET endpoint" }, 404, req);
     }
 
