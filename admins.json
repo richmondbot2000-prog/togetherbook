@@ -1,17 +1,28 @@
 {
   "schema_version": 1,
-  "updated_at": "2026-05-13T20:34:57.974Z",
+  "updated_at": "2026-05-17T16:41:17Z",
+  "source": "regenerated from people.json (access_level=admin)",
   "admins": [
     "amber.cole@letme.com",
     "ben.gardner@letme.com",
     "ben.gardner@togetherloans.com",
-    "berginie.botero@togetherloans.com",
-    "clementia.dsouza@letme.com",
-    "clementia.dsouza@togetherloans.com",
+    "dan.meineck@togetherloans.com",
+    "igor.kravcov@letme.com",
+    "igor.kravcov@togetherloans.com",
+    "jack.bassilious@togetherloans.com",
     "james.benamor@letme.com",
+    "james.benamor@togetherloans.com",
+    "joseph.foard@letme.com",
     "kelly.black@letme.com",
     "kelly.black@togetherloans.com",
+    "lucian.teodoroiu@letme.co.uk",
+    "lucian.teodoroiu@togetherloans.com",
+    "morgan.smith@letme.com",
+    "morgan.smith@togetherloans.com",
     "mourad.malki@clearloans.com.au",
-    "mourad.malki@togetherloans.com"
+    "mourad.malki@letme.com",
+    "mourad.malki@togetherloans.com",
+    "natasha.wright@letme.co.uk",
+    "victor.igbaifua@letme.com"
   ]
 }
