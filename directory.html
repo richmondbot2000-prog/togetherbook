@@ -58,11 +58,64 @@
   }
   .pp-thead, .pp-row {
     display: grid;
-    grid-template-columns: 44px minmax(180px, 1.5fr) minmax(180px, 1.6fr) 110px 110px 90px;
+    grid-template-columns: 44px minmax(180px, 1.4fr) minmax(180px, 1.5fr) 130px 110px 100px 90px;
     align-items: center;
     gap: 12px;
     padding: 10px 14px;
   }
+  .pp-src-chips { display: inline-flex; gap: 3px; }
+  .pp-src-chip {
+    display: inline-flex; align-items: center; justify-content: center;
+    width: 22px; height: 22px; border-radius: 4px;
+    font: 700 10px/1 var(--font-body);
+    color: var(--ink-400, #999);
+    background: var(--paper-100);
+    border: 1px solid var(--paper-300);
+    cursor: help;
+  }
+  .pp-src-chip.is-on {
+    color: #1a7f37; background: #eefaf0; border-color: #b8e3c4;
+  }
+  .pp-src-chip--old {
+    color: var(--red-600, #b3261e); background: #fcf0ee; border-color: var(--red-200, #f3c8c4);
+  }
+  .pp-orphans {
+    margin-top: 24px;
+    background: var(--paper-50);
+    border: 1px solid var(--ink-300);
+  }
+  .pp-orphans-head {
+    padding: 12px 16px;
+    border-bottom: 1px solid var(--paper-300);
+    font: 600 14px/1.2 var(--font-body); color: var(--ink-900);
+    display: flex; justify-content: space-between; align-items: baseline;
+  }
+  .pp-orphan-section { padding: 10px 16px; border-bottom: 1px solid var(--paper-300); }
+  .pp-orphan-section:last-child { border-bottom: 0; }
+  .pp-orphan-section h3 {
+    font: 700 10px/1 var(--font-body); letter-spacing: 0.08em; text-transform: uppercase;
+    color: var(--ink-500); margin: 0 0 8px;
+  }
+  .pp-orphan-row {
+    display: flex; justify-content: space-between; align-items: center;
+    gap: 10px; padding: 6px 0;
+    border-bottom: 1px dashed var(--paper-300);
+    font: 500 12px/1.4 var(--font-body);
+  }
+  .pp-orphan-row:last-child { border-bottom: 0; }
+  .pp-orphan-row .meta { color: var(--ink-700); overflow-wrap: anywhere; }
+  .pp-orphan-row .meta code { font: 500 11px/1.3 var(--font-mono); color: var(--ink-500); }
+  .pp-orphan-actions { display: flex; gap: 6px; flex-shrink: 0; align-items: center; }
+  .pp-orphan-actions select, .pp-orphan-actions button {
+    font: 500 11px/1 var(--font-body);
+    padding: 6px 8px;
+    background: var(--paper-50); color: var(--ink-800);
+    border: 1px solid var(--ink-300);
+    cursor: pointer;
+  }
+  .pp-orphan-actions button.primary { background: var(--brass-500); color: var(--paper-50); border-color: var(--brass-500); }
+  .pp-orphan-actions button.primary:hover { background: var(--brass-600); border-color: var(--brass-600); }
+  .pp-orphan-empty { color: var(--ink-500); font: italic 400 12px/1.4 var(--font-body); }
   .pp-thead {
     background: var(--paper-100);
     border-bottom: 1px solid var(--ink-300);
@@ -236,6 +289,7 @@
   <div class="pp-stats" id="ppStats"></div>
   <div id="ppGate"></div>
   <div class="pp-table" id="ppTable"></div>
+  <div id="ppOrphans"></div>
 </main>
 
 <div class="pp-modal-bg" id="ppModalBg">
@@ -264,6 +318,8 @@
 
   let people = [];
   let staffByEmail = {};
+  let payrollData = null;        // { by_email:{}, by_name:{}, updated_at }
+  let activity = null;           // { active_users:[], external_users:[] }
   let isAdmin = false;
   let viewerEmail = "";
   let sortBy = "name", sortDir = 1;
@@ -294,6 +350,99 @@
     return "live";
   }
   function statusLabel(p) { return statusOf(p) === "live" ? "Live" : "Suspended"; }
+
+  /* ─── Source matching (payroll / google letme / google together /
+     warehouse) — computed per Person at render time, no schema change. ─ */
+  function emailsOf(p) {
+    return [p.main_google_email, ...(p.alt_google_emails||[]), p.external_google_email]
+      .filter(Boolean).map(e => e.toLowerCase());
+  }
+  function nameKeys(p) {
+    const out = new Set();
+    const strip = s => (s || "").toLowerCase().replace(/['’.\-]/g, "").trim();
+    const add = s => { const t = (s || "").trim(); if (!t) return; out.add(t.toLowerCase()); out.add(strip(t)); };
+    if (p.given && p.family) add(`${p.given} ${p.family}`);
+    if (p.name) {
+      const parts = p.name.trim().split(/\s+/);
+      if (parts.length >= 2) add(`${parts[0]} ${parts[parts.length - 1]}`);
+      add(p.name);
+    }
+    return out;
+  }
+  function payrollMatch(p) {
+    if (!payrollData) return null;
+    const emails = emailsOf(p);
+    for (const e of emails) {
+      const lst = (payrollData.by_email || {})[e];
+      if (lst && lst.length) return lst[0];
+    }
+    if (payrollData.by_name) {
+      for (const k of nameKeys(p)) {
+        const lst = payrollData.by_name[k];
+        if (lst && lst.length) return lst[0];
+      }
+    }
+    return null;
+  }
+  function googleLetmeAccounts(p) {
+    // Any Workspace account on the letme tenants.
+    return emailsOf(p).filter(e => {
+      const d = e.split("@")[1] || "";
+      return d === "letme.co.uk" || d === "letme.com";
+    }).map(e => ({ email: e, raw: staffByEmail[e] || null }));
+  }
+  function googleTogetherAccounts(p) {
+    return emailsOf(p).filter(e => (e.split("@")[1] || "") === "togetherloans.com")
+      .map(e => ({ email: e, raw: staffByEmail[e] || null }));
+  }
+  function warehouseMatch(p) {
+    if (!activity) return null;
+    const emails = emailsOf(p);
+    for (const a of (activity.active_users || [])) {
+      if (emails.includes((a.email || "").toLowerCase())) return a;
+    }
+    // External users (CRM-only): match by stripped name vs username's
+    // leading "first.last" portion.
+    const names = nameKeys(p);
+    for (const e of (activity.external_users || [])) {
+      const uname = (e.username || "").toLowerCase().split("@")[0];
+      // Try matching "first.last" or "first last" forms.
+      const candidates = new Set([uname, uname.replace(/\./g, " ")]);
+      for (const c of candidates) if (names.has(c)) return e;
+    }
+    return null;
+  }
+  function sourceMatches(p) {
+    const letme    = googleLetmeAccounts(p);
+    const together = googleTogetherAccounts(p);
+    const payroll  = payrollMatch(p);
+    const wh       = warehouseMatch(p);
+    return {
+      payroll:  payroll ? { label: payroll.first_name + " " + payroll.last_name, raw: payroll } : null,
+      letme:    letme.length    ? { count: letme.length, items: letme } : null,
+      together: together.length ? { count: together.length, items: together } : null,
+      warehouse: wh ? { label: wh.email || wh.username, raw: wh } : null,
+    };
+  }
+  function hasDeletedAccount(p) {
+    return emailsOf(p).some(e => {
+      const u = staffByEmail[e];
+      return u && (u.deletion_time || u.suspended);
+    });
+  }
+
+  function sourceChip(letter, present, title) {
+    return `<span class="pp-src-chip${present ? " is-on" : ""}" title="${escapeHtml(title)}">${letter}</span>`;
+  }
+  function sourceChipsHtml(p) {
+    const m = sourceMatches(p);
+    return `
+      ${sourceChip("P", !!m.payroll,  m.payroll  ? `Payroll: ${m.payroll.label}`  : "No payroll record matched")}
+      ${sourceChip("L", !!m.letme,    m.letme    ? `Google Letme: ${m.letme.items.map(x=>x.email).join(", ")}` : "No Letme Google account")}
+      ${sourceChip("T", !!m.together, m.together ? `Google Together: ${m.together.items.map(x=>x.email).join(", ")}` : "No Together Google account")}
+      ${sourceChip("W", !!m.warehouse, m.warehouse ? `Warehouse: ${m.warehouse.label}` : "No warehouse activity matched")}
+      ${hasDeletedAccount(p) ? `<span class="pp-src-chip pp-src-chip--old" title="One or more of this person's Google accounts is suspended or deleted">!</span>` : ""}`;
+  }
 
   function renderStats() {
     const total = people.length;
@@ -346,6 +495,7 @@
           ${escapeHtml(p.main_google_email || "—")}
           ${altLine}
         </div>
+        <div class="pp-src-chips">${sourceChipsHtml(p)}</div>
         <div><span class="pp-pill ${pillClass(p.access_level)}">${escapeHtml(p.access_level || "—")}</span></div>
         <div><span class="pp-pill pp-pill--${status}">${statusLabel(p)}</span></div>
         <div><a class="pp-btn pp-btn--ghost" href="/directory/${escapeHtml(emailToSlug(p.main_google_email))}" onclick="event.stopPropagation();">Open</a></div>
@@ -442,13 +592,259 @@
         <div></div>
         <div><button data-sort="name">Name</button></div>
         <div><button data-sort="main_google_email">Google accounts</button></div>
+        <div title="Source matches: P=Payroll · L=Letme Google · T=Together Google · W=Warehouse · ! = an account is deleted/suspended">Sources</div>
         <div><button data-sort="access_level">Access</button></div>
         <div>Status</div>
         <div></div>
       </div>
       ${rows.length ? rows.map(rowHtml).join("") : '<div class="pp-empty">No people match the current filters.</div>'}`;
     document.getElementById("ppTable").innerHTML = html;
+    document.getElementById("ppOrphans").innerHTML = orphansHtml();
     wireRows();
+    wireOrphans();
+  }
+
+  /* ─── Orphan accounts (records in a source with no Person link) ─── */
+  function findOrphans() {
+    const personEmails = new Set();
+    const personNames = new Set();
+    for (const p of people) {
+      for (const e of emailsOf(p)) personEmails.add(e);
+      for (const n of nameKeys(p)) personNames.add(n);
+    }
+    const orphans = { payroll: [], letme: [], together: [], warehouse: [] };
+
+    // Payroll: rows where neither email nor name match a Person.
+    if (payrollData) {
+      const seen = new Set();
+      const consider = (rec) => {
+        const id = `${rec.employer || ""}|${rec.employee_number || ""}|${(rec.first_name || "").toLowerCase()}|${(rec.last_name || "").toLowerCase()}`;
+        if (seen.has(id)) return;
+        seen.add(id);
+        const email = (rec.email || "").toLowerCase();
+        if (email && personEmails.has(email)) return;
+        const full  = `${rec.first_name || ""} ${rec.last_name || ""}`.trim().toLowerCase();
+        const strip = full.replace(/['’.\-]/g, "").trim();
+        if (full && (personNames.has(full) || personNames.has(strip))) return;
+        orphans.payroll.push(rec);
+      };
+      for (const lst of Object.values(payrollData.by_email || {})) for (const r of lst) consider(r);
+      for (const lst of Object.values(payrollData.by_name  || {})) for (const r of lst) consider(r);
+    }
+
+    // Google accounts: any staff.json user whose email isn't on a Person.
+    for (const e of Object.keys(staffByEmail)) {
+      if (personEmails.has(e)) continue;
+      const u = staffByEmail[e];
+      if (u.suspended || u.deletion_time) continue; // skip already-old
+      const dom = e.split("@")[1] || "";
+      if (dom === "letme.co.uk" || dom === "letme.com")  orphans.letme.push(u);
+      else if (dom === "togetherloans.com")              orphans.together.push(u);
+    }
+
+    // Warehouse: external_users (CRM-only) where username doesn't match a
+    // Person by name.
+    if (activity) {
+      for (const e of (activity.external_users || [])) {
+        const uname = (e.username || "").toLowerCase().split("@")[0];
+        const cand = [uname, uname.replace(/\./g, " ")];
+        if (cand.some(c => personNames.has(c))) continue;
+        orphans.warehouse.push(e);
+      }
+      // Also active_users whose email isn't on any Person yet (but exists
+      // in Workspace — typically these will already appear under letme/
+      // together above, but include for safety).
+      for (const a of (activity.active_users || [])) {
+        const em = (a.email || "").toLowerCase();
+        if (!em || personEmails.has(em)) continue;
+        if (!staffByEmail[em]) orphans.warehouse.push(a);
+      }
+    }
+    return orphans;
+  }
+
+  function personPicker(label, dataAction) {
+    const opts = people
+      .sort((a, b) => (a.name || "").localeCompare(b.name || ""))
+      .map(p => `<option value="${escapeHtml(p.id)}">${escapeHtml(p.name || p.id)}</option>`).join("");
+    return `
+      <select data-link-target>
+        <option value="">${escapeHtml(label)}</option>
+        ${opts}
+      </select>
+      <button class="primary" ${dataAction}>Link</button>`;
+  }
+
+  function orphansHtml() {
+    if (!isAdmin) return "";
+    const o = findOrphans();
+    const total = o.payroll.length + o.letme.length + o.together.length + o.warehouse.length;
+    if (!total) return `<div class="pp-orphans"><div class="pp-orphans-head">Unlinked accounts<span class="pp-orphan-empty">All sources reconciled — every record links to a Person.</span></div></div>`;
+
+    const section = (title, items, render) => `
+      <div class="pp-orphan-section">
+        <h3>${escapeHtml(title)} (${items.length})</h3>
+        ${items.length ? items.slice(0, 30).map(render).join("") : '<div class="pp-orphan-empty">None.</div>'}
+        ${items.length > 30 ? `<div class="pp-orphan-empty">+${items.length - 30} more…</div>` : ""}
+      </div>`;
+
+    return `
+      <div class="pp-orphans">
+        <div class="pp-orphans-head">Unlinked accounts<span class="pp-orphan-empty">${total} record(s) exist in a source but don't link to any Person</span></div>
+        ${section("Payroll", o.payroll, r => `
+          <div class="pp-orphan-row">
+            <div class="meta">
+              <strong>${escapeHtml((r.first_name || "") + " " + (r.last_name || ""))}</strong>
+              ${r.email ? ` · <code>${escapeHtml(r.email)}</code>` : ""}
+              ${r.employer ? ` · ${escapeHtml(r.employer)}` : ""}
+              ${r.employee_number ? ` · #${escapeHtml(r.employee_number)}` : ""}
+              ${r.start_date ? ` · started ${escapeHtml(r.start_date)}` : ""}
+            </div>
+            <div class="pp-orphan-actions">
+              ${personPicker("Link to person…", `data-link-payroll='${escapeHtml(JSON.stringify({ name: (r.first_name||"")+" "+(r.last_name||""), email: r.email||"", start_date: r.start_date||"" }))}'`)}
+              <button data-create-payroll='${escapeHtml(JSON.stringify({ name: (r.first_name||"")+" "+(r.last_name||""), email: r.email||"", start_date: r.start_date||"" }))}'>+ Create person</button>
+            </div>
+          </div>`)}
+        ${section("Google Letme", o.letme, u => `
+          <div class="pp-orphan-row">
+            <div class="meta">
+              <strong>${escapeHtml(u.name || u.email)}</strong> · <code>${escapeHtml(u.email)}</code>
+              ${u.title ? ` · ${escapeHtml(u.title)}` : ""}
+            </div>
+            <div class="pp-orphan-actions">
+              ${personPicker("Link to person…", `data-link-email="${escapeHtml(u.email)}"`)}
+              <button data-create-google='${escapeHtml(JSON.stringify({ email: u.email, name: u.name || "" }))}'>+ Create person</button>
+            </div>
+          </div>`)}
+        ${section("Google Together", o.together, u => `
+          <div class="pp-orphan-row">
+            <div class="meta">
+              <strong>${escapeHtml(u.name || u.email)}</strong> · <code>${escapeHtml(u.email)}</code>
+              ${u.title ? ` · ${escapeHtml(u.title)}` : ""}
+            </div>
+            <div class="pp-orphan-actions">
+              ${personPicker("Link to person…", `data-link-email="${escapeHtml(u.email)}"`)}
+              <button data-create-google='${escapeHtml(JSON.stringify({ email: u.email, name: u.name || "" }))}'>+ Create person</button>
+            </div>
+          </div>`)}
+        ${section("Warehouse only (CRM)", o.warehouse, e => `
+          <div class="pp-orphan-row">
+            <div class="meta">
+              <strong>${escapeHtml(e.username || e.email || "(unknown)")}</strong>
+              · ${e.writes_60d || 0} writes (60d)
+              ${e.primary_tenant ? ` · ${escapeHtml(e.primary_tenant)}` : ""}
+            </div>
+            <div class="pp-orphan-actions">
+              ${personPicker("Link to person…", `data-link-warehouse="${escapeHtml(e.username || e.email || "")}"`)}
+            </div>
+          </div>`)}
+      </div>`;
+  }
+
+  function wireOrphans() {
+    // Each orphan row has its own picker; the click handler scopes to the
+    // local row's select rather than the global one.
+    document.querySelectorAll("[data-link-email]").forEach(btn => {
+      btn.addEventListener("click", () => {
+        const row = btn.closest(".pp-orphan-row");
+        const sel = row.querySelector("[data-link-target]");
+        const pid = sel.value;
+        const email = btn.dataset.linkEmail;
+        if (!pid) { alert("Pick a person from the dropdown first."); return; }
+        linkEmailToPerson(pid, email);
+      });
+    });
+    document.querySelectorAll("[data-create-google]").forEach(btn => {
+      btn.addEventListener("click", () => {
+        const { email, name } = JSON.parse(btn.dataset.createGoogle);
+        document.getElementById("newName").value = name;
+        document.getElementById("newEmail").value = email;
+        openCreate();
+      });
+    });
+    document.querySelectorAll("[data-link-payroll]").forEach(btn => {
+      btn.addEventListener("click", () => {
+        const row = btn.closest(".pp-orphan-row");
+        const pid = row.querySelector("[data-link-target]").value;
+        if (!pid) { alert("Pick a person from the dropdown first."); return; }
+        const meta = JSON.parse(btn.dataset.linkPayroll);
+        linkPayrollToPerson(pid, meta);
+      });
+    });
+    document.querySelectorAll("[data-create-payroll]").forEach(btn => {
+      btn.addEventListener("click", () => {
+        const meta = JSON.parse(btn.dataset.createPayroll);
+        if (!meta.email) { alert("Payroll record has no email — can't auto-create a Person without a Google address. Add a Google account in Workspace first, then come back."); return; }
+        document.getElementById("newName").value = meta.name.trim();
+        document.getElementById("newEmail").value = meta.email;
+        openCreate();
+      });
+    });
+    document.querySelectorAll("[data-link-warehouse]").forEach(btn => {
+      btn.addEventListener("click", () => {
+        const row = btn.closest(".pp-orphan-row");
+        const pid = row.querySelector("[data-link-target]").value;
+        if (!pid) { alert("Pick a person from the dropdown first."); return; }
+        const uname = btn.dataset.linkWarehouse;
+        // The warehouse match is name-based and computed at render time;
+        // there's no field on Person to write. Adding the username as an
+        // alias creates the textual record so future renames don't break
+        // the match. (TODO: a real warehouse_usernames field.)
+        linkWarehouseToPerson(pid, uname);
+      });
+    });
+  }
+
+  async function linkEmailToPerson(pid, email) {
+    const p = people.find(x => x.id === pid); if (!p) return;
+    // Add to alt_google_emails unless main is empty.
+    const patch = {};
+    if (!p.main_google_email) patch.main_google_email = email;
+    else patch.alt_google_emails = Array.from(new Set([...(p.alt_google_emails||[]), email])).filter(e => e !== p.main_google_email);
+    try {
+      const res = await fetch(WORKSPACE_API, {
+        method: "POST", headers: {"Content-Type":"application/json"},
+        body: JSON.stringify({ action: "people-set", id: pid, ...patch }),
+      });
+      const out = await res.json();
+      if (!res.ok || !out.ok) throw new Error(out.error || `HTTP ${res.status}`);
+      Object.assign(p, out.person);
+      render();
+    } catch (err) { alert("Link failed: " + err.message); }
+  }
+  async function linkPayrollToPerson(pid, meta) {
+    const p = people.find(x => x.id === pid); if (!p) return;
+    const patch = {};
+    if (meta.start_date && !p.start_date) patch.start_date = meta.start_date;
+    if (meta.email && !emailsOf(p).includes(meta.email.toLowerCase())) {
+      patch.alt_google_emails = Array.from(new Set([...(p.alt_google_emails||[]), meta.email.toLowerCase()])).filter(e => e !== p.main_google_email);
+    }
+    // Add the payroll name as an alias so the by_name matcher links next refresh.
+    patch.aliases = Array.from(new Set([...(p.aliases||[]), meta.name.trim()])).filter(Boolean);
+    try {
+      const res = await fetch(WORKSPACE_API, {
+        method: "POST", headers: {"Content-Type":"application/json"},
+        body: JSON.stringify({ action: "people-set", id: pid, ...patch }),
+      });
+      const out = await res.json();
+      if (!res.ok || !out.ok) throw new Error(out.error || `HTTP ${res.status}`);
+      Object.assign(p, out.person);
+      render();
+    } catch (err) { alert("Link failed: " + err.message); }
+  }
+  async function linkWarehouseToPerson(pid, uname) {
+    const p = people.find(x => x.id === pid); if (!p) return;
+    const patch = { aliases: Array.from(new Set([...(p.aliases||[]), uname.split("@")[0].replace(/\./g, " ")])).filter(Boolean) };
+    try {
+      const res = await fetch(WORKSPACE_API, {
+        method: "POST", headers: {"Content-Type":"application/json"},
+        body: JSON.stringify({ action: "people-set", id: pid, ...patch }),
+      });
+      const out = await res.json();
+      if (!res.ok || !out.ok) throw new Error(out.error || `HTTP ${res.status}`);
+      Object.assign(p, out.person);
+      render();
+    } catch (err) { alert("Link failed: " + err.message); }
   }
 
   function wireRows() {
@@ -658,15 +1054,19 @@
 
   /* ─── Boot ───────────────────────────────────────────────────────── */
   Promise.all([
-    fetch("/api/workspace/whoami", { cache: "no-store" }).then(r => r.ok ? r.json() : null).catch(() => null),
-    fetch("/people.json",          { cache: "no-store" }).then(r => r.ok ? r.json() : null).catch(() => null),
-    fetch("/staff.json",           { cache: "no-store" }).then(r => r.ok ? r.json() : null).catch(() => null),
-  ]).then(([who, peopleFile, staff]) => {
+    fetch("/api/workspace/whoami",  { cache: "no-store" }).then(r => r.ok ? r.json() : null).catch(() => null),
+    fetch("/people.json",           { cache: "no-store" }).then(r => r.ok ? r.json() : null).catch(() => null),
+    fetch("/staff.json",            { cache: "no-store" }).then(r => r.ok ? r.json() : null).catch(() => null),
+    fetch("/api/workspace/payroll", { cache: "no-store" }).then(r => r.ok ? r.json() : null).catch(() => null),
+    fetch("/staff-activity.json",   { cache: "no-store" }).then(r => r.ok ? r.json() : null).catch(() => null),
+  ]).then(([who, peopleFile, staff, payroll, act]) => {
     if (who) { viewerEmail = (who.email||"").toLowerCase(); isAdmin = !!who.is_admin; }
     if (staff && Array.isArray(staff.users)) {
       for (const u of staff.users) { const k = (u.email||"").toLowerCase(); if (k) staffByEmail[k] = u; }
     }
     if (peopleFile && Array.isArray(peopleFile.people)) people = peopleFile.people;
+    if (payroll && (payroll.by_email || payroll.by_name)) payrollData = payroll;
+    if (act && (Array.isArray(act.active_users) || Array.isArray(act.external_users))) activity = act;
 
     if (!isAdmin) {
       document.getElementById("ppGate").innerHTML = `<div class="pp-banner warn">You are signed in as <strong>${escapeHtml(viewerEmail || "(unknown)")}</strong> but are not a TogetherBook admin. The page is read-only; edits + add + delete will fail.</div>`;

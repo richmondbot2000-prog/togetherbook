@@ -1487,8 +1487,15 @@
   // another item flips the state. Re-rendered on each renderFeed().
   let editingKey = null;
   const openPostIds   = new Set();
-  const expandedPostIds = new Set();
+  const expandedPostIds = new Set();   // "fully expanded" — every comment + reply
+  const partialPostIds  = new Set();   // "partially expanded" — last 4 comments by activity, each with last 3 replies
   const openReplyTo   = new Set();
+  // A post is in one of three visible states:
+  //   PREVIEW            — neither set contains the id; teaser body + most-recent comment card
+  //   PARTIALLY EXPANDED — partialPostIds.has(id); full body + last 4 comments by activity
+  //   FULLY EXPANDED     — expandedPostIds.has(id); every comment + every reply
+  // Clicking a preview cycles into partial, clicking a partial cycles into full,
+  // clicking anywhere on a different post collapses everything back to preview.
   // Pagination: 20 posts per page; one expanded at a time. Reset to 0
   // when the post list reloads (after compose / delete / sort).
   const POSTS_PER_PAGE = 20;
@@ -2254,16 +2261,33 @@
     return latest;
   }
 
-  // Posts have two states:
-  //   COMPACT (default in the feed) — author header, 250-char body
-  //     teaser, small media row, reaction + comment counts, and the
-  //     most recent today-comment as a 100-char teaser. The whole
-  //     article is clickable to expand.
-  //   EXPANDED — full body, full photo grid, action bar, all comments,
-  //     reply composers. Reached by clicking the compact card.
+  // Posts have three states (preview → partial → full); see the
+  // partialPostIds comment near the top of the script for the cycle.
   function renderPost(post) {
-    const expanded = expandedPostIds.has(post.id);
-    return expanded ? renderPostExpanded(post) : renderPostCompact(post);
+    if (expandedPostIds.has(post.id)) return renderPostExpanded(post);
+    if (partialPostIds.has(post.id))  return renderPostPartial(post);
+    return renderPostCompact(post);
+  }
+
+  // Activity timestamp for a top-level comment = max(comment.created_at,
+  // every descendant reply's created_at). Used to (a) sort which
+  // comments survive the partial-state cap of 4, and (b) pick the single
+  // "most recent comment" surfaced under a post in preview state.
+  function commentActivity(comment, allComments) {
+    let latest = comment.created_at || "";
+    const seen = new Set([comment.id]);
+    const stack = [comment.id];
+    while (stack.length) {
+      const pid = stack.shift();
+      for (const c of allComments) {
+        if (c.parent_comment_id === pid && !seen.has(c.id)) {
+          seen.add(c.id);
+          if ((c.created_at || "") > latest) latest = c.created_at;
+          stack.push(c.id);
+        }
+      }
+    }
+    return latest;
   }
 
   function renderPostHead(post) {
@@ -2290,21 +2314,23 @@
 
   function renderPostCompact(post) {
     const comments = post.comments || [];
-    const cmCount = comments.filter(c => !c.parent_comment_id).length;
-    const newCount = unseenCommentCount(post);
-    // Latest comment or reply made today (UTC slice — close enough)
-    const today = new Date().toISOString().slice(0, 10);
-    const recent = comments
-      .filter(c => (c.created_at || "").slice(0, 10) === today)
-      .sort((a, b) => (a.created_at < b.created_at ? 1 : -1))[0] || null;
     const myReaction = mineReactionOn(post.reactions || {});
-    const reactCount = Object.values(post.reactions || {}).reduce((n, arr) => n + arr.length, 0);
     const body250 = bodyTeaser(post.body || "", 250);
     const photoStrip = renderPhotoStrip(post.photos || [], post.id);
     const linkBlocks = renderLinkBlocks(post.body || "", post.id);
-    const recentLine = recent
-      ? `<div class="wl-recent-comment"><span class="wl-recent-name">${escapeHtml(displayName(recent.author_email, recent.author_name))}</span>: ${escapeHtml(bodyTeaser(recent.body || "(media)", 100))}</div>`
-      : "";
+
+    // Surface the top-level comment whose thread has the most recent
+    // activity (own date OR any descendant reply's date). A reply landing
+    // today on an old comment lifts that comment into the preview slot.
+    const topLevel = comments.filter(c => !c.parent_comment_id);
+    let recent = null;
+    let recentAt = "";
+    for (const c of topLevel) {
+      const act = commentActivity(c, comments);
+      if (act > recentAt) { recent = c; recentAt = act; }
+    }
+    const recentCard = recent ? renderPreviewComment(post, recent) : "";
+
     const likeActive = !!myReaction;
     return `
       <article class="wl-post wl-post--compact" data-post="${escapeHtml(post.id)}" id="post-${escapeHtml(post.id)}" data-expand-card="${escapeHtml(post.id)}" role="button" tabindex="0" aria-label="Open post for full view">
@@ -2316,7 +2342,7 @@
         ${linkBlocks}
         ${renderPoll(post)}
         ${renderPostMetaRow(post)}
-        ${recentLine}
+        ${recentCard}
         <div class="wl-action-bar" data-stop-card-click>
           <button class="wl-action wl-action-like ${likeActive ? "is-active" : ""}" data-like="${escapeHtml(post.id)}" data-kind="post" data-stop-card-click title="Tap to ${likeActive ? "remove your reaction" : "Like"}; hover to pick a different reaction">
             <span class="wl-action-icon">${likeActive ? emojiGlyph(myReaction) : icon("thumb", false)}</span>
@@ -2331,6 +2357,82 @@
             <span class="wl-action-label">Share</span>
           </button>
         </div>
+      </article>`;
+  }
+
+  // The "Preview" comment card under a post. Renders just enough to
+  // recognise the thread: author + short timestamp, 200-char body trim,
+  // and (if there's a photo) the first photo full-width clipped to the
+  // same 220-px peek height the post uses. No action row, no reply
+  // composer — those appear after clicking the post into partial state.
+  function renderPreviewComment(post, comment) {
+    const name = displayName(comment.author_email, comment.author_name);
+    const photo = photoUrlFor(staffByEmail[(comment.author_email || "").toLowerCase()] || {});
+    const trimmed = bodyTeaser(comment.body || "", 200);
+    const firstPhoto = (comment.photos || []).find(Boolean);
+    const photoPeek = firstPhoto
+      ? `<div class="wl-photo-peek wl-photo-peek--comment"><img class="wl-media-img wl-photo-peek-img" src="${escapeHtml(mediaUrl(firstPhoto))}" alt="" loading="lazy"></div>`
+      : "";
+    return `
+      <div class="wl-preview-comment">
+        <div class="wl-avatar">${avatarInner(name, photo)}</div>
+        <div style="flex:1;min-width:0;">
+          <div class="wl-comment-body">
+            <div>
+              <span class="wl-comment-name">${escapeHtml(name)}</span>
+              <span class="wl-comment-time">${formatTimeShort(comment.created_at)}</span>
+            </div>
+            ${trimmed ? `<div class="wl-comment-text">${enrichBody(trimmed)}</div>` : ""}
+          </div>
+          ${photoPeek}
+        </div>
+      </div>`;
+  }
+
+  // Partially expanded state — full body, full photo grid, action bar
+  // and composer like the fully-expanded view, but only the last 4
+  // top-level comments by activity, and each of those comments is
+  // capped to its 3 most recent replies. Clicking the article (or any
+  // comment inside it) escalates to the fully-expanded renderer.
+  function renderPostPartial(post) {
+    const bodyText = post.body || "";
+    const bodyHtml = enrichBody(bodyText, { bold: true });
+    const linkBlocks = renderLinkBlocks(bodyText, post.id);
+    const photos = renderPhotos(post.photos || [], post.id);
+    const reactions = renderReactionPills(post.reactions || {}, post.id, "post");
+    const myReaction = mineReactionOn(post.reactions || {});
+    const likeActive = !!myReaction;
+    return `
+      <article class="wl-post wl-post--partial" data-post="${escapeHtml(post.id)}" id="post-${escapeHtml(post.id)}" data-expand-card="${escapeHtml(post.id)}" role="button" tabindex="0" aria-label="Click again to see every comment + reply">
+        ${renderPostHead(post)}
+        ${editingKey === `post:${post.id}`
+          ? `<textarea class="wl-edit-input" data-edit-save="post:${escapeHtml(post.id)}" maxlength="10000" data-stop-card-click>${escapeHtml(bodyText)}</textarea>`
+          : `<div class="wl-post-body">${bodyHtml}</div>`}
+        ${linkBlocks}
+        ${renderPoll(post)}
+        ${photos}
+        ${renderPostMetaRow(post)}
+        ${reactions ? `<div class="wl-reaction-pills">${reactions}</div>` : ""}
+        <div class="wl-action-bar" data-stop-card-click>
+          <button class="wl-action wl-action-like ${likeActive ? "is-active" : ""}" data-like="${escapeHtml(post.id)}" data-kind="post" data-stop-card-click title="Tap to ${likeActive ? "remove your reaction" : "Like"}; hover to pick a different reaction">
+            <span class="wl-action-icon">${likeActive ? emojiGlyph(myReaction) : icon("thumb", false)}</span>
+            <span class="wl-action-label">${likeActive ? reactionLabel(myReaction) : "Like"}</span>
+          </button>
+          <button class="wl-action" data-toggle-comments="${escapeHtml(post.id)}" data-stop-card-click>
+            <span class="wl-action-icon">${icon("comment", false)}</span>
+            <span class="wl-action-label">Comment</span>
+          </button>
+          <button class="wl-action" data-share="${escapeHtml(post.id)}" data-stop-card-click>
+            <span class="wl-action-icon">${icon("share", false)}</span>
+            <span class="wl-action-label">Share</span>
+          </button>
+        </div>
+        <div class="wl-comment-composer" data-stop-card-click>
+          <div class="wl-avatar">${avatarInner(viewerName, viewerPhoto)}</div>
+          <input class="wl-comment-input" type="text" placeholder="Add a comment…" data-add-comment="${escapeHtml(post.id)}" ${viewerEmail ? "" : "disabled"} maxlength="2000">
+          ${commentAttachButtons(post.id, "")}
+        </div>
+        ${renderComments(post, "partial")}
       </article>`;
   }
 
@@ -2376,7 +2478,7 @@
           <input class="wl-comment-input" type="text" placeholder="Add a comment…" data-add-comment="${escapeHtml(post.id)}" ${viewerEmail ? "" : "disabled"} maxlength="2000">
           ${commentAttachButtons(post.id, "")}
         </div>
-        ${renderComments(post, true)}
+        ${renderComments(post, "full")}
       </article>`;
   }
 
@@ -2731,20 +2833,32 @@
     }).join("");
     return `<div class="wl-reactions">${pills}</div>`;
   }
-  function renderComments(post, allOpen) {
+  // mode = "full"    → every top-level comment, every reply, sorted by
+  //                    activity (oldest at top, newest at the bottom)
+  // mode = "partial" → last 4 top-level comments by activity; each
+  //                    capped to its 3 most recent replies
+  function renderComments(post, mode) {
     const comments = (post.comments || []).slice();
     if (!comments.length) return "";
     const topLevel = comments.filter(c => !c.parent_comment_id);
-    topLevel.sort((a, b) => (a.created_at < b.created_at ? -1 : 1));
-    // Preview 2 newest by default — Facebook/LinkedIn consensus.
-    const showList = allOpen ? topLevel : topLevel.slice(-2);
+    // Activity-based sort: a comment with a recent reply bubbles below
+    // a comment whose own date is newer but has no recent replies.
+    topLevel.sort((a, b) => {
+      const aa = commentActivity(a, comments);
+      const bb = commentActivity(b, comments);
+      return aa < bb ? -1 : (aa > bb ? 1 : 0);
+    });
+    const partial = mode === "partial";
+    const showList = partial ? topLevel.slice(-4) : topLevel;
     const hiddenN = topLevel.length - showList.length;
-    const headerLink = !allOpen && hiddenN > 0
-      ? `<button class="wl-show-all-comments" data-show-all="${escapeHtml(post.id)}">View ${hiddenN} earlier ${hiddenN === 1 ? "comment" : "comments"}</button>`
-      : (allOpen && topLevel.length > 2
-          ? `<button class="wl-show-all-comments" data-show-all="${escapeHtml(post.id)}" data-collapse="1">Show only most recent</button>`
-          : "");
-    return `<div class="wl-comments">${headerLink}${showList.map(c => renderComment(post, c)).join("")}</div>`;
+    let headerLink = "";
+    if (partial && hiddenN > 0) {
+      headerLink = `<button class="wl-show-all-comments" data-expand-full="${escapeHtml(post.id)}">View ${hiddenN} earlier ${hiddenN === 1 ? "comment" : "comments"}</button>`;
+    } else if (!partial && topLevel.length > 4) {
+      headerLink = `<button class="wl-show-all-comments" data-collapse-partial="${escapeHtml(post.id)}">Show recent only</button>`;
+    }
+    const repliesCap = partial ? 3 : null;
+    return `<div class="wl-comments">${headerLink}${showList.map(c => renderComment(post, c, { repliesCap })).join("")}</div>`;
   }
   // Collect every descendant of a top-level comment (replies, replies-to-
   // replies, etc.) and return them flat, sorted chronologically. Used by
@@ -2800,8 +2914,16 @@
     if (!isReply) {
       const all = post.comments || [];
       const descendants = gatherCommentDescendants(all, comment.id);
-      if (descendants.length) {
-        repliesHtml = `<div class="wl-replies">${descendants.map(d => {
+      // Partial-state cap: when there are more than 4 replies, only the
+      // 3 most recent survive (chronological tail of the sorted list).
+      const cap = (opts && opts.repliesCap) || 0;
+      const shown = (cap && descendants.length > 4) ? descendants.slice(-cap) : descendants;
+      const hiddenReplies = descendants.length - shown.length;
+      if (shown.length) {
+        const earlierLink = hiddenReplies > 0
+          ? `<button class="wl-show-all-comments wl-show-all-replies" data-expand-full="${escapeHtml(post.id)}">View ${hiddenReplies} earlier ${hiddenReplies === 1 ? "reply" : "replies"}</button>`
+          : "";
+        repliesHtml = `<div class="wl-replies">${earlierLink}${shown.map(d => {
           const parent = all.find(x => x.id === d.parent_comment_id);
           const pfp = (parent && parent.id !== comment.id) ? parent : null;
           return renderComment(post, d, { isReply: true, parentForPrefix: pfp });
@@ -2853,15 +2975,28 @@
   }
 
   function wireFeed() {
-    // Click anywhere on a compact post (outside an action/link/control) to
-    // expand it. Single-expand: any previously open post collapses.
+    // Click anywhere on a preview / partial post (outside an action /
+    // link / control) to cycle: preview → partial → full. Clicking a
+    // different post wipes whichever non-preview state was set on the
+    // old post so only one post is above preview at a time.
     const expandCard = (id) => {
-      const wasExpanded = expandedPostIds.has(id);
+      const wasPartial = partialPostIds.has(id);
+      const wasFull    = expandedPostIds.has(id);
+      // Anything that wasn't this id collapses back to preview.
       expandedPostIds.clear();
-      if (!wasExpanded) expandedPostIds.add(id);
+      partialPostIds.clear();
+      if (wasFull) {
+        // Already at the top of the cycle — keep it there; clicks
+        // inside a fully-expanded post shouldn't suddenly collapse it.
+        expandedPostIds.add(id);
+      } else if (wasPartial) {
+        expandedPostIds.add(id);
+      } else {
+        partialPostIds.add(id);
+      }
       syncWallUrl();
       renderFeed();
-      if (!wasExpanded) {
+      if (!wasFull) {
         // Defer scroll until next paint
         requestAnimationFrame(() => {
           const el = document.getElementById(`post-${id}`);
