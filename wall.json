@@ -1,17 +1,18 @@
 {
   "schema_version": 1,
-  "updated_at": "2026-05-17T00:07:38.765Z",
+  "updated_at": "2026-05-17T00:07:55.745Z",
   "posts": [
     {
       "id": "post_mp90nggh_8wu2j9",
       "author_email": "james.benamor@letme.com",
       "author_name": "james.benamor",
       "created_at": "2026-05-17T00:07:38.513Z",
-      "body": "**I’m making this post to test the bold text feature **\n\nIf I make a post like this with body text that is not bold I can also add an important word like **wow** in bold",
+      "body": "**I’m making this post to test the bold text feature **\n\n\nIf I make a post like this with body text that is not bold I can also add an important word like **wow** in bold",
       "photos": [],
       "channel": null,
       "reactions": {},
-      "comments": []
+      "comments": [],
+      "edited_at": "2026-05-17T00:07:55.528Z"
     },
     {
       "id": "post_mp8t9vc4_9jhkrf",
