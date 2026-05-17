@@ -61,11 +61,6 @@ body { background: var(--paper-100, #FBF6E9); }
 }
 @media (max-width: 720px) {
   .up-info { flex-wrap: wrap; padding: 0 14px 14px; margin-top: -44px; }
-  /* Stack avatar above name on narrow screens so the headline sits
-     entirely below the cover edge and stays legible against the cream
-     paper instead of the cover image. */
-  .up-id { flex-direction: column; align-items: flex-start; gap: 8px; }
-  .up-headline { padding-top: 6px; padding-bottom: 0; }
 }
 .up-id { display: flex; align-items: flex-end; gap: 18px; min-width: 0; flex: 1 1 auto; }
 .up-avatar-wrap { flex: 0 0 auto; }
@@ -96,6 +91,12 @@ body { background: var(--paper-100, #FBF6E9); }
 @media (max-width: 720px) {
   .up-actions { width: 100%; padding-bottom: 0; padding-top: 8px; }
   .up-actions .up-btn { flex: 1 1 0; justify-content: center; }
+  /* Stack avatar above name on narrow screens so the headline sits
+     entirely below the cover edge against the cream paper, not
+     overlapping the dark/coloured cover image. Defined here, AFTER
+     the base .up-id and .up-headline rules, so the cascade wins. */
+  .up-info .up-id { flex-direction: column; align-items: flex-start; gap: 8px; }
+  .up-info .up-headline { padding-top: 6px; padding-bottom: 0; }
 }
 .up-btn {
   display: inline-flex; align-items: center; gap: 6px;
