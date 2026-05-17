@@ -539,51 +539,68 @@
   .wl-emoji-popover button:hover::after { opacity: 1; }
 
   /* Reaction + comment summary (above the action bar) */
-  .wl-reaction-summary {
+  /* Footer meta row (LinkedIn pattern): overlapping reaction circles +
+     total count on the left; comments + "N new" badge on the right.
+     Soft grey typography — no red mono shouting. */
+  .wl-post-meta-row {
     display: flex; align-items: center; justify-content: space-between;
-    padding: 4px 0 6px;
-    font: 500 13px/1.2 var(--font-body);
-    color: var(--ink-600);
-    min-height: 24px;
+    padding: 6px 2px 4px;
+    font: 400 12px/1 var(--font-body);
+    color: var(--ink-500);
+    min-height: 20px;
   }
-  .wl-reaction-summary .wl-comment-count.has-new {
-    color: var(--red-500); font-weight: 700;
+  .wl-post-meta-row:empty { display: none; }
+  .wl-react-cluster { display: inline-flex; align-items: center; gap: 6px; }
+  .wl-react-dot {
+    width: 18px; height: 18px; border-radius: 50%;
+    background: var(--paper-50, white);
+    border: 1px solid var(--paper-300, #ECDFB6);
+    display: inline-flex; align-items: center; justify-content: center;
+    font-size: 11px; line-height: 1;
+  }
+  .wl-react-dot + .wl-react-dot { margin-left: -7px; }
+  .wl-react-total { font: 500 12px/1 var(--font-body); color: var(--ink-700); }
+  .wl-meta-counts { color: var(--ink-500); }
+  .wl-meta-new {
+    color: var(--red-500); font-weight: 600; margin-left: 4px;
+  }
+  /* Reaction pills row above the action bar in expanded view — only
+     shown when reactions exist. Smaller padding than the old summary. */
+  .wl-reaction-pills {
+    display: flex; flex-wrap: wrap; gap: 4px;
+    padding: 4px 0;
   }
 
-  /* Action bar — Like / Comment, equal-spaced, 44pt tall. No borders
-     (single hairline below the post separates it from the next post).
-     Tap Like applies the default 👍 (= "Noted"); long-press opens the
-     6-named-reaction picker. Share dropped — internal company wall;
-     everyone's already on the same site behind Cloudflare Access. */
+  /* Action bar — Like / Comment / Share, equal-spaced. Tighter than
+     before (padding 11→6 px, min-height 44→32 px). Tap Like applies the
+     default 👍; long-press opens the 6-named-reaction picker. */
   .wl-action-bar {
     display: grid; grid-template-columns: 1fr 1fr 1fr;
-    border-top: 1px solid var(--ink-300);
-    border-bottom: none;
-    margin: 8px 0 4px;
-    padding-top: 4px;
+    border-top: 1px solid var(--paper-300, #ECDFB6);
+    margin: 0;
   }
   .wl-action {
     background: none; border: none;
     display: flex; align-items: center; justify-content: center; gap: 8px;
     color: var(--ink-700);
-    padding: 11px 8px;        /* 44 pt touch target */
-    min-height: 44px;
+    padding: 6px 6px;
+    min-height: 36px;
     font: 600 13px/1 var(--font-body);
-    color: var(--ink-700);
     cursor: pointer;
     user-select: none;
     -webkit-user-select: none;
   }
-  .wl-action:hover { color: var(--red-500); }
+  .wl-action:hover { color: var(--brass-600); }
   .wl-action.is-active { color: var(--brass-600); }
   .wl-action-icon { line-height: 1; display: inline-flex; align-items: center; }
+  .wl-action-icon svg { width: 18px; height: 18px; }
   .wl-action-label {
-    font: italic 500 14px/1 var(--font-body);
+    font: 500 13px/1 var(--font-body);
     letter-spacing: 0;
   }
   @media (max-width: 480px) {
     .wl-action-label { display: none; }
-    .wl-action-icon svg { width: 26px; height: 26px; }
+    .wl-action-icon svg { width: 22px; height: 22px; }
   }
 
   /* Comment composer */
@@ -2074,10 +2091,7 @@
         ${photoStrip}
         ${linkBlocks}
         ${renderPoll(post)}
-        <div class="wl-compact-meta">
-          ${reactCount > 0 ? `<span class="wl-compact-react">${myReaction ? emojiGlyph(myReaction) : emojiGlyph("👍")} ${reactCount}</span>` : ""}
-          ${cmCount > 0 ? `<span class="wl-compact-count ${newCount > 0 ? "has-new" : ""}">${cmCount} ${cmCount === 1 ? "comment" : "comments"}${newCount > 0 ? ` · ${newCount} new` : ""}</span>` : ""}
-        </div>
+        ${renderPostMetaRow(post)}
         ${recentLine}
         <div class="wl-action-bar" data-stop-card-click>
           <button class="wl-action wl-action-like ${likeActive ? "is-active" : ""}" data-like="${escapeHtml(post.id)}" data-kind="post" data-stop-card-click title="Tap to ${likeActive ? "remove your reaction" : "Like"}; hover to pick a different reaction">
@@ -2117,12 +2131,8 @@
         ${linkBlocks}
         ${renderPoll(post)}
         ${photos}
-        <div class="wl-reaction-summary">
-          <div>${reactions}</div>
-          <span class="wl-comment-count ${newCount > 0 ? "has-new" : ""}">
-            ${cmCount === 0 ? "" : (cmCount + (cmCount === 1 ? " comment" : " comments")) + (newCount > 0 ? ` · ${newCount} new` : "")}
-          </span>
-        </div>
+        ${renderPostMetaRow(post)}
+        ${reactions ? `<div class="wl-reaction-pills">${reactions}</div>` : ""}
         <div class="wl-action-bar">
           <button class="wl-action wl-action-like ${likeActive ? "is-active" : ""}" data-like="${escapeHtml(post.id)}" data-kind="post" title="Tap to ${likeActive ? "remove your reaction" : "Like"}; hover to pick a different reaction">
             <span class="wl-action-icon">${likeActive ? emojiGlyph(myReaction) : icon("thumb", false)}</span>
@@ -2453,6 +2463,34 @@
   // Render reactions as emoji-glyph pills. Each emoji animates per its
   // per-emoji keyframe on hover (thumb taps, heart pulses, etc.). Tap
   // mine to remove; tap another to switch.
+  // Overlapping reaction circles (LinkedIn pattern) — up to 3 distinct
+  // emoji types ranked by count, total tally to the right. Quiet when
+  // there are zero reactions.
+  function renderReactionCluster(reactions) {
+    const entries = Object.entries(reactions || {}).filter(([, arr]) => arr && arr.length);
+    if (!entries.length) return "";
+    entries.sort((a, b) => b[1].length - a[1].length);
+    const top = entries.slice(0, 3);
+    const total = entries.reduce((n, [, arr]) => n + arr.length, 0);
+    const dots = top.map(([emoji]) =>
+      `<span class="wl-react-dot">${emojiGlyph(emoji)}</span>`
+    ).join("");
+    return `<span class="wl-react-cluster">${dots}<span class="wl-react-total">${total}</span></span>`;
+  }
+  // Combined meta line: reaction cluster on the left, comment / new
+  // counts on the right. Empty when there's nothing to show.
+  function renderPostMetaRow(post) {
+    const cluster = renderReactionCluster(post.reactions || {});
+    const comments = post.comments || [];
+    const cmCount = comments.filter(c => !c.parent_comment_id).length;
+    const newCount = unseenCommentCount(post);
+    const right = cmCount > 0
+      ? `<span class="wl-meta-counts">${cmCount} ${cmCount === 1 ? "comment" : "comments"}${newCount > 0 ? `<span class="wl-meta-new">· ${newCount} new</span>` : ""}</span>`
+      : "";
+    if (!cluster && !right) return "";
+    return `<div class="wl-post-meta-row">${cluster || "<span></span>"}${right || "<span></span>"}</div>`;
+  }
+
   function renderReactionPills(rx, parentId, parentKind) {
     const entries = Object.entries(rx || {})
       .filter(([_, emails]) => Array.isArray(emails) && emails.length > 0)
