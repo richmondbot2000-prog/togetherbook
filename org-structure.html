@@ -363,6 +363,17 @@
       if (!chart || !viewerEmail) return;
       chart.setCentered(viewerEmail).render();
     });
+    // ?center=<email> deep-link — centers the chart on that person on
+    // load, so a notification or share link can drop the recipient
+    // straight onto someone's place in the tree.
+    try {
+      const centerEmail = (new URLSearchParams(location.search || "")).get("center");
+      if (chart && centerEmail) {
+        setTimeout(() => {
+          try { chart.setCentered(centerEmail.toLowerCase()).render(); } catch (e) {}
+        }, 100);
+      }
+    } catch (e) { /* noop */ }
   }).catch(err => {
     document.getElementById("osMeta").textContent = "Could not load org tree: " + (err.message || err);
   });
