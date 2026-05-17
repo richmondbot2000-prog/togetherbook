@@ -77,6 +77,7 @@
   let annotationsMap = {};       // for forward_to fallback
   let pendingTransfersByEmail = {};
   let adminEmails = new Set();
+  let auditActions = [];   // workspace-actions.json, append-only audit log
   let payrollRecordsById = {};   // PayrollData rows keyed by id
   let payrollByPersonId = {};    // most-recent PayrollData row per person_id
   let googleByPersonId = {};     // pid -> [google-account rows]
@@ -385,7 +386,54 @@
 
       ${adminControls}
 
+      ${renderActivityCard()}
+
       ${viewerIsAdmin ? renderMergeCard() : ""}`;
+  }
+
+  /* ─── Recent activity card (audit log filtered to this Person) ──── */
+  function renderActivityCard() {
+    if (!auditActions.length) return "";
+    const emails = [person.main_google_email, ...(person.alt_google_emails || []), person.external_google_email]
+      .filter(Boolean).map(e => e.toLowerCase());
+    const idStr = String(person.id);
+    const slug = (person.url_slug || "").toLowerCase();
+    const matches = auditActions.filter(a => {
+      const t = (a.target || "").toString().toLowerCase();
+      if (!t) return false;
+      if (emails.some(e => t === e || t.includes(e))) return true;
+      // Person-id matches: "people-set #91", "people-merge 5 → 4", etc.
+      if (t.includes(idStr)) return true;
+      // Slug match for older entries.
+      if (slug && t.includes(slug)) return true;
+      return false;
+    }).slice(-20).reverse();
+    if (!matches.length) {
+      return `
+        <div class="up-card">
+          <div class="up-card-head">Recent activity <span class="up-card-hint">audit log filtered to this Person · last 20 entries</span></div>
+          <div class="up-empty">No admin actions recorded for this Person yet.</div>
+        </div>`;
+    }
+    const rows = matches.map(a => {
+      const d = new Date(a.ts);
+      const when = `${d.toLocaleDateString("en-GB", { day: "numeric", month: "short" })} ${String(d.getHours()).padStart(2,"0")}:${String(d.getMinutes()).padStart(2,"0")}`;
+      const okBadge = a.ok ? '<span class="up-act-ok">✓</span>' : '<span class="up-act-fail">✗</span>';
+      return `
+        <div class="up-act-row">
+          <span class="up-act-when">${escapeHtml(when)}</span>
+          ${okBadge}
+          <span class="up-act-action">${escapeHtml(a.action || "")}</span>
+          <span class="up-act-target">${escapeHtml(a.target || "")}</span>
+          <span class="up-act-actor">by ${escapeHtml((a.actor || "").split("@")[0])}</span>
+          ${a.error ? `<span class="up-act-error" title="${escapeHtml(a.error)}">⚠</span>` : ""}
+        </div>`;
+    }).join("");
+    return `
+      <div class="up-card">
+        <div class="up-card-head">Recent activity <span class="up-card-hint">audit log filtered to this Person · last 20 entries</span></div>
+        <div class="up-act-list">${rows}</div>
+      </div>`;
   }
 
   /* ─── Linked sources strip (same icons as the directory row) ───── */
@@ -1754,7 +1802,8 @@
     fetch("/api/workspace/table?file=payroll-data",     { cache: "no-store", headers: { "Cache-Control": "no-cache, no-store, must-revalidate", "Pragma": "no-cache" } }).then(r => r.ok ? r.json() : null).catch(() => null),
     fetch("/api/workspace/table?file=google-accounts",  { cache: "no-store", headers: { "Cache-Control": "no-cache, no-store, must-revalidate", "Pragma": "no-cache" } }).then(r => r.ok ? r.json() : null).catch(() => null),
     fetch("/api/workspace/table?file=warehouse-activity",{ cache: "no-store", headers: { "Cache-Control": "no-cache, no-store, must-revalidate", "Pragma": "no-cache" } }).then(r => r.ok ? r.json() : null).catch(() => null),
-  ]).then(([peopleFile, staff, wallFile, payroll, who, annFile, adminsFile, pending, payrollFile, gaccounts, warehouse]) => {
+    fetch("/workspace-actions.json", { cache: "no-store", headers: { "Cache-Control": "no-cache, no-store, must-revalidate", "Pragma": "no-cache" } }).then(r => r.ok ? r.json() : null).catch(() => null),
+  ]).then(([peopleFile, staff, wallFile, payroll, who, annFile, adminsFile, pending, payrollFile, gaccounts, warehouse, auditFile]) => {
     if (peopleFile && Array.isArray(peopleFile.people)) {
       people = peopleFile.people;
       for (const p of people) {
@@ -1814,6 +1863,7 @@
         }
       }
     }
+    if (auditFile && Array.isArray(auditFile.actions)) auditActions = auditFile.actions;
     renderProfile();
   }).catch(err => renderEmpty("Failed to load: " + String(err)));
 })();
