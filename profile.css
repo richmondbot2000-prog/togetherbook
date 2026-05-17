@@ -206,6 +206,14 @@ body { background: var(--paper-100, #FBF6E9); }
 .up-field { padding: 12px 0; border-bottom: 1px solid var(--paper-300, #ECDFB6); }
 .up-field:first-of-type { padding-top: 0; }
 .up-field:last-of-type  { padding-bottom: 0; border-bottom: 0; }
+.up-saved-badge {
+  display: inline-block; margin-left: 6px;
+  font: 600 9px/1 var(--font-body); letter-spacing: 0.04em; text-transform: uppercase;
+  padding: 2px 6px; border-radius: 3px;
+  color: #1a7f37; background: #eefaf0; border: 1px solid #b8e3c4;
+  cursor: help; vertical-align: middle;
+}
+.up-edit-status--persistent { font-weight: 600; }
 .up-field-label {
   font: 600 10px/1 var(--font-body);
   letter-spacing: 0.08em;
@@ -287,9 +295,14 @@ body { background: var(--paper-100, #FBF6E9); }
   padding: 14px 16px;
   text-decoration: none;
   color: inherit;
+  cursor: pointer;
+  overflow: hidden; /* keep the 16:9 iframe inside the card frame */
   transition: border-color 140ms ease;
 }
 .up-fp:hover { border-color: var(--brass-500, #C8973F); }
+.up-fp:focus-visible { outline: 2px solid var(--brass-500, #C8973F); outline-offset: 1px; }
+a.up-fp-open { color: var(--brass-700, #835f1f); text-decoration: none; font-weight: 600; }
+a.up-fp-open:hover { text-decoration: underline; }
 .up-fp-head { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; }
 .up-fp-avatar {
   width: 36px; height: 36px; border-radius: 50%;

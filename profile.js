@@ -15,6 +15,55 @@
   let targetEmail = (window.__profileEmail || qs.get("email") || "").toLowerCase().trim();
   let targetSlug  = (window.__profileSlug  || "").toLowerCase().trim();
 
+  /* ─── localStorage write-through ──────────────────────────────────
+   * Every successful save also stashes the edit in localStorage under
+   * tbk.edit.<personId>.<field>. On render we overlay any entry < 5
+   * minutes old over the server-returned Person. So even if the
+   * server response gets lost in transit, or some cache layer serves
+   * a stale copy, the user's OWN session always sees their own edit
+   * correctly. The 5-minute TTL means once the new server copy is
+   * confirmed stable, the localStorage entry expires and we trust
+   * the server again. */
+  const LS = {
+    KEY: (pid, field) => `tbk.edit.${pid}.${field}`,
+    TTL_MS: 5 * 60 * 1000,
+    set(pid, field, value) {
+      try { localStorage.setItem(this.KEY(pid, field), JSON.stringify({ v: value, t: Date.now() })); }
+      catch (e) {}
+    },
+    get(pid, field) {
+      try {
+        const raw = localStorage.getItem(this.KEY(pid, field));
+        if (!raw) return null;
+        const o = JSON.parse(raw);
+        if (Date.now() - (o.t || 0) > this.TTL_MS) { localStorage.removeItem(this.KEY(pid, field)); return null; }
+        return o;
+      } catch (e) { return null; }
+    },
+    savedLabel(pid, field) {
+      const e = this.get(pid, field);
+      if (!e) return null;
+      const d = new Date(e.t);
+      return `Saved ${String(d.getHours()).padStart(2,"0")}:${String(d.getMinutes()).padStart(2,"0")}`;
+    },
+    overlay(p) {
+      if (!p) return p;
+      const out = { ...p };
+      const fields = [
+        "name","given","family","aliases","role","phone","address",
+        "start_date","date_of_birth","notes","company","title","department",
+        "directory_photo_uploaded_at","cover_photo_uploaded_at",
+        "external_google_email","auth0_id","access_level","suspended","on_payroll",
+        "line_manager_id","most_recent_payroll_id",
+      ];
+      for (const f of fields) {
+        const e = this.get(p.id, f);
+        if (e) out[f] = e.v;
+      }
+      return out;
+    },
+  };
+
   let people = [];
   let peopleByEmail = {};
   let peopleBySlug = {};
@@ -205,6 +254,10 @@
     // /people.html for the deeper edits.
     function editableRow(field, label, type, value, hint) {
       const readonly = !editable;
+      const savedLabel = LS.savedLabel(person.id, field);
+      const savedBadge = savedLabel
+        ? `<span class="up-saved-badge" title="Your last edit to this field — overlaid from local cache for 5 min so it can't appear to revert">✓ ${escapeHtml(savedLabel)}</span>`
+        : "";
       const editor = readonly ? "" : `
           <div class="up-field-editor" hidden>
             ${type === "textarea"
@@ -219,7 +272,7 @@
           </div>`;
       return `
         <div class="up-field" data-edit-field="${field}">
-          <div class="up-field-label">${escapeHtml(label)}</div>
+          <div class="up-field-label">${escapeHtml(label)} ${savedBadge}</div>
           <div class="up-field-display">
             <span class="up-field-value ${value ? "" : "up-empty-val"}" style="white-space:pre-wrap;">${escapeHtml(value) || "Not set"}</span>
             ${readonly ? "" : `<button type="button" class="up-link-btn" data-edit-toggle="${field}">Edit</button>`}
@@ -423,7 +476,12 @@
   /* ─── Payroll tab — most-recent PayrollData record + editor ────── */
   function renderPayrollPanel() {
     const onPayroll = !!person.on_payroll;
-    const rec = payrollByPersonId[person.id] || (person.most_recent_payroll_id ? payrollRecordsById[person.most_recent_payroll_id] : null);
+    let rec = payrollByPersonId[person.id] || (person.most_recent_payroll_id ? payrollRecordsById[person.most_recent_payroll_id] : null);
+    // Overlay any localStorage'd payroll edit for this Person so the
+    // user's own session always shows their most recent save, even
+    // if the server hasn't propagated.
+    const lsRec = LS.get(person.id, "payroll");
+    if (lsRec && lsRec.v) rec = { ...(rec || {}), ...lsRec.v };
 
     if (!viewerIsAdmin) {
       if (!onPayroll) return `<h2 class="up-panel-title">Payroll</h2><div class="up-empty">This person is not on payroll.</div>`;
@@ -735,6 +793,24 @@
     document.querySelectorAll("[data-acc-alias-group]").forEach(btn => {
       btn.addEventListener("click", () => handleAliasAction(btn, "to-group"));
     });
+    // Wall-tab feed cards — outer wrapper is an <article>, not an <a>,
+    // so nested links + the YouTube iframe render as valid HTML.
+    // Clicks on the card itself (outside any inner <a>, <iframe>,
+    // <button>) navigate to the post on the main Wall.
+    document.querySelectorAll("[data-fp-href]").forEach(card => {
+      card.addEventListener("click", (e) => {
+        if (e.target.closest('a, iframe, button')) return;
+        location.href = card.dataset.fpHref;
+      });
+      card.addEventListener("keydown", (e) => {
+        if (e.target !== card) return;
+        if (e.key === "Enter" || e.key === " ") {
+          e.preventDefault();
+          location.href = card.dataset.fpHref;
+        }
+      });
+    });
+    if (typeof hydrateFeedLinkPreviews === "function") hydrateFeedLinkPreviews();
     document.querySelectorAll("[data-payroll-toggle]").forEach(btn => {
       btn.addEventListener("click", () => togglePayroll(btn.dataset.payrollToggle === "on"));
     });
@@ -820,8 +896,14 @@
       payrollRecordsById[out.record.id] = out.record;
       payrollByPersonId[person.id] = out.record;
       if (out.created) person.most_recent_payroll_id = out.record.id;
-      status.textContent = "Saved";
-      status.className = "up-edit-status up-edit-status--ok";
+      // Write-through every payroll field that was just sent so the
+      // editor reflects the saved state immediately even on a stale
+      // refresh. Keyed under a synthetic "payroll" namespace per
+      // Person so all the fields can be overlaid as a unit.
+      LS.set(person.id, "payroll", out.record);
+      const stamp = new Date();
+      status.textContent = `Saved at ${String(stamp.getHours()).padStart(2,"0")}:${String(stamp.getMinutes()).padStart(2,"0")}:${String(stamp.getSeconds()).padStart(2,"0")}`;
+      status.className = "up-edit-status up-edit-status--ok up-edit-status--persistent";
       setTimeout(() => renderPanel(), 350);
     } catch (err) {
       status.textContent = "Failed — " + err.message;
@@ -1209,6 +1291,10 @@
       const out = await res.json();
       if (!res.ok || !out.ok) throw new Error(out.error || `HTTP ${res.status}`);
       Object.assign(person, out.person);
+      // Write-through to localStorage so the user's own session sees
+      // the new value regardless of any cache layer in front of the
+      // server. Re-applied at render time via LS.overlay.
+      LS.set(person.id, field, payloadValue);
       // start_date lives in two places — People.start_date AND the active
       // PayrollData record. Updating one alone leaves them inconsistent
       // and the Payroll tab will look "reverted". Propagate.
@@ -1225,8 +1311,9 @@
           }
         } catch (e) { /* non-fatal; People was already saved */ }
       }
-      status.textContent = "Saved";
-      status.className = "up-edit-status up-edit-status--ok";
+      const stamp = new Date();
+      status.textContent = `Saved at ${String(stamp.getHours()).padStart(2,"0")}:${String(stamp.getMinutes()).padStart(2,"0")}:${String(stamp.getSeconds()).padStart(2,"0")}`;
+      status.className = "up-edit-status up-edit-status--ok up-edit-status--persistent";
       setTimeout(() => { renderPanel(); }, 350);
     } catch (err) {
       status.textContent = "Failed — " + (err && err.message || err);
@@ -1309,10 +1396,69 @@
       const yt = matchYouTubeId(url);
       if (yt) {
         blocks.push(`<div class="up-fp-yt"><iframe src="https://www.youtube-nocookie.com/embed/${escapeHtml(yt)}" loading="lazy" allow="accelerometer; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen referrerpolicy="strict-origin-when-cross-origin"></iframe></div>`);
+      } else {
+        // OG-preview placeholder card — hydrated by hydrateFeedLinkPreviews()
+        // after the feed mounts. Matches wall.html's .wl-link-preview
+        // shape so we can reuse the same worker `link-preview` action.
+        let host = "";
+        try { host = new URL(url).host; } catch (e) {}
+        const safeUrl = url.replace(/"/g, "&quot;");
+        blocks.push(`<a class="up-fp-linkprev" href="${safeUrl}" target="_blank" rel="noopener noreferrer" data-fp-linkprev="${safeUrl}">
+          <div class="up-fp-linkprev-thumb"><div class="up-fp-linkprev-empty">Loading preview…</div></div>
+          <div class="up-fp-linkprev-body">
+            <div class="up-fp-linkprev-host">${escapeHtml(host)}</div>
+            <div class="up-fp-linkprev-title">${escapeHtml(url)}</div>
+            <div class="up-fp-linkprev-desc">Loading…</div>
+          </div>
+        </a>`);
       }
       if (blocks.length >= 2) break;
     }
     return blocks.join("");
+  }
+  // Session cache so re-renders don't re-hit the worker per URL.
+  const _fpLinkPreviewCache = {};
+  function hydrateFeedLinkPreviews() {
+    document.querySelectorAll("[data-fp-linkprev]").forEach(el => {
+      if (el.dataset.fpLpDone === "1") return;
+      const url = el.dataset.fpLinkprev;
+      const cached = _fpLinkPreviewCache[url];
+      if (cached) { paintFeedLinkPreview(el, cached); return; }
+      el.dataset.fpLpDone = "1";
+      fetch("/api/wall/link-preview", {
+        method: "POST", headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ url }),
+      })
+        .then(r => r.ok ? r.json() : null)
+        .then(data => {
+          if (!data) return;
+          _fpLinkPreviewCache[url] = data;
+          // Re-paint every currently-mounted instance of the same URL.
+          document.querySelectorAll("[data-fp-linkprev]").forEach(node => {
+            if (node.dataset.fpLinkprev === url) paintFeedLinkPreview(node, data);
+          });
+        })
+        .catch(() => { /* leave placeholder */ });
+    });
+  }
+  function paintFeedLinkPreview(el, data) {
+    const title = data.title || data.url || "";
+    const desc  = data.description || "";
+    const img   = data.image || "";
+    const host  = data.site_name || data.host || "";
+    const thumb = el.querySelector(".up-fp-linkprev-thumb");
+    const body  = el.querySelector(".up-fp-linkprev-body");
+    if (thumb) {
+      thumb.innerHTML = img
+        ? `<img src="${escapeHtml(img)}" alt="" loading="lazy" onerror="this.parentElement.innerHTML='<div class=&quot;up-fp-linkprev-empty&quot;>no preview</div>';">`
+        : `<div class="up-fp-linkprev-empty">no preview</div>`;
+    }
+    if (body) {
+      body.innerHTML = `
+        <div class="up-fp-linkprev-host">${escapeHtml(host)}</div>
+        <div class="up-fp-linkprev-title">${escapeHtml(title)}</div>
+        ${desc ? `<div class="up-fp-linkprev-desc">${escapeHtml(desc)}</div>` : ""}`;
+    }
   }
   function postPhotoUrl(p) {
     if (!p) return "";
@@ -1356,8 +1502,17 @@
         commentN ? `${commentN} comment${commentN === 1 ? "" : "s"}` : "",
         reactN   ? `${reactN} reaction${reactN === 1 ? "" : "s"}` : "",
       ].filter(Boolean).join(" · ");
+      // Outer wrapper is an <article>, NOT an <a>. The body contains
+      // linkified URLs (e.g. https://togetherloans.com/) and the
+      // YouTube iframe contains nested <a> tags too — putting all of
+      // that inside an outer <a> made the browser auto-close / split
+      // anchors, which is why the body was rendering entirely as a
+      // link and the iframe spilled past the card. Card is still
+      // clickable via the data-fp-href handler wired in wirePanel();
+      // the explicit "Open on Wall →" anchor at the bottom is the
+      // semantic link.
       return `
-        <a class="up-fp" href="${href}">
+        <article class="up-fp" data-fp-href="${escapeHtml(href)}" role="link" tabindex="0">
           <div class="up-fp-head">
             <div class="up-fp-avatar">${avatarHtml}</div>
             <div>
@@ -1369,8 +1524,8 @@
           ${linkBlocks}
           ${mediaHtml}
           ${meta ? `<div class="up-fp-meta">${escapeHtml(meta)}</div>` : ""}
-          <div class="up-fp-open">Open on Wall →</div>
-        </a>`;
+          <a class="up-fp-open" href="${escapeHtml(href)}">Open on Wall →</a>
+        </article>`;
     }).join("");
     return `<h2 class="up-panel-title">Wall (${posts.length})</h2><div class="up-fp-list">${cards}</div>`;
   }
@@ -1385,6 +1540,10 @@
     // Resolve target: slug → Person, email → Person.
     if (targetSlug && peopleBySlug[targetSlug]) person = peopleBySlug[targetSlug];
     else if (targetEmail && peopleByEmail[targetEmail]) person = peopleByEmail[targetEmail];
+
+    // Overlay any localStorage recent edit so the user's own session
+    // is guaranteed-correct even if some cache layer served stale.
+    if (person) person = LS.overlay(person);
 
     if (!person) {
       renderEmpty(`No person matched "${targetSlug || targetEmail || "(missing)"}".`);
@@ -1524,14 +1683,33 @@
       if (!res.ok || !out.ok) throw new Error(out.error || `HTTP ${res.status}`);
       const stamp = new Date().toISOString();
       const field = opts.kind === "cover" ? "cover_photo_uploaded_at" : "directory_photo_uploaded_at";
-      step = `POST /api/workspace/people-set ${field}`;
-      const setRes = await fetch(WORKSPACE_API + "/people-set", {
-        method: "POST", headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ action: "people-set", id: person.id, [field]: stamp }),
-      });
-      const setOut = await setRes.json();
-      step = `people-set reply ok=${setOut.ok}`;
-      if (!setRes.ok || !setOut.ok) throw new Error(setOut.error || `HTTP ${setRes.status}`);
+      // localStorage write-through BEFORE the network call so the new
+      // image shows immediately on this device regardless of whether
+      // the stamp-write succeeds (the JPEG itself is already on disk).
+      LS.set(person.id, field, stamp);
+
+      // Retry the timestamp-write up to 3 times with backoff — this is
+      // the call that previously failed silently and left the file on
+      // disk without a fresh URL cache-bust.
+      let setOut = null, lastErr = null;
+      for (let attempt = 1; attempt <= 3; attempt++) {
+        step = `POST /api/workspace/people-set ${field} (try ${attempt}/3)`;
+        try {
+          const setRes = await fetch(WORKSPACE_API + "/people-set", {
+            method: "POST", headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ action: "people-set", id: person.id, [field]: stamp }),
+          });
+          const txt = await setRes.text();
+          let parsed; try { parsed = JSON.parse(txt); } catch (e) { throw new Error(`non-JSON response: ${txt.slice(0,120)}`); }
+          if (!setRes.ok || !parsed.ok) throw new Error(parsed.error || `HTTP ${setRes.status}`);
+          setOut = parsed;
+          break;
+        } catch (e) {
+          lastErr = e;
+          if (attempt < 3) await new Promise(r => setTimeout(r, 600 * attempt));
+        }
+      }
+      if (!setOut) throw lastErr || new Error("stamp save failed after 3 attempts");
       Object.assign(person, setOut.person);
       renderProfile();
     } catch (err) {
