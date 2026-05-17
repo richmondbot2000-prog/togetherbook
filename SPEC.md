@@ -2,7 +2,7 @@
 
 _The source-of-truth document for `togetherbook.net` / `richmondbot2000-prog/togetherbook`. Lives in this repo so future maintainers find it next to the code. **A successor Claude or engineer should be able to pick this up cold and operate the site competently.**_
 
-**Last reviewed:** 2026-05-15 — added Wall compact-feed / pagination / YouTube + OG link previews / Share deep-links; renamed Payout → Payouts with three-range tabs + per-capita toggle and new history scanner; new Holidays page + Line Manager field in Directory + manager team view + Approved Holiday status. Previous reviews: 2026-05-12 (source-quality analysis, brandwatch email notifications, multi-tenant Directory, Cloudflare Access).
+**Last reviewed:** 2026-05-18 — rebuilt the Activity bar around an explicit `scripts/activity_sources.json` whitelist (CRM ApplicationOpened + CaseOpened only) after the auto-discovery scanner credited robot writes to humans; added "What's counted" panel on the Holidays Activity tab. Previous reviews: 2026-05-17 (six-layer reliability stack for identity tables, write-time schema validators, per-Person audit-log card, RECOVERY.md runbook), 2026-05-15 (Wall compact-feed / pagination / YouTube + OG link previews / Share deep-links; Payouts three-range tabs; Holidays page + Line Manager + manager team view + Approved Holiday status), 2026-05-12 (source-quality analysis, brandwatch email notifications, multi-tenant Directory, Cloudflare Access).
 
 ## Contents
 
@@ -1534,7 +1534,11 @@ The Activity tab on the Holidays page lets a manager see when each of their dire
 
 **Writes**: the scanners run in GitHub Actions, not in the worker. Three steps in `refresh-staff-activity.yml`, all `continue-on-error: true` so a transient warehouse blip doesn't break the others:
 
-1. `scan_staff_activity_buckets.py` — pulls every `ClientUsername`-bearing table across the 7 reporting DBs, aggregates into per-15-min buckets, merges into `staff-activity-buckets.json` (legacy path — to be retired once the worker exclusively reads from D1).
+1. `scan_staff_activity_buckets.py` — reads `scripts/activity_sources.json` (the canonical whitelist) and ONLY pulls those sources, applying each source's `human_filter` verbatim. Aggregates into per-15-min buckets, merges into `staff-activity-buckets.json` AND `activity_buckets`/`activity_events` in D1. **The whitelist as of 2026-05-18:**
+   - `ReportingApplications.dbo.Events WHERE EventTypeId = 14 AND ClientType LIKE '%CRM%'` — "Application opened in CRM". SmartLook trigger on `/Payout/Caseview`. EventTypeId 14 = `ApplicationOpened`.
+   - `ReportingLoanbook.dbo.Events WHERE EventTypeId = 11 AND ClientType LIKE '%CRM%'` — "Loan case opened in CRM". SmartLook trigger on `/Collections/Caseview`. EventTypeId 11 = `CaseOpened`.
+
+   The previous behaviour auto-discovered every `ClientUsername`-bearing table and counted any row as "active at this bucket", which credited robot-factory writes (MessageFactory, RobotResponder, scheduler IDs reusing a human's username) to the human's bar — visible symptom: several people lighting up 24/7. **The new gate is conservative by design**: if a legitimate source is missing, the rule belongs in `activity_sources.json`, not buried in the scanner. The Holidays Activity tab surfaces the full whitelist (label, filter, description) in a "What's counted" expander next to the meta line so every tick is traceable.
 2. `scan_google_workspace_activity.py` — login/gmail/drive/meet/chat/calendar/admin from the Workspace Reports API. Merges into the same JSON with `kind: "google"`.
 3. `scan_comm_items.py` — per-row pull of `ReportingCommunications.dbo.Messages` (filtered to `Description IN (5,6,7)` — outbound SMS/Email/Call) and uploads to D1's `activity_items` table. Wipes the window first (DELETE per iso_date) for idempotency, then batched `INSERT OR REPLACE` (batch size auto-set to stay under D1's 100-var statement cap).
 
