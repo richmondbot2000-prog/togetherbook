@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "updated_at": "2026-05-17T08:20:19.719Z",
+  "updated_at": "2026-05-17T08:20:39.951Z",
   "posts": [
     {
       "id": "post_mp9hztyf_8qihso",
@@ -11,7 +11,7 @@
       "photos": [],
       "channel": null,
       "reactions": {
-        "👍": [
+        "🥱": [
           "james.benamor@letme.com"
         ]
       },
@@ -39,6 +39,22 @@
           "target_kind": "post",
           "target_id": "post_mp9hztyf_8qihso",
           "at": "2026-05-17T08:20:19.362Z",
+          "kind": "added"
+        },
+        {
+          "actor_email": "james.benamor@letme.com",
+          "emoji": "👍",
+          "target_kind": "post",
+          "target_id": "post_mp9hztyf_8qihso",
+          "at": "2026-05-17T08:20:39.760Z",
+          "kind": "removed"
+        },
+        {
+          "actor_email": "james.benamor@letme.com",
+          "emoji": "🥱",
+          "target_kind": "post",
+          "target_id": "post_mp9hztyf_8qihso",
+          "at": "2026-05-17T08:20:39.760Z",
           "kind": "added"
         }
       ]
