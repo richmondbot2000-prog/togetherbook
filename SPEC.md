@@ -1909,6 +1909,191 @@ A 6-agent parallel audit traced every report's metrics back to the warehouse tab
 
 ---
 
+## 16.6 Big iteration — 2026-05-16 → 2026-05-17
+
+Substantial Wall + Holidays + Directory pass. Captured here so the
+deep-dive sections above stay focused on stable behaviour; future
+sessions can pick up where this finished by reading §11.8, §11.9
+and the live HTML.
+
+### Wall (`wall.html` + `worker/workspace-worker.js`)
+
+- **@-mentions** — autocomplete picker on compose / comment / reply
+  inputs, filters staff by local-part-prefix or name-word-prefix.
+  Rendered as a blue link to `user.html?email=`. Mentions of the
+  viewer appear in the bell as their own notification kind, scoped
+  per mark-seen post + per-event seen ID (`m:<post>:<comment>:<actor>`).
+  Worker `wallMarkSeen` stamps posts where the viewer is mentioned in
+  addition to posts they authored.
+- **Per-notification mark-seen** — bell entries now have stable IDs
+  (`c:`/`m:`/`r:` prefixes; see `eventIdFor` in wall.html). Click a
+  notification → adds to `seenEvents` set + persists via new worker
+  action `seen-event` → that one entry vanishes. Stored in
+  `wall-seen.json` under `by_user[viewer].seen_events`, capped at
+  2 000 IDs per user.
+- **Notification jump-to-comment** — click a comment / reply notif →
+  panel closes, every other post collapses, the notified post opens,
+  the page scrolls to the comment, brief brass flash. Same dispatch
+  used by the `#post-<id>` URL hash.
+- **Edit button** — pencil icon next to delete on every post / comment /
+  reply you authored. Click swaps the body for an inline textarea
+  (16 px font so iOS doesn't auto-zoom); blur / Enter saves via new
+  worker `edit` action; Escape cancels. Author-only (admins keep
+  delete-on-any-content but lose edit-on-others — enforced both
+  client- and server-side). Stamps `edited_at` for the "(edited)"
+  tag next to the timestamp.
+- **Polls** — new attach button on the compose strip; opens a modal
+  with question + 2-10 options. Poll attaches to a post as
+  `post.poll = { question, options, votes: {}, created_at }`. Empty
+  body is allowed when a poll is attached. Worker validates shape.
+  Renders inline in both compact and expanded views as a clickable
+  option list with brass fill bars. New worker `poll-vote` action
+  toggles `poll.votes[viewer] = idx`.
+- **Compose redesign** (multiple iterations) — settled on a Threads-
+  style top row (avatar 32 px + "Posting as <Name>") above a
+  borderless textarea, followed by a single bottom strip with
+  icon-only attach buttons (Photo+Video unified — accepts image/*
+  and video/*), GIF, Poll, Bold + filled brass Post pill. Textarea
+  auto-grows down the page.
+- **Bold toggle** — pencil-A icon inserts `**` markers around cursor /
+  selection. Render-side `enrichBody(text, { bold: true })` turns
+  `**foo**` into `<strong>foo</strong>` for POST bodies only;
+  comments and replies render the literal asterisks.
+- **Any-emoji reactions** — the 6-emoji named picker gains a "+"
+  button that opens a 48-emoji curated grid + free-input box.
+  Anything the user types or paste lands as their reaction. Worker
+  already accepted arbitrary emoji strings ≤ 4 codepoints.
+- **Photo full-width "peek"** — compact post view shows the first
+  photo as a 220 px-tall (180 px on mobile) full-width clipped
+  image with `object-position: top`. Extras collapse to a "+N more"
+  badge. Expanding the post reveals full-ratio photos.
+- **Cluster + counts footer** — LinkedIn pattern. Top-3 reaction
+  emoji shown as overlapping circles + total count on the left;
+  comment / new-comment count in soft grey on the right; hair-thin
+  divider; tight Like / Comment / Share action row (padding 11→6 px,
+  min-height 44→36 px). The loud red mono "1 comment · 3 new" line
+  is gone.
+- **Comment thread density** — Nextdoor pattern. Single-row composer
+  (avatar 24 px + pill input + 2 icon-only attach buttons, no
+  flex-wrap). `formatTimeShort()` swaps editorial dates for relative
+  "12h" / "Yesterday" / "16 May" with full ISO on hover. Body 14 px
+  Inter, padding 12→8/6, edit + delete icons in comments shrunk to
+  22 px. Replies cap at one indent level; descendants flatten into a
+  single brass tie-line strip with optional `↳ ParentName` prefix
+  on depth-2+ replies. The "Show less" link is gone.
+- **Sans-serif Wall** — every `var(--font-display)` on wall.html
+  swapped to `var(--font-body)`. Posts, comments, action labels,
+  bell, GIF picker, lightbox all in Inter. Other pages keep
+  Newsreader.
+- **Auto-grow textarea** — main compose textarea expands as the user
+  types (no inner scrollbar, page pushes down).
+- **Mixed-content fix** — `MEDIA_BASE` now `""` (relative URL) and
+  Cloudflare Access has a bypass app `book-wall-media-public`
+  covering `book.togetherbook.net/wall-media/*` so images load
+  without depending on the auth cookie attaching on `<img src>`.
+  URL gets `?v=<bump>` so browsers don't keep cached 302 responses
+  from before the bypass.
+- **Mojibake fix** — new `fetchFreshJson` helper (added in the same
+  session for cache-freshness) was using `atob()` which returns a
+  Latin-1 string; multi-byte UTF-8 (smart quotes, emoji, accented
+  names) was corrupting. Pipe through `Uint8Array` +
+  `TextDecoder('utf-8')` before `JSON.parse`. Same fix in
+  holidays.html.
+
+### Holidays (`holidays.html` + `worker/workspace-worker.js`)
+
+- **Mobile team view (≤ 720 px)** — shipped two layouts before
+  landing on the right one. Final: same desktop matrix at compressed
+  dimensions (56 px name column, 18 px cell height, smaller fonts).
+  Whole month × 10 reports stay visible in one block; column-glance
+  preserved. Per-cell date number inside every in-month cell via
+  `data-num` + CSS `::before`; replaced by `M` / `A` for maternity /
+  approved-holiday via `data-mark`.
+- **Visual cleanup** (all viewports) — centred month title H3 at the
+  top of each block; ink-300 gridline background dropped; status
+  palette mixed ~55 % with paper for a subtler heatmap feel;
+  sans-serif throughout the matrix; separate "dates row" gone (per-
+  cell numbers replace it). Inspired by a user-provided year-at-a-
+  glance reference design.
+- **Notification bell** — top-right floating button. Computes notifs
+  client-side from `holidaysDoc.log` filtered by viewer relationship:
+  (a) line managers see every change to any direct report's calendar
+  not authored by themselves; (b) employees see every change their
+  own line manager made to their calendar. One change = one notif.
+  Click → marks seen (new worker action `seen-event` writes to a new
+  `holidays-seen.json`), closes panel, scrolls to the cell with a
+  brass pulse for ~6 s.
+- **`?user=&date=` deep link** — `holidays.html?user=<email>&
+  date=<YYYY-MM-DD>` opens the page, selects the user, scrolls to
+  the day, pulses it. Notifications generate exactly this URL.
+- **Picker + stats moved** — admin "Calendar for…" picker now sits
+  at the bottom of My Calendar (was in the header); hidden entirely
+  on Team and Activity tabs and for non-admins. "Holiday days marked
+  this year" stat hidden on Team / Activity. "holidays.json updated"
+  timestamp moved to its own footer at the bottom of the page.
+- **Log filter widened** — My-view change log now includes any change
+  the viewer made on any calendar in addition to changes on the
+  selected calendar. Fixes the "I edited Amber's June 18 from my own
+  tab but it doesn't appear in my log" report.
+- **Note input fix** — popover's mouseenter hover-toggle dropped (was
+  making the note field disappear as users moved the mouse toward
+  it). Note input now sticky-visible while the picker is open. Black
+  triangle in the top-right corner indicates a saved note on the
+  two part-day status cells; hovering the cell reveals the note in a
+  small paper-box tooltip.
+- **`fetchFreshJson` via api.github.com** — same helper as Wall.
+  raw.githubusercontent.com CDN caches per file path and ignores
+  `?ts=` cache-busters, so a save-then-refresh was occasionally
+  showing the pre-save state. api.github.com reflects the latest
+  commit immediately.
+
+### Directory + new `user.html`
+
+- **`user.html?email=…`** — new public-feeling profile page: avatar,
+  name, address, line manager. Line manager rendered as a link to
+  their own profile.
+- **Directory entry → user.html** — small `↗` chip next to each
+  entry's name in the list. Click delegation honours the chip
+  before the row's open-modal handler.
+- **Modal "View profile" link** — in the directory edit card.
+- **Holidays name links → user.html** — every user-name render on
+  the Holidays page (header, team view, activity view, change log)
+  wraps in a `tb-profile-link` to `user.html?email=…`.
+
+### Worker + infra
+
+- New actions, all author/admin-gated as appropriate:
+  `wall/edit`, `wall/poll-vote`, `wall/seen-event`,
+  `holidays/seen-event`.
+- New JSON files committed by the worker: `holidays-seen.json`,
+  `wall-seen.json` already existed.
+- New Cloudflare Access app `book-wall-media-public` scoped to
+  `book.togetherbook.net/wall-media/*` with a Bypass policy
+  (everyone, no auth). Lets `<img src>` requests succeed without
+  depending on the CF_AppSession cookie attaching cross-origin.
+- New deploy helper documented in `CLAUDE.md` §4:
+  `python3 ~/.togetherbook/deploy_worker.py`. Inherits the worker's
+  existing bindings via the Cloudflare API token in
+  `~/.togetherbook/cloudflare.json`. No manual paste needed for
+  routine edits.
+
+### Activity scanner (`scripts/scan_staff_activity_buckets.py`)
+
+- **Messages-only CRM filter** — bucket-scanner now adds
+  `ClientType LIKE '%CRM%'` to the
+  `ReportingCommunications.dbo.Messages` query (not to other
+  tables). Without it, MessageFactory / Whitebox / RobotResponder
+  sends tagged with a human's `ClientUsername` were inflating that
+  human's activity bar.
+- **JSON → D1 sync** — scanner now POSTs the rebuilt buckets +
+  events into D1's `activity_buckets` / `activity_events` tables.
+  The D1 tables had been hand-seeded once and never refreshed by
+  any scanner; so changes to the JSON were silently invisible to
+  the worker's `/api/workspace/activity` reads. Workflow passes
+  the Cloudflare secrets to this step.
+
+---
+
 ## 17. Pending / blocked work
 
 | Item | Status | Blocker |
