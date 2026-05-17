@@ -3796,6 +3796,161 @@
       panel.classList.remove("is-open");
     }
   });
+
+  // ── Wall search ─────────────────────────────────────────────────────
+  // Magnifier opens a full-width bar that scans every loaded post body,
+  // comment, and reply. Results render Google-style below the bar; click
+  // jumps to the post via the existing jumpToPost flow (passing commentId
+  // when the hit is on a comment / reply so the row gets the flash).
+  const searchBtn    = document.getElementById("wlSearchBtn");
+  const searchBar    = document.getElementById("wlSearchBar");
+  const searchInput  = document.getElementById("wlSearchInput");
+  const searchClose  = document.getElementById("wlSearchClose");
+  const searchPanel  = document.getElementById("wlSearchPanel");
+  const searchAnchor = document.querySelector(".wl-search-anchor");
+  const notifAnchor  = document.querySelector(".wl-notif-anchor");
+  searchBtn.innerHTML = icon("search");
+  document.getElementById("wlSearchIcon").outerHTML      = `<span class="wl-icon-slot">${icon("search")}</span>`;
+  document.getElementById("wlSearchCloseIcon").outerHTML = `<span class="wl-icon-slot">${icon("close")}</span>`;
+
+  function openWallSearch() {
+    searchBar.classList.add("is-open");
+    searchAnchor.style.display = "none";
+    notifAnchor.style.display  = "none";
+    searchInput.value = "";
+    searchPanel.classList.remove("is-open");
+    searchPanel.innerHTML = "";
+    requestAnimationFrame(() => searchInput.focus());
+  }
+  function closeWallSearch() {
+    searchBar.classList.remove("is-open");
+    searchPanel.classList.remove("is-open");
+    searchPanel.innerHTML = "";
+    searchAnchor.style.display = "";
+    notifAnchor.style.display  = "";
+  }
+  searchBtn.addEventListener("click", e => { e.stopPropagation(); openWallSearch(); });
+  searchClose.addEventListener("click", e => { e.stopPropagation(); closeWallSearch(); });
+  document.addEventListener("keydown", e => {
+    if (e.key === "Escape" && searchBar.classList.contains("is-open")) {
+      closeWallSearch();
+    }
+  });
+
+  function searchWall(rawQuery) {
+    const needle = rawQuery.trim().toLowerCase();
+    if (!needle) return [];
+    const out = [];
+    for (const post of posts) {
+      const pbody = String(post.body || "");
+      if (pbody.toLowerCase().includes(needle)) {
+        out.push({
+          kind: "post",
+          post_id: post.id,
+          comment_id: null,
+          author_email: post.author_email,
+          author_name: post.author_name,
+          at: post.created_at,
+          body: pbody,
+        });
+      }
+      for (const c of (post.comments || [])) {
+        const cbody = String(c.body || "");
+        if (!cbody) continue;
+        if (cbody.toLowerCase().includes(needle)) {
+          out.push({
+            kind: c.parent_comment_id ? "reply" : "comment",
+            post_id: post.id,
+            comment_id: c.id,
+            author_email: c.author_email,
+            author_name: c.author_name,
+            at: c.created_at,
+            body: cbody,
+            on_post_by: post.author_email,
+          });
+        }
+      }
+    }
+    out.sort((a, b) => (a.at < b.at ? 1 : -1));
+    return out;
+  }
+
+  function snippetWithHighlight(body, needle, radius) {
+    radius = radius || 90;
+    const lower = body.toLowerCase();
+    const idx = lower.indexOf(needle);
+    if (idx < 0) return escapeHtml(body.slice(0, radius * 2));
+    const start = Math.max(0, idx - radius);
+    const end   = Math.min(body.length, idx + needle.length + radius);
+    const prefix = start > 0 ? "…" : "";
+    const suffix = end < body.length ? "…" : "";
+    return prefix
+      + escapeHtml(body.slice(start, idx))
+      + "<mark>" + escapeHtml(body.slice(idx, idx + needle.length)) + "</mark>"
+      + escapeHtml(body.slice(idx + needle.length, end))
+      + suffix;
+  }
+
+  function renderSearchResults(rawQuery) {
+    const q = rawQuery.trim();
+    if (!q) {
+      searchPanel.classList.remove("is-open");
+      searchPanel.innerHTML = "";
+      return;
+    }
+    const needle = q.toLowerCase();
+    const results = searchWall(q);
+    searchPanel.classList.add("is-open");
+    if (!results.length) {
+      searchPanel.innerHTML = `<div class="wl-search-empty">No posts, comments, or replies match “${escapeHtml(q)}”.</div>`;
+      return;
+    }
+    const KIND_LABEL = { post: "Post", comment: "Comment", reply: "Reply" };
+    const meta = `<div class="wl-search-meta">${results.length} result${results.length === 1 ? "" : "s"} for “${escapeHtml(q)}”</div>`;
+    const items = results.slice(0, 100).map(r => {
+      const author = displayName(r.author_email, r.author_name);
+      const when = r.at
+        ? new Date(r.at).toLocaleString("en-GB", { day: "numeric", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit" })
+        : "";
+      const kind = KIND_LABEL[r.kind];
+      let cite = `${escapeHtml(kind)} by ${escapeHtml(author)}`;
+      if ((r.kind === "comment" || r.kind === "reply") && r.on_post_by) {
+        cite += ` on ${escapeHtml(displayName(r.on_post_by, ""))}'s post`;
+      }
+      if (when) cite += ` · ${escapeHtml(when)}`;
+      const snippet = snippetWithHighlight(r.body, needle);
+      return `<a class="wl-search-result" href="#post-${escapeHtml(r.post_id)}"
+                 data-search-post="${escapeHtml(r.post_id)}"
+                 data-search-comment="${escapeHtml(r.comment_id || "")}">
+        <div class="wl-search-result-head">${escapeHtml(author)} — ${escapeHtml(kind)}</div>
+        <div class="wl-search-result-cite">${cite}</div>
+        <div class="wl-search-result-snippet">${snippet}</div>
+      </a>`;
+    }).join("");
+    searchPanel.innerHTML = meta + items;
+    searchPanel.querySelectorAll("[data-search-post]").forEach(a => {
+      a.addEventListener("click", e => {
+        e.preventDefault();
+        const postId = a.dataset.searchPost;
+        const commentId = a.dataset.searchComment || null;
+        closeWallSearch();
+        jumpToPost(postId, commentId ? { commentId } : undefined);
+      });
+    });
+  }
+
+  let searchDebounce = 0;
+  searchInput.addEventListener("input", () => {
+    clearTimeout(searchDebounce);
+    searchDebounce = setTimeout(() => renderSearchResults(searchInput.value), 80);
+  });
+  searchInput.addEventListener("keydown", e => {
+    if (e.key === "Enter") {
+      e.preventDefault();
+      clearTimeout(searchDebounce);
+      renderSearchResults(searchInput.value);
+    }
+  });
   document.getElementById("wlNotifMark").addEventListener("click", async () => {
     if (!viewerEmail) return;
     const now = new Date().toISOString();
