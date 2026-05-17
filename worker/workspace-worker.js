@@ -1643,7 +1643,10 @@ function validatePeopleFile(file) {
       seenSlugs.add(slug);
     }
     if (!(p.name || "").trim()) errs.push(`Person #${p.id} has empty name`);
-    if (p.line_manager_id === p.id) errs.push(`Person #${p.id} is its own line_manager`);
+    // Skip self-line-manager check when id is missing — otherwise we
+    // emit a misleading "Person #undefined is its own line_manager"
+    // alongside the primary "bad id" error.
+    if (p.id != null && p.line_manager_id === p.id) errs.push(`Person #${p.id} is its own line_manager`);
   }
   // FK integrity: line_manager_id must resolve.
   for (const p of file.people || []) {
@@ -2116,8 +2119,10 @@ function validateGoogleAccountsFile(file) {
     if (!Number.isInteger(r.id) || r.id <= 0) errs.push(`GoogleAccount has bad id: ${r.id}`);
     else if (seen.has(r.id)) errs.push(`duplicate GoogleAccount id ${r.id}`);
     else seen.add(r.id);
-    if (r.tenant && !["letme","together","external"].includes(r.tenant)) {
-      errs.push(`GoogleAccount #${r.id} bad tenant ${r.tenant}`);
+    // Strict check — null/missing tenant is just as bad as a typo.
+    // Earlier `r.tenant && ...` short-circuited on falsy tenant.
+    if (!["letme", "together", "external"].includes(r.tenant)) {
+      errs.push(`GoogleAccount #${r.id} bad/missing tenant: ${r.tenant === undefined ? "(missing)" : JSON.stringify(r.tenant)}`);
     }
     const email = (r.email || "").toLowerCase();
     if (email && seenEmails.has(email)) errs.push(`duplicate GoogleAccount email ${email}`);
