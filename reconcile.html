@@ -299,11 +299,11 @@
 
   Promise.all([
     fetch("/api/workspace/whoami",    { cache: "no-store" }).then(r => r.ok ? r.json() : null).catch(() => null),
-    fetch("/people.json",             { cache: "no-store" }).then(r => r.ok ? r.json() : null).catch(() => null),
-    fetch("/staff.json",              { cache: "no-store" }).then(r => r.ok ? r.json() : null).catch(() => null),
-    fetch("/google-accounts.json",    { cache: "no-store" }).then(r => r.ok ? r.json() : null).catch(() => null),
-    fetch("/warehouse-activity.json", { cache: "no-store" }).then(r => r.ok ? r.json() : null).catch(() => null),
-    fetch("/payroll-data.json",       { cache: "no-store" }).then(r => r.ok ? r.json() : null).catch(() => null),
+    fetch("/people.json?_=" + Date.now(),             { cache: "no-store" }).then(r => r.ok ? r.json() : null).catch(() => null),
+    fetch("/staff.json?_=" + Date.now(),              { cache: "no-store" }).then(r => r.ok ? r.json() : null).catch(() => null),
+    fetch("/google-accounts.json?_=" + Date.now(),    { cache: "no-store" }).then(r => r.ok ? r.json() : null).catch(() => null),
+    fetch("/warehouse-activity.json?_=" + Date.now(), { cache: "no-store" }).then(r => r.ok ? r.json() : null).catch(() => null),
+    fetch("/payroll-data.json?_=" + Date.now(),       { cache: "no-store" }).then(r => r.ok ? r.json() : null).catch(() => null),
   ]).then(([who, peopleFile, staff, gaccounts, warehouse, payroll]) => {
     if (who) { viewerEmail = (who.email||"").toLowerCase(); isAdmin = !!who.is_admin; }
     if (staff && Array.isArray(staff.users)) for (const u of staff.users) { const k = (u.email||"").toLowerCase(); if (k) staffByEmail[k] = u; }
