@@ -2307,6 +2307,7 @@ blue mention chip exactly as in the original.
 | UK Bank Holidays after 2027 | Hard-coded for 2026-04 → 2027-03 | When the fiscal year rolls over, append next year's BHs to the `UK_BANK_HOLIDAYS` Set in `holidays.html`. |
 | Sanitisation pass | Not done | Cloudflare Access reduces urgency but internal hostnames + payment partners + employee email pattern are still in the public-mirror copy. |
 | Auth0 Directory chip — secrets | Code shipped 2026-05-17 (commit `014e171`); awaiting secrets | User needs to (a) create a Management API M2M app at https://manage.auth0.com/#/apis with `read:users` scope only, (b) paste `AUTH0_CLIENT_ID` + `AUTH0_CLIENT_SECRET` into the repo secrets, (c) `gh workflow run refresh-auth0.yml --ref main`. Until done, every Directory row renders without the AUTH0 chip and the header banner omits the count. |
+| Profile-page editor coverage | UI gap, not schema gap | After retiring the Directory inline-expand form on 2026-05-17 (commit `95304a3`), `profile.js` covers Role / Phone / Address / Line manager / Access level / Auth0 ID / Google accounts / Payroll editors. **Still missing editors** for: Display name, Aliases, Start date, Notes, External Google, Suspend toggle, Delete person, Add alt account. All fields live in `people.json` + the worker's `PEOPLE_ALLOWED_FIELDS` whitelist — they just need wiring on the profile page. |
 
 ---
 
