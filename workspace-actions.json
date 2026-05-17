@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "updated_at": "2026-05-14T22:19:51.054Z",
+  "updated_at": "2026-05-17T20:24:41.152Z",
   "actions": [
     {
       "ts": "2026-05-13T20:27:39.210Z",
@@ -2347,6 +2347,13 @@
       "actor": "james.benamor@letme.com",
       "action": "convert-to-group",
       "target": "autobots@rapida.bg",
+      "ok": true
+    },
+    {
+      "ts": "2026-05-17T20:24:41.152Z",
+      "actor": "james.benamor@letme.com",
+      "action": "people-merge",
+      "target": "5 → 4",
       "ok": true
     }
   ]
