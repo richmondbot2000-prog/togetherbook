@@ -342,6 +342,45 @@ a.up-fp-open:hover { text-decoration: underline; }
   width: 100%; height: 100%;
   border: 0;
 }
+/* OG link preview — same shape as wall.html's .wl-link-preview so a
+   bare URL in a post body renders with a thumbnail + title + desc,
+   hydrated lazily via /api/wall/link-preview. */
+.up-fp-linkprev {
+  display: flex; gap: 12px;
+  margin: 8px 0 4px;
+  padding: 8px;
+  border: 1px solid var(--paper-300, #ECDFB6);
+  background: var(--paper-50, white);
+  text-decoration: none; color: inherit;
+  overflow: hidden;
+}
+.up-fp-linkprev:hover { border-color: var(--brass-500, #C8973F); }
+.up-fp-linkprev-thumb {
+  flex: 0 0 120px; height: 90px;
+  background: var(--paper-200, #F5ECD4);
+  overflow: hidden;
+  display: flex; align-items: center; justify-content: center;
+}
+.up-fp-linkprev-thumb img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.up-fp-linkprev-empty {
+  font: 500 11px/1.2 var(--font-body); color: var(--ink-500);
+  text-align: center; padding: 4px;
+}
+.up-fp-linkprev-body { flex: 1 1 auto; min-width: 0; display: flex; flex-direction: column; gap: 3px; }
+.up-fp-linkprev-host {
+  font: 600 10px/1.2 var(--font-mono, monospace); color: var(--ink-500);
+  text-transform: uppercase; letter-spacing: 0.04em;
+}
+.up-fp-linkprev-title {
+  font: 600 14px/1.3 var(--font-body); color: var(--ink-900);
+  overflow: hidden; text-overflow: ellipsis;
+  display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical;
+}
+.up-fp-linkprev-desc {
+  font: 400 12px/1.4 var(--font-body); color: var(--ink-600);
+  overflow: hidden; text-overflow: ellipsis;
+  display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical;
+}
 .up-fp-media {
   margin: 6px -16px;
   background: var(--paper-200);
