@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "updated_at": "2026-05-17T08:21:25.644Z",
+  "updated_at": "2026-05-17T08:21:28.764Z",
   "posts": [
     {
       "id": "post_mp9hztyf_8qihso",
@@ -10,7 +10,11 @@
       "body": "New Together Loans review on You Tube. Interesting that is is very low quality. The script is AI generated from a very simple prompt, the voice is robotic, and the visual is just a screen record of someone clicking around the website. They read a random TrustPilot review too. Really nothing of any value here, but It strikes me that this could be done much, much better.\n\nhttps://youtu.be/5DpNjs8GR88?si=0Ldb_lXCJvCX6m95",
       "photos": [],
       "channel": null,
-      "reactions": {},
+      "reactions": {
+        "👍": [
+          "james.benamor@letme.com"
+        ]
+      },
       "comments": [],
       "react_events": [
         {
@@ -92,6 +96,14 @@
           "target_id": "post_mp9hztyf_8qihso",
           "at": "2026-05-17T08:21:25.492Z",
           "kind": "removed"
+        },
+        {
+          "actor_email": "james.benamor@letme.com",
+          "emoji": "👍",
+          "target_kind": "post",
+          "target_id": "post_mp9hztyf_8qihso",
+          "at": "2026-05-17T08:21:28.609Z",
+          "kind": "added"
         }
       ]
     },
