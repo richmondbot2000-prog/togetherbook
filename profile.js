@@ -1283,6 +1283,10 @@
   }
   function postPhotoUrl(p) {
     if (!p) return "";
+    // wall.json post schema stores attached media as `photos: [path, …]`
+    // (paths relative to the site root, e.g. wall-media/img_…jpg).
+    // Older legacy variants used `p.media.url` or `p.photo_url`.
+    if (Array.isArray(p.photos) && p.photos[0]) return "/" + String(p.photos[0]).replace(/^\/+/, "");
     if (p.media && p.media.url) return p.media.url;
     if (p.photo_url) return p.photo_url;
     return "";
@@ -1303,8 +1307,17 @@
       const body = escapeHtml(plainBody(p.body));
       const mediaUrl = postPhotoUrl(p);
       const mediaHtml = mediaUrl ? `<div class="up-fp-media"><img src="${escapeHtml(mediaUrl)}" alt="" loading="lazy"></div>` : "";
-      const commentN = Array.isArray(p.comments) ? p.comments.length : 0;
-      const reactN = (p.reactions || []).reduce((s, r) => s + (r.count || (r.users && r.users.length) || 0), 0);
+      // Comments here = top-level comments on the post; ignore replies
+      // for the preview meta line so the count matches what the Wall
+      // page surfaces under each post.
+      const commentN = Array.isArray(p.comments)
+        ? p.comments.filter(c => !c.parent_comment_id).length
+        : 0;
+      // wall.json schema: reactions is a dict keyed by emoji, with each
+      // value an array of reactor emails. Total = sum of array lengths.
+      // (The old `[{count, users}]` shape never existed in this repo.)
+      const reactN = Object.values(p.reactions || {})
+        .reduce((s, arr) => s + (Array.isArray(arr) ? arr.length : 0), 0);
       const meta = [
         commentN ? `${commentN} comment${commentN === 1 ? "" : "s"}` : "",
         reactN   ? `${reactN} reaction${reactN === 1 ? "" : "s"}` : "",
