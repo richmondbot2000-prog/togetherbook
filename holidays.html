@@ -625,11 +625,7 @@
   }
 
   /* ── Mobile team view (≤720 px) ──────────────────────────────────
-     Same per-month matrix as desktop, just compressed. Centered title,
-     subtle colours, no gridlines — the visual cleanup applies on both
-     widths. The alternative mobile container (.hd-team-mobile) is left
-     hidden; the desktop matrix scales down. */
-  .hd-team-mobile { display: none !important; }
+     Same per-month matrix as desktop, just compressed. */
   @media (max-width: 720px) {
     .hd-team-month-dow,
     .hd-team-month-dates,
@@ -1018,13 +1014,9 @@
       </div>
     </div>
     <div id="hdTeamView" style="display:none;">
-      <!-- Desktop layout (≥721 px): wide horizontal month grid with names
-           in a 180 px left column. -->
+      <!-- One matrix at any width — desktop and mobile share the same
+           layout, just compressed via @media. -->
       <div class="hd-team" id="hdTeam" role="grid" aria-label="Team calendar strip"></div>
-      <!-- Mobile layout (≤720 px): one block per person with a full-width
-           name header + per-week 7-cell strips. Both are populated by
-           renderTeam(); CSS shows whichever fits the viewport. -->
-      <div class="hd-team-mobile" id="hdTeamMobile" role="grid" aria-label="Team calendar strip (mobile)"></div>
     </div>
     <div id="hdActivityView" style="display:none;">
       <div class="hd-act-toolbar">
@@ -1817,142 +1809,6 @@
     // (Mobile layout now reuses the same desktop matrix via CSS
     // overrides; renderTeamMobile() is no longer called.)
   }
-
-  // Mobile-only stacked layout. One block per direct report; inside each
-  // block, the year breaks into Sun-anchored week strips of 7 cells that
-  // span the full viewport width. A sticky S-M-T-W-T-F-S header at the
-  // top keeps the column meaning anchored as you scroll.
-  function renderTeamMobile() {
-    const root = document.getElementById("hdTeamMobile");
-    if (!root) return;
-    root.innerHTML = "";
-    if (directReports.size === 0) {
-      root.innerHTML = `<div class="hd-team-empty">You have no direct reports on file. Have admins set you as someone's line manager on the Directory page.</div>`;
-      return;
-    }
-    const reports = [...directReports]
-      .map(e => ({ email: e, user: staffByEmail[e] || { email: e, name: e } }))
-      .sort((a, b) => (a.user.name || a.email).localeCompare(b.user.name || b.email));
-
-    // Sticky day-of-week header.
-    const dow = document.createElement("div");
-    dow.className = "hd-team-mobile-dow";
-    ["S","M","T","W","T","F","S"].forEach((d, i) => {
-      const c = document.createElement("div");
-      c.textContent = d;
-      if (i === 0 || i === 6) c.classList.add("is-weekend-dow");
-      dow.appendChild(c);
-    });
-    root.appendChild(dow);
-
-    // Build the Sun-anchored week list spanning the fiscal year.
-    const weeks = [];
-    const firstSun = new Date(yearStart);
-    firstSun.setDate(firstSun.getDate() - firstSun.getDay());
-    for (let d = new Date(firstSun); d <= yearEnd; d.setDate(d.getDate() + 7)) {
-      const wk = [];
-      for (let i = 0; i < 7; i++) {
-        const dd = new Date(d);
-        dd.setDate(dd.getDate() + i);
-        wk.push(dd);
-      }
-      weeks.push(wk);
-    }
-
-    const today = new Date(); today.setHours(0, 0, 0, 0);
-    const todayIso = isoDate(today);
-
-    for (const r of reports) {
-      const person = document.createElement("div");
-      person.className = "hd-team-mobile-person";
-      person.dataset.email = r.email;
-      const onPayroll = isOnPayroll(r.email);
-      if (!onPayroll) person.classList.add("is-not-on-payroll");
-
-      const name = document.createElement("div");
-      name.className = "hd-team-mobile-name";
-      name.innerHTML = profileLink(r.email, r.user.name || r.email);
-      person.appendChild(name);
-
-      const userMap = (holidaysDoc.by_user || {})[r.email] || {};
-      const dayMap = userMap.days || {};
-      const noteMap = userMap.notes || {};
-
-      let lastMonthShown = -1;
-      let lastYearShown = -1;
-      for (const week of weeks) {
-        // Skip weeks entirely outside the fiscal year.
-        if (week[6] < yearStart || week[0] > yearEnd) continue;
-
-        // Month divider when the first in-year day of this week starts a
-        // new calendar month.
-        const firstInYear = week.find(d => d >= yearStart && d <= yearEnd);
-        if (firstInYear && (firstInYear.getMonth() !== lastMonthShown || firstInYear.getFullYear() !== lastYearShown)) {
-          lastMonthShown = firstInYear.getMonth();
-          lastYearShown = firstInYear.getFullYear();
-          const ml = document.createElement("div");
-          ml.className = "hd-team-mobile-month";
-          ml.textContent = firstInYear.toLocaleDateString("en-GB", { month: "long", year: "numeric" });
-          person.appendChild(ml);
-        }
-
-        const wkRow = document.createElement("div");
-        wkRow.className = "hd-team-mobile-week";
-        for (const d of week) {
-          const cell = document.createElement("div");
-          cell.className = "hd-team-cell";
-          const inYear = d >= yearStart && d <= yearEnd;
-          if (!inYear) {
-            cell.classList.add("is-pad");
-            wkRow.appendChild(cell);
-            continue;
-          }
-          const iso = isoDate(d);
-          const stored = dayMap[iso];
-          const dowi = d.getDay();
-          const isWeekend = (dowi === 0 || dowi === 6);
-          const isBh = UK_BANK_HOLIDAYS.has(iso);
-          cell.dataset.date = iso;
-          if (stored) {
-            cell.dataset.status = stored;
-            if (STATUS_MARK[stored]) cell.dataset.mark = STATUS_MARK[stored];
-          } else if (isWeekend) {
-            cell.classList.add("is-weekend-default");
-          } else if (isBh) {
-            cell.classList.add("is-bh-default");
-            cell.dataset.defaultBh = "1";
-          } else {
-            cell.dataset.status = "office";
-          }
-          if (noteMap[iso]) cell.classList.add("has-note");
-          if (iso === todayIso) cell.classList.add("is-today");
-
-          // Day-of-month number tucked top-right of the cell so the
-          // viewer can tell Tue 12 from Tue 19 on a small screen.
-          const dnum = document.createElement("span");
-          dnum.className = "hd-team-mobile-daynum";
-          dnum.textContent = d.getDate();
-          cell.appendChild(dnum);
-
-          const human = d.toLocaleDateString("en-GB", { weekday: "short", day: "numeric", month: "short" });
-          cell.title = `${r.user.name || r.email} · ${human}` +
-            (stored ? ` · ${STATUS_LABEL[stored] || stored}` :
-              (isBh ? " · UK Bank Holiday" :
-                (isWeekend ? " · Weekend" : "")));
-          if (onPayroll) {
-            cell.addEventListener("click", e => {
-              e.stopPropagation();
-              openTeamPicker(cell, d, r.email);
-            });
-          }
-          wkRow.appendChild(cell);
-        }
-        person.appendChild(wkRow);
-      }
-      root.appendChild(person);
-    }
-  }
-
   // ── Activity view ─────────────────────────────────────────────────
   // Renders a 14-day strip per direct report. Each day = a vertical
   // 24-hour bar; thin horizontal ticks at active 15-min positions.
