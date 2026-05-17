@@ -1,7 +1,7 @@
 {
   "schema_version": 2,
-  "updated_at": "2026-05-16T00:05:07.628321Z",
-  "snapshot_date": "2026-05-16",
+  "updated_at": "2026-05-17T07:43:14.545218Z",
+  "snapshot_date": "2026-05-17",
   "domain": "letme.co.uk",
   "tenants": [
     {
@@ -16,19 +16,19 @@
       "name": "togetherloans",
       "domain": "togetherloans.com",
       "delegate": "james.benamor@togetherloans.com",
-      "users": 128,
+      "users": 129,
       "suspended_hidden": 1,
       "error": null
     }
   ],
   "totals": {
-    "users": 194,
+    "users": 195,
     "suspended_hidden": 1,
     "by_department": {
-      "(unspecified)": 194
+      "(unspecified)": 195
     },
     "by_tenant": {
-      "togetherloans": 128,
+      "togetherloans": 129,
       "letme.co.uk": 66
     }
   },
@@ -196,7 +196,7 @@
       "suspended": false,
       "admin": false,
       "deletion_time": "",
-      "last_login": "2026-05-13T15:04:02.000Z",
+      "last_login": "2026-05-15T22:54:07.000Z",
       "tenant": "togetherloans",
       "tenants": [
         "togetherloans"
@@ -404,7 +404,7 @@
       "suspended": false,
       "admin": false,
       "deletion_time": "",
-      "last_login": "2026-05-14T12:33:29.000Z",
+      "last_login": "2026-05-15T12:06:28.000Z",
       "tenant": "togetherloans",
       "tenants": [
         "togetherloans"
@@ -542,7 +542,7 @@
       "suspended": false,
       "admin": false,
       "deletion_time": "",
-      "last_login": "2026-05-14T14:02:53.000Z",
+      "last_login": "2026-05-14T19:38:35.000Z",
       "tenant": "letme.co.uk",
       "tenants": [
         "letme.co.uk"
@@ -696,7 +696,7 @@
       "suspended": false,
       "admin": false,
       "deletion_time": "",
-      "last_login": "2026-05-14T08:21:39.000Z",
+      "last_login": "2026-05-15T08:34:29.000Z",
       "tenant": "letme.co.uk",
       "tenants": [
         "letme.co.uk"
@@ -716,7 +716,7 @@
       "suspended": false,
       "admin": false,
       "deletion_time": "",
-      "last_login": "2026-05-14T16:04:53.000Z",
+      "last_login": "2026-05-14T17:07:00.000Z",
       "tenant": "togetherloans",
       "tenants": [
         "togetherloans"
@@ -957,7 +957,7 @@
       "suspended": false,
       "admin": false,
       "deletion_time": "",
-      "last_login": "2026-05-12T10:10:25.000Z",
+      "last_login": "2026-05-15T21:13:12.000Z",
       "tenant": "togetherloans",
       "tenants": [
         "togetherloans"
@@ -1033,7 +1033,7 @@
       "suspended": false,
       "admin": true,
       "deletion_time": "",
-      "last_login": "2026-05-13T22:03:13.000Z",
+      "last_login": "2026-05-16T15:16:56.000Z",
       "tenant": "letme.co.uk",
       "tenants": [
         "letme.co.uk"
@@ -1153,7 +1153,7 @@
       "suspended": false,
       "admin": false,
       "deletion_time": "",
-      "last_login": "2026-05-14T10:42:55.000Z",
+      "last_login": "2026-05-14T20:39:58.000Z",
       "tenant": "togetherloans",
       "tenants": [
         "togetherloans"
@@ -1193,7 +1193,7 @@
       "suspended": false,
       "admin": false,
       "deletion_time": "",
-      "last_login": "2026-05-04T09:03:25.000Z",
+      "last_login": "2026-05-14T15:05:39.000Z",
       "tenant": "togetherloans",
       "tenants": [
         "togetherloans"
@@ -1341,7 +1341,7 @@
       "suspended": false,
       "admin": false,
       "deletion_time": "",
-      "last_login": "2026-05-13T10:09:27.000Z",
+      "last_login": "2026-05-15T12:55:52.000Z",
       "tenant": "letme.co.uk",
       "tenants": [
         "letme.co.uk"
@@ -1361,7 +1361,7 @@
       "suspended": false,
       "admin": false,
       "deletion_time": "",
-      "last_login": "2026-05-14T16:12:28.000Z",
+      "last_login": "2026-05-15T09:41:40.000Z",
       "tenant": "togetherloans",
       "tenants": [
         "togetherloans"
@@ -2200,7 +2200,7 @@
       "suspended": false,
       "admin": false,
       "deletion_time": "",
-      "last_login": "2026-05-09T18:10:59.000Z",
+      "last_login": "2026-05-14T21:14:20.000Z",
       "tenant": "togetherloans",
       "tenants": [
         "togetherloans"
@@ -2248,7 +2248,7 @@
       "suspended": false,
       "admin": false,
       "deletion_time": "",
-      "last_login": "2026-05-12T23:46:55.000Z",
+      "last_login": "2026-05-15T00:53:46.000Z",
       "tenant": "letme.co.uk",
       "tenants": [
         "letme.co.uk"
@@ -2268,7 +2268,7 @@
       "suspended": false,
       "admin": false,
       "deletion_time": "",
-      "last_login": "2026-05-14T14:10:56.000Z",
+      "last_login": "2026-05-15T00:53:46.000Z",
       "tenant": "togetherloans",
       "tenants": [
         "togetherloans"
@@ -2288,7 +2288,7 @@
       "suspended": false,
       "admin": false,
       "deletion_time": "",
-      "last_login": "2026-05-14T05:10:46.000Z",
+      "last_login": "2026-05-15T09:20:13.000Z",
       "tenant": "togetherloans",
       "tenants": [
         "togetherloans"
@@ -2344,7 +2344,7 @@
       "suspended": false,
       "admin": false,
       "deletion_time": "",
-      "last_login": "2026-05-14T10:23:31.000Z",
+      "last_login": "2026-05-15T12:56:00.000Z",
       "tenant": "letme.co.uk",
       "tenants": [
         "letme.co.uk"
@@ -2593,7 +2593,7 @@
       "suspended": false,
       "admin": false,
       "deletion_time": "",
-      "last_login": "2022-04-24T09:22:14.000Z",
+      "last_login": "2026-05-15T09:24:16.000Z",
       "tenant": "letme.co.uk",
       "tenants": [
         "letme.co.uk"
@@ -2641,7 +2641,7 @@
       "suspended": false,
       "admin": false,
       "deletion_time": "",
-      "last_login": "2026-05-14T16:05:48.000Z",
+      "last_login": "2026-05-15T12:37:03.000Z",
       "tenant": "letme.co.uk",
       "tenants": [
         "letme.co.uk"
@@ -2709,7 +2709,7 @@
       "suspended": false,
       "admin": false,
       "deletion_time": "",
-      "last_login": "2026-05-14T16:10:29.000Z",
+      "last_login": "2026-05-15T12:54:15.000Z",
       "tenant": "togetherloans",
       "tenants": [
         "togetherloans"
@@ -2965,7 +2965,7 @@
       "suspended": false,
       "admin": false,
       "deletion_time": "",
-      "last_login": "2026-05-14T12:59:03.000Z",
+      "last_login": "2026-05-15T13:02:41.000Z",
       "tenant": "togetherloans",
       "tenants": [
         "togetherloans"
@@ -3117,7 +3117,7 @@
       "suspended": false,
       "admin": false,
       "deletion_time": "",
-      "last_login": "2026-05-14T11:41:40.000Z",
+      "last_login": "2026-05-15T06:50:38.000Z",
       "tenant": "letme.co.uk",
       "tenants": [
         "letme.co.uk"
@@ -3144,6 +3144,26 @@
       ]
     },
     {
+      "id": "108937428105038308221",
+      "email": "anna.oviedo@togetherloans.com",
+      "aliases": [],
+      "aliases_editable": [],
+      "name": "Anna Oviedo",
+      "given": "Anna",
+      "family": "Oviedo",
+      "title": "",
+      "department": "",
+      "photo_url": "",
+      "suspended": false,
+      "admin": false,
+      "deletion_time": "",
+      "last_login": "1970-01-01T00:00:00.000Z",
+      "tenant": "togetherloans",
+      "tenants": [
+        "togetherloans"
+      ]
+    },
+    {
       "id": "108128137725943266994",
       "email": "eden.oxley@togetherloans.com",
       "aliases": [],
@@ -3157,7 +3177,7 @@
       "suspended": false,
       "admin": false,
       "deletion_time": "",
-      "last_login": "2026-05-12T14:03:13.000Z",
+      "last_login": "2026-05-15T22:52:44.000Z",
       "tenant": "togetherloans",
       "tenants": [
         "togetherloans"
@@ -3241,7 +3261,7 @@
       "suspended": false,
       "admin": false,
       "deletion_time": "",
-      "last_login": "2026-05-13T10:38:04.000Z",
+      "last_login": "2026-05-15T09:24:10.000Z",
       "tenant": "togetherloans",
       "tenants": [
         "togetherloans"
@@ -3286,7 +3306,7 @@
       "suspended": false,
       "admin": false,
       "deletion_time": "",
-      "last_login": "2026-05-14T11:46:33.000Z",
+      "last_login": "2026-05-15T12:08:53.000Z",
       "tenant": "letme.co.uk",
       "tenants": [
         "letme.co.uk"
@@ -3662,7 +3682,7 @@
       "suspended": false,
       "admin": false,
       "deletion_time": "",
-      "last_login": "2026-05-14T12:59:35.000Z",
+      "last_login": "2026-05-15T13:11:09.000Z",
       "tenant": "togetherloans",
       "tenants": [
         "togetherloans"
@@ -3770,7 +3790,7 @@
       "suspended": false,
       "admin": false,
       "deletion_time": "",
-      "last_login": "2026-05-13T12:53:06.000Z",
+      "last_login": "2026-05-14T16:45:40.000Z",
       "tenant": "togetherloans",
       "tenants": [
         "togetherloans"
@@ -3834,7 +3854,7 @@
       "suspended": false,
       "admin": false,
       "deletion_time": "",
-      "last_login": "2026-05-13T23:56:40.000Z",
+      "last_login": "2026-05-16T00:38:33.000Z",
       "tenant": "letme.co.uk",
       "tenants": [
         "letme.co.uk"
@@ -3874,7 +3894,7 @@
       "suspended": false,
       "admin": false,
       "deletion_time": "",
-      "last_login": "2026-05-13T16:02:18.000Z",
+      "last_login": "2026-05-15T12:44:36.000Z",
       "tenant": "togetherloans",
       "tenants": [
         "togetherloans"
@@ -3914,7 +3934,7 @@
       "suspended": false,
       "admin": false,
       "deletion_time": "",
-      "last_login": "2026-05-14T07:17:24.000Z",
+      "last_login": "2026-05-15T07:32:37.000Z",
       "tenant": "togetherloans",
       "tenants": [
         "togetherloans"
@@ -4022,7 +4042,7 @@
       "suspended": false,
       "admin": true,
       "deletion_time": "",
-      "last_login": "2026-05-14T15:27:43.000Z",
+      "last_login": "2026-05-15T10:31:33.000Z",
       "tenant": "togetherloans",
       "tenants": [
         "togetherloans"
@@ -4218,7 +4238,7 @@
       "suspended": false,
       "admin": false,
       "deletion_time": "",
-      "last_login": "2026-04-29T20:24:33.000Z",
+      "last_login": "2026-05-14T11:23:30.000Z",
       "tenant": "togetherloans",
       "tenants": [
         "togetherloans"
@@ -4334,7 +4354,7 @@
       "suspended": false,
       "admin": false,
       "deletion_time": "",
-      "last_login": "2026-05-12T16:19:09.000Z",
+      "last_login": "2026-05-14T21:49:47.000Z",
       "tenant": "togetherloans",
       "tenants": [
         "togetherloans"
@@ -4374,7 +4394,7 @@
       "suspended": false,
       "admin": false,
       "deletion_time": "",
-      "last_login": "2026-05-13T14:03:42.000Z",
+      "last_login": "2026-05-16T16:13:41.000Z",
       "tenant": "togetherloans",
       "tenants": [
         "togetherloans"
