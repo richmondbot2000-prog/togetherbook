@@ -340,9 +340,31 @@
         p.classList.add("active");
         if (f === "role")   activeRole   = v;
         if (f === "lender") activeLender = v;
+        syncFcUrl();
         renderFeed();
       });
     });
+    // Read initial state from URL + sync pill highlights to match.
+    try {
+      const qs = new URLSearchParams(location.search || "");
+      const r = qs.get("role");
+      const l = qs.get("lender");
+      if (r) activeRole = r;
+      if (l) activeLender = l;
+      document.querySelectorAll('.fc-pill[data-filter="role"]').forEach(b => b.classList.toggle("active", b.dataset.value === activeRole));
+      document.querySelectorAll('.fc-pill[data-filter="lender"]').forEach(b => b.classList.toggle("active", b.dataset.value === activeLender));
+      if (r || l) renderFeed();
+    } catch (e) { /* noop */ }
+  }
+  // Persist filter pills in the URL. Defaults stripped.
+  function syncFcUrl() {
+    try {
+      const url = new URL(location.href);
+      const set = (k, v) => v === "all" ? url.searchParams.delete(k) : url.searchParams.set(k, v);
+      set("role", activeRole);
+      set("lender", activeLender);
+      history.replaceState({}, "", url.toString());
+    } catch (e) { /* noop */ }
   }
 
   function renderWordCloud(words) {

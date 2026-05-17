@@ -340,9 +340,35 @@
       document.getElementById("cmMeta").textContent = "comms.json not loaded — " + err;
     });
 
-  document.getElementById("cmExcludeRR").addEventListener("change", renderAll);
-  document.getElementById("cmExcludeNoReply").addEventListener("change", renderAll);
-  document.getElementById("cmMetric").addEventListener("change", renderAll);
+  // Persist filter state in the URL so a shared link drops the recipient
+  // straight into the same view. Defaults stripped.
+  function syncCommsUrl() {
+    try {
+      const url = new URL(location.href);
+      const set = (k, v, def) => (v === def) ? url.searchParams.delete(k) : url.searchParams.set(k, String(v));
+      const rr = document.getElementById("cmExcludeRR");
+      const nr = document.getElementById("cmExcludeNoReply");
+      const me = document.getElementById("cmMetric");
+      if (rr) set("excludeRR", rr.checked ? "1" : "0", "1");
+      if (nr) set("excludeNoReply", nr.checked ? "1" : "0", "0");
+      if (me) set("metric", me.value, "median");
+      history.replaceState({}, "", url.toString());
+    } catch (e) { /* noop */ }
+  }
+  (function applyCommsUrl() {
+    try {
+      const qs = new URLSearchParams(location.search || "");
+      const rr = document.getElementById("cmExcludeRR");
+      const nr = document.getElementById("cmExcludeNoReply");
+      const me = document.getElementById("cmMetric");
+      if (qs.has("excludeRR") && rr)      rr.checked = qs.get("excludeRR") === "1";
+      if (qs.has("excludeNoReply") && nr) nr.checked = qs.get("excludeNoReply") === "1";
+      if (qs.has("metric") && me)         me.value   = qs.get("metric");
+    } catch (e) { /* noop */ }
+  })();
+  document.getElementById("cmExcludeRR").addEventListener("change", () => { syncCommsUrl(); renderAll(); });
+  document.getElementById("cmExcludeNoReply").addEventListener("change", () => { syncCommsUrl(); renderAll(); });
+  document.getElementById("cmMetric").addEventListener("change", () => { syncCommsUrl(); renderAll(); });
   document.getElementById("cmShuffle").addEventListener("click", renderSamples);
   document.getElementById("cmCsvLink").addEventListener("click", downloadFullCsv);
 
