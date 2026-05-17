@@ -3580,10 +3580,17 @@
   // image request succeeds without bouncing through the login page. GIPHY
   // URLs come through as absolute https:// already; pass those untouched.
   const MEDIA_BASE = "";
+  // Bump this when something changes about how wall-media is served (e.g.
+  // a new Cloudflare Access bypass). Cached failed responses for the un-
+  // suffixed URL won't apply to ?v=<n>, so browsers that latched onto a
+  // 302/404 from before the fix will issue a fresh request and succeed.
+  const MEDIA_CACHE_BUST = "v=2";
   function mediaUrl(path) {
     if (!path) return "";
     if (/^https?:/i.test(path)) return path;
-    return MEDIA_BASE + path.replace(/^\/+/, "");
+    const clean = path.replace(/^\/+/, "");
+    const sep = clean.includes("?") ? "&" : "?";
+    return MEDIA_BASE + clean + sep + MEDIA_CACHE_BUST;
   }
   function photoUrlFor(u) {
     if (!u || !u.email) return "";
