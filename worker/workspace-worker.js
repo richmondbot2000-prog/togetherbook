@@ -1708,17 +1708,23 @@ async function doPeopleSet(env, body, actor, isAdmin) {
     return { ok: false, error: "name is required for new people" };
   }
 
-  // One Google account per tenant rule. Letme (.co.uk + .com) counts
-  // as one tenant; Together is another; external Gmail is its own
-  // field. This applies to BOTH main_google_email and alt_google_emails.
-  const futureEmails = [
-    patch.main_google_email !== undefined ? patch.main_google_email : person.main_google_email,
-    ...(patch.alt_google_emails !== undefined ? patch.alt_google_emails : (person.alt_google_emails || [])),
-  ].filter(Boolean).map(e => e.toLowerCase());
-  const letme    = futureEmails.filter(e => e.endsWith("@letme.co.uk") || e.endsWith("@letme.com"));
-  const together = futureEmails.filter(e => e.endsWith("@togetherloans.com"));
-  if (letme.length > 1)    return { ok: false, error: `only one Letme Google account allowed per Person (would have ${letme.length}: ${letme.join(", ")})` };
-  if (together.length > 1) return { ok: false, error: `only one Together Google account allowed per Person (would have ${together.length}: ${together.join(", ")})` };
+  // One Google account per tenant rule — but only when the patch is
+  // actually changing the email fields. A people-set that only touches
+  // (say) cover_photo_uploaded_at shouldn't be blocked because the
+  // existing record happens to carry @letme.com + @letme.co.uk for
+  // dual-sign-in. The rule is a guard against accidental DUPLICATION
+  // via UI, not against existing legitimate multi-tenancy.
+  const touchingEmails = patch.main_google_email !== undefined || patch.alt_google_emails !== undefined;
+  if (touchingEmails) {
+    const futureEmails = [
+      patch.main_google_email !== undefined ? patch.main_google_email : person.main_google_email,
+      ...(patch.alt_google_emails !== undefined ? patch.alt_google_emails : (person.alt_google_emails || [])),
+    ].filter(Boolean).map(e => e.toLowerCase());
+    const letme    = futureEmails.filter(e => e.endsWith("@letme.co.uk") || e.endsWith("@letme.com"));
+    const together = futureEmails.filter(e => e.endsWith("@togetherloans.com"));
+    if (letme.length > 1)    return { ok: false, error: `only one Letme Google account allowed per Person (would have ${letme.length}: ${letme.join(", ")})` };
+    if (together.length > 1) return { ok: false, error: `only one Together Google account allowed per Person (would have ${together.length}: ${together.join(", ")})` };
+  }
   const accessChanged =
     patch.access_level !== undefined ||
     patch.suspended    !== undefined ||
