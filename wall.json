@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "updated_at": "2026-05-17T08:21:43.305Z",
+  "updated_at": "2026-05-17T16:48:39.932Z",
   "posts": [
     {
       "id": "post_mp9hztyf_8qihso",
@@ -252,6 +252,16 @@
               "james.benamor@letme.com"
             ]
           }
+        },
+        {
+          "id": "com_mpa0errz_f599ri",
+          "parent_comment_id": null,
+          "author_email": "mourad.malki@letme.com",
+          "author_name": "mourad.malki",
+          "created_at": "2026-05-17T16:48:39.455Z",
+          "body": "@berginie.botero I've built and launched an online training platform for new collections starters — it's now live and ready for you to test.  https://magical-beijinho-2915ca.netlify.app  The platform covers 11 modules across 5 days — from company overview and payout process through to misconduct standards, bankruptcies, and a final knowledge test. Answers are scored automatically by AI against our policies, and wrong answers go into a corrections queue for you to review before signing off an agent.  Your manager login password is: berginie2025  Please have a go through it and let me know your thoughts — anything you'd change, anything missing, or anything that doesn't read right. We have a new starter coming in and I'd like to get your sign-off on it before they begin.",
+          "photos": [],
+          "reactions": {}
         }
       ],
       "react_events": [
