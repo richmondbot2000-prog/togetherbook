@@ -1162,9 +1162,9 @@
 
   async function reloadAccountData() {
     const [staff, annFile, pending] = await Promise.all([
-      fetch("/staff.json",            { cache: "no-store" }).then(r => r.ok ? r.json() : null).catch(() => null),
-      fetch("/annotations.json",      { cache: "no-store" }).then(r => r.ok ? r.json() : null).catch(() => null),
-      fetch("/pending-transfers.json",{ cache: "no-store" }).then(r => r.ok ? r.json() : null).catch(() => null),
+      fetch("/staff.json",            { cache: "no-store", headers: { "Cache-Control": "no-cache, no-store, must-revalidate", "Pragma": "no-cache" } }).then(r => r.ok ? r.json() : null).catch(() => null),
+      fetch("/annotations.json",      { cache: "no-store", headers: { "Cache-Control": "no-cache, no-store, must-revalidate", "Pragma": "no-cache" } }).then(r => r.ok ? r.json() : null).catch(() => null),
+      fetch("/pending-transfers.json",{ cache: "no-store", headers: { "Cache-Control": "no-cache, no-store, must-revalidate", "Pragma": "no-cache" } }).then(r => r.ok ? r.json() : null).catch(() => null),
     ]);
     if (staff && Array.isArray(staff.users)) {
       staffByEmail = {};
@@ -1506,17 +1506,17 @@
 
   /* ─── Boot ────────────────────────────────────────────────────────── */
   Promise.all([
-    fetch("/people.json",           { cache: "no-store" }).then(r => r.ok ? r.json() : null).catch(() => null),
-    fetch("/staff.json",            { cache: "no-store" }).then(r => r.ok ? r.json() : null).catch(() => null),
-    fetch("/wall.json",             { cache: "no-store" }).then(r => r.ok ? r.json() : null).catch(() => null),
-    fetch("/api/workspace/payroll", { cache: "no-store" }).then(r => r.ok ? r.json() : null).catch(() => null),
-    fetch("/api/workspace/whoami",  { cache: "no-store" }).then(r => r.ok ? r.json() : null).catch(() => null),
-    fetch("/annotations.json",      { cache: "no-store" }).then(r => r.ok ? r.json() : null).catch(() => null),
-    fetch("/admins.json",           { cache: "no-store" }).then(r => r.ok ? r.json() : null).catch(() => null),
-    fetch("/pending-transfers.json",{ cache: "no-store" }).then(r => r.ok ? r.json() : null).catch(() => null),
-    fetch("/payroll-data.json",     { cache: "no-store" }).then(r => r.ok ? r.json() : null).catch(() => null),
-    fetch("/google-accounts.json",  { cache: "no-store" }).then(r => r.ok ? r.json() : null).catch(() => null),
-    fetch("/warehouse-activity.json",{ cache: "no-store" }).then(r => r.ok ? r.json() : null).catch(() => null),
+    fetch("/people.json",           { cache: "no-store", headers: { "Cache-Control": "no-cache, no-store, must-revalidate", "Pragma": "no-cache" } }).then(r => r.ok ? r.json() : null).catch(() => null),
+    fetch("/staff.json",            { cache: "no-store", headers: { "Cache-Control": "no-cache, no-store, must-revalidate", "Pragma": "no-cache" } }).then(r => r.ok ? r.json() : null).catch(() => null),
+    fetch("/wall.json",             { cache: "no-store", headers: { "Cache-Control": "no-cache, no-store, must-revalidate", "Pragma": "no-cache" } }).then(r => r.ok ? r.json() : null).catch(() => null),
+    fetch("/api/workspace/payroll", { cache: "no-store", headers: { "Cache-Control": "no-cache, no-store, must-revalidate", "Pragma": "no-cache" } }).then(r => r.ok ? r.json() : null).catch(() => null),
+    fetch("/api/workspace/whoami",  { cache: "no-store", headers: { "Cache-Control": "no-cache, no-store, must-revalidate", "Pragma": "no-cache" } }).then(r => r.ok ? r.json() : null).catch(() => null),
+    fetch("/annotations.json",      { cache: "no-store", headers: { "Cache-Control": "no-cache, no-store, must-revalidate", "Pragma": "no-cache" } }).then(r => r.ok ? r.json() : null).catch(() => null),
+    fetch("/admins.json",           { cache: "no-store", headers: { "Cache-Control": "no-cache, no-store, must-revalidate", "Pragma": "no-cache" } }).then(r => r.ok ? r.json() : null).catch(() => null),
+    fetch("/pending-transfers.json",{ cache: "no-store", headers: { "Cache-Control": "no-cache, no-store, must-revalidate", "Pragma": "no-cache" } }).then(r => r.ok ? r.json() : null).catch(() => null),
+    fetch("/payroll-data.json",     { cache: "no-store", headers: { "Cache-Control": "no-cache, no-store, must-revalidate", "Pragma": "no-cache" } }).then(r => r.ok ? r.json() : null).catch(() => null),
+    fetch("/google-accounts.json",  { cache: "no-store", headers: { "Cache-Control": "no-cache, no-store, must-revalidate", "Pragma": "no-cache" } }).then(r => r.ok ? r.json() : null).catch(() => null),
+    fetch("/warehouse-activity.json",{ cache: "no-store", headers: { "Cache-Control": "no-cache, no-store, must-revalidate", "Pragma": "no-cache" } }).then(r => r.ok ? r.json() : null).catch(() => null),
   ]).then(([peopleFile, staff, wallFile, payroll, who, annFile, adminsFile, pending, payrollFile, gaccounts, warehouse]) => {
     if (peopleFile && Array.isArray(peopleFile.people)) {
       people = peopleFile.people;
