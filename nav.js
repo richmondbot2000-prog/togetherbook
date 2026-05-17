@@ -47,22 +47,27 @@
   });
 })();
 
-/* Current-user avatar chip — sits at the top-right of the topbar on
-   every page. Click jumps to /directory/<slug>. Silently hides itself
-   on the public mirror (no Cloudflare Access, /api/workspace/whoami 401s). */
+/* Current-user avatar chip — always renders at the top-right of the
+   topbar. Whoami fills in a photo + a /directory/<slug> link; when
+   whoami is unavailable (public mirror, cookies blocked, network
+   error) the chip stays put with a generic icon and falls back to
+   linking the People landing so the user can find themselves. */
 (function () {
   const bar = document.querySelector('.qb-topbar');
   if (!bar) return;
   if (bar.querySelector('.qb-me')) return;
 
   // One-time stylesheet — kept tiny so it doesn't fight quiet.css.
+  // `order: 99` keeps the chip last in the flex bar regardless of
+  // where in DOM order we appended it (so mobile + desktop both keep
+  // it on the right end of the topbar).
   if (!document.getElementById('qbMeStyle')) {
     const s = document.createElement('style');
     s.id = 'qbMeStyle';
     s.textContent = `
-      .qb-me { margin-left: 10px; display: inline-flex; align-items: center; gap: 8px;
-               text-decoration: none; }
-      .qb-me-avatar { width: 32px; height: 32px; border-radius: 50%;
+      .qb-me { display: inline-flex; align-items: center; gap: 8px;
+               text-decoration: none; flex: 0 0 auto; order: 99; margin-left: auto; }
+      .qb-me-avatar { width: 36px; height: 36px; border-radius: 50%;
                       background: var(--paper-200, #F5ECD4);
                       display: inline-flex; align-items: center; justify-content: center;
                       font: 600 13px/1 'Inter', sans-serif;
@@ -72,16 +77,28 @@
                       transition: border-color 140ms ease; }
       .qb-me:hover .qb-me-avatar { border-color: var(--brass-500, #C8973F); }
       .qb-me-avatar img { width: 100%; height: 100%; object-fit: cover; display: block; }
-      @media (max-width: 720px) { .qb-me { margin-left: 6px; }
-                                  .qb-me-avatar { width: 28px; height: 28px; font-size: 11px; } }
+      .qb-me-avatar svg { width: 60%; height: 60%; color: var(--ink-500, #6B779A); }
+      @media (max-width: 960px) { .qb-me { margin-left: 6px; }
+                                  .qb-me-avatar { width: 32px; height: 32px; font-size: 11px; } }
     `;
     document.head.appendChild(s);
   }
 
+  const FALLBACK_ICON =
+    '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true">' +
+      '<circle cx="12" cy="8" r="4"/>' +
+      '<path d="M4 21c1.5-4 4.5-6 8-6s6.5 2 8 6" stroke-linecap="round"/>' +
+    '</svg>';
+
   const slot = document.createElement('a');
   slot.className = 'qb-me';
   slot.setAttribute('aria-label', 'My profile');
-  slot.innerHTML = '<span class="qb-me-avatar" aria-hidden="true">…</span>';
+  // Default state: generic icon, link to the People page. This is what
+  // every viewer sees instantly while whoami resolves, and it stays as
+  // the fallback if whoami can't tell us who they are.
+  slot.href = '/directory.html';
+  slot.title = 'My profile';
+  slot.innerHTML = '<span class="qb-me-avatar" aria-hidden="true">' + FALLBACK_ICON + '</span>';
   bar.appendChild(slot);
 
   function dirPhotoKey(email) {
@@ -101,7 +118,7 @@
     fetch('/annotations.json',     { cache: 'no-store' }).then(r => r.ok ? r.json() : null).catch(() => null),
   ]).then(([who, staff, ann]) => {
     const email = (who && who.email || '').toLowerCase();
-    if (!email) { slot.remove(); return; }
+    if (!email) return; // keep the fallback icon + /directory.html href
     const slug = emailToSlug(email);
     slot.href = '/directory/' + slug;
 
@@ -118,10 +135,11 @@
     if (photo) {
       av.innerHTML = '<img alt="" src="' + photo.replace(/"/g, '&quot;') + '">';
       const img = av.querySelector('img');
-      img.onerror = () => { av.textContent = initials(name); };
+      img.onerror = () => { av.innerHTML = ''; av.textContent = initials(name); };
     } else {
+      av.innerHTML = '';
       av.textContent = initials(name);
     }
-  }).catch(() => { slot.remove(); });
+  }).catch(() => { /* keep the fallback icon */ });
 })();
 
