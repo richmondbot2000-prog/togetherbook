@@ -135,11 +135,19 @@
   function renderPanel() {
     const panel = document.getElementById("upPanel");
     if (!panel) return;
-    if (currentTab === "info")          panel.innerHTML = renderInfoPanel();
-    else if (currentTab === "wall")     panel.innerHTML = renderFeedPanel();
-    else if (currentTab === "calendar") panel.innerHTML = renderCalendarPanel();
-    else if (currentTab === "accounts") panel.innerHTML = renderAccountsPanel();
-    else if (currentTab === "payroll")  panel.innerHTML = renderPayrollPanel();
+    try {
+      if (currentTab === "info")          panel.innerHTML = renderInfoPanel();
+      else if (currentTab === "wall")     panel.innerHTML = renderFeedPanel();
+      else if (currentTab === "calendar") panel.innerHTML = renderCalendarPanel();
+      else if (currentTab === "accounts") panel.innerHTML = renderAccountsPanel();
+      else if (currentTab === "payroll")  panel.innerHTML = renderPayrollPanel();
+    } catch (err) {
+      panel.innerHTML = `<div class="up-error" style="padding:24px;">
+        Render error in <strong>${escapeHtml(currentTab)}</strong> tab:<br>
+        ${escapeHtml((err && err.name) || "Error")}: ${escapeHtml((err && err.message) || String(err))}
+      </div>`;
+      console.error("renderPanel failed for tab", currentTab, err);
+    }
     wirePanel();
   }
 
@@ -1201,6 +1209,22 @@
       const out = await res.json();
       if (!res.ok || !out.ok) throw new Error(out.error || `HTTP ${res.status}`);
       Object.assign(person, out.person);
+      // start_date lives in two places — People.start_date AND the active
+      // PayrollData record. Updating one alone leaves them inconsistent
+      // and the Payroll tab will look "reverted". Propagate.
+      if (field === "start_date" && person.on_payroll && person.most_recent_payroll_id) {
+        try {
+          const payRes = await fetch(WORKSPACE_API + "/payroll-set", {
+            method: "POST", headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ action: "payroll-set", person_id: person.id, start_date: payloadValue || "" }),
+          });
+          const payOut = await payRes.json();
+          if (payRes.ok && payOut.ok && payOut.record) {
+            payrollRecordsById[payOut.record.id] = payOut.record;
+            payrollByPersonId[person.id] = payOut.record;
+          }
+        } catch (e) { /* non-fatal; People was already saved */ }
+      }
       status.textContent = "Saved";
       status.className = "up-edit-status up-edit-status--ok";
       setTimeout(() => { renderPanel(); }, 350);
