@@ -3852,7 +3852,42 @@
           author_name: post.author_name,
           at: post.created_at,
           body: pbody,
+          field: "body",
         });
+      }
+      // Poll question + options live in post.poll — searchable as part
+      // of the post, but the body snippet wouldn't contain them, so each
+      // hit is its own result with the matching string in `body`.
+      const poll = post.poll;
+      if (poll) {
+        const pq = String(poll.question || "");
+        if (pq.toLowerCase().includes(needle)) {
+          out.push({
+            kind: "post",
+            post_id: post.id,
+            comment_id: null,
+            author_email: post.author_email,
+            author_name: post.author_name,
+            at: post.created_at,
+            body: pq,
+            field: "poll-question",
+          });
+        }
+        for (const opt of (poll.options || [])) {
+          const s = String(opt || "");
+          if (s.toLowerCase().includes(needle)) {
+            out.push({
+              kind: "post",
+              post_id: post.id,
+              comment_id: null,
+              author_email: post.author_email,
+              author_name: post.author_name,
+              at: post.created_at,
+              body: s,
+              field: "poll-option",
+            });
+          }
+        }
       }
       for (const c of (post.comments || [])) {
         const cbody = String(c.body || "");
@@ -3867,6 +3902,7 @@
             at: c.created_at,
             body: cbody,
             on_post_by: post.author_email,
+            field: "body",
           });
         }
       }
@@ -3906,14 +3942,18 @@
       return;
     }
     const KIND_LABEL = { post: "Post", comment: "Comment", reply: "Reply" };
+    const FIELD_LABEL = { "poll-question": "Poll question", "poll-option": "Poll option" };
     const meta = `<div class="wl-search-meta">${results.length} result${results.length === 1 ? "" : "s"} for “${escapeHtml(q)}”</div>`;
     const items = results.slice(0, 100).map(r => {
       const author = displayName(r.author_email, r.author_name);
       const when = r.at
         ? new Date(r.at).toLocaleString("en-GB", { day: "numeric", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit" })
         : "";
-      const kind = KIND_LABEL[r.kind];
-      let cite = `${escapeHtml(kind)} by ${escapeHtml(author)}`;
+      // For poll matches the heading reads "Poll question" / "Poll option"
+      // so the reader can see at a glance why the post was returned even
+      // though the post body doesn't contain the term.
+      const headKind = FIELD_LABEL[r.field] || KIND_LABEL[r.kind];
+      let cite = `${escapeHtml(headKind)} by ${escapeHtml(author)}`;
       if ((r.kind === "comment" || r.kind === "reply") && r.on_post_by) {
         cite += ` on ${escapeHtml(displayName(r.on_post_by, ""))}'s post`;
       }
@@ -3922,7 +3962,7 @@
       return `<a class="wl-search-result" href="#post-${escapeHtml(r.post_id)}"
                  data-search-post="${escapeHtml(r.post_id)}"
                  data-search-comment="${escapeHtml(r.comment_id || "")}">
-        <div class="wl-search-result-head">${escapeHtml(author)} — ${escapeHtml(kind)}</div>
+        <div class="wl-search-result-head">${escapeHtml(author)} — ${escapeHtml(headKind)}</div>
         <div class="wl-search-result-cite">${cite}</div>
         <div class="wl-search-result-snippet">${snippet}</div>
       </a>`;
