@@ -1569,15 +1569,26 @@
       seenEvents = new Set(seen.by_user[viewerEmail].seen_events || []);
     }
     sortPosts();
-    // Initial deep-link jump (if any) — relies on jumpToPost which
-    // both bell clicks and the hashchange handler also call.
+    // URL deep-links — supported shapes:
+    //   #post-<id>           (legacy: focus + scroll)
+    //   ?post=<id>           (canonical: same as #post-<id>)
+    //   ?page=N              (0-indexed pagination position)
+    // The ?post=<id> form supersedes ?page= so a share link still
+    // lands on the right post even if it's on an older page.
+    const qsInit = new URLSearchParams(location.search || "");
     const hashId = (location.hash || "").replace(/^#post-/, "");
-    if (hashId) jumpToPost(decodeURIComponent(hashId), { skipScroll: true });
+    const postParam = qsInit.get("post");
+    const focusId = postParam || hashId;
+    if (qsInit.has("page")) {
+      const p = parseInt(qsInit.get("page"), 10);
+      if (!Number.isNaN(p) && p >= 0) currentPage = p;
+    }
+    if (focusId) jumpToPost(decodeURIComponent(focusId), { skipScroll: true });
     renderFeed();
     renderNotifications();
-    if (hashId) {
+    if (focusId) {
       requestAnimationFrame(() => {
-        const el = document.getElementById(`post-${decodeURIComponent(hashId)}`);
+        const el = document.getElementById(`post-${decodeURIComponent(focusId)}`);
         if (el) el.scrollIntoView({ behavior: "smooth", block: "start" });
       });
     }
@@ -2034,6 +2045,21 @@
   //   - notification bell entries (data-jump handler — may also pass a
   //     commentId so we scroll to + briefly highlight the specific comment)
   //   - Share — copies a #post-<id> URL that lands here on the recipient
+  // Reflect current page + focused post in the URL so the view is
+  // shareable / reload-stable. Default page=0 is stripped.
+  function syncWallUrl() {
+    try {
+      const url = new URL(location.href);
+      const focused = expandedPostIds.size === 1 ? [...expandedPostIds][0] : null;
+      if (focused) url.searchParams.set("post", focused);
+      else url.searchParams.delete("post");
+      if (currentPage > 0) url.searchParams.set("page", String(currentPage));
+      else url.searchParams.delete("page");
+      // Drop the legacy #post-… hash so it doesn't fight the query param.
+      const newHref = url.toString().replace(/#post-[^#]*$/, "");
+      history.replaceState({}, "", newHref);
+    } catch (e) { /* noop */ }
+  }
   function jumpToPost(postId, opts) {
     if (!postId) return;
     const idx = posts.findIndex(p => p.id === postId);
@@ -2708,6 +2734,7 @@
       const wasExpanded = expandedPostIds.has(id);
       expandedPostIds.clear();
       if (!wasExpanded) expandedPostIds.add(id);
+      syncWallUrl();
       renderFeed();
       if (!wasExpanded) {
         // Defer scroll until next paint
@@ -2738,6 +2765,7 @@
       el.addEventListener("click", () => {
         currentPage = Math.max(0, currentPage - 1);
         expandedPostIds.clear();
+        syncWallUrl();
         renderFeed();
         window.scrollTo({ top: 0, behavior: "smooth" });
       });
@@ -2746,6 +2774,7 @@
       el.addEventListener("click", () => {
         currentPage++;
         expandedPostIds.clear();
+        syncWallUrl();
         renderFeed();
         window.scrollTo({ top: 0, behavior: "smooth" });
       });
