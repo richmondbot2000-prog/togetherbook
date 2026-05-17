@@ -1179,6 +1179,120 @@
   .wl-notif-item-time { font: 500 11px/1 var(--font-mono); color: var(--ink-500); margin-top: 2px; }
   .wl-notif-empty { padding: 24px 14px; text-align: center; color: var(--ink-500); font-style: italic; }
 
+  /* Search — magnifier button sits to the left of the bell at the same
+     vertical axis. Clicking it expands a full-width bar across the page
+     (covering both icons) and opens a Google-style results panel below. */
+  .wl-search-anchor { position: fixed; top: 84px; right: 64px; z-index: 1000; }
+  @media (max-width: 960px) { .wl-search-anchor { top: 76px; right: 64px; } }
+  @media (max-width: 480px) { .wl-search-anchor { top: 68px; right: 60px; } }
+  .wl-search-btn {
+    background: var(--paper-50);
+    border: 1px solid var(--paper-300);
+    width: 40px; height: 40px;
+    border-radius: 50%;
+    cursor: pointer; position: relative;
+    color: var(--ink-700);
+    display: flex; align-items: center; justify-content: center;
+  }
+  .wl-search-btn:hover { color: var(--ink-900); border-color: var(--brass-500); }
+  .wl-search-btn .wl-icon { width: 20px; height: 20px; }
+
+  /* Expanded search bar — fixed full-width strip at the same vertical
+     position as the bell. Hidden until the user clicks the magnifier. */
+  .wl-search-bar {
+    position: fixed; top: 84px; left: 16px; right: 16px;
+    height: 40px;
+    background: var(--paper-50);
+    border: 1px solid var(--brass-500);
+    z-index: 1001;
+    display: none;
+    align-items: center;
+    padding: 0 6px 0 14px;
+  }
+  @media (max-width: 960px) { .wl-search-bar { top: 76px; } }
+  @media (max-width: 480px) { .wl-search-bar { top: 68px; left: 12px; right: 12px; } }
+  .wl-search-bar.is-open { display: flex; }
+  .wl-search-bar .wl-icon { width: 16px; height: 16px; color: var(--ink-500); flex: 0 0 auto; margin-right: 8px; }
+  .wl-search-input {
+    flex: 1 1 auto;
+    background: transparent; border: 0; outline: 0;
+    color: var(--ink-900);
+    font: 500 15px/1.2 var(--font-body);
+    padding: 0;
+  }
+  .wl-search-input::placeholder { color: var(--ink-500); font-style: italic; }
+  .wl-search-close {
+    flex: 0 0 auto;
+    background: transparent; border: 0;
+    width: 32px; height: 32px;
+    cursor: pointer; color: var(--ink-500);
+    display: flex; align-items: center; justify-content: center;
+  }
+  .wl-search-close:hover { color: var(--ink-900); }
+  .wl-search-close .wl-icon { width: 16px; height: 16px; margin: 0; }
+
+  /* Results panel — sits just below the search bar, full width minus the
+     same 16/12px gutters. Scrolls internally so the topbar + search bar
+     stay anchored. */
+  .wl-search-panel {
+    position: fixed;
+    top: 132px; left: 16px; right: 16px;
+    max-height: calc(100vh - 148px);
+    overflow-y: auto;
+    background: var(--paper-50);
+    border: 1px solid var(--paper-300);
+    z-index: 1000;
+    display: none;
+    padding: 12px 0;
+  }
+  @media (max-width: 960px) { .wl-search-panel { top: 124px; max-height: calc(100vh - 140px); } }
+  @media (max-width: 480px) { .wl-search-panel { top: 116px; left: 12px; right: 12px; max-height: calc(100vh - 132px); } }
+  .wl-search-panel.is-open { display: block; }
+  .wl-search-meta {
+    padding: 4px 18px 12px;
+    color: var(--ink-500);
+    font: italic 400 12px/1.4 var(--font-body);
+    border-bottom: 1px solid var(--paper-200);
+    margin-bottom: 8px;
+  }
+  .wl-search-result {
+    display: block;
+    padding: 14px 18px;
+    text-decoration: none;
+    color: inherit;
+    border-bottom: 1px solid var(--paper-200);
+    cursor: pointer;
+  }
+  .wl-search-result:last-child { border-bottom: 0; }
+  .wl-search-result:hover { background: var(--paper-100); }
+  .wl-search-result-head {
+    font: 600 15px/1.3 var(--font-body);
+    color: #1a4a8b;
+    margin-bottom: 2px;
+  }
+  .wl-search-result:hover .wl-search-result-head { text-decoration: underline; }
+  .wl-search-result-cite {
+    font: 500 12px/1.3 var(--font-mono);
+    color: #1a8b3a;
+    margin-bottom: 4px;
+  }
+  .wl-search-result-snippet {
+    font: 400 14px/1.5 var(--font-body);
+    color: var(--ink-700);
+  }
+  .wl-search-result-snippet mark {
+    background: var(--brass-200, #f1e2b2);
+    color: var(--ink-900);
+    font-weight: 700;
+    padding: 0 1px;
+  }
+  .wl-search-empty {
+    padding: 32px 18px;
+    text-align: center;
+    color: var(--ink-500);
+    font: italic 400 14px/1.4 var(--font-body);
+  }
+
   /* Brief brass-paper flash on the comment/post that a notification just
      jumped to. Fades back to transparent over ~2 s so the eye is drawn
      without a permanent state change. */
@@ -1286,6 +1400,20 @@
   </nav>
 </header>
 <div class="qb-nav-backdrop" onclick="document.body.classList.remove('nav-open')"></div>
+
+<div class="wl-search-anchor">
+  <button class="wl-search-btn" id="wlSearchBtn" title="Search the wall" aria-label="Search posts, comments, and replies"></button>
+</div>
+<div class="wl-search-bar" id="wlSearchBar" role="search">
+  <span id="wlSearchIcon"></span>
+  <input type="search" class="wl-search-input" id="wlSearchInput"
+         placeholder="Search posts, comments, replies…"
+         autocomplete="off" spellcheck="false" enterkeyhint="search">
+  <button type="button" class="wl-search-close" id="wlSearchClose" title="Close search (Esc)" aria-label="Close search">
+    <span id="wlSearchCloseIcon"></span>
+  </button>
+</div>
+<div class="wl-search-panel" id="wlSearchPanel" aria-live="polite"></div>
 
 <div class="wl-notif-anchor">
   <button class="wl-notif-btn" id="wlNotifBtn" data-count="0" title="Notifications" aria-label="Notifications"></button>
@@ -1410,6 +1538,10 @@
     bell: {
       outline: `<path d="M6 9a6 6 0 0 1 12 0c0 5 3 5 3 8H3c0-3 3-3 3-8z" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/><path d="M10 21a2 2 0 0 0 4 0" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>`,
       filled:  `<path d="M6 9a6 6 0 0 1 12 0c0 5 3 5 3 8H3c0-3 3-3 3-8z" fill="currentColor"/><path d="M10 21a2 2 0 0 0 4 0" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>`,
+    },
+    search: {
+      outline: `<circle cx="11" cy="11" r="6" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M16 16l5 5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>`,
+      filled:  `<circle cx="11" cy="11" r="6" fill="currentColor"/><path d="M16 16l5 5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>`,
     },
     heart: {
       outline: `<path d="M12 21s-7-4.5-9.5-9A5 5 0 0 1 12 6a5 5 0 0 1 9.5 6c-2.5 4.5-9.5 9-9.5 9z" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>`,
@@ -3493,7 +3625,7 @@
         const commentAttr = ev.comment_id ? ` data-comment-jump="${escapeHtml(ev.comment_id)}"` : "";
         return `<a class="wl-notif-item" href="#post-${escapeHtml(ev.post_id)}" data-jump="${escapeHtml(ev.post_id)}" data-event-id="${escapeHtml(eventIdFor(ev))}"${commentAttr}>
           <div>${line}</div>
-          <div class="wl-notif-item-time">${formatTime(ev.at)}</div>
+          <div class="wl-notif-item-time">${formatTimeShort(ev.at)}</div>
         </a>`;
       }).join("");
       list.querySelectorAll("[data-jump]").forEach(a => {
