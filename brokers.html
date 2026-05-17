@@ -1946,6 +1946,34 @@
   }
 
   // ─── Interaction ───────────────────────────────────────────────────────
+  function syncBrokersUrl() {
+    try {
+      const url = new URL(location.href);
+      const set = (k, v, def) => (v === def || v === "" || v == null) ? url.searchParams.delete(k) : url.searchParams.set(k, String(v));
+      set("sort", SORT_KEY, "leads_presented");
+      set("dir",  SORT_DIR === 1 ? "asc" : "desc", "desc");
+      set("filter", ACTIVE_FILTER, "all");
+      set("min",  MIN_LEADS, 100);
+      set("q",    SEARCH, "");
+      set("source", EXPANDED == null ? "" : EXPANDED, "");
+      history.replaceState({}, "", url.toString());
+    } catch (e) { /* noop */ }
+  }
+  (function applyBrokersUrl() {
+    try {
+      const qs = new URLSearchParams(location.search || "");
+      if (qs.has("sort"))   SORT_KEY = qs.get("sort");
+      if (qs.has("dir"))    SORT_DIR = (qs.get("dir") === "asc") ? 1 : -1;
+      if (qs.has("filter")) ACTIVE_FILTER = qs.get("filter");
+      if (qs.has("min"))    MIN_LEADS = parseInt(qs.get("min") || "0", 10) || 0;
+      if (qs.has("q"))      SEARCH = qs.get("q") || "";
+      if (qs.has("source")) EXPANDED = parseInt(qs.get("source"), 10);
+      // Reflect into inputs that have already rendered
+      const s = document.getElementById("brSearch");      if (s && SEARCH) s.value = SEARCH;
+      const m = document.getElementById("brMinLeads");    if (m && MIN_LEADS) m.value = String(MIN_LEADS);
+      document.querySelectorAll(".br-pill[data-active]").forEach(p => p.classList.toggle("is-active", p.dataset.active === ACTIVE_FILTER));
+    } catch (e) { /* noop */ }
+  })();
   document.querySelectorAll("#brTable th[data-col]").forEach(th => {
     th.addEventListener("click", () => {
       const col = th.dataset.col;
@@ -1956,22 +1984,26 @@
         // Strings ascend by default; numbers descend (volume first)
         SORT_DIR = (col === "friendly_name") ? 1 : -1;
       }
+      syncBrokersUrl();
       render();
     });
   });
 
   document.getElementById("brSearch").addEventListener("input", e => {
     SEARCH = e.target.value;
+    syncBrokersUrl();
     render();
   });
   document.getElementById("brMinLeads").addEventListener("input", e => {
     MIN_LEADS = parseInt(e.target.value || "0", 10) || 0;
+    syncBrokersUrl();
     render();
   });
   document.querySelectorAll(".br-pill[data-active]").forEach(p => {
     p.addEventListener("click", () => {
       ACTIVE_FILTER = p.dataset.active;
       document.querySelectorAll(".br-pill[data-active]").forEach(o => o.classList.toggle("is-active", o === p));
+      syncBrokersUrl();
       render();
     });
   });
@@ -1981,6 +2013,7 @@
     if (!row) return;
     const sid = row.dataset.sid === "" ? null : parseInt(row.dataset.sid, 10);
     EXPANDED = (EXPANDED === sid) ? null : sid;
+    syncBrokersUrl();
     render();
   });
 </script>
