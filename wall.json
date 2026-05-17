@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "updated_at": "2026-05-17T00:50:41.908Z",
+  "updated_at": "2026-05-17T00:50:55.390Z",
   "posts": [
     {
       "id": "post_mp913h7o_eb2kp2",
@@ -49,7 +49,11 @@
         "wall-media/img_mp8t6q9z_y9ulmm.jpg"
       ],
       "channel": null,
-      "reactions": {},
+      "reactions": {
+        "❤️": [
+          "james.benamor@letme.com"
+        ]
+      },
       "comments": [
         {
           "id": "com_mp8ud6d9_e4kj1q",
@@ -184,6 +188,14 @@
           "target_id": "post_mp8t9vc4_9jhkrf",
           "at": "2026-05-17T00:50:41.673Z",
           "kind": "removed"
+        },
+        {
+          "actor_email": "james.benamor@letme.com",
+          "emoji": "❤️",
+          "target_kind": "post",
+          "target_id": "post_mp8t9vc4_9jhkrf",
+          "at": "2026-05-17T00:50:55.241Z",
+          "kind": "added"
         }
       ]
     },
