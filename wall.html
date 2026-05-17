@@ -537,6 +537,51 @@
     white-space: nowrap;
   }
   .wl-emoji-popover button:hover::after { opacity: 1; }
+  /* "+" button on the named-reaction picker — opens the any-emoji grid. */
+  .wl-emoji-plus { color: var(--ink-600); }
+  .wl-emoji-plus-icon { font: 700 24px/1 var(--font-body); }
+  /* Wide popover variant — any-emoji grid + free-input box. */
+  .wl-emoji-popover--grid {
+    flex-direction: column;
+    border-radius: 8px;
+    width: 320px;
+    padding: 8px;
+    gap: 6px;
+    max-height: 70vh; overflow: hidden;
+  }
+  .wl-emoji-grid-head { display: flex; }
+  .wl-emoji-grid-input {
+    flex: 1 1 auto; min-width: 0;
+    border: 1px solid var(--paper-300);
+    background: white;
+    padding: 8px 12px;
+    /* 16 px so iOS Safari doesn't zoom on focus. */
+    font: 400 16px/1.2 var(--font-body);
+    color: var(--ink-900);
+    border-radius: 4px;
+    outline: none;
+  }
+  .wl-emoji-grid-input:focus { border-color: var(--brass-500); }
+  .wl-emoji-grid {
+    display: grid;
+    grid-template-columns: repeat(8, 1fr);
+    gap: 2px;
+  }
+  .wl-emoji-popover--grid .wl-emoji-grid-cell {
+    width: 36px; height: 36px;
+    font-size: 22px; line-height: 1;
+    background: transparent; border: 0; cursor: pointer;
+    border-radius: 4px;
+    padding: 0;
+    display: inline-flex; align-items: center; justify-content: center;
+    transition: background-color 120ms ease, transform 120ms ease;
+  }
+  .wl-emoji-popover--grid .wl-emoji-grid-cell:hover {
+    background: var(--paper-100);
+    transform: scale(1.15);
+    animation: none;
+  }
+  .wl-emoji-popover--grid .wl-emoji-grid-cell::after { content: none; }
 
   /* Reaction + comment summary (above the action bar) */
   /* Footer meta row (LinkedIn pattern): overlapping reaction circles +
@@ -867,6 +912,34 @@
   .wl-post--compact:hover { background: var(--paper-100); }
   .wl-post--compact:focus { outline: 2px solid var(--brass-500); outline-offset: -2px; }
   .wl-post-body--teaser { margin-bottom: 6px; }
+  /* Photo peek (compact post view): first photo full-width with the
+     bottom clipped, "+N more" badge if there are extras. The user
+     expands the post to see the full image. */
+  .wl-photo-peek {
+    position: relative;
+    width: 100%;
+    height: 220px;
+    overflow: hidden;
+    margin: 8px 0 6px;
+    background: var(--paper-200, #F5ECD4);
+  }
+  .wl-photo-peek-img {
+    width: 100%; height: auto; min-height: 100%;
+    object-fit: cover; object-position: top;
+    display: block;
+  }
+  .wl-photo-peek-more {
+    position: absolute;
+    bottom: 8px; right: 8px;
+    background: rgba(17,25,46,0.78);
+    color: var(--paper-50);
+    padding: 4px 10px;
+    font: 600 12px/1 var(--font-body);
+    letter-spacing: 0.02em;
+  }
+  @media (max-width: 480px) {
+    .wl-photo-peek { height: 180px; }
+  }
   .wl-photo-strip {
     display: flex; gap: 4px;
     margin: 8px 0 6px;
@@ -2374,14 +2447,18 @@
   }
 
   // Compact-view photo strip — small thumbnails (52 px), max 4 visible.
+  // Compact post photo display: render the FIRST photo full-width but
+  // clipped to a fixed height so only the top portion is visible. The
+  // user expands the post to see the full image. If there are extra
+  // photos, show a small "+N more" badge in the corner.
   function renderPhotoStrip(photos, postId) {
     if (!photos || !photos.length) return "";
-    const shown = photos.slice(0, 4);
-    const extra = photos.length - shown.length;
-    return `<div class="wl-photo-strip">` +
-      shown.map(p => `<img class="wl-media-img" src="${escapeHtml(mediaUrl(p))}" alt="" loading="lazy">`).join("") +
-      (extra > 0 ? `<div class="wl-photo-strip-more">+${extra}</div>` : "") +
-      `</div>`;
+    const first = photos[0];
+    const extra = photos.length - 1;
+    return `<div class="wl-photo-peek">
+      <img class="wl-media-img wl-photo-peek-img" src="${escapeHtml(mediaUrl(first))}" alt="" loading="lazy">
+      ${extra > 0 ? `<div class="wl-photo-peek-more">+${extra} more</div>` : ""}
+    </div>`;
   }
 
   function canDelete(authorEmail) {
@@ -3159,33 +3236,38 @@
     closeEmojiPicker();
     const pop = document.createElement("div");
     pop.className = "wl-emoji-popover";
-    pop.innerHTML = REACTIONS.map(e => {
+    const namedBtns = REACTIONS.map(e => {
       const meta = REACTION_META[e];
       const anim = (meta && meta.anim) || "";
       const label = (meta && meta.label) || e;
       return `<button data-emoji="${escapeHtml(e)}" data-label="${escapeHtml(label)}" aria-label="${escapeHtml(label)}" style="--react-anim: wl-${escapeHtml(anim)};"><span class="wl-emoji" data-anim="${escapeHtml(anim)}">${escapeHtml(e)}</span></button>`;
     }).join("");
+    // "+" button — opens the extended any-emoji grid. Same target,
+    // same onPick callback; the grid + free input route into the
+    // existing reaction flow.
+    const plusBtn = `<button data-custom="1" aria-label="Pick any emoji" title="Pick any emoji" class="wl-emoji-plus"><span class="wl-emoji-plus-icon">+</span></button>`;
+    pop.innerHTML = namedBtns + plusBtn;
     document.body.appendChild(pop);
     const rect = anchor.getBoundingClientRect();
     pop.style.left = `${Math.max(8, rect.left + window.scrollX)}px`;
     pop.style.top  = `${rect.bottom + window.scrollY + 8}px`;
     pop.querySelectorAll("button").forEach(b => {
+      const fire = (e) => {
+        e.preventDefault(); e.stopPropagation();
+        const cb = pickerOnPick;
+        if (b.dataset.custom) {
+          // "+" button — keep the anchor's onPick, swap the popover.
+          openCustomEmojiPicker(anchor, cb);
+          return;
+        }
+        const emoji = b.dataset.emoji;
+        closeEmojiPicker();
+        if (cb) cb(emoji);
+      };
       // mousedown fires BEFORE the document click listener can intercept.
-      b.addEventListener("mousedown", (e) => {
-        e.preventDefault(); e.stopPropagation();
-        const emoji = b.dataset.emoji;
-        const cb = pickerOnPick;
-        closeEmojiPicker();
-        if (cb) cb(emoji);
-      });
+      b.addEventListener("mousedown", fire);
       // Touch / keyboard fallback
-      b.addEventListener("click", (e) => {
-        e.preventDefault(); e.stopPropagation();
-        const emoji = b.dataset.emoji;
-        const cb = pickerOnPick;
-        closeEmojiPicker();
-        if (cb) cb(emoji);
-      });
+      b.addEventListener("click", fire);
     });
     // Keep the picker alive while the cursor is inside it.
     pop.addEventListener("mouseenter", () => {
@@ -3209,6 +3291,70 @@
     };
     setTimeout(() => document.addEventListener("click", activeDocHandler), 50);
   }
+  // Curated grid of common emojis surfaced when the user clicks "+"
+  // on the named-reaction picker. Anything not in the grid is still
+  // available via the "Type or paste any emoji" input (OS emoji
+  // keyboard works on every modern device). Worker accepts arbitrary
+  // emoji strings up to 4 codepoints.
+  const EXTRA_EMOJIS = [
+    "😀","😂","🤣","😊","🥲","😉","😍","🥰",
+    "😘","🤩","🥳","🤔","🙄","😏","😴","😬",
+    "🥺","😢","😭","😡","🤯","🥶","🤢","🤮",
+    "👍","👎","👏","🙌","🙏","💪","🤝","✌️",
+    "👌","👋","🤙","🤞","❤️","💔","💯","🔥",
+    "⭐","✅","❌","⚠️","💡","🎉","🎁","💸",
+  ];
+  function openCustomEmojiPicker(anchor, onPick) {
+    closeEmojiPicker();
+    const pop = document.createElement("div");
+    pop.className = "wl-emoji-popover wl-emoji-popover--grid";
+    pop.innerHTML = `
+      <div class="wl-emoji-grid-head">
+        <input type="text" class="wl-emoji-grid-input" placeholder="Type or paste any emoji" maxlength="8">
+      </div>
+      <div class="wl-emoji-grid">
+        ${EXTRA_EMOJIS.map(e => `<button type="button" class="wl-emoji-grid-cell" data-emoji="${escapeHtml(e)}" aria-label="${escapeHtml(e)}">${escapeHtml(e)}</button>`).join("")}
+      </div>`;
+    document.body.appendChild(pop);
+    const rect = anchor.getBoundingClientRect();
+    // Position with viewport-edge clamp so the wider grid doesn't spill.
+    const popW = 320;
+    let left = Math.max(8, Math.min(rect.left + window.scrollX, window.scrollX + document.documentElement.clientWidth - popW - 8));
+    pop.style.left = `${left}px`;
+    pop.style.top  = `${rect.bottom + window.scrollY + 8}px`;
+    const input = pop.querySelector(".wl-emoji-grid-input");
+    const fire = emoji => {
+      const cb = pickerOnPick;
+      closeEmojiPicker();
+      if (cb && emoji) cb(emoji);
+    };
+    pop.querySelectorAll(".wl-emoji-grid-cell").forEach(b => {
+      const handler = e => { e.preventDefault(); e.stopPropagation(); fire(b.dataset.emoji); };
+      b.addEventListener("mousedown", handler);
+      b.addEventListener("click", handler);
+    });
+    input.addEventListener("keydown", e => {
+      if (e.key !== "Enter") return;
+      e.preventDefault();
+      const v = (input.value || "").trim();
+      if (!v) return;
+      // Cap to first 4 codepoints — same as worker rule.
+      const emoji = [...v].slice(0, 4).join("");
+      fire(emoji);
+    });
+    activePopover = pop;
+    activeAnchor = anchor;
+    pickerOnPick = onPick;
+    requestAnimationFrame(() => input.focus());
+    setTimeout(() => {
+      activeDocHandler = (ev) => {
+        if (pop.contains(ev.target) || anchor.contains(ev.target)) return;
+        closeEmojiPicker();
+      };
+      document.addEventListener("click", activeDocHandler);
+    }, 50);
+  }
+
   function closeEmojiPicker() {
     clearTimeout(pickerShowTimer); clearTimeout(pickerHideTimer);
     pickerShowTimer = pickerHideTimer = null;
