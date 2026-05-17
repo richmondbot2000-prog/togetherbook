@@ -66,7 +66,7 @@
     s.id = 'qbMeStyle';
     s.textContent = `
       .qb-me { display: inline-flex; align-items: center; gap: 8px;
-               text-decoration: none; flex: 0 0 auto; order: 99; margin-left: auto; }
+               text-decoration: none; flex: 0 0 auto; order: 99; margin-left: 10px; }
       .qb-me-avatar { width: 36px; height: 36px; border-radius: 50%;
                       background: var(--paper-200, #F5ECD4);
                       display: inline-flex; align-items: center; justify-content: center;

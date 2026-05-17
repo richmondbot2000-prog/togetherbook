@@ -170,7 +170,10 @@
   border-bottom-color: var(--brass-500);
 }
 
-/* Hamburger — only visible ≤960px */
+/* Hamburger — only visible ≤960px. `order: 98` + margin-left:auto
+   slot it on the right end of the topbar immediately before the
+   avatar chip (which is order: 99 from nav.js), so the two controls
+   sit next to each other instead of being split across the bar. */
 .qb-hamburger {
   display: none;
   background: transparent;
@@ -180,6 +183,8 @@
   position: relative;
   border-radius: var(--radius-xs);
   flex: 0 0 auto;
+  order: 98;
+  margin-left: auto;
 }
 .qb-hamburger span {
   display: block;
