@@ -292,6 +292,24 @@ export default {
       return json(result, result.ok ? 200 : 400, req);
     }
 
+    // people-merge — admin-only, collapses two Person records into one.
+    if (action === "people-merge") {
+      if (!isAdmin) return json({ error: "admin required" }, 403, req);
+      let result;
+      try { result = await doPeopleMerge(env, body, actor); }
+      catch (e) { result = { ok: false, error: e.message }; }
+      try {
+        await appendAudit(env, {
+          ts: new Date().toISOString(),
+          actor, action,
+          target: ((body.loser_id || "") + " → " + (body.winner_id || "")).toLowerCase(),
+          ok: !!result.ok,
+          ...(result.ok ? {} : { error: String(result.error || "").slice(0, 300) }),
+        });
+      } catch (e) {}
+      return json(result, result.ok ? 200 : 400, req);
+    }
+
     // payroll-set — admin-only, edits a Person's most-recent PayrollData
     // record (or creates the blank shell if Person is on_payroll=true and
     // has no record yet).
@@ -1821,6 +1839,89 @@ async function doPayrollSet(env, body, actor) {
     created ? `Payroll: create blank for ${person.id} + edits (by ${actor})`
             : `Payroll: edit ${rec.id} (${person.id}) (by ${actor})`);
   return { ok: true, record: rec, person_id: person.id, created };
+}
+
+// people-merge: collapses two Person records into one. Common case: the
+// payroll import auto-created a Person for someone who already had a
+// (differently-named) Google-account Person record. Winner keeps its id +
+// URL; loser is absorbed and deleted.
+async function doPeopleMerge(env, body, actor) {
+  if (!env.GITHUB_TOKEN) return { ok: false, error: "GITHUB_TOKEN not configured" };
+  const winnerId = ((body || {}).winner_id || "").toString().trim().toLowerCase();
+  const loserId  = ((body || {}).loser_id  || "").toString().trim().toLowerCase();
+  if (!winnerId || !loserId) return { ok: false, error: "winner_id and loser_id are both required" };
+  if (winnerId === loserId)   return { ok: false, error: "winner and loser must be different" };
+
+  const { sha: pSha, file: pFile } = await fetchPeopleFile(env);
+  const winner = pFile.people.find(p => (p.id || "").toLowerCase() === winnerId);
+  const loser  = pFile.people.find(p => (p.id || "").toLowerCase() === loserId);
+  if (!winner) return { ok: false, error: `winner ${winnerId} not found` };
+  if (!loser)  return { ok: false, error: `loser  ${loserId}  not found` };
+
+  // Field merge rules:
+  //   - strings: keep winner's if non-empty, else take loser's
+  //   - arrays:  union, dedup, drop empties
+  //   - bools:   logical OR (so on_payroll/suspended/etc. propagate)
+  //   - special: most_recent_payroll_id — winner wins unless winner has none
+  const scalarFields = ["name","given","family","main_google_email","external_google_email",
+                        "auth0_id","access_level","company","title","department",
+                        "phone","address","start_date",
+                        "line_manager_id","line_manager_email_raw","role","notes",
+                        "directory_photo_uploaded_at","cover_photo_uploaded_at",
+                        "deletion_time"];
+  for (const k of scalarFields) {
+    if (!winner[k] && loser[k]) winner[k] = loser[k];
+  }
+  // Arrays: aliases + alt_google_emails.
+  const uniq = (...lists) => Array.from(new Set(lists.flat().map(x => (x || "").toString().trim()).filter(Boolean)));
+  winner.aliases           = uniq(winner.aliases, loser.aliases, loser.name && loser.name !== winner.name ? [loser.name] : []);
+  winner.alt_google_emails = uniq(winner.alt_google_emails, loser.alt_google_emails, loser.main_google_email ? [loser.main_google_email] : [])
+                              .filter(e => e !== winner.main_google_email);
+  // Bools: OR.
+  if (loser.on_payroll) winner.on_payroll = true;
+  if (loser.suspended  && !winner.suspended === false) winner.suspended = true;
+  // Payroll link: winner keeps its own unless it has none, then take loser's.
+  if (!winner.most_recent_payroll_id && loser.most_recent_payroll_id) {
+    winner.most_recent_payroll_id = loser.most_recent_payroll_id;
+  }
+  winner.updated_at = new Date().toISOString();
+
+  // Remove loser from people.json.
+  pFile.people = pFile.people.filter(p => (p.id || "").toLowerCase() !== loserId);
+
+  // Re-point every PayrollData record from loser → winner.
+  let payrollUpdated = 0;
+  const { sha: paySha, file: payFile } = await fetchPayrollFile(env);
+  for (const r of payFile.records) {
+    if ((r.person_id || "").toLowerCase() === loserId) {
+      r.person_id = winner.id;
+      payrollUpdated++;
+    }
+  }
+
+  // Commit people first (the visible-state change), then payroll. If
+  // payroll commit fails the link is mildly inconsistent but recoverable;
+  // we surface the error in the response.
+  await commitPeopleFile(env, pFile, pSha,
+    `People: merge ${loserId} into ${winnerId} (by ${actor})`);
+
+  let payrollSyncOk = true, payrollSyncError = null;
+  if (payrollUpdated > 0) {
+    try {
+      await commitPayrollFile(env, payFile, paySha,
+        `Payroll: re-point ${payrollUpdated} record(s) from ${loserId} to ${winnerId} (by ${actor})`);
+    } catch (e) {
+      payrollSyncOk = false; payrollSyncError = e.message;
+    }
+  }
+
+  return {
+    ok: true,
+    winner_id: winner.id,
+    loser_id: loserId,
+    payroll_records_repointed: payrollUpdated,
+    ...(payrollSyncOk ? {} : { payroll_sync_error: payrollSyncError }),
+  };
 }
 
 async function doPeopleDelete(env, body, actor) {

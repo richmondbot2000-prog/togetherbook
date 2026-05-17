@@ -220,6 +220,27 @@
       <div class="up-card">
         <div class="up-card-head">Identity & access</div>
         <div class="up-fields-grid">${readOnlyHtml}</div>
+      </div>
+
+      ${viewerIsAdmin ? renderMergeCard() : ""}`;
+  }
+
+  function renderMergeCard() {
+    // Skip self in the picker, sort by name.
+    const opts = people
+      .filter(p => p.id !== person.id)
+      .sort((a, b) => (a.name || "").localeCompare(b.name || ""))
+      .map(p => `<option value="${escapeHtml(p.id)}">${escapeHtml(p.name || p.id)} · ${escapeHtml(p.main_google_email || "(no email)")}</option>`)
+      .join("");
+    return `
+      <div class="up-card">
+        <div class="up-card-head">Merge this Person <span class="up-card-hint">use when two Person records are the same human (e.g. a payroll-only Person + a Google-only Person)</span></div>
+        <p class="up-hint">Pick the OTHER Person below. This Person (<strong>${escapeHtml(person.name || person.id)}</strong>) will be absorbed and deleted — every Google account, alias, and PayrollData row moves to the surviving record. The chosen Person keeps its <code>/directory/&lt;slug&gt;</code> URL.</p>
+        <select class="up-pay-input" id="upMergeTarget"><option value="">— pick the surviving Person —</option>${opts}</select>
+        <div class="up-editor-row">
+          <button type="button" class="up-btn-sm up-btn-sm--primary" id="upMergeGo">Merge into selected</button>
+          <span class="up-edit-status" data-edit-status="merge"></span>
+        </div>
       </div>`;
   }
 
@@ -474,6 +495,39 @@
     });
     const saveBtn = document.querySelector("[data-payroll-save]");
     if (saveBtn) saveBtn.addEventListener("click", savePayrollEdits);
+    const mergeBtn = document.getElementById("upMergeGo");
+    if (mergeBtn) mergeBtn.addEventListener("click", runMerge);
+  }
+
+  async function runMerge() {
+    const sel = document.getElementById("upMergeTarget");
+    const status = document.querySelector('[data-edit-status="merge"]');
+    const winnerId = sel && sel.value;
+    if (!winnerId) {
+      status.textContent = "Pick a Person first.";
+      status.className = "up-edit-status up-edit-status--err";
+      return;
+    }
+    const winner = people.find(p => p.id === winnerId);
+    if (!confirm(`Merge ${person.name || person.id} INTO ${winner.name || winner.id}?\n\n` +
+                 `- ${person.name || person.id} will be deleted.\n` +
+                 `- Their Google account(s), aliases, payroll record(s), phone/address/etc. all move to ${winner.name || winner.id}.\n` +
+                 `- ${winner.name || winner.id} keeps its /directory/${winner.id} URL.\n\n` +
+                 `This is permanent (well, recoverable from git history but no in-app undo).`)) return;
+    status.textContent = "Merging…"; status.className = "up-edit-status up-edit-status--working";
+    try {
+      const res = await fetch(WORKSPACE_API, {
+        method: "POST", headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action: "people-merge", winner_id: winnerId, loser_id: person.id }),
+      });
+      const out = await res.json();
+      if (!res.ok || !out.ok) throw new Error(out.error || `HTTP ${res.status}`);
+      // Redirect to the surviving Person's page.
+      location.href = "/directory/" + encodeURIComponent(winnerId);
+    } catch (err) {
+      status.textContent = "Failed — " + err.message;
+      status.className = "up-edit-status up-edit-status--err";
+    }
   }
 
   async function togglePayroll(turnOn) {
