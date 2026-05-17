@@ -718,6 +718,15 @@
     document.querySelectorAll("[data-acc-unlink]").forEach(btn => {
       btn.addEventListener("click", () => unlinkGoogleAccount(btn.dataset.accUnlink));
     });
+    document.querySelectorAll("[data-acc-alias-add]").forEach(btn => {
+      btn.addEventListener("click", () => handleAliasAction(btn, "add"));
+    });
+    document.querySelectorAll("[data-acc-alias-remove]").forEach(btn => {
+      btn.addEventListener("click", () => handleAliasAction(btn, "remove"));
+    });
+    document.querySelectorAll("[data-acc-alias-group]").forEach(btn => {
+      btn.addEventListener("click", () => handleAliasAction(btn, "to-group"));
+    });
     document.querySelectorAll("[data-payroll-toggle]").forEach(btn => {
       btn.addEventListener("click", () => togglePayroll(btn.dataset.payrollToggle === "on"));
     });
@@ -813,6 +822,12 @@
   }
 
   /* ─── Account action handlers (call workspace worker inline) ───── */
+  function colleagueDatalist() {
+    return people
+      .filter(p => p.id !== person.id && p.main_google_email)
+      .sort((a, b) => (a.name || "").localeCompare(b.name || ""))
+      .map(p => `<option value="${escapeHtml(p.main_google_email)}">${escapeHtml(p.name || p.id)}</option>`).join("");
+  }
   async function handleAccountAction(btn) {
     const card = btn.closest(".up-acct");
     const email = card && card.dataset.accEmail;
@@ -821,7 +836,7 @@
     const form = card.querySelector(".up-acct-form");
     const t = tenantFor(email);
 
-    // Actions that need a target email (forward / suspend-route / delete+transfer).
+    // Single-target prompt actions: forward / suspend-route / transfer-delete.
     const NEEDS_TARGET = new Set(["forward", "suspend-route", "transfer-delete"]);
     if (NEEDS_TARGET.has(action)) {
       const labels = {
@@ -829,16 +844,12 @@
         "suspend-route":    ["Suspend & forward",        "Suspend this account and forward all mail to:"],
         "transfer-delete":  ["Transfer Drive + mail, then delete", "Drive files + Gmail will be migrated to:"],
       }[action];
-      const colleagueOpts = people
-        .filter(p => p.id !== person.id && p.main_google_email)
-        .sort((a, b) => (a.name || "").localeCompare(b.name || ""))
-        .map(p => `<option value="${escapeHtml(p.main_google_email)}">${escapeHtml(p.name || p.id)}</option>`).join("");
       form.hidden = false;
       form.innerHTML = `
         <h4>${escapeHtml(labels[0])}</h4>
         <p class="up-hint">${escapeHtml(labels[1])}</p>
         <input type="email" list="upAccTargets" placeholder="colleague.email@…" data-acc-target>
-        <datalist id="upAccTargets">${colleagueOpts}</datalist>
+        <datalist id="upAccTargets">${colleagueDatalist()}</datalist>
         <div class="up-editor-row">
           <button class="up-btn-sm up-btn-sm--primary" data-acc-confirm>Confirm</button>
           <button class="up-btn-sm" data-acc-cancel>Cancel</button>
@@ -858,6 +869,85 @@
       return;
     }
 
+    // Two-target form: Delete + 21-day group conversion. Drive + Mail
+    // go to the handover colleague now; the freed email becomes a
+    // forwarding Group ~21 days later, delivering to the second
+    // address. Implemented via the existing queue-transfer-and-delete
+    // worker action with `convert_to_group_forward_to` set so the
+    // background scanner finishes the conversion when Google's 20-day
+    // reuse lockout expires.
+    if (action === "delete-and-group") {
+      form.hidden = false;
+      form.innerHTML = `
+        <h4>Delete &amp; replace with a forwarding group in 21 days</h4>
+        <p class="up-hint">Drive files + Gmail migrate now to the handover colleague; the freed email becomes a forwarding Group ~21 days later, delivering to whoever you pick.</p>
+        <label class="up-field-label" style="margin-top:6px;">Handover colleague (gets Drive + Mail now)</label>
+        <input type="email" list="upAccTargets" placeholder="handover.colleague@…" data-acc-target>
+        <label class="up-field-label" style="margin-top:6px;">Forward future mail to (the group's member)</label>
+        <input type="email" list="upAccTargets" placeholder="forward.target@…" data-acc-forward>
+        <datalist id="upAccTargets">${colleagueDatalist()}</datalist>
+        <div class="up-editor-row">
+          <button class="up-btn-sm up-btn-sm--primary" data-acc-confirm>Queue it</button>
+          <button class="up-btn-sm" data-acc-cancel>Cancel</button>
+          <span class="up-edit-status" data-acc-status></span>
+        </div>`;
+      form.querySelector("[data-acc-cancel]").addEventListener("click", () => { form.hidden = true; form.innerHTML = ""; });
+      form.querySelector("[data-acc-confirm]").addEventListener("click", () => {
+        const target  = (form.querySelector("[data-acc-target]").value  || "").trim().toLowerCase();
+        const forward = (form.querySelector("[data-acc-forward]").value || "").trim().toLowerCase();
+        const status  = form.querySelector("[data-acc-status]");
+        if (!target.includes("@") || !forward.includes("@")) {
+          status.textContent = "Both addresses are required";
+          status.className = "up-edit-status up-edit-status--err";
+          return;
+        }
+        runAccountAction(form, email, "delete-and-group", target, t, { convert_to_group_forward_to: forward });
+      });
+      form.querySelector("[data-acc-target]").focus();
+      return;
+    }
+
+    // Convert primary to a forwarding Group. No Drive/Mail migration —
+    // anything in the deleted mailbox is lost; the freed email becomes
+    // a Group ~20 days later (Google's reuse lockout). The admin
+    // picks a single colleague who receives the forwarded mail; more
+    // members can be added in admin.google.com once the Group exists.
+    if (action === "convert-to-group") {
+      form.hidden = false;
+      form.innerHTML = `
+        <h4>Convert ${escapeHtml(email)} to a forwarding group</h4>
+        <p class="up-hint">The user account is deleted; Google holds the address for 20 days, then a Group is auto-created at the same address with the colleague below as the first member. Add more members in admin.google.com afterwards.</p>
+        <label class="up-field-label">Forward future mail to</label>
+        <input type="email" list="upAccTargets" placeholder="colleague.email@…" data-acc-forward>
+        <datalist id="upAccTargets">${colleagueDatalist()}</datalist>
+        <div class="up-editor-row">
+          <button class="up-btn-sm up-btn-sm--primary" data-acc-confirm>Convert</button>
+          <button class="up-btn-sm" data-acc-cancel>Cancel</button>
+          <span class="up-edit-status" data-acc-status></span>
+        </div>`;
+      form.querySelector("[data-acc-cancel]").addEventListener("click", () => { form.hidden = true; form.innerHTML = ""; });
+      form.querySelector("[data-acc-confirm]").addEventListener("click", () => {
+        const forward = (form.querySelector("[data-acc-forward]").value || "").trim().toLowerCase();
+        const status  = form.querySelector("[data-acc-status]");
+        if (!forward.includes("@")) { status.textContent = "Forward target required"; status.className = "up-edit-status up-edit-status--err"; return; }
+        runAccountAction(form, email, "convert-to-group", null, t, { forward_to: forward });
+      });
+      form.querySelector("[data-acc-forward]").focus();
+      return;
+    }
+
+    // Promote an alt account → primary via Google's rename-user. The
+    // freed primary becomes a non-editable alias that forwards for
+    // ~21 days, then expires (per Google's standard rename behaviour).
+    if (action === "promote-primary") {
+      const primaryRow = card.parentElement.querySelector('.up-acct[data-acc-is-primary="1"]');
+      const currentPrimary = primaryRow && primaryRow.dataset.accEmail;
+      if (!currentPrimary) { alert("No current primary account to swap with."); return; }
+      if (!confirm(`Make ${email} the primary email?\n\nRenames the user from ${currentPrimary} to ${email}. Google auto-creates a non-editable alias at ${currentPrimary} that forwards to the same mailbox for ~21 days, then expires.`)) return;
+      runAccountAction(null, currentPrimary, "promote-primary", email, t, { new_email: email });
+      return;
+    }
+
     // Instant actions — confirm and fire.
     const CONFIRM = {
       "unsuspend":          { msg: `Unsuspend ${email}? Mail will resume delivery and the seat goes back to £11/month.` },
@@ -871,9 +961,11 @@
     runAccountAction(null, email, action, null, t);
   }
 
-  async function runAccountAction(form, email, action, target, tenant) {
+  async function runAccountAction(form, email, action, target, tenant, extra) {
     const status = form && form.querySelector("[data-acc-status]");
     if (status) { status.textContent = "Working…"; status.className = "up-edit-status up-edit-status--working"; }
+    // Action → [worker route, body]. `extra` lets callers slot extra
+    // fields onto the body without rewriting the map.
     const map = {
       "suspend-route":      ["suspend-and-route",  { email, route_to: target }],
       "forward":            ["add-forwarding",     { email, target }],
@@ -881,16 +973,26 @@
       "disable-forwarding": ["disable-forwarding", { email }],
       "unsuspend":          ["unsuspend",          { email }],
       "delete-now":         ["delete-account",     { email }],
-      "transfer-delete":    ["queue-transfer-and-delete", { email, target }],
+      "transfer-delete":    ["queue-transfer-and-delete", { email, target_email: target }],
       "reset-password":     ["reset-password",     { email }],
       "recover":            ["recover",            { email }],
+      // Two-step delete: queue Drive + Mail migration now,
+      // convert-to-group when the 20-day reuse lockout expires.
+      "delete-and-group":   ["queue-transfer-and-delete", { email, target_email: target }],
+      // Convert primary email to a forwarding Group. `forward_to`
+      // arrives via `extra` from the convert-to-group form below.
+      "convert-to-group":   ["convert-to-group",   { email }],
+      // Promote alt → primary. email = current primary; target =
+      // new primary (the alt we're promoting).
+      "promote-primary":    ["rename-user",        { current_email: email, new_email: target }],
     };
     const [act, args] = map[action] || [];
     if (!act) return;
+    const body = { tenant, ...args, ...(extra || {}) };
     try {
       const res = await fetch(WORKSPACE_API + "/" + act, {
         method: "POST", headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ action: act, tenant, ...args }),
+        body: JSON.stringify(body),
       });
       const out = await res.json();
       if (!res.ok || !out.ok) throw new Error(out.error || `HTTP ${res.status}`);
@@ -898,6 +1000,89 @@
         alert(`Password for ${email}:\n\n${out.new_password}\n\nCopy now — it's only shown once.`);
       }
       // Refresh data from origin so badges reflect the change.
+      await reloadAccountData();
+      renderPanel();
+    } catch (err) {
+      const msg = "Failed — " + (err && err.message || err);
+      if (status) { status.textContent = msg; status.className = "up-edit-status up-edit-status--err"; }
+      else alert(msg);
+    }
+  }
+
+  // Alias chip handlers — Add / Remove / Port to Group. Driven by the
+  // data-acc-alias-{add,remove,group} buttons in the chip block.
+  async function handleAliasAction(btn, kind) {
+    const card = btn.closest(".up-acct");
+    const userEmail = card && card.dataset.accEmail;
+    const t = tenantFor(userEmail);
+    const form = card.querySelector(".up-acct-form");
+    if (kind === "add") {
+      form.hidden = false;
+      form.innerHTML = `
+        <h4>Add alias to ${escapeHtml(userEmail)}</h4>
+        <p class="up-hint">A new email that delivers to this same mailbox. Must be on a Workspace domain you control (e.g. @letme.com, @letme.co.uk).</p>
+        <input type="email" placeholder="new.alias@letme.com" data-acc-alias-input>
+        <div class="up-editor-row">
+          <button class="up-btn-sm up-btn-sm--primary" data-acc-confirm>Add</button>
+          <button class="up-btn-sm" data-acc-cancel>Cancel</button>
+          <span class="up-edit-status" data-acc-status></span>
+        </div>`;
+      form.querySelector("[data-acc-cancel]").addEventListener("click", () => { form.hidden = true; form.innerHTML = ""; });
+      form.querySelector("[data-acc-confirm]").addEventListener("click", () => {
+        const alias  = (form.querySelector("[data-acc-alias-input]").value || "").trim().toLowerCase();
+        const status = form.querySelector("[data-acc-status]");
+        if (!alias.includes("@")) { status.textContent = "Valid email required"; status.className = "up-edit-status up-edit-status--err"; return; }
+        runWorkspace(form, "user-alias-add", { user_email: userEmail, alias, tenant: t });
+      });
+      form.querySelector("[data-acc-alias-input]").focus();
+      return;
+    }
+    if (kind === "remove") {
+      const alias = btn.dataset.accAliasRemove;
+      if (!alias) return;
+      if (!confirm(`Remove the alias ${alias} from ${userEmail}?\n\nMail sent to ${alias} after removal bounces back to the sender. Non-editable aliases (auto-created by Workspace) can't be removed this way and will surface an error.`)) return;
+      runWorkspace(null, "user-alias-remove", { user_email: userEmail, alias, tenant: t });
+      return;
+    }
+    if (kind === "to-group") {
+      const alias = btn.dataset.accAliasGroup;
+      if (!alias) return;
+      form.hidden = false;
+      form.innerHTML = `
+        <h4>Convert alias to forwarding group</h4>
+        <p class="up-hint">Removes ${escapeHtml(alias)} as an alias of ${escapeHtml(userEmail)} and creates a Workspace Group at the same address. ${escapeHtml(userEmail)} is added as the initial member.</p>
+        <label class="up-field-label">Group display name</label>
+        <input type="text" placeholder="e.g. ${escapeHtml((alias.split("@")[0]||"team").replace(/[._-]+/g, " "))}" data-acc-group-name>
+        <div class="up-editor-row">
+          <button class="up-btn-sm up-btn-sm--primary" data-acc-confirm>Convert</button>
+          <button class="up-btn-sm" data-acc-cancel>Cancel</button>
+          <span class="up-edit-status" data-acc-status></span>
+        </div>`;
+      form.querySelector("[data-acc-cancel]").addEventListener("click", () => { form.hidden = true; form.innerHTML = ""; });
+      form.querySelector("[data-acc-confirm]").addEventListener("click", () => {
+        const name   = (form.querySelector("[data-acc-group-name]").value || "").trim();
+        const status = form.querySelector("[data-acc-status]");
+        if (!name) { status.textContent = "Group name required"; status.className = "up-edit-status up-edit-status--err"; return; }
+        runWorkspace(form, "alias-to-group", { user_email: userEmail, alias, group_name: name, tenant: t });
+      });
+      form.querySelector("[data-acc-group-name]").focus();
+      return;
+    }
+  }
+
+  // Generic worker caller — same status-text + reload-on-success
+  // pattern as runAccountAction but for actions whose body is known at
+  // the call site (no map needed).
+  async function runWorkspace(form, action, payload) {
+    const status = form && form.querySelector("[data-acc-status]");
+    if (status) { status.textContent = "Working…"; status.className = "up-edit-status up-edit-status--working"; }
+    try {
+      const res = await fetch(WORKSPACE_API + "/" + action, {
+        method: "POST", headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+      const out = await res.json();
+      if (!res.ok || !out.ok) throw new Error(out.error || `HTTP ${res.status}`);
       await reloadAccountData();
       renderPanel();
     } catch (err) {
