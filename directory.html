@@ -2708,7 +2708,7 @@
           ${renameDecayLine}
           ${liveGwsWordmark}
           ${suspendedBadge}
-          ${u && u.email ? `<a class="dir-modal-profile-link" href="user.html?email=${escapeHtml(u.email.toLowerCase())}">View profile</a>` : ""}
+          ${u && u.email ? `<a class="dir-modal-profile-link" href="/directory/${escapeHtml(((u.email||"").split("@")[0]||"").toLowerCase())}">View profile</a>` : ""}
         </div>
       </div>
 
@@ -4709,7 +4709,7 @@
     const profile = e.target.closest("[data-profile-link]");
     if (profile) {
       e.stopPropagation();
-      location.href = `user.html?email=${encodeURIComponent(profile.dataset.profileLink)}`;
+      location.href = `/directory/${encodeURIComponent((profile.dataset.profileLink.split("@")[0] || "").toLowerCase())}`;
       return;
     }
     const row = e.target.closest(".dir-row[data-key]");

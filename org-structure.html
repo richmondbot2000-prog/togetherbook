@@ -331,10 +331,9 @@
           </div>`;
       })
       .onNodeClick(d => {
-        // Open the Directory card on click — Directory page accepts a
-        // ?email=… deep-link.
         if (d.data && d.data.email) {
-          location.href = `directory.html?email=${encodeURIComponent(d.data.email)}`;
+          const slug = ((d.data.email || "").split("@")[0] || "").toLowerCase();
+          location.href = `/directory/${encodeURIComponent(slug)}`;
         }
       })
       .render();

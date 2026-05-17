@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>BOOK — Profile</title>
+<title>BOOK</title>
 <link rel="icon" type="image/png" href="/site-icon.png">
 <link rel="apple-touch-icon" href="/site-icon.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -14,6 +14,12 @@
 <link rel="stylesheet" href="/quiet.css?v=1778923602">
 <link rel="stylesheet" href="/quiet-extras.css?v=1778923602">
 <link rel="stylesheet" href="/profile.css?v=1778923602">
+<style>
+  .nf-wrap { max-width: 640px; margin: 80px auto; padding: 0 16px; text-align: center; }
+  .nf-h    { font: 600 24px/1.2 var(--font-display, 'Newsreader', serif); color: var(--ink-900); margin: 0 0 10px; }
+  .nf-p    { font: 400 15px/1.5 var(--font-body, 'Inter', sans-serif); color: var(--ink-700); margin: 0 0 18px; }
+  .nf-back { font: 500 13px/1 var(--font-body); color: var(--brass-600); text-decoration: underline; }
+</style>
 </head>
 <body>
 
@@ -31,16 +37,44 @@
     <a class="qb-nav-link" href="/yesterday.html">Payouts</a>
     <a class="qb-nav-link" href="/holidays.html">Holidays</a>
     <a class="qb-nav-link" href="/brandwatch.html">Brandwatch</a>
-    <a class="qb-nav-link is-active" href="/directory.html">Directory</a>
+    <a class="qb-nav-link" href="/directory.html">Directory</a>
     <a class="qb-nav-link" href="/reports.html" data-sub='[{"href": "/1stcontact.html", "label": "1st Contact"}, {"href": "/topups.html", "label": "Top Ups"}, {"href": "/pipeline.html", "label": "Pipeline"}, {"href": "/brokers.html", "label": "Brokers"}, {"href": "/comms.html", "label": "Comms"}]'>Reports</a>
   </nav>
 </header>
 
-<main class="up-page">
-  <div id="upRoot"><div class="up-loading">Loading…</div></div>
+<main id="nfMain">
+  <!-- /directory/<slug> profile loads here; if the path doesn't match,
+       we fall back to a plain 404 message. -->
+  <div class="nf-wrap" id="nfBoot"><div class="up-loading">Loading…</div></div>
 </main>
 
-<script src="/profile.js?v=1778923602"></script>
+<script>
+  // GH Pages serves this file as the response body for any unmatched path.
+  // We sniff the requested URL, and either render the profile shell or a
+  // standard 404 message.
+  (function () {
+    const path = location.pathname.replace(/\/+$/, "");
+    const m = path.match(/^\/directory\/([a-z0-9._-]+)$/i);
+    const main = document.getElementById("nfMain");
+    if (!m) {
+      main.innerHTML = `
+        <div class="nf-wrap">
+          <h1 class="nf-h">Page not found</h1>
+          <p class="nf-p">The URL <code>${path || "/"}</code> doesn't match anything on the site.</p>
+          <p><a class="nf-back" href="/index.html">← Back to home</a></p>
+        </div>`;
+      return;
+    }
+    // Hand the slug to profile.js; it'll resolve it against staff.json and
+    // render into <div id="upRoot">.
+    window.__profileSlug = m[1].toLowerCase();
+    main.className = "up-page";
+    main.innerHTML = `<div id="upRoot"><div class="up-loading">Loading…</div></div>`;
+    const s = document.createElement("script");
+    s.src = "/profile.js?v=1778923602";
+    document.body.appendChild(s);
+  })();
+</script>
 <script src="/nav.js?v=1778923602" defer></script>
 </body>
 </html>

@@ -930,7 +930,27 @@
     .hd-day-num { font-size: 11px; }
     .hd-day-label { font-size: 8px; }
   }
+
+  /* Embed mode: page is iframed inside /directory/<slug>'s Calendar tab.
+     Hide site chrome and outer padding so only the calendar shows. */
+  body.embed .qb-topbar,
+  body.embed .qb-nav-backdrop,
+  body.embed .qb-subnav,
+  body.embed .hd-view-tabs,
+  body.embed .hd-bell,
+  body.embed .hd-page-footer { display: none !important; }
+  body.embed main.hd-page { padding-top: 0; }
+  body.embed { background: transparent; }
 </style>
+<script>
+  // Flip embed mode early so the chrome never paints.
+  (function () {
+    if (new URLSearchParams(location.search || "").get("embed") === "1") {
+      document.documentElement.classList.add("embed");
+      document.addEventListener("DOMContentLoaded", () => document.body.classList.add("embed"));
+    }
+  })();
+</script>
 </head>
 <body>
 
@@ -2591,7 +2611,7 @@
   function profileLink(email, label) {
     const safeLabel = escapeHtml(label || (email || "—"));
     if (!email) return safeLabel;
-    return `<a class="tb-profile-link" href="user.html?email=${escapeHtml((email || "").toLowerCase())}">${safeLabel}</a>`;
+    return `<a class="tb-profile-link" href="/directory/${escapeHtml(((email || "").split("@")[0] || "").toLowerCase())}">${safeLabel}</a>`;
   }
   function escapeHtml(s) {
     return String(s || "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
@@ -2616,5 +2636,29 @@
   );
 </script>
 <script src="nav.js?v=1778940663" defer></script>
+
+<script>
+  // Embed-mode height reporter — the parent /directory/<slug> page listens
+  // for these and sizes its iframe to match.
+  (function () {
+    if (!document.documentElement.classList.contains("embed")) return;
+    let last = 0;
+    function ping() {
+      const h = Math.max(
+        document.documentElement.scrollHeight,
+        document.body ? document.body.scrollHeight : 0
+      );
+      if (h && Math.abs(h - last) > 4) {
+        last = h;
+        try { parent.postMessage({ type: "holidaysEmbedSize", height: h }, "*"); } catch (e) {}
+      }
+    }
+    // Re-measure whenever DOM changes (booking, switching months, etc).
+    new MutationObserver(ping).observe(document.documentElement, { childList: true, subtree: true, characterData: true });
+    window.addEventListener("load", ping);
+    window.addEventListener("resize", ping);
+    setInterval(ping, 800);
+  })();
+</script>
 </body>
 </html>
