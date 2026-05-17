@@ -2180,6 +2180,118 @@ the authoritative "who can log into our stuff" record.
 
 ---
 
+## 16.8 Iteration — 2026-05-17 (afternoon)
+
+Second iteration on the same day. Topbar rework, Wall behavioural
+overhaul, Directory becomes a pure list, identity bug fix, and the
+import of a legacy stadium series under one Wall post.
+
+### Topbar / nav reshuffle
+
+- **Renamed "Team" → "Wall"** and moved it to the leftmost position
+  across all 22 pages. Final order: **Wall · People · Business ·
+  System**. The Holidays + Org Structure sub-pages still live under
+  the Wall tab via `data-sub`.
+- **Avatar chip always renders** (`nav.js`). Previously the chip
+  removed itself silently when `/api/workspace/whoami` returned no
+  email (the public mirror or any whoami failure path), which is
+  why no avatar appeared even after sign-in. Now the chip renders
+  immediately with a generic person SVG icon + an `/directory.html`
+  fallback href, and the whoami resolve only *upgrades* it to the
+  per-viewer photo + `/directory/<slug>` link.
+- **Avatar + hamburger grouped on the right.** Both use flex `order`
+  (98 / 99) so they slot to the right end of the bar regardless of
+  DOM-append order. The avatar's auto-margin was replaced by a
+  fixed 10 px gap so it doesn't fight the hamburger for the right
+  edge.
+
+### Identity fix — `GET /api/workspace/whoami`
+
+Root cause of every "(unknown)" banner today: the workspace worker
+required `POST` for every action including `whoami`, and the page
+called it as a plain `fetch()` (which defaults to `GET`). The worker
+returned `404 "unknown GET endpoint"` and the page interpreted that
+as "viewer not signed in", losing admin UI everywhere. Added a
+parallel `GET /api/workspace/whoami` branch that mirrors the POST
+payload (`email`, `is_admin`, `is_owner`, `owner`, `admins`).
+Deployed via `python3 ~/.togetherbook/deploy_worker.py`. `/api/wall/whoami`
+and `/api/holidays/whoami` were already happy on GET (they short-
+circuit before the method gate inside `handleWall` / `handleHolidays`).
+
+### Directory rows are links
+
+- Each `.pp-row` is now an `<a href="/directory/<slug>">` wrapping
+  the whole row. Clicking anywhere navigates straight to the
+  person's profile.
+- The inline-expand edit form is retired. **"Open" button gone**,
+  the grid drops from 7 columns to 6. The `expandedId` state +
+  `detailHtml()` are dead code on the page now.
+- Profile page (`profile.js` rendered through `404.html` for
+  `/directory/<slug>`) already exposes editors for Role / Phone /
+  Address / Line manager / Access level / Auth0 ID / Google
+  accounts / Payroll. **Still missing on the profile page** (UI
+  gap, not a schema gap): Display name, Aliases, Start date, Notes,
+  External Google, Suspend toggle, Delete person, Add alt account.
+  All these fields exist in `people.json` and in the worker's
+  `PEOPLE_ALLOWED_FIELDS` whitelist; they just need editors wiring.
+
+### Wall — three-state post model
+
+Replaces the previous compact / expanded binary with a click cycle:
+
+| State | Trigger | What renders |
+|---|---|---|
+| **Preview** | default in feed | 250-char body teaser + post photo peek (220 px clipped) + the single top-level comment whose thread has the most recent activity (200-char body trim + first photo peek, no actions row) |
+| **Partial** | click a preview post | full body + full photo grid + composer + last 4 top-level comments by activity, each capped to its 3 most recent replies. "View N earlier comments / replies" buttons escalate to full. |
+| **Full** | click a partial post (or any comment inside it) | every comment, every reply (existing renderer). A "Show recent only" button at the top of the list collapses back to partial. |
+
+Click model: cycles `preview → partial → full`. Clicking any
+*other* post collapses the previously-focused post back to preview.
+A click filter on the article ignores `a / input / textarea / label
+/ button / [role="button"]` (other than the article element itself)
+so Like / Reply / reactions / photo tiles / "View N" buttons keep
+their own behaviour and don't double-trigger the cycle.
+
+### Activity-sorted comments
+
+Top-level comments now sort by `commentActivity(c, allComments)` =
+max(c.created_at, every descendant reply's created_at). A two-year-
+old comment with a fresh reply bubbles to the bottom of the list
+(or surfaces in the preview slot under a post) instead of staying
+buried by created_at order.
+
+### Wall search
+
+Magnifier icon left of the bell expands a full-width bar across the
+topbar; results render Google-style below as the viewer types
+(80 ms debounce). Scans every loaded post body, every comment /
+reply body, and every `post.poll.question` + `post.poll.options[]`
+string. Click a result → `jumpToPost(postId, { commentId })` flashes
+the matched comment in brass; Esc / × closes. (Shipped earlier in
+the day; mentioned here so the full surface of today's Wall work
+sits in one place.)
+
+### Legacy "stadiums that wouldn't hold our borrowers" import
+
+Bulk import of a James-Benamor series from a previous wall on
+another system. Single parent post (Easter Road Stadium, dated
+30 Aug 2024) with **41 stadium comments** running 11 Sep 2024
+(Pittodrie, 20,866) to 4 Feb 2026 (Hill Dickinson, 52,769). All
+preserve their original publish dates via `created_at`.
+
+Workflow that emerged: the user sends screenshots, I look up each
+stadium's Wikipedia page summary via the REST API
+(`/api/rest_v1/page/summary/<slug>`) for the lead image URL on
+Wikimedia Commons (CC-licensed), `curl` it, resize to max 1600 px
+JPEG q85, save as `wall-media/img_imp_<YYYYMMDD>_<slug>.jpg`, wire
+into `wall.json`, commit. No file-drop needed from the user. Each
+imported comment ID uses the form
+`com_imp_<YYYYMMDD>_<slug>` to make the series easy to identify
+later. One body uses `@kelly.black` so the rendered post shows the
+blue mention chip exactly as in the original.
+
+---
+
 ## 17. Pending / blocked work
 
 | Item | Status | Blocker |

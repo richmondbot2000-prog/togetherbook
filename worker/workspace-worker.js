@@ -1277,39 +1277,53 @@ async function doCoverPhotoRemove(env, body, actor, isAdmin) {
 // Shared helper: PUT a file to the GitHub Contents API. Handles new files
 // (no SHA) and updates (must include SHA of the prior version).
 async function commitFile(env, path, b64Content, message) {
-  const ghHeaders = {
-    "Authorization": `Bearer ${env.GITHUB_TOKEN}`,
-    "Accept": "application/vnd.github+json",
-    "User-Agent": "apifk-workspace-worker",
-  };
-  // Look up the existing SHA if the file is already in the repo.
-  let sha = null;
-  const getRes = await fetch(
-    `https://api.github.com/repos/${REPO}/contents/${path}?ref=${BRANCH}`,
-    { headers: ghHeaders },
-  );
-  if (getRes.ok) sha = (await getRes.json()).sha;
-  else if (getRes.status !== 404) {
-    return { ok: false, error: `pre-commit GET failed: ${getRes.status}` };
+  try {
+    const ghHeaders = {
+      "Authorization": `Bearer ${env.GITHUB_TOKEN}`,
+      "Accept": "application/vnd.github+json",
+      "User-Agent": "apifk-workspace-worker",
+    };
+    // URL-encode each path segment so special characters in filenames
+    // (e.g. "@" → "_at_" already, but periods + future paths) don't
+    // make the URL parser barf with "string did not match expected
+    // pattern". Slashes between segments are preserved.
+    const safePath = (path || "").split("/").map(encodeURIComponent).join("/");
+    // Strip any whitespace that snuck into the base64 (newlines from
+    // some encoders, etc.) — GitHub Contents API rejects b64 with
+    // non-alphabet characters.
+    const cleanB64 = (b64Content || "").toString().replace(/\s+/g, "");
+
+    let sha = null;
+    const getRes = await fetch(
+      `https://api.github.com/repos/${REPO}/contents/${safePath}?ref=${BRANCH}`,
+      { headers: ghHeaders },
+    );
+    if (getRes.ok) sha = (await getRes.json()).sha;
+    else if (getRes.status !== 404) {
+      const det = (await getRes.text()).slice(0, 200);
+      return { ok: false, error: `pre-commit GET failed (${getRes.status}): ${det}` };
+    }
+    const putRes = await fetch(
+      `https://api.github.com/repos/${REPO}/contents/${safePath}`,
+      {
+        method: "PUT",
+        headers: { ...ghHeaders, "Content-Type": "application/json" },
+        body: JSON.stringify({
+          message,
+          content: cleanB64,
+          branch: BRANCH,
+          sha: sha || undefined,
+        }),
+      },
+    );
+    if (!putRes.ok) {
+      const detail = (await putRes.text()).slice(0, 200);
+      return { ok: false, error: `commit failed (${putRes.status}): ${detail}` };
+    }
+    return { ok: true, path };
+  } catch (e) {
+    return { ok: false, error: `commitFile threw: ${e.message || e}` };
   }
-  const putRes = await fetch(
-    `https://api.github.com/repos/${REPO}/contents/${path}`,
-    {
-      method: "PUT",
-      headers: { ...ghHeaders, "Content-Type": "application/json" },
-      body: JSON.stringify({
-        message,
-        content: b64Content,
-        branch: BRANCH,
-        sha: sha || undefined,
-      }),
-    },
-  );
-  if (!putRes.ok) {
-    const detail = (await putRes.text()).slice(0, 200);
-    return { ok: false, error: `commit failed (${putRes.status}): ${detail}` };
-  }
-  return { ok: true, path };
 }
 
 /* ----------- Cloudflare Access allowlist sync ----------- */
