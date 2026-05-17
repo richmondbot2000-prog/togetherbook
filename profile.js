@@ -25,6 +25,9 @@
   let viewerEmail = "";
   let viewerIsAdmin = false;
   let currentTab = "info";
+  let annotationsMap = {};       // for forward_to fallback
+  let pendingTransfersByEmail = {};
+  let adminEmails = new Set();
 
   const WORKSPACE_API = "/api/workspace";
 
@@ -211,9 +214,133 @@
       </div>
 
       <div class="up-card">
-        <div class="up-card-head">Identity & Workspace ${editable ? '<span class="up-card-hint">structural fields — change from <a href="/people.html" style="color:inherit;text-decoration:underline;">People</a></span>' : ""}</div>
+        <div class="up-card-head">Identity & access</div>
         <div class="up-fields-grid">${readOnlyHtml}</div>
+      </div>
+
+      ${renderGoogleAccountsSection()}
+
+      ${viewerIsAdmin ? renderExternalIdentitySection() : ""}`;
+  }
+
+  /* ─── Google accounts section (inline per-account actions) ─────── */
+  function tenantFor(email) {
+    const domain = ((email || "").split("@")[1] || "").toLowerCase();
+    if (domain === "togetherloans.com") return "togetherloans";
+    return "";
+  }
+  function accountState(email) {
+    const e = (email || "").toLowerCase();
+    const u = staffByEmail[e] || null;
+    const pending = pendingTransfersByEmail[e] || null;
+    const fwd = (annotationsMap[e] || {}).forward_to || "";
+    return {
+      exists:        !!u,
+      suspended:     !!(u && u.suspended),
+      deletion_time: (u && u.deletion_time) || "",
+      forwarding_to: fwd || ((u && u.suspended) ? "" : ""),
+      pending,
+      admin:         adminEmails.has(e),
+    };
+  }
+  function renderGoogleAccountsSection() {
+    const accounts = [
+      { email: person.main_google_email, role: "main" },
+      ...(person.alt_google_emails || []).map(e => ({ email: e, role: "alt" })),
+      ...(person.external_google_email ? [{ email: person.external_google_email, role: "external" }] : []),
+    ].filter(a => a.email);
+    if (!accounts.length) {
+      return `<div class="up-card"><div class="up-card-head">Google accounts</div><div class="up-empty">No Google accounts linked.</div></div>`;
+    }
+    const rows = accounts.map(a => renderAccountRow(a.email, a.role)).join("");
+    return `
+      <div class="up-card">
+        <div class="up-card-head">Google accounts
+          ${viewerIsAdmin ? '<span class="up-card-hint">all admin actions live here · niche flows (rename / convert-to-group / alias-to-group) in <a href="/directory-legacy.html" style="color:inherit;text-decoration:underline;">legacy Directory</a></span>' : ""}
+        </div>
+        ${rows}
       </div>`;
+  }
+  function renderAccountRow(email, accRole) {
+    const st = accountState(email);
+    const aliases = ((staffByEmail[email.toLowerCase()] || {}).aliases || []).filter(a => a !== email);
+    const aliasLine = aliases.length ? `<div class="up-acct-aliases">aliases: ${aliases.map(escapeHtml).join(", ")}</div>` : "";
+    const isMine = (viewerEmail === email.toLowerCase());
+
+    let badges = [];
+    if (!st.exists && accRole === "external") badges.push(`<span class="up-acct-badge up-acct-badge--ext">External</span>`);
+    else if (!st.exists)                       badges.push(`<span class="up-acct-badge up-acct-badge--missing">Not in Workspace</span>`);
+    else if (st.deletion_time)                 badges.push(`<span class="up-acct-badge up-acct-badge--deleted">Deleted</span>`);
+    else if (st.pending)                       badges.push(`<span class="up-acct-badge up-acct-badge--pending">Transferring</span>`);
+    else if (st.suspended)                     badges.push(`<span class="up-acct-badge up-acct-badge--suspended">Suspended</span>`);
+    else                                       badges.push(`<span class="up-acct-badge up-acct-badge--live">Live</span>`);
+    if (accRole === "main")                    badges.push(`<span class="up-acct-badge">Main</span>`);
+    if (st.admin)                              badges.push(`<span class="up-acct-badge up-acct-badge--admin">Workspace admin</span>`);
+    if (st.forwarding_to)                      badges.push(`<span class="up-acct-badge up-acct-badge--forward">→ ${escapeHtml(st.forwarding_to)}</span>`);
+
+    const actions = (viewerIsAdmin && st.exists && accRole !== "external") ? renderAccountButtons(email, st, isMine) : "";
+
+    return `
+      <div class="up-acct" data-acc-email="${escapeHtml(email)}">
+        <div class="up-acct-head">
+          <div>
+            <div class="up-acct-email">${escapeHtml(email)}</div>
+            ${aliasLine}
+          </div>
+          <div class="up-acct-badges">${badges.join("")}</div>
+        </div>
+        ${actions}
+        <div class="up-acct-form" hidden></div>
+      </div>`;
+  }
+  function renderAccountButtons(email, st, isMine) {
+    const buttons = [];
+    if (st.deletion_time) {
+      buttons.push(`<button data-acc-action="recover">Recover</button>`);
+    } else if (st.suspended) {
+      buttons.push(`<button data-acc-action="unsuspend" class="up-acct-btn-primary">Unsuspend</button>`);
+      if (st.forwarding_to)
+        buttons.push(`<button data-acc-action="cancel-forwarding">Cancel forwarding</button>`);
+      buttons.push(`<button data-acc-action="delete-now" class="danger">Delete account</button>`);
+    } else if (st.pending) {
+      buttons.push(`<button disabled title="Drive + Mail migration in flight">Transferring…</button>`);
+    } else {
+      if (st.forwarding_to) {
+        buttons.push(`<button data-acc-action="disable-forwarding">Turn off forwarding</button>`);
+      } else {
+        buttons.push(`<button data-acc-action="forward">Add forwarding</button>`);
+      }
+      if (!isMine) buttons.push(`<button data-acc-action="suspend-route" class="up-acct-btn-primary">Suspend & forward</button>`);
+      buttons.push(`<button data-acc-action="reset-password">Reset password</button>`);
+      if (!isMine) buttons.push(`<button data-acc-action="transfer-delete" class="danger">Delete (transfer Drive + Mail first)</button>`);
+    }
+    return `<div class="up-acct-actions">${buttons.join("")}</div>`;
+  }
+  function renderExternalIdentitySection() {
+    const html = [];
+    html.push(`<div class="up-card"><div class="up-card-head">Other identities <span class="up-card-hint">admin-only · used to grant access without a Workspace seat</span></div>`);
+    html.push(`<div class="up-field">
+      <div class="up-field-label">External Google account</div>
+      <div class="up-field-editor up-field-editor--open">
+        <input type="email" name="external_google_email" value="${escapeHtml(person.external_google_email || "")}" placeholder="external.email@gmail.com">
+        <div class="up-editor-row">
+          <button type="button" class="up-btn-sm up-btn-sm--primary" data-edit-save="external_google_email">Save</button>
+          <span class="up-edit-status" data-edit-status="external_google_email"></span>
+        </div>
+      </div>
+    </div>`);
+    html.push(`<div class="up-field">
+      <div class="up-field-label">Auth0 ID</div>
+      <div class="up-field-editor up-field-editor--open">
+        <input type="text" name="auth0_id" value="${escapeHtml(person.auth0_id || "")}" placeholder="auth0|abc123…">
+        <div class="up-editor-row">
+          <button type="button" class="up-btn-sm up-btn-sm--primary" data-edit-save="auth0_id">Save</button>
+          <span class="up-edit-status" data-edit-status="auth0_id"></span>
+        </div>
+      </div>
+    </div>`);
+    html.push(`</div>`);
+    return html.join("");
   }
 
   function wirePanel() {
@@ -239,6 +366,124 @@
     document.querySelectorAll("[data-edit-save]").forEach(btn => {
       btn.addEventListener("click", () => savePersonField(btn.dataset.editSave));
     });
+    document.querySelectorAll("[data-acc-action]").forEach(btn => {
+      btn.addEventListener("click", () => handleAccountAction(btn));
+    });
+  }
+
+  /* ─── Account action handlers (call workspace worker inline) ───── */
+  async function handleAccountAction(btn) {
+    const card = btn.closest(".up-acct");
+    const email = card && card.dataset.accEmail;
+    if (!email) return;
+    const action = btn.dataset.accAction;
+    const form = card.querySelector(".up-acct-form");
+    const t = tenantFor(email);
+
+    // Actions that need a target email (forward / suspend-route / delete+transfer).
+    const NEEDS_TARGET = new Set(["forward", "suspend-route", "transfer-delete"]);
+    if (NEEDS_TARGET.has(action)) {
+      const labels = {
+        "forward":          ["Forward mail to colleague", "When mail arrives at this account, deliver it to:"],
+        "suspend-route":    ["Suspend & forward",        "Suspend this account and forward all mail to:"],
+        "transfer-delete":  ["Transfer Drive + mail, then delete", "Drive files + Gmail will be migrated to:"],
+      }[action];
+      const colleagueOpts = people
+        .filter(p => p.id !== person.id && p.main_google_email)
+        .sort((a, b) => (a.name || "").localeCompare(b.name || ""))
+        .map(p => `<option value="${escapeHtml(p.main_google_email)}">${escapeHtml(p.name || p.id)}</option>`).join("");
+      form.hidden = false;
+      form.innerHTML = `
+        <h4>${escapeHtml(labels[0])}</h4>
+        <p class="up-hint">${escapeHtml(labels[1])}</p>
+        <input type="email" list="upAccTargets" placeholder="colleague.email@…" data-acc-target>
+        <datalist id="upAccTargets">${colleagueOpts}</datalist>
+        <div class="up-editor-row">
+          <button class="up-btn-sm up-btn-sm--primary" data-acc-confirm>Confirm</button>
+          <button class="up-btn-sm" data-acc-cancel>Cancel</button>
+          <span class="up-edit-status" data-acc-status></span>
+        </div>`;
+      form.querySelector("[data-acc-cancel]").addEventListener("click", () => { form.hidden = true; form.innerHTML = ""; });
+      form.querySelector("[data-acc-confirm]").addEventListener("click", () => {
+        const target = (form.querySelector("[data-acc-target]").value || "").trim().toLowerCase();
+        if (!target.includes("@")) {
+          form.querySelector("[data-acc-status]").textContent = "Pick a target email";
+          form.querySelector("[data-acc-status]").className = "up-edit-status up-edit-status--err";
+          return;
+        }
+        runAccountAction(form, email, action, target, t);
+      });
+      form.querySelector("[data-acc-target]").focus();
+      return;
+    }
+
+    // Instant actions — confirm and fire.
+    const CONFIRM = {
+      "unsuspend":          { msg: `Unsuspend ${email}? Mail will resume delivery and the seat goes back to £11/month.` },
+      "cancel-forwarding":  { msg: `Stop forwarding mail from ${email}? Future mail will land in the suspended account's inbox (effectively a black hole).` },
+      "disable-forwarding": { msg: `Turn off mail forwarding on ${email}? Mail will land in this account's inbox again.` },
+      "delete-now":         { msg: `DELETE ${email} now?\n\nThis is permanent after 20 days. Use "Delete (transfer Drive + Mail first)" instead if the account has files to keep.` },
+      "reset-password":     { msg: `Reset password for ${email}?\n\nA new password will be generated and shown — copy it now, it's only visible once.` },
+      "recover":            { msg: `Recover ${email}?\n\nRestores the deleted account to live, billed £11/month from today.` },
+    }[action];
+    if (CONFIRM && !confirm(CONFIRM.msg)) return;
+    runAccountAction(null, email, action, null, t);
+  }
+
+  async function runAccountAction(form, email, action, target, tenant) {
+    const status = form && form.querySelector("[data-acc-status]");
+    if (status) { status.textContent = "Working…"; status.className = "up-edit-status up-edit-status--working"; }
+    const map = {
+      "suspend-route":      ["suspend-and-route",  { email, route_to: target }],
+      "forward":            ["add-forwarding",     { email, target }],
+      "cancel-forwarding":  ["cancel-forwarding",  { email }],
+      "disable-forwarding": ["disable-forwarding", { email }],
+      "unsuspend":          ["unsuspend",          { email }],
+      "delete-now":         ["delete-account",     { email }],
+      "transfer-delete":    ["queue-transfer-and-delete", { email, target }],
+      "reset-password":     ["reset-password",     { email }],
+      "recover":            ["recover",            { email }],
+    };
+    const [act, args] = map[action] || [];
+    if (!act) return;
+    try {
+      const res = await fetch(WORKSPACE_API, {
+        method: "POST", headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action: act, tenant, ...args }),
+      });
+      const out = await res.json();
+      if (!res.ok || !out.ok) throw new Error(out.error || `HTTP ${res.status}`);
+      if (act === "reset-password" && out.new_password) {
+        alert(`Password for ${email}:\n\n${out.new_password}\n\nCopy now — it's only shown once.`);
+      }
+      // Refresh data from origin so badges reflect the change.
+      await reloadAccountData();
+      renderPanel();
+    } catch (err) {
+      const msg = "Failed — " + (err && err.message || err);
+      if (status) { status.textContent = msg; status.className = "up-edit-status up-edit-status--err"; }
+      else alert(msg);
+    }
+  }
+
+  async function reloadAccountData() {
+    const [staff, annFile, pending] = await Promise.all([
+      fetch("/staff.json",            { cache: "no-store" }).then(r => r.ok ? r.json() : null).catch(() => null),
+      fetch("/annotations.json",      { cache: "no-store" }).then(r => r.ok ? r.json() : null).catch(() => null),
+      fetch("/pending-transfers.json",{ cache: "no-store" }).then(r => r.ok ? r.json() : null).catch(() => null),
+    ]);
+    if (staff && Array.isArray(staff.users)) {
+      staffByEmail = {};
+      for (const u of staff.users) { const k = (u.email || "").toLowerCase(); if (k) staffByEmail[k] = u; }
+    }
+    if (annFile && annFile.annotations) annotationsMap = annFile.annotations;
+    pendingTransfersByEmail = {};
+    if (pending && Array.isArray(pending.entries)) {
+      for (const p of pending.entries) {
+        const k = (p.source_email || "").toLowerCase();
+        if (k) pendingTransfersByEmail[k] = p;
+      }
+    }
   }
 
   async function savePersonField(field) {
@@ -369,7 +614,7 @@
           </div>
           <div class="up-actions">
             <a class="up-btn" href="/org-structure.html?center=${encodeURIComponent(person.main_google_email)}">${svgIcon("org")} Org chart</a>
-            ${viewerIsAdmin ? `<a class="up-btn up-btn--primary" href="/people.html">${svgIcon("edit")} Manage in People</a>` : ""}
+            ${viewerIsAdmin ? `<a class="up-btn up-btn--primary" href="/directory.html">${svgIcon("edit")} All people</a>` : ""}
           </div>
         </div>
       </div>
@@ -482,12 +727,15 @@
 
   /* ─── Boot ────────────────────────────────────────────────────────── */
   Promise.all([
-    fetch("/people.json",       { cache: "no-store" }).then(r => r.ok ? r.json() : null).catch(() => null),
-    fetch("/staff.json",        { cache: "no-store" }).then(r => r.ok ? r.json() : null).catch(() => null),
-    fetch("/wall.json",         { cache: "no-store" }).then(r => r.ok ? r.json() : null).catch(() => null),
+    fetch("/people.json",           { cache: "no-store" }).then(r => r.ok ? r.json() : null).catch(() => null),
+    fetch("/staff.json",            { cache: "no-store" }).then(r => r.ok ? r.json() : null).catch(() => null),
+    fetch("/wall.json",             { cache: "no-store" }).then(r => r.ok ? r.json() : null).catch(() => null),
     fetch("/api/workspace/payroll", { cache: "no-store" }).then(r => r.ok ? r.json() : null).catch(() => null),
     fetch("/api/workspace/whoami",  { cache: "no-store" }).then(r => r.ok ? r.json() : null).catch(() => null),
-  ]).then(([peopleFile, staff, wallFile, payroll, who]) => {
+    fetch("/annotations.json",      { cache: "no-store" }).then(r => r.ok ? r.json() : null).catch(() => null),
+    fetch("/admins.json",           { cache: "no-store" }).then(r => r.ok ? r.json() : null).catch(() => null),
+    fetch("/pending-transfers.json",{ cache: "no-store" }).then(r => r.ok ? r.json() : null).catch(() => null),
+  ]).then(([peopleFile, staff, wallFile, payroll, who, annFile, adminsFile, pending]) => {
     if (peopleFile && Array.isArray(peopleFile.people)) {
       people = peopleFile.people;
       for (const p of people) {
@@ -514,6 +762,16 @@
       payrollByEmail = payroll.by_email;
     }
     if (who) { viewerEmail = (who.email || "").toLowerCase(); viewerIsAdmin = !!who.is_admin; }
+    if (annFile && annFile.annotations) annotationsMap = annFile.annotations;
+    if (adminsFile && Array.isArray(adminsFile.admins)) {
+      adminEmails = new Set(adminsFile.admins.map(e => (e || "").toLowerCase()));
+    }
+    if (pending && Array.isArray(pending.entries)) {
+      for (const p of pending.entries) {
+        const k = (p.source_email || "").toLowerCase();
+        if (k) pendingTransfersByEmail[k] = p;
+      }
+    }
     renderProfile();
   }).catch(err => renderEmpty("Failed to load: " + String(err)));
 })();

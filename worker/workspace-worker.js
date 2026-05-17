@@ -292,6 +292,24 @@ export default {
       return json(result, result.ok ? 200 : 400, req);
     }
 
+    // Manual access sync — admin-only. Re-derives admins.json from
+    // people.json and pushes the resulting allow-list to Cloudflare Access.
+    if (action === "people-sync-access") {
+      if (!isAdmin) return json({ error: "admin required" }, 403, req);
+      try {
+        const { file } = await fetchPeopleFile(env);
+        const adminSync = await syncAdminsFromPeople(env, file, actor);
+        let accessSync = null;
+        if (adminSync.ok && adminSync.admins) {
+          accessSync = await syncAccessAllowlist(env, adminSync.admins);
+        }
+        return json({ ok: !!(adminSync.ok && (accessSync ? accessSync.ok : true)),
+                      admin_sync: adminSync, access_sync: accessSync }, 200, req);
+      } catch (e) {
+        return json({ ok: false, error: e.message }, 500, req);
+      }
+    }
+
     // People table CRUD — no Google token needed, just GitHub.
     if (action === "people-set" || action === "people-delete") {
       if (action === "people-delete" && !isAdmin) {
@@ -1528,13 +1546,90 @@ async function doPeopleSet(env, body, actor, isAdmin) {
     file.people.pop();
     return { ok: false, error: "main_google_email is required for new people" };
   }
+  const accessChanged =
+    patch.access_level !== undefined ||
+    patch.suspended    !== undefined ||
+    patch.main_google_email !== undefined ||
+    patch.alt_google_emails !== undefined;
+
   Object.assign(person, patch, { updated_at: now });
 
   const msg = created
     ? `People: create ${id} (by ${actor})`
     : `People: update ${id} (by ${actor})`;
   await commitPeopleFile(env, file, sha, msg);
-  return { ok: true, person, created };
+
+  // If anything access-relevant changed, refresh admins.json + push the
+  // new allow-list to Cloudflare Access. Non-fatal: people-set itself
+  // already succeeded, so a sync failure is reported back as a warning.
+  const result = { ok: true, person, created };
+  if (accessChanged) {
+    try {
+      const adminSync  = await syncAdminsFromPeople(env, file, actor);
+      result.admin_sync = adminSync;
+      if (adminSync.ok && adminSync.admins) {
+        const accessSync = await syncAccessAllowlist(env, adminSync.admins);
+        result.access_sync = accessSync;
+      }
+    } catch (e) {
+      result.access_sync = { ok: false, error: e.message };
+    }
+  }
+  return result;
+}
+
+// Derive the admin list from people.json (access_level === "admin" AND
+// not suspended/former). Owner is always included as a failsafe so a bad
+// people.json edit can't lock them out.
+function peopleToAdminList(file) {
+  const owner = OWNER_EMAIL.toLowerCase();
+  const out = new Set([owner]);
+  for (const p of (file.people || [])) {
+    if (p.suspended) continue;
+    if (p.access_level !== "admin") continue;
+    if (p.main_google_email) out.add(p.main_google_email.toLowerCase());
+    for (const e of (p.alt_google_emails || [])) if (e) out.add(e.toLowerCase());
+    if (p.external_google_email) out.add(p.external_google_email.toLowerCase());
+  }
+  return Array.from(out).sort();
+}
+
+// Sync admins.json from people.json (people.json is canonical). Writes a
+// fresh admins.json containing every admin email + the owner.
+async function syncAdminsFromPeople(env, file, actor) {
+  if (!env.GITHUB_TOKEN) return { ok: false, error: "GITHUB_TOKEN not configured" };
+  const admins = peopleToAdminList(file);
+  const ghHeaders = {
+    "Authorization": `Bearer ${env.GITHUB_TOKEN}`,
+    "Accept": "application/vnd.github+json",
+    "User-Agent": "apifk-workspace-worker",
+  };
+  const getRes = await fetch(`https://api.github.com/repos/${REPO}/contents/${ADMINS_PATH}?ref=${BRANCH}`, { headers: ghHeaders });
+  let sha = null;
+  if (getRes.ok) sha = (await getRes.json()).sha;
+  else if (getRes.status !== 404) return { ok: false, error: `admins.json GET failed: ${getRes.status}` };
+
+  const body = JSON.stringify({
+    schema_version: 1,
+    updated_at: new Date().toISOString(),
+    source: "synced from people.json",
+    admins,
+  }, null, 2) + "\n";
+  const putRes = await fetch(`https://api.github.com/repos/${REPO}/contents/${ADMINS_PATH}`, {
+    method: "PUT",
+    headers: { ...ghHeaders, "Content-Type": "application/json" },
+    body: JSON.stringify({
+      message: `Admins: synced from people.json (by ${actor})`,
+      content: b64Encode(body),
+      branch: BRANCH,
+      sha: sha || undefined,
+    }),
+  });
+  if (!putRes.ok) {
+    const detail = (await putRes.text()).slice(0, 200);
+    return { ok: false, error: `admins.json PUT failed (${putRes.status}): ${detail}` };
+  }
+  return { ok: true, admins };
 }
 
 async function doPeopleDelete(env, body, actor) {
