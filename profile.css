@@ -322,6 +322,32 @@ body { background: var(--paper-100, #FBF6E9); }
   margin-top: 8px;
 }
 
+/* ─── Linked sources strip (Info tab) ──────────────────────────── */
+.up-src-list { display: flex; flex-direction: column; gap: 6px; }
+.up-src-row {
+  display: grid; grid-template-columns: 28px 130px 1fr; align-items: center; gap: 12px;
+  padding: 5px 0;
+  font: 500 13px/1.4 var(--font-body); color: var(--ink-800);
+  border-bottom: 1px dashed var(--paper-300);
+}
+.up-src-row:last-child { border-bottom: 0; }
+.up-src-label { color: var(--ink-700); }
+.up-src-value { overflow-wrap: anywhere; color: var(--ink-900); }
+.pp-src-chip {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 24px; height: 24px;
+  border: 1px solid var(--paper-300, #ECDFB6);
+  background: var(--paper-100, #FBF6E9);
+  color: var(--ink-500); cursor: help; border-radius: 4px;
+}
+.pp-src-chip svg { width: 14px; height: 14px; display: block; }
+.pp-src-chip.off svg { opacity: 0.35; }
+.pp-src-chip--letme.on    { background: #e8f0fe; border-color: #4285F4; color: #1a5fc0; }
+.pp-src-chip--together.on { background: #fff3e6; border-color: #F97316; color: #b85412; }
+.pp-src-chip--warehouse.on{ background: #f3eaf4; border-color: #742774; color: #5a1e5a; }
+.pp-src-chip--payroll.on  { background: #eefaf0; border-color: #1a7f37; color: #15602a; }
+.pp-src-chip--gmail.on    { background: #fce8e6; border-color: #EA4335; color: #b1271c; }
+
 /* ─── Payroll editor grid ────────────────────────────────────────── */
 .up-pay-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px 18px; margin-bottom: 12px; }
 @media (max-width: 720px) { .up-pay-grid { grid-template-columns: 1fr; } }

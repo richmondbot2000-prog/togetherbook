@@ -1626,6 +1626,25 @@ async function doPeopleSet(env, body, actor, isAdmin) {
   // main_google_email is no longer strictly required — the bulk payroll
   // import can create a Person from a row that has no Google account
   // yet (admin fills it in later). We leave it empty by default.
+
+  // Name is required for any new Person. Empty names break every
+  // downstream list (directory, mentions, line-manager pickers).
+  if (created && !((patch.name || person.name) || "").trim()) {
+    file.people.pop();
+    return { ok: false, error: "name is required for new people" };
+  }
+
+  // One Google account per tenant rule. Letme (.co.uk + .com) counts
+  // as one tenant; Together is another; external Gmail is its own
+  // field. This applies to BOTH main_google_email and alt_google_emails.
+  const futureEmails = [
+    patch.main_google_email !== undefined ? patch.main_google_email : person.main_google_email,
+    ...(patch.alt_google_emails !== undefined ? patch.alt_google_emails : (person.alt_google_emails || [])),
+  ].filter(Boolean).map(e => e.toLowerCase());
+  const letme    = futureEmails.filter(e => e.endsWith("@letme.co.uk") || e.endsWith("@letme.com"));
+  const together = futureEmails.filter(e => e.endsWith("@togetherloans.com"));
+  if (letme.length > 1)    return { ok: false, error: `only one Letme Google account allowed per Person (would have ${letme.length}: ${letme.join(", ")})` };
+  if (together.length > 1) return { ok: false, error: `only one Together Google account allowed per Person (would have ${together.length}: ${together.join(", ")})` };
   const accessChanged =
     patch.access_level !== undefined ||
     patch.suspended    !== undefined ||

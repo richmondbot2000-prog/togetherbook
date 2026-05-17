@@ -211,6 +211,8 @@
     return `
       <h2 class="up-panel-title">Information</h2>
 
+      ${renderLinkedSourcesCard()}
+
       <div class="up-card">
         <div class="up-card-head">Editable details ${lockedBadge}</div>
         ${editableRow("role",    "Role",    "text",     person.role)}
@@ -228,6 +230,50 @@
       </div>
 
       ${viewerIsAdmin ? renderMergeCard() : ""}`;
+  }
+
+  /* ─── Linked sources strip (same icons as the directory row) ───── */
+  const SRC_GOOGLE_SVG = `<svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M21.6 12.23c0-.68-.06-1.34-.18-1.98H12v3.75h5.4a4.62 4.62 0 0 1-2 3.03v2.51h3.23c1.9-1.74 2.97-4.31 2.97-7.31z"/><path fill="currentColor" d="M12 22c2.7 0 4.96-.9 6.62-2.46l-3.23-2.51c-.9.6-2.05.96-3.39.96-2.6 0-4.81-1.76-5.6-4.12H3.06v2.6A10 10 0 0 0 12 22z"/><path fill="currentColor" d="M6.4 13.87a6 6 0 0 1 0-3.74V7.53H3.06a10 10 0 0 0 0 8.94l3.34-2.6z"/><path fill="currentColor" d="M12 5.88c1.47 0 2.79.51 3.83 1.5l2.87-2.87A10 10 0 0 0 12 2a10 10 0 0 0-8.94 5.53l3.34 2.6c.79-2.36 3-4.25 5.6-4.25z"/></svg>`;
+  const SRC_WAREHOUSE_SVG = `<svg viewBox="0 0 24 24" aria-hidden="true"><ellipse cx="12" cy="5" rx="8" ry="2.5" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M4 5v6c0 1.4 3.6 2.5 8 2.5s8-1.1 8-2.5V5M4 11v6c0 1.4 3.6 2.5 8 2.5s8-1.1 8-2.5v-6" fill="none" stroke="currentColor" stroke-width="1.6"/></svg>`;
+  const SRC_PAYROLL_SVG = `<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M16 7H9c-1.7 0-3 1.3-3 3s1.3 3 3 3h2M8 17h7c1.7 0 3-1.3 3-3s-1.3-3-3-3h-2M12 4v3M12 17v3" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>`;
+  function srcIconSvg(kind) {
+    return (kind === "letme" || kind === "together" || kind === "gmail") ? SRC_GOOGLE_SVG
+      : kind === "warehouse" ? SRC_WAREHOUSE_SVG
+      : kind === "payroll"   ? SRC_PAYROLL_SVG
+      : "";
+  }
+  function renderLinkedSourcesCard() {
+    const emails = [person.main_google_email, ...(person.alt_google_emails || [])].filter(Boolean).map(e => e.toLowerCase());
+    const letme    = emails.find(e => e.endsWith("@letme.co.uk") || e.endsWith("@letme.com")) || "";
+    const together = emails.find(e => e.endsWith("@togetherloans.com")) || "";
+    const gmail    = person.external_google_email || "";
+    const payrollLabel = person.on_payroll
+      ? (person.most_recent_payroll_id ? `Payroll record #${person.most_recent_payroll_id}` : "Marked on payroll · no record yet")
+      : "";
+    // Warehouse usernames are not yet a first-class field on the Person
+    // (they live as aliases). Show "Linked" when there's a hint.
+    const warehouseHint = (person.aliases || []).find(a => /^[a-z]+ [a-z]+$/i.test(a)) || "";
+
+    function row(kind, label, value) {
+      const present = !!value;
+      return `
+        <div class="up-src-row">
+          <span class="pp-src-chip pp-src-chip--${kind} ${present ? "on" : "off"}" title="${escapeHtml(label)}">${srcIconSvg(kind)}</span>
+          <span class="up-src-label">${escapeHtml(label)}</span>
+          <span class="up-src-value">${present ? escapeHtml(value) : '<span class="up-empty-val">not linked</span>'}</span>
+        </div>`;
+    }
+    return `
+      <div class="up-card">
+        <div class="up-card-head">Linked sources <span class="up-card-hint">one record per source · manage in <a href="?tab=accounts" style="color:inherit;text-decoration:underline;">Accounts</a> · <a href="?tab=payroll" style="color:inherit;text-decoration:underline;">Payroll</a></span></div>
+        <div class="up-src-list">
+          ${row("letme",     "Google Letme",    letme)}
+          ${row("together",  "Google Together", together)}
+          ${row("gmail",     "External Gmail",  gmail)}
+          ${row("warehouse", "Warehouse CRM",   warehouseHint)}
+          ${row("payroll",   "Payroll",         payrollLabel)}
+        </div>
+      </div>`;
   }
 
   function renderMergeCard() {
