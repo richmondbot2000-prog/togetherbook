@@ -2323,4 +2323,45 @@ blue mention chip exactly as in the original.
 
 ---
 
+## Reliability layer for the identity tables (added 2026-05-17)
+
+Identity = the four canonical mutable tables: `people.json`, `payroll-data.json`, `google-accounts.json`, `warehouse-activity.json`. These are the tables admins edit through the UI, so they need to be **trustworthy in real-time** — an HR system that says "saved" then shows the old value is broken.
+
+The reliability story is **five layers**, each independently sufficient to kill a class of stale-data symptom; together they make "appears to lose an edit" impossible.
+
+### Layer 1 — Worker proxy reads (server side, atomic with writes)
+Every read for the four canonical tables goes through
+`GET /api/workspace/table?file=<people|payroll-data|google-accounts|warehouse-activity>`. The Worker fetches the file from the **GitHub Contents API at HEAD of main** — the same SHA the Worker itself just wrote to. Response sets `cf: { cacheTtl: 0 }` so Cloudflare can't cache it, full no-cache Cache-Control headers, and an `X-Table-Sha` header so the client can verify freshness. Eliminates GitHub Pages publish lag (~30–60s) and every cache layer in front of it.
+
+### Layer 2 — Cloudflare Cache Rule
+For any static fetch of `/*.json` under `book.togetherbook.net`, Cloudflare bypasses cache (rule pinned via API, visible in dash → Caching → Cache Rules). Belt-and-braces if a page accidentally hits a static URL instead of the proxy endpoint.
+
+### Layer 3 — Client `Cache-Control` headers on every JSON fetch
+`cache: "no-store"` alone isn't enough on iOS Safari — explicit `Cache-Control: no-cache, no-store, must-revalidate` + `Pragma: no-cache` headers on every fetch force revalidation.
+
+### Layer 4 — localStorage write-through + persistent ✓ badge
+Every successful save also stashes the edit in `localStorage` keyed by `tbk.edit.<personId>.<field>` with a 5-minute TTL. On render, `LS.overlay(person)` applies any unexpired entries OVER the server-returned record. Means the user's own session is guaranteed-correct even if the server response was lost in transit or some layer below us hiccups.
+
+A green `✓ Saved HH:MM` badge appears next to any field with an unexpired localStorage entry. Visible across tab switches and page reloads, persists for 5 min. Hover tooltip explains the mechanism.
+
+Wired into: `savePersonField`, `savePayrollEdits`, `togglePayroll`, `suspendPerson`, `uploadImage` (cover + avatar — fires BEFORE the network call so the new URL renders immediately even if stamp-write fails).
+
+### Layer 5 — Daily schema integrity check
+`scripts/check_schema_integrity.py` walks all four tables + `admins.json`, exits non-zero if any FK is broken, duplicate `url_slug`, missing name, mis-tenanted Google account, or orphan row. Runs in the daily `reconcile-people.yml` GitHub Actions workflow at 06:30 UTC. Any future merge-bug-like issue that leaves an orphan triggers a workflow failure email the next morning instead of rotting silently.
+
+### Linked-table merge invariant (added with `c6fe2f7`)
+`doPeopleMerge` MUST re-point FKs in all three linked tables (`payroll-data`, `google-accounts`, `warehouse-activity`), not just payroll. The earlier bug only re-pointed payroll, leaving Google + warehouse rows pointed at the deleted Person — silently dropping source-chips on the surviving Person. Fix:
+1. Load all three files
+2. Walk records, re-point any `person_id === loserId` to `winnerId`
+3. After re-pointing Google rows, run `denormaliseEmailsToPerson` on the winner so `main_google_email` / `alt_google_emails` reflect the merger
+4. Commit each table in its own try/catch — single-table commit failure surfaces as a warning, doesn't block the others
+5. Response includes `payroll_records_repointed` + `google_accounts_repointed` + `warehouse_rows_repointed` counters
+
+This invariant must hold for every future destructive operation that deletes a Person — anything that removes a row from people.json must also handle the FK cascade across these three tables.
+
+### Test harness
+`SPEC_TESTING.md` is a standalone brief a fresh agent can execute end-to-end without prior context. Validates schema, Worker reliability paths, client wiring, Cloudflare cache rule, import script, and the six core user flows. Last run on 2026-05-17 found and fixed one real bug (the merge FK cascade above); now clean.
+
+---
+
 _End of spec. If you're adding a new page or workflow that isn't covered above, please update this file in the same PR._
