@@ -942,6 +942,18 @@
   @media (max-width: 480px) {
     .wl-photo-peek { height: 180px; }
   }
+  /* The single comment surfaced under a preview post — same flex shape
+     as a regular .wl-comment but rendered without the action row, reply
+     composer, or reactions, and with its first photo getting the same
+     220-px full-width peek treatment as the post photo. */
+  .wl-preview-comment {
+    display: flex; gap: 10px;
+    margin-top: 10px;
+    padding-top: 10px;
+    border-top: 1px solid var(--paper-200, #efe5c8);
+  }
+  .wl-preview-comment .wl-comment-body { padding: 0; }
+  .wl-preview-comment .wl-photo-peek { margin: 6px 0 0; }
   .wl-recent-comment {
     margin-top: 8px;
     padding: 8px 12px;
@@ -2182,7 +2194,9 @@
   function syncWallUrl() {
     try {
       const url = new URL(location.href);
-      const focused = expandedPostIds.size === 1 ? [...expandedPostIds][0] : null;
+      const focused = expandedPostIds.size === 1
+        ? [...expandedPostIds][0]
+        : (partialPostIds.size === 1 ? [...partialPostIds][0] : null);
       if (focused) url.searchParams.set("post", focused);
       else url.searchParams.delete("post");
       if (currentPage > 0) url.searchParams.set("page", String(currentPage));
@@ -2198,6 +2212,7 @@
     if (idx < 0) return;
     currentPage = Math.floor(idx / POSTS_PER_PAGE);
     expandedPostIds.clear();
+    partialPostIds.clear();
     expandedPostIds.add(postId);
     openPostIds.clear();
     openPostIds.add(postId);
@@ -3007,10 +3022,15 @@
     document.querySelectorAll("[data-expand-card]").forEach(el => {
       el.addEventListener("click", e => {
         if (e.target.closest("[data-stop-card-click]")) return;
-        if (e.target.closest("a, input, textarea, label")) return;
-        // The Like-button picker popover is a body-level child so it can't
-        // be a closest() ancestor, but its clicks bubble through document.
-        // We're safe to expand on any click that didn't hit a control.
+        // Don't escalate when the user is clicking a real control inside
+        // a partial post (Like, Reply, "View N earlier", reaction pills,
+        // photo tiles, etc.) — those have their own handlers and
+        // shouldn't double as cycle-the-card triggers. The article
+        // itself is also role="button" so closest() can match the
+        // article — we only skip when the matched element is *not* the
+        // article, i.e. a real inner control.
+        const interactive = e.target.closest('a, input, textarea, label, button, [role="button"]');
+        if (interactive && interactive !== el) return;
         expandCard(el.dataset.expandCard);
       });
       el.addEventListener("keydown", e => {
@@ -3025,6 +3045,7 @@
       el.addEventListener("click", () => {
         currentPage = Math.max(0, currentPage - 1);
         expandedPostIds.clear();
+        partialPostIds.clear();
         syncWallUrl();
         renderFeed();
         window.scrollTo({ top: 0, behavior: "smooth" });
@@ -3034,6 +3055,7 @@
       el.addEventListener("click", () => {
         currentPage++;
         expandedPostIds.clear();
+        partialPostIds.clear();
         syncWallUrl();
         renderFeed();
         window.scrollTo({ top: 0, behavior: "smooth" });
@@ -3056,11 +3078,36 @@
       el.addEventListener("click", () => {
         const id = el.dataset.commentOn;
         expandedPostIds.clear();
+        partialPostIds.clear();
         expandedPostIds.add(id);
         openPostIds.add(id);
         renderFeed();
         const inp = document.querySelector(`[data-add-comment="${cssAttr(id)}"]`);
         if (inp) inp.focus();
+      });
+    });
+    // Buttons added by renderComments to jump between partial + full
+    // states without going through the cycling card click.
+    document.querySelectorAll("[data-expand-full]").forEach(el => {
+      el.addEventListener("click", e => {
+        e.stopPropagation();
+        const id = el.dataset.expandFull;
+        expandedPostIds.clear();
+        partialPostIds.clear();
+        expandedPostIds.add(id);
+        syncWallUrl();
+        renderFeed();
+      });
+    });
+    document.querySelectorAll("[data-collapse-partial]").forEach(el => {
+      el.addEventListener("click", e => {
+        e.stopPropagation();
+        const id = el.dataset.collapsePartial;
+        expandedPostIds.clear();
+        partialPostIds.clear();
+        partialPostIds.add(id);
+        syncWallUrl();
+        renderFeed();
       });
     });
     document.querySelectorAll("[data-expand]").forEach(el => {
@@ -3273,7 +3320,7 @@
         e.stopPropagation();
         const id = el.dataset.editPost;
         editingKey = `post:${id}`;
-        expandedPostIds.clear(); expandedPostIds.add(id);
+        expandedPostIds.clear(); partialPostIds.clear(); expandedPostIds.add(id);
         openPostIds.add(id);
         renderFeed();
       });
