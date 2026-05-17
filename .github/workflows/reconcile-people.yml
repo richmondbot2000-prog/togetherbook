@@ -43,6 +43,13 @@ jobs:
       - name: Rebuild admins.json from people.json
         run: python3 scripts/build_admins.py --apply
 
+      - name: Verify cross-table schema integrity
+        # Catches orphans (FK pointing at deleted Person), duplicate
+        # url_slugs, missing names, etc. Fails the workflow if any
+        # broken FK is found so we get a GitHub email instead of the
+        # bug rotting silently.
+        run: python3 scripts/check_schema_integrity.py
+
       - name: Commit + push if changed
         run: |
           set -euo pipefail

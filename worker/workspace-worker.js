@@ -2086,6 +2086,46 @@ async function commitGoogleAccountsFile(env, file, sha, message) {
   }
 }
 
+const WAREHOUSE_ACTIVITY_PATH = "warehouse-activity.json";
+async function fetchWarehouseActivityFile(env) {
+  const ghHeaders = {
+    "Authorization": `Bearer ${env.GITHUB_TOKEN}`,
+    "Accept": "application/vnd.github+json",
+    "User-Agent": "apifk-workspace-worker",
+  };
+  const res = await fetch(`https://api.github.com/repos/${REPO}/contents/${WAREHOUSE_ACTIVITY_PATH}?ref=${BRANCH}`, { headers: ghHeaders });
+  if (res.status === 404) return { sha: null, file: { schema_version: 1, updated_at: null, records: [] } };
+  if (!res.ok) throw new Error(`warehouse-activity.json GET failed: ${res.status}`);
+  const data = await res.json();
+  let file;
+  try {
+    const bin = atob((data.content || "").replace(/\s/g, ""));
+    file = JSON.parse(new TextDecoder("utf-8").decode(Uint8Array.from(bin, c => c.charCodeAt(0))));
+  } catch (e) { throw new Error("warehouse-activity.json could not be parsed: " + e.message); }
+  if (!Array.isArray(file.records)) file.records = [];
+  return { sha: data.sha, file };
+}
+async function commitWarehouseActivityFile(env, file, sha, message) {
+  file.schema_version = 1;
+  file.updated_at = new Date().toISOString();
+  const body = JSON.stringify(file, null, 2) + "\n";
+  const ghHeaders = {
+    "Authorization": `Bearer ${env.GITHUB_TOKEN}`,
+    "Accept": "application/vnd.github+json",
+    "User-Agent": "apifk-workspace-worker",
+    "Content-Type": "application/json",
+  };
+  const res = await fetch(`https://api.github.com/repos/${REPO}/contents/${WAREHOUSE_ACTIVITY_PATH}`, {
+    method: "PUT",
+    headers: ghHeaders,
+    body: JSON.stringify({ message, content: b64Encode(body), branch: BRANCH, sha: sha || undefined }),
+  });
+  if (!res.ok) {
+    const detail = (await res.text()).slice(0, 200);
+    throw new Error(`warehouse-activity.json commit failed (${res.status}): ${detail}`);
+  }
+}
+
 function nextGoogleAccountId(file) {
   let max = 0;
   for (const r of file.records || []) {
@@ -2271,30 +2311,64 @@ async function doPeopleMerge(env, body, actor) {
   // Remove loser from people.json.
   pFile.people = pFile.people.filter(p => String(p.id) !== loserId);
 
-  // Re-point every PayrollData record from loser → winner.
-  let payrollUpdated = 0;
+  // Re-point every FK from loser → winner across ALL three linked
+  // tables. Missing any of these leaves silent orphans: a Google
+  // account or warehouse-activity row whose person_id points at the
+  // deleted Person, which then drops off the surviving Person's
+  // source-chip set on Directory + Profile without any error message.
+  // (Bug #1 from SPEC_TESTING.md run on 2026-05-17.)
+  let payrollUpdated = 0, googleUpdated = 0, warehouseUpdated = 0;
+
   const { sha: paySha, file: payFile } = await fetchPayrollFile(env);
   for (const r of payFile.records) {
-    if (String(r.person_id) === loserId) {
-      r.person_id = winner.id;
-      payrollUpdated++;
-    }
+    if (String(r.person_id) === loserId) { r.person_id = winner.id; payrollUpdated++; }
   }
 
-  // Commit people first (the visible-state change), then payroll. If
-  // payroll commit fails the link is mildly inconsistent but recoverable;
-  // we surface the error in the response.
+  const { sha: gSha, file: gFile } = await fetchGoogleAccountsFile(env);
+  for (const r of gFile.records) {
+    if (String(r.person_id) === loserId) { r.person_id = winner.id; googleUpdated++; }
+  }
+
+  // After re-pointing google rows, refresh the winner's denormalised
+  // email fields from the now-complete set of google-accounts so
+  // main_google_email / alt_google_emails / external_google_email
+  // reflect the merger.
+  if (googleUpdated > 0) denormaliseEmailsToPerson(winner, gFile.records);
+
+  // warehouse-activity.json is optional — older repos may not have it.
+  let whSha = null, whFile = null;
+  try {
+    const wh = await fetchWarehouseActivityFile(env);
+    whSha = wh.sha; whFile = wh.file;
+    for (const r of whFile.records) {
+      if (String(r.person_id) === loserId) { r.person_id = winner.id; warehouseUpdated++; }
+    }
+  } catch (e) { /* file may not exist yet; skip */ }
+
+  // Commit people first (the visible-state change), then each linked
+  // table. Each commit is wrapped so a failure on one table doesn't
+  // block the others — surfaced as warnings on the response.
   await commitPeopleFile(env, pFile, pSha,
     `People: merge ${loserId} into ${winnerId} (by ${actor})`);
 
-  let payrollSyncOk = true, payrollSyncError = null;
+  const warns = {};
   if (payrollUpdated > 0) {
     try {
       await commitPayrollFile(env, payFile, paySha,
         `Payroll: re-point ${payrollUpdated} record(s) from ${loserId} to ${winnerId} (by ${actor})`);
-    } catch (e) {
-      payrollSyncOk = false; payrollSyncError = e.message;
-    }
+    } catch (e) { warns.payroll_sync_error = e.message; }
+  }
+  if (googleUpdated > 0) {
+    try {
+      await commitGoogleAccountsFile(env, gFile, gSha,
+        `Google accounts: re-point ${googleUpdated} record(s) from ${loserId} to ${winnerId} (by ${actor})`);
+    } catch (e) { warns.google_sync_error = e.message; }
+  }
+  if (warehouseUpdated > 0 && whFile) {
+    try {
+      await commitWarehouseActivityFile(env, whFile, whSha,
+        `Warehouse activity: re-point ${warehouseUpdated} record(s) from ${loserId} to ${winnerId} (by ${actor})`);
+    } catch (e) { warns.warehouse_sync_error = e.message; }
   }
 
   return {
@@ -2302,7 +2376,9 @@ async function doPeopleMerge(env, body, actor) {
     winner_id: winner.id,
     loser_id: loserId,
     payroll_records_repointed: payrollUpdated,
-    ...(payrollSyncOk ? {} : { payroll_sync_error: payrollSyncError }),
+    google_accounts_repointed: googleUpdated,
+    warehouse_rows_repointed: warehouseUpdated,
+    ...warns,
   };
 }
 

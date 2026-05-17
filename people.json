@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "updated_at": "2026-05-17T21:22:00.069Z",
+  "updated_at": "2026-05-17T22:21:12Z",
   "source": "build_people.py bootstrap from staff.json + annotations.json",
   "people": [
     {
@@ -113,7 +113,7 @@
       "directory_photo_uploaded_at": "2026-05-14T09:08:51+01:00",
       "notes": "",
       "created_at": "2026-05-17T11:13:52Z",
-      "updated_at": "2026-05-17T20:24:39.859Z",
+      "updated_at": "2026-05-17T22:21:12Z",
       "url_slug": "adnan.turken",
       "most_recent_payroll_id": null
     },
