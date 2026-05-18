@@ -1,0 +1,81 @@
+name: Smoke tests
+
+# Playwright smoke suite running against the working-tree HTML served by
+# a local http-server on the runner. Tests the COMMIT IN FLIGHT, not what's
+# deployed — so a broken push is caught before GitHub Pages even publishes.
+#
+# Runs on every push to main + every PR. Validates: page-load + four-bucket
+# nav + no JS console errors at desktop / tablet / mobile widths. Catches
+# CSS regressions and JS-breaks. Worker-dependent pages (Directory / Wall /
+# Holidays / Reconcile) are tested shell-only — worker-absence console
+# noise is filtered.
+#
+# When the suite fails: read the GitHub annotations on the run + download
+# the Playwright HTML report artefact.
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '*.html'
+      - '*.js'
+      - '*.css'
+      - 'nav.js'
+      - 'profile.js'
+      - 'profile.css'
+      - 'tests/smoke/**'
+      - '.github/workflows/smoke-tests.yml'
+  pull_request:
+    paths:
+      - '*.html'
+      - '*.js'
+      - '*.css'
+      - 'tests/smoke/**'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: smoke-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  smoke:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: tests/smoke/package.json
+
+      - name: Install Playwright deps
+        working-directory: tests/smoke
+        run: |
+          npm install --no-audit --no-fund --prefer-offline
+          npx playwright install --with-deps chromium
+
+      - name: Run smoke suite
+        working-directory: tests/smoke
+        run: npx playwright test --reporter=github,html
+
+      - name: Upload Playwright HTML report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report-${{ github.run_id }}
+          path: tests/smoke/playwright-report
+          retention-days: 7
+
+      - name: Upload failure screenshots
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: failure-screenshots-${{ github.run_id }}
+          path: tests/smoke/test-results
+          retention-days: 7

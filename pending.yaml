@@ -1,0 +1,263 @@
+# Canonical pending-work registry for TogetherBook.
+#
+# This file is the single source of truth for open / blocked / parked work.
+# `scripts/render_pending.py` reads it and re-renders three targets:
+#   - SPEC.md §17 (between <!-- PENDING:BEGIN --> markers)
+#   - ~/Desktop/wiki/CLAUDE_CONTEXT.md §8 (same)
+#   - pending.html — a page on the site, linked from System nav
+#
+# Editing convention: change THIS file, then run `python3 scripts/render_pending.py`.
+# Never hand-edit the rendered blocks — they get clobbered on next render.
+#
+# Statuses:
+#   pending      — known to need doing, no progress yet
+#   in-progress  — partial work has shipped; more remains
+#   shipped-pending-config  — code is live, awaits a one-time human action (secret, grant, etc.)
+#   blocked      — needs an external party (Kamran, Ben Gardner, Humand support…)
+#   parked       — accepted-not-doing or low-priority backlog
+#   done         — kept briefly for history then garbage-collected
+#
+# Priority: 1 = ship next / unblock something material, 2 = real value but no fire, 3 = backlog
+#
+# Schema (per item):
+#   id            (string, kebab-case, unique)
+#   title         (string, headline)
+#   status        (one of the above)
+#   priority      (1 | 2 | 3)
+#   created       (YYYY-MM-DD)
+#   tags          (list of: ui, auth, scanner, worker, docs, infra, data-quality, integrations)
+#   blocker       (one-line, who/what is blocking)  — only for status=blocked
+#   detail        (free text, can be multi-line; markdown-light)
+
+schema_version: 1
+updated_at: 2026-05-18
+
+items:
+
+  - id: holidays-v2-decision
+    title: Holidays v2 prototype — swap, fold, or scrap
+    status: in-progress
+    priority: 2
+    created: 2026-05-15
+    tags: [ui]
+    detail: |
+      `holidays-v2.html` (year-at-a-glance lattice, GitHub-graph style) shipped
+      overnight 2026-05-15 alongside `holidays-v2-research.md`. v1 was edited
+      further on 2026-05-16. Decision pending: swap v2 in as the default, fold
+      its ideas back into v1, or scrap. Until decided, v2 stays parked + unlinked
+      from the nav.
+
+  - id: auth0-chip-secrets
+    title: Auth0 → Directory chip — awaiting Management API secrets
+    status: shipped-pending-config
+    priority: 2
+    created: 2026-05-17
+    tags: [auth, integrations]
+    detail: |
+      Scanner (`scan_auth0.py`) + workflow (`refresh-auth0.yml`) + chip rendering
+      shipped 2026-05-17 (commit `014e171`). One-time setup required to activate:
+        1. Create Management API M2M app at https://manage.auth0.com/#/apis
+           (Auth0 Management API → Machine to Machine Applications → name
+           "TogetherBook directory reader", scope `read:users` only)
+        2. Paste `AUTH0_CLIENT_ID` + `AUTH0_CLIENT_SECRET` into GitHub repo secrets
+        3. `gh workflow run refresh-auth0.yml --ref main`
+      Until done, every Directory row renders without the AUTH0 chip and the
+      header banner omits the active-Auth0 count.
+
+  - id: profile-google-account-lifecycle
+    title: Profile page — Google-account lifecycle UI
+    status: in-progress
+    priority: 2
+    created: 2026-05-17
+    tags: [ui, worker]
+    detail: |
+      After retiring the Directory inline-expand form on 2026-05-17 (`95304a3`),
+      `profile.js` covers Role / Phone / Address / Line manager / Access level
+      / Auth0 ID / Google accounts list / Payroll editors. Display name, Aliases,
+      Start date, Notes, Line manager (editor), Access level (editor), Suspend
+      toggle and Delete Person were wired the same day. **Still missing**
+      (Google-account lifecycle UI): per-account alias management
+      (Add alias / Remove alias / Alias → group), Convert primary account to
+      group, Promote alt to primary (rename). Worker actions exist
+      (`user-alias-add`, `user-alias-remove`, `alias-to-group`, `convert-to-group`,
+      `rename-user`) — just need wiring on the profile page.
+
+  - id: rgroup-second-tenant
+    title: rgroup.co.uk Workspace as second Directory tenant
+    status: blocked
+    priority: 2
+    created: 2026-05-12
+    tags: [auth, integrations]
+    blocker: Ben Gardner — DWD setup confirm
+    detail: |
+      Local setup wired and `WORKSPACE_TENANTS` secret is configured. Ben
+      (Super Admin on rgroup.co.uk Workspace) authorised the service account
+      `directory-reader@letme-directory.iam.gserviceaccount.com` but test
+      fetches were still 403'ing as of last check. Resume by triggering
+      `refresh-directory.yml` and inspecting `fetch_errors[]` in the resulting
+      `staff.json`. Likely a missing DWD scope or a security-key requirement
+      on the SA's home OU.
+
+  - id: per-api-stats
+    title: Per-API response time + call count on home page
+    status: blocked
+    priority: 2
+    created: 2026-05-10
+    tags: [integrations]
+    blocker: Kamran Kamaei — Azure Reader grant
+    detail: |
+      Plan in `~/.claude/projects/-Users-richmondrobot/memory/project_togetherbook_api_stats.md`.
+      Awaits `Reader` role on the rgcore Azure subscription's Application
+      Insights resources (gateway, applications, brokers, whitebox, loanbook,
+      payments, communications, socials). Read-only KQL access is enough.
+
+  - id: cpf-rate-ambiguity
+    title: Type 1 (CPF) rate=0.10/0.12 ambiguity
+    status: blocked
+    priority: 3
+    created: 2026-05-12
+    tags: [data-quality]
+    blocker: User clarification
+    detail: |
+      A handful of `Brokers.Campaigns` rows have `CommissionType=1` (CPF) with
+      `Rate=0.10` or `Rate=0.12` and look mis-typed — probably rev-share entered
+      under CPF. Source-quality scanner currently treats them at face value.
+
+  - id: null-sr1-decision
+    title: Null-SR1 buy-vs-wait economic decision
+    status: blocked
+    priority: 3
+    created: 2026-05-12
+    tags: [data-quality]
+    blocker: Upstream broker — price of null-SR1 lead
+    detail: |
+      Diagnosed but not decided. Need price-per-lead for null-SR1 traffic to
+      decide whether to drop or keep. Without it the source-quality page can
+      surface the volume but not the recommendation.
+
+  - id: humand-integration
+    title: Humand integration
+    status: blocked
+    priority: 3
+    created: 2026-05-10
+    tags: [integrations]
+    blocker: Humand support — Public API enablement + key
+    detail: |
+      Plan ready. Awaits Humand support enabling Public API + sending a
+      production key. Will surface org tree + basic team data on an internal
+      dashboard.
+
+  - id: live-code-line-stats
+    title: Live code-line stats refresh
+    status: in-progress
+    priority: 3
+    created: 2026-05-09
+    tags: [scanner, integrations]
+    detail: |
+      Manual snapshot in place on `stats.html`. Either deploy
+      `azure-function-stats/` (blocked on Azure admin) or build a
+      `refresh-code-stats.yml` workflow following the SPEC §15 pattern using
+      the existing DevOps PAT.
+
+  - id: reddit-oauth
+    title: Reddit OAuth
+    status: parked
+    priority: 3
+    created: 2026-05-08
+    tags: [integrations]
+    detail: |
+      Code wired, abandoned. Reddit dev registration is impossible via Google
+      sign-in. ScraperAPI fallback is in use.
+
+  - id: uk-bank-holidays-after-2027
+    title: UK Bank Holidays after 2027
+    status: pending
+    priority: 3
+    created: 2026-05-15
+    tags: [data-quality]
+    detail: |
+      `UK_BANK_HOLIDAYS` Set in `holidays.html` is hard-coded for fiscal year
+      2026-04 → 2027-03. When the fiscal year rolls over, append next year's
+      nine BHs (Good Friday, Easter Monday, Early May, Spring, Summer,
+      Christmas Day, Boxing Day, New Year's Day, Good Friday Yr+1).
+
+  - id: sanitisation-pass
+    title: Public-mirror sanitisation pass
+    status: parked
+    priority: 3
+    created: 2026-05-09
+    tags: [docs, infra]
+    detail: |
+      Internal hostnames + Slack channels + payment partners + LenderId 6 +
+      employee email pattern are still live on the page. Cloudflare Access
+      reduces urgency but the `github.io` mirror still exposes them. User has
+      explicitly accepted this exposure; only flag if scope changes.
+
+  - id: delete-then-delayed-conversion
+    title: Delete + 21-day delayed group conversion
+    status: pending
+    priority: 2
+    created: 2026-05-17
+    tags: [worker, ui]
+    detail: |
+      Workflow the user wants: delete a primary Google account, then convert
+      the freed email into a forwarding group 21 days later (matches Google's
+      own grace window on the renamed primary). Needs a new pending-operations
+      record + a scheduled run that fires the existing `convert-to-group`
+      action against the target email + member list when the timer expires.
+      `pending-transfers.json` + `scripts/process_pending_transfers.py` are
+      the prior art to extend.
+
+  - id: brand-monitoring-stack
+    title: Brand monitoring stack — Telegram / Discord / HIBP / Lookalike
+    status: shipped-pending-config
+    priority: 3
+    created: 2026-05-12
+    tags: [scanner, integrations]
+    detail: |
+      Scanners + workflows + watchlists exist. Each collector's workflow is
+      dormant until its secrets land:
+        Telegram: `TG_API_ID`, `TG_API_HASH`, `TG_SESSION_B64`
+        Discord:  `DISCORD_TOKEN`
+        HIBP:     `HIBP_API_KEY`
+        Lookalike: no secret — gated on watchlist having domains
+      Brand activity surfaces alongside Brandwatch mentions when active.
+
+  - id: six-audit-followups
+    title: Six audit follow-ups from 2026-05-16 reporting audit
+    status: parked
+    priority: 3
+    created: 2026-05-16
+    tags: [data-quality, scanner]
+    detail: |
+      Disclosed on the affected pages. Listed in SPEC §16.5 "Flagged for
+      follow-up". Each needs DB-level verification before scanner rewrites:
+        - broker/pipeline `paid_out` via `ApplicationStatusTypeId=5` instead
+          of `LeadOutcomes.LeadOutcomeTypeID=8`
+        - payouts UTC-vs-Eastern drift
+        - Brandwatch `archived_reviews` share artefact
+        - pipeline-samples identity-link by `(name, DOB)` only
+        - brokers `apply1` from Tasks-join instead of `LeadOutcomes`
+
+  - id: three-engineering-specs
+    title: Three engineering specs (in wiki) — drafts only
+    status: parked
+    priority: 3
+    created: 2026-05-12
+    tags: [docs]
+    detail: |
+      `SPEC_AppInsights_CustomDimensions`, `SPEC_CentralStats_APIs`,
+      `SPEC_QueueTelemetry_Tracing` in `~/Desktop/wiki/Overview/`. Need
+      a developer + reviewer to build. CentralStats/APIs depends on
+      customDimensions shipping first.
+
+  - id: mirror-url-exposure
+    title: Public mirror URL exposure
+    status: parked
+    priority: 3
+    created: 2026-05-09
+    tags: [infra, docs]
+    detail: |
+      Anyone with the `richmondbot2000-prog.github.io/togetherbook/` URL reads
+      the site without login. User has consciously accepted this. Plug =
+      make repo private (GitHub Pro $4/mo). Re-evaluate only if scope changes.

@@ -1,0 +1,13 @@
+{
+  "name": "togetherbook-smoke",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Smoke tests for the public TogetherBook mirror.",
+  "scripts": {
+    "test": "playwright test"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.49.0",
+    "typescript": "^5.6.0"
+  }
+}

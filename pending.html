@@ -1,0 +1,360 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>BOOK — Pending</title>
+<link rel="icon" href="site-icon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&family=Newsreader:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500;1,600&display=swap">
+<link rel="stylesheet" href="style.css?v=1779113061">
+<link rel="stylesheet" href="quiet-tokens.css?v=1779113061">
+<link rel="stylesheet" href="quiet.css?v=1779113061">
+<link rel="stylesheet" href="quiet-extras.css?v=1779113061">
+<link rel="stylesheet" href="quiet-legacy.css?v=1779113061">
+<style>
+  .pl-page { max-width: 920px; margin: 0 auto; padding: 22px 16px 60px; font-family: var(--font-display, 'Newsreader', serif); }
+  .pl-page h1 { font: 600 30px/1.2 var(--font-display, 'Newsreader', serif); margin: 0 0 6px; color: var(--ink-900); }
+  .pl-sub { font: italic 400 14px/1.4 var(--font-display, 'Newsreader', serif); color: var(--ink-500); margin: 0 0 22px; }
+  .pl-band { display: flex; flex-wrap: wrap; gap: 10px; margin: 0 0 28px; }
+  .pl-band-cell { padding: 6px 12px; border: 1px solid var(--ink-300); border-radius: 2px; font: 500 13px/1 var(--font-display, 'Newsreader', serif); color: var(--ink-700); }
+  .pl-band-cell b { font-weight: 700; color: var(--ink-900); margin-right: 4px; }
+  .pl-card { padding: 16px 18px; margin: 0 0 16px; background: var(--paper-100, #F6EFD9); border-left: 3px solid var(--ink-300); }
+  .pl-card.pl-status-ip { border-left-color: var(--brass-500, #B8923F); }
+  .pl-card.pl-status-sp { border-left-color: #6FA94A; }
+  .pl-card.pl-status-pe { border-left-color: var(--ink-500); }
+  .pl-card.pl-status-bl { border-left-color: var(--red-500, #b14040); }
+  .pl-card.pl-status-pa { border-left-color: var(--ink-300); opacity: 0.85; }
+  .pl-head { display: flex; justify-content: space-between; align-items: baseline; gap: 14px; flex-wrap: wrap; margin: 0 0 8px; }
+  .pl-title h2 { font: 600 18px/1.3 var(--font-display, 'Newsreader', serif); margin: 0; color: var(--ink-900); display: inline; }
+  .pl-id { font: 500 11px/1 ui-monospace, SFMono-Regular, Menlo, monospace; color: var(--brass-500, #B8923F); margin-right: 8px; }
+  .pl-meta { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; font: 500 11px/1 var(--font-display, 'Newsreader', serif); color: var(--ink-500); }
+  .pl-pri { padding: 2px 6px; border: 1px solid var(--ink-300); border-radius: 2px; color: var(--ink-700); }
+  .pl-pri-1 { background: var(--red-500, #b14040); color: #fff; border-color: var(--red-500); }
+  .pl-pri-2 { background: var(--brass-300, #E2BF74); border-color: var(--brass-500, #B8923F); }
+  .pl-status { padding: 2px 6px; border-radius: 2px; color: var(--ink-900); }
+  .pl-status-ip-pill { background: var(--brass-300, #E2BF74); }
+  .pl-status-sp-pill { background: #C2E0AE; }
+  .pl-status-pe-pill { background: var(--paper-200, #ECDFB6); }
+  .pl-status-bl-pill { background: #F3BABA; }
+  .pl-status-pa-pill { background: #E0DCD0; color: var(--ink-500); }
+  .pl-blocker { font: 400 13px/1.4 var(--font-display, 'Newsreader', serif); color: var(--red-500, #b14040); margin: 8px 0; }
+  .pl-detail { font: 400 14px/1.55 var(--font-display, 'Newsreader', serif); color: var(--ink-700); margin: 8px 0 0; }
+  .pl-foot { display: flex; gap: 6px; flex-wrap: wrap; margin: 10px 0 0; }
+  .pl-tag { font: 500 10px/1 ui-monospace, SFMono-Regular, Menlo, monospace; padding: 3px 7px; background: var(--paper-200, #ECDFB6); color: var(--ink-700); border-radius: 2px; text-transform: uppercase; letter-spacing: 0.04em; }
+  .pl-stale { font: italic 400 12px/1.4 var(--font-display, 'Newsreader', serif); color: var(--ink-500); margin: 28px 0 0; padding: 12px; background: var(--paper-100, #F6EFD9); border-left: 2px dashed var(--ink-300); }
+</style>
+</head>
+<body>
+<header class="qb-topbar">
+  <a class="qb-brand" href="/">
+    <img class="qb-brand-logo" src="togetherbook-logo.png?v=1779113061" alt="TogetherBOOK">
+  </a>
+  <nav class="qb-nav">
+    <a class="qb-nav-link" href="/wall.html">Wall</a>
+    <a class="qb-nav-link" href="/directory.html" data-sub='[{"href": "/directory.html", "label": "Directory"}, {"href": "/directory.html", "label": "Your Page", "data-yourpage": "1"}, {"href": "/holidays.html", "label": "Holidays"}, {"href": "/org-structure.html", "label": "Org Structure"}]'>People</a>
+    <a class="qb-nav-link" href="/reports.html" data-sub='[{"href": "/yesterday.html", "label": "Payouts"}, {"href": "/brandwatch.html", "label": "Brandwatch"}, {"href": "/1stcontact.html", "label": "1st Contact"}, {"href": "/topups.html", "label": "Top Ups"}, {"href": "/pipeline.html", "label": "Pipeline"}, {"href": "/brokers.html", "label": "Brokers"}, {"href": "/comms.html", "label": "Comms"}]'>Business</a>
+    <a class="qb-nav-link is-active" href="/index.html" data-sub='[{"href": "/database.html", "label": "Schema"}, {"href": "/stats.html", "label": "Code"}, {"href": "/pending.html", "label": "Pending"}]'>System</a>
+  </nav>
+</header>
+
+<main class="pl-page">
+  <h1>Pending work</h1>
+  <p class="pl-sub">Single source of truth. Edit <code>pending.yaml</code> then run <code>python3 scripts/render_pending.py</code> to regenerate this page, SPEC §17, and the wiki's CLAUDE_CONTEXT §8 in lockstep. Last rendered <b>2026-05-18</b>.</p>
+  <div class="pl-band"><span class="pl-band-cell pl-status-ip"><b>3</b> In progress</span><span class="pl-band-cell pl-status-sp"><b>2</b> Shipped — awaits config</span><span class="pl-band-cell pl-status-pe"><b>2</b> Pending</span><span class="pl-band-cell pl-status-bl"><b>5</b> Blocked</span><span class="pl-band-cell pl-status-pa"><b>5</b> Parked</span></div>
+
+      <article class="pl-card pl-status-ip" id="holidays-v2-decision">
+        <header class="pl-head">
+          <div class="pl-title">
+            <span class="pl-id">#holidays-v2-decision</span>
+            <h2>Holidays v2 prototype — swap, fold, or scrap</h2>
+          </div>
+          <div class="pl-meta">
+            <span class="pl-pri pl-pri-2">P2</span>
+            <span class="pl-status pl-status-ip-pill">In progress</span>
+            <span class="pl-created">created 2026-05-15</span>
+          </div>
+        </header>
+        
+        <div class="pl-detail">`holidays-v2.html` (year-at-a-glance lattice, GitHub-graph style) shipped<br>overnight 2026-05-15 alongside `holidays-v2-research.md`. v1 was edited<br>further on 2026-05-16. Decision pending: swap v2 in as the default, fold<br>its ideas back into v1, or scrap. Until decided, v2 stays parked + unlinked<br>from the nav.</div>
+        <footer class="pl-foot"><span class="pl-tag">ui</span></footer>
+      </article>
+
+      <article class="pl-card pl-status-ip" id="profile-google-account-lifecycle">
+        <header class="pl-head">
+          <div class="pl-title">
+            <span class="pl-id">#profile-google-account-lifecycle</span>
+            <h2>Profile page — Google-account lifecycle UI</h2>
+          </div>
+          <div class="pl-meta">
+            <span class="pl-pri pl-pri-2">P2</span>
+            <span class="pl-status pl-status-ip-pill">In progress</span>
+            <span class="pl-created">created 2026-05-17</span>
+          </div>
+        </header>
+        
+        <div class="pl-detail">After retiring the Directory inline-expand form on 2026-05-17 (`95304a3`),<br>`profile.js` covers Role / Phone / Address / Line manager / Access level<br>/ Auth0 ID / Google accounts list / Payroll editors. Display name, Aliases,<br>Start date, Notes, Line manager (editor), Access level (editor), Suspend<br>toggle and Delete Person were wired the same day. **Still missing**<br>(Google-account lifecycle UI): per-account alias management<br>(Add alias / Remove alias / Alias → group), Convert primary account to<br>group, Promote alt to primary (rename). Worker actions exist<br>(`user-alias-add`, `user-alias-remove`, `alias-to-group`, `convert-to-group`,<br>`rename-user`) — just need wiring on the profile page.</div>
+        <footer class="pl-foot"><span class="pl-tag">ui</span> <span class="pl-tag">worker</span></footer>
+      </article>
+
+      <article class="pl-card pl-status-sp" id="auth0-chip-secrets">
+        <header class="pl-head">
+          <div class="pl-title">
+            <span class="pl-id">#auth0-chip-secrets</span>
+            <h2>Auth0 → Directory chip — awaiting Management API secrets</h2>
+          </div>
+          <div class="pl-meta">
+            <span class="pl-pri pl-pri-2">P2</span>
+            <span class="pl-status pl-status-sp-pill">Shipped — awaits config</span>
+            <span class="pl-created">created 2026-05-17</span>
+          </div>
+        </header>
+        
+        <div class="pl-detail">Scanner (`scan_auth0.py`) + workflow (`refresh-auth0.yml`) + chip rendering<br>shipped 2026-05-17 (commit `014e171`). One-time setup required to activate:<br>  1. Create Management API M2M app at https://manage.auth0.com/#/apis<br>     (Auth0 Management API → Machine to Machine Applications → name<br>     &quot;TogetherBook directory reader&quot;, scope `read:users` only)<br>  2. Paste `AUTH0_CLIENT_ID` + `AUTH0_CLIENT_SECRET` into GitHub repo secrets<br>  3. `gh workflow run refresh-auth0.yml --ref main`<br>Until done, every Directory row renders without the AUTH0 chip and the<br>header banner omits the active-Auth0 count.</div>
+        <footer class="pl-foot"><span class="pl-tag">auth</span> <span class="pl-tag">integrations</span></footer>
+      </article>
+
+      <article class="pl-card pl-status-pe" id="delete-then-delayed-conversion">
+        <header class="pl-head">
+          <div class="pl-title">
+            <span class="pl-id">#delete-then-delayed-conversion</span>
+            <h2>Delete + 21-day delayed group conversion</h2>
+          </div>
+          <div class="pl-meta">
+            <span class="pl-pri pl-pri-2">P2</span>
+            <span class="pl-status pl-status-pe-pill">Pending</span>
+            <span class="pl-created">created 2026-05-17</span>
+          </div>
+        </header>
+        
+        <div class="pl-detail">Workflow the user wants: delete a primary Google account, then convert<br>the freed email into a forwarding group 21 days later (matches Google&#x27;s<br>own grace window on the renamed primary). Needs a new pending-operations<br>record + a scheduled run that fires the existing `convert-to-group`<br>action against the target email + member list when the timer expires.<br>`pending-transfers.json` + `scripts/process_pending_transfers.py` are<br>the prior art to extend.</div>
+        <footer class="pl-foot"><span class="pl-tag">worker</span> <span class="pl-tag">ui</span></footer>
+      </article>
+
+      <article class="pl-card pl-status-bl" id="per-api-stats">
+        <header class="pl-head">
+          <div class="pl-title">
+            <span class="pl-id">#per-api-stats</span>
+            <h2>Per-API response time + call count on home page</h2>
+          </div>
+          <div class="pl-meta">
+            <span class="pl-pri pl-pri-2">P2</span>
+            <span class="pl-status pl-status-bl-pill">Blocked</span>
+            <span class="pl-created">created 2026-05-10</span>
+          </div>
+        </header>
+        <div class="pl-blocker"><b>Blocked by:</b> Kamran Kamaei — Azure Reader grant</div>
+        <div class="pl-detail">Plan in `~/.claude/projects/-Users-richmondrobot/memory/project_togetherbook_api_stats.md`.<br>Awaits `Reader` role on the rgcore Azure subscription&#x27;s Application<br>Insights resources (gateway, applications, brokers, whitebox, loanbook,<br>payments, communications, socials). Read-only KQL access is enough.</div>
+        <footer class="pl-foot"><span class="pl-tag">integrations</span></footer>
+      </article>
+
+      <article class="pl-card pl-status-bl" id="rgroup-second-tenant">
+        <header class="pl-head">
+          <div class="pl-title">
+            <span class="pl-id">#rgroup-second-tenant</span>
+            <h2>rgroup.co.uk Workspace as second Directory tenant</h2>
+          </div>
+          <div class="pl-meta">
+            <span class="pl-pri pl-pri-2">P2</span>
+            <span class="pl-status pl-status-bl-pill">Blocked</span>
+            <span class="pl-created">created 2026-05-12</span>
+          </div>
+        </header>
+        <div class="pl-blocker"><b>Blocked by:</b> Ben Gardner — DWD setup confirm</div>
+        <div class="pl-detail">Local setup wired and `WORKSPACE_TENANTS` secret is configured. Ben<br>(Super Admin on rgroup.co.uk Workspace) authorised the service account<br>`directory-reader@letme-directory.iam.gserviceaccount.com` but test<br>fetches were still 403&#x27;ing as of last check. Resume by triggering<br>`refresh-directory.yml` and inspecting `fetch_errors[]` in the resulting<br>`staff.json`. Likely a missing DWD scope or a security-key requirement<br>on the SA&#x27;s home OU.</div>
+        <footer class="pl-foot"><span class="pl-tag">auth</span> <span class="pl-tag">integrations</span></footer>
+      </article>
+
+      <article class="pl-card pl-status-ip" id="live-code-line-stats">
+        <header class="pl-head">
+          <div class="pl-title">
+            <span class="pl-id">#live-code-line-stats</span>
+            <h2>Live code-line stats refresh</h2>
+          </div>
+          <div class="pl-meta">
+            <span class="pl-pri pl-pri-3">P3</span>
+            <span class="pl-status pl-status-ip-pill">In progress</span>
+            <span class="pl-created">created 2026-05-09</span>
+          </div>
+        </header>
+        
+        <div class="pl-detail">Manual snapshot in place on `stats.html`. Either deploy<br>`azure-function-stats/` (blocked on Azure admin) or build a<br>`refresh-code-stats.yml` workflow following the SPEC §15 pattern using<br>the existing DevOps PAT.</div>
+        <footer class="pl-foot"><span class="pl-tag">scanner</span> <span class="pl-tag">integrations</span></footer>
+      </article>
+
+      <article class="pl-card pl-status-sp" id="brand-monitoring-stack">
+        <header class="pl-head">
+          <div class="pl-title">
+            <span class="pl-id">#brand-monitoring-stack</span>
+            <h2>Brand monitoring stack — Telegram / Discord / HIBP / Lookalike</h2>
+          </div>
+          <div class="pl-meta">
+            <span class="pl-pri pl-pri-3">P3</span>
+            <span class="pl-status pl-status-sp-pill">Shipped — awaits config</span>
+            <span class="pl-created">created 2026-05-12</span>
+          </div>
+        </header>
+        
+        <div class="pl-detail">Scanners + workflows + watchlists exist. Each collector&#x27;s workflow is<br>dormant until its secrets land:<br>  Telegram: `TG_API_ID`, `TG_API_HASH`, `TG_SESSION_B64`<br>  Discord:  `DISCORD_TOKEN`<br>  HIBP:     `HIBP_API_KEY`<br>  Lookalike: no secret — gated on watchlist having domains<br>Brand activity surfaces alongside Brandwatch mentions when active.</div>
+        <footer class="pl-foot"><span class="pl-tag">scanner</span> <span class="pl-tag">integrations</span></footer>
+      </article>
+
+      <article class="pl-card pl-status-pe" id="uk-bank-holidays-after-2027">
+        <header class="pl-head">
+          <div class="pl-title">
+            <span class="pl-id">#uk-bank-holidays-after-2027</span>
+            <h2>UK Bank Holidays after 2027</h2>
+          </div>
+          <div class="pl-meta">
+            <span class="pl-pri pl-pri-3">P3</span>
+            <span class="pl-status pl-status-pe-pill">Pending</span>
+            <span class="pl-created">created 2026-05-15</span>
+          </div>
+        </header>
+        
+        <div class="pl-detail">`UK_BANK_HOLIDAYS` Set in `holidays.html` is hard-coded for fiscal year<br>2026-04 → 2027-03. When the fiscal year rolls over, append next year&#x27;s<br>nine BHs (Good Friday, Easter Monday, Early May, Spring, Summer,<br>Christmas Day, Boxing Day, New Year&#x27;s Day, Good Friday Yr+1).</div>
+        <footer class="pl-foot"><span class="pl-tag">data-quality</span></footer>
+      </article>
+
+      <article class="pl-card pl-status-bl" id="humand-integration">
+        <header class="pl-head">
+          <div class="pl-title">
+            <span class="pl-id">#humand-integration</span>
+            <h2>Humand integration</h2>
+          </div>
+          <div class="pl-meta">
+            <span class="pl-pri pl-pri-3">P3</span>
+            <span class="pl-status pl-status-bl-pill">Blocked</span>
+            <span class="pl-created">created 2026-05-10</span>
+          </div>
+        </header>
+        <div class="pl-blocker"><b>Blocked by:</b> Humand support — Public API enablement + key</div>
+        <div class="pl-detail">Plan ready. Awaits Humand support enabling Public API + sending a<br>production key. Will surface org tree + basic team data on an internal<br>dashboard.</div>
+        <footer class="pl-foot"><span class="pl-tag">integrations</span></footer>
+      </article>
+
+      <article class="pl-card pl-status-bl" id="cpf-rate-ambiguity">
+        <header class="pl-head">
+          <div class="pl-title">
+            <span class="pl-id">#cpf-rate-ambiguity</span>
+            <h2>Type 1 (CPF) rate=0.10/0.12 ambiguity</h2>
+          </div>
+          <div class="pl-meta">
+            <span class="pl-pri pl-pri-3">P3</span>
+            <span class="pl-status pl-status-bl-pill">Blocked</span>
+            <span class="pl-created">created 2026-05-12</span>
+          </div>
+        </header>
+        <div class="pl-blocker"><b>Blocked by:</b> User clarification</div>
+        <div class="pl-detail">A handful of `Brokers.Campaigns` rows have `CommissionType=1` (CPF) with<br>`Rate=0.10` or `Rate=0.12` and look mis-typed — probably rev-share entered<br>under CPF. Source-quality scanner currently treats them at face value.</div>
+        <footer class="pl-foot"><span class="pl-tag">data-quality</span></footer>
+      </article>
+
+      <article class="pl-card pl-status-bl" id="null-sr1-decision">
+        <header class="pl-head">
+          <div class="pl-title">
+            <span class="pl-id">#null-sr1-decision</span>
+            <h2>Null-SR1 buy-vs-wait economic decision</h2>
+          </div>
+          <div class="pl-meta">
+            <span class="pl-pri pl-pri-3">P3</span>
+            <span class="pl-status pl-status-bl-pill">Blocked</span>
+            <span class="pl-created">created 2026-05-12</span>
+          </div>
+        </header>
+        <div class="pl-blocker"><b>Blocked by:</b> Upstream broker — price of null-SR1 lead</div>
+        <div class="pl-detail">Diagnosed but not decided. Need price-per-lead for null-SR1 traffic to<br>decide whether to drop or keep. Without it the source-quality page can<br>surface the volume but not the recommendation.</div>
+        <footer class="pl-foot"><span class="pl-tag">data-quality</span></footer>
+      </article>
+
+      <article class="pl-card pl-status-pa" id="reddit-oauth">
+        <header class="pl-head">
+          <div class="pl-title">
+            <span class="pl-id">#reddit-oauth</span>
+            <h2>Reddit OAuth</h2>
+          </div>
+          <div class="pl-meta">
+            <span class="pl-pri pl-pri-3">P3</span>
+            <span class="pl-status pl-status-pa-pill">Parked</span>
+            <span class="pl-created">created 2026-05-08</span>
+          </div>
+        </header>
+        
+        <div class="pl-detail">Code wired, abandoned. Reddit dev registration is impossible via Google<br>sign-in. ScraperAPI fallback is in use.</div>
+        <footer class="pl-foot"><span class="pl-tag">integrations</span></footer>
+      </article>
+
+      <article class="pl-card pl-status-pa" id="sanitisation-pass">
+        <header class="pl-head">
+          <div class="pl-title">
+            <span class="pl-id">#sanitisation-pass</span>
+            <h2>Public-mirror sanitisation pass</h2>
+          </div>
+          <div class="pl-meta">
+            <span class="pl-pri pl-pri-3">P3</span>
+            <span class="pl-status pl-status-pa-pill">Parked</span>
+            <span class="pl-created">created 2026-05-09</span>
+          </div>
+        </header>
+        
+        <div class="pl-detail">Internal hostnames + Slack channels + payment partners + LenderId 6 +<br>employee email pattern are still live on the page. Cloudflare Access<br>reduces urgency but the `github.io` mirror still exposes them. User has<br>explicitly accepted this exposure; only flag if scope changes.</div>
+        <footer class="pl-foot"><span class="pl-tag">docs</span> <span class="pl-tag">infra</span></footer>
+      </article>
+
+      <article class="pl-card pl-status-pa" id="mirror-url-exposure">
+        <header class="pl-head">
+          <div class="pl-title">
+            <span class="pl-id">#mirror-url-exposure</span>
+            <h2>Public mirror URL exposure</h2>
+          </div>
+          <div class="pl-meta">
+            <span class="pl-pri pl-pri-3">P3</span>
+            <span class="pl-status pl-status-pa-pill">Parked</span>
+            <span class="pl-created">created 2026-05-09</span>
+          </div>
+        </header>
+        
+        <div class="pl-detail">Anyone with the `richmondbot2000-prog.github.io/togetherbook/` URL reads<br>the site without login. User has consciously accepted this. Plug =<br>make repo private (GitHub Pro $4/mo). Re-evaluate only if scope changes.</div>
+        <footer class="pl-foot"><span class="pl-tag">infra</span> <span class="pl-tag">docs</span></footer>
+      </article>
+
+      <article class="pl-card pl-status-pa" id="three-engineering-specs">
+        <header class="pl-head">
+          <div class="pl-title">
+            <span class="pl-id">#three-engineering-specs</span>
+            <h2>Three engineering specs (in wiki) — drafts only</h2>
+          </div>
+          <div class="pl-meta">
+            <span class="pl-pri pl-pri-3">P3</span>
+            <span class="pl-status pl-status-pa-pill">Parked</span>
+            <span class="pl-created">created 2026-05-12</span>
+          </div>
+        </header>
+        
+        <div class="pl-detail">`SPEC_AppInsights_CustomDimensions`, `SPEC_CentralStats_APIs`,<br>`SPEC_QueueTelemetry_Tracing` in `~/Desktop/wiki/Overview/`. Need<br>a developer + reviewer to build. CentralStats/APIs depends on<br>customDimensions shipping first.</div>
+        <footer class="pl-foot"><span class="pl-tag">docs</span></footer>
+      </article>
+
+      <article class="pl-card pl-status-pa" id="six-audit-followups">
+        <header class="pl-head">
+          <div class="pl-title">
+            <span class="pl-id">#six-audit-followups</span>
+            <h2>Six audit follow-ups from 2026-05-16 reporting audit</h2>
+          </div>
+          <div class="pl-meta">
+            <span class="pl-pri pl-pri-3">P3</span>
+            <span class="pl-status pl-status-pa-pill">Parked</span>
+            <span class="pl-created">created 2026-05-16</span>
+          </div>
+        </header>
+        
+        <div class="pl-detail">Disclosed on the affected pages. Listed in SPEC §16.5 &quot;Flagged for<br>follow-up&quot;. Each needs DB-level verification before scanner rewrites:<br>  - broker/pipeline `paid_out` via `ApplicationStatusTypeId=5` instead<br>    of `LeadOutcomes.LeadOutcomeTypeID=8`<br>  - payouts UTC-vs-Eastern drift<br>  - Brandwatch `archived_reviews` share artefact<br>  - pipeline-samples identity-link by `(name, DOB)` only<br>  - brokers `apply1` from Tasks-join instead of `LeadOutcomes`</div>
+        <footer class="pl-foot"><span class="pl-tag">data-quality</span> <span class="pl-tag">scanner</span></footer>
+      </article>
+  <p class="pl-stale">If you spot a stale entry, change it in <code>pending.yaml</code>, don't hand-edit this page or the SPEC / CLAUDE_CONTEXT blocks — the next render clobbers hand edits.</p>
+</main>
+
+<script src="nav.js?v=1779113061" defer></script>
+</body>
+</html>
