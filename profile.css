@@ -47,7 +47,6 @@ body { background: var(--paper-100, #FBF6E9); }
 }
 .up-pill--admin    { color: #835F1F; border-color: var(--brass-500); background: #fbf3e1; }
 .up-pill--staff    { color: #2c6cb8; border-color: #b9d1f5; background: #eef4fc; }
-.up-pill--agent    { color: #2a8a5f; border-color: #b9e6cf; background: #ecf8f1; }
 .up-pill--outsider { color: #87705a; border-color: #e2d3b9; background: #faf3e3; }
 .up-pill--former, .up-pill--suspended { color: #888; border-color: #ddd; background: #f3f3f3; }
 .up-pill--live { color: #1a7f37; border-color: #b8e3c4; background: #eefaf0; }

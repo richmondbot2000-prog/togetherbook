@@ -1577,7 +1577,7 @@ const PEOPLE_SELF_EDITABLE = new Set([
   "phone", "address", "role", "notes", "date_of_birth",
   "directory_photo_uploaded_at", "cover_photo_uploaded_at",
 ]);
-const PEOPLE_ACCESS_LEVELS = new Set(["admin", "staff", "agent", "outsider", "former"]);
+const PEOPLE_ACCESS_LEVELS = new Set(["admin", "staff", "outsider", "former"]);
 
 // Return true if `actor` (a Cf-Access-Authenticated email) appears on the
 // Person record at `targetEmail` as main / alt / external Google account.
@@ -1696,6 +1696,10 @@ function normalisePeoplePatch(patch) {
     }
     out[k] = v;
   }
+  // "agent" was retired 2026-05-18 (it duplicated "staff" / Standard
+  // user). Coerce silently rather than 400 so any stale cached payload
+  // submitted from an old tab still lands on the right value.
+  if (out.access_level === "agent") out.access_level = "staff";
   if (out.access_level && !PEOPLE_ACCESS_LEVELS.has(out.access_level)) {
     throw new Error(`invalid access_level: ${out.access_level}`);
   }

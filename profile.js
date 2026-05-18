@@ -319,7 +319,6 @@
     const accessLevels = [
       ["admin",    "Admin"],
       ["staff",    "Standard user"],
-      ["agent",    "Agent"],
       ["outsider", "Outsider"],
       ["former",   "Former (no access)"],
     ];

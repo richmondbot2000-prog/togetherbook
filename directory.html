@@ -191,7 +191,6 @@
   }
   .pp-pill--admin { color: #835F1F; border-color: var(--brass-500); background: #fbf3e1; }
   .pp-pill--staff { color: #2c6cb8; border-color: #b9d1f5; background: #eef4fc; }
-  .pp-pill--agent { color: #2a8a5f; border-color: #b9e6cf; background: #ecf8f1; }
   .pp-pill--outsider { color: #87705a; border-color: #e2d3b9; background: #faf3e3; }
   .pp-pill--former, .pp-pill--suspended { color: #888; border-color: #ddd; background: #f3f3f3; }
   .pp-pill--live { color: #1a7f37; border-color: #b8e3c4; background: #eefaf0; }
@@ -311,7 +310,6 @@
         <option value="">All access levels</option>
         <option value="admin">Admin</option>
         <option value="staff">Standard user</option>
-        <option value="agent">Agent</option>
         <option value="outsider">Outsider</option>
         <option value="former">Former</option>
       </select>
@@ -341,7 +339,6 @@
       <select class="pp-select" id="newAccess">
         <option value="staff">Standard user</option>
         <option value="admin">Admin</option>
-        <option value="agent">Agent</option>
         <option value="outsider">Outsider</option>
       </select>
     </div>
@@ -414,7 +411,7 @@
     if (src) return `<img src="${escapeHtml(src)}" alt="" onerror="this.replaceWith(Object.assign(document.createElement('span'),{textContent:'${escapeHtml(initials(p.name))}'}))">`;
     return escapeHtml(initials(p.name));
   }
-  function pillClass(level) { return level && /^(admin|staff|agent|outsider|former|suspended)$/.test(level) ? `pp-pill--${level}` : "pp-pill--staff"; }
+  function pillClass(level) { return level && /^(admin|staff|outsider|former|suspended)$/.test(level) ? `pp-pill--${level}` : "pp-pill--staff"; }
   function statusOf(p) {
     if (p.suspended || p.access_level === "former") return "suspended";
     return "live";
@@ -619,8 +616,7 @@
           <div class="pp-fieldrow"><label class="pp-fieldlabel">Access level</label>
             <select class="pp-select" data-edit="access_level" data-pid="${escapeHtml(p.id)}">
               <option value="admin"   ${p.access_level==="admin"?"selected":""}>Admin</option>
-              <option value="staff"   ${p.access_level==="staff"?"selected":""}>Standard user</option>
-              <option value="agent"   ${p.access_level==="agent"?"selected":""}>Agent</option>
+              <option value="staff"   ${p.access_level==="staff" || p.access_level==="agent" ?"selected":""}>Standard user</option>
               <option value="outsider"${p.access_level==="outsider"?"selected":""}>Outsider</option>
               <option value="former"  ${p.access_level==="former"?"selected":""}>Former (no access)</option>
             </select>

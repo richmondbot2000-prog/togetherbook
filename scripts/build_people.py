@@ -44,7 +44,7 @@ TENANT_RANK = {
     "rgroup.co.uk":      4,
 }
 
-ACCESS_LEVELS = ("admin", "staff", "agent", "outsider", "former")
+ACCESS_LEVELS = ("admin", "staff", "outsider", "former")
 
 
 def email_local(email: str) -> str:
