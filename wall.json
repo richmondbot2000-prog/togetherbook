@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "updated_at": "2026-05-18T09:24:47.706Z",
+  "updated_at": "2026-05-18T09:37:53.744Z",
   "posts": [
     {
       "id": "post_mpaytpuv_p51jep",
@@ -101,6 +101,9 @@
       "reactions": {
         "🥱": [
           "james.benamor@letme.com"
+        ],
+        "👍": [
+          "amber.cole@letme.com"
         ]
       },
       "comments": [],
@@ -207,6 +210,14 @@
           "target_kind": "post",
           "target_id": "post_mp9hztyf_8qihso",
           "at": "2026-05-17T08:21:41.777Z",
+          "kind": "added"
+        },
+        {
+          "actor_email": "amber.cole@letme.com",
+          "emoji": "👍",
+          "target_kind": "post",
+          "target_id": "post_mp9hztyf_8qihso",
+          "at": "2026-05-18T09:37:53.501Z",
           "kind": "added"
         }
       ]
