@@ -280,6 +280,17 @@
         '<span class="qb-bd-balloon" aria-hidden="true">🎉</span>';
 
       bar.parentNode.insertBefore(banner, bar.nextSibling);
+
+      // Swap the topbar logo for the birthday variant. Falls back to
+      // the original on 404 so dropping the file at /togetherbook-
+      // logo-birthday.png is the only step needed to switch it on.
+      const logos = document.querySelectorAll('.qb-brand-logo');
+      logos.forEach(img => {
+        const original = img.src;
+        const birthdaySrc = '/togetherbook-logo-birthday.png?v=' + Date.now();
+        img.onerror = () => { img.onerror = null; img.src = original; };
+        img.src = birthdaySrc;
+      });
     });
 })();
 
