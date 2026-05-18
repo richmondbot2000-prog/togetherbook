@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "updated_at": "2026-05-18T05:50:52.970Z",
+  "updated_at": "2026-05-18T05:58:46.623Z",
   "posts": [
     {
       "id": "post_birthday_2026_james.benamor",
@@ -26,7 +26,20 @@
       ],
       "channel": null,
       "reactions": {},
-      "comments": []
+      "comments": [
+        {
+          "id": "com_mpasmv6f_5rd55i",
+          "parent_comment_id": null,
+          "author_email": "james.benamor@letme.com",
+          "author_name": "james.benamor",
+          "created_at": "2026-05-18T05:58:46.359Z",
+          "body": "",
+          "photos": [
+            "https://media2.giphy.com/media/v1.Y2lkPWYzOWU3YTk3c3p1OHVna2EzYjYxNmE5aGg0bmw0aTVwemQ4MHg3c2g2OTFvNTIzciZlcD12MV9naWZzX3NlYXJjaCZjdD1n/v0uvKMF0GoJGLjDcrg/giphy.gif"
+          ],
+          "reactions": {}
+        }
+      ]
     },
     {
       "id": "post_mpab924m_2w30qs",
