@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "updated_at": "2026-05-18T09:38:09.478Z",
+  "updated_at": "2026-05-18T09:57:36.743Z",
   "posts": [
     {
       "id": "post_mpaytpuv_p51jep",
@@ -249,7 +249,8 @@
         "votes": {
           "james.benamor@letme.com": 2,
           "mourad.malki@letme.com": 0,
-          "amber.cole@letme.com": 0
+          "amber.cole@letme.com": 0,
+          "sophia.ugwunne@letme.com": 0
         },
         "created_at": "2026-05-17T00:20:05.988Z"
       }
