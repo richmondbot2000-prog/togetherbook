@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "updated_at": "2026-05-18T23:03:57.586Z",
+  "updated_at": "2026-05-18T23:04:04.774Z",
   "actions": [
     {
       "ts": "2026-05-13T20:27:39.210Z",
@@ -2397,6 +2397,14 @@
       "action": "user-alias-remove",
       "target": "",
       "ok": true
+    },
+    {
+      "ts": "2026-05-18T23:04:04.774Z",
+      "actor": "james.benamor@letme.com",
+      "action": "user-alias-remove",
+      "target": "",
+      "ok": false,
+      "error": "Invalid Input: resource_id"
     }
   ]
 }
