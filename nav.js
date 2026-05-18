@@ -221,11 +221,35 @@
       });
       if (!birthdays.length) return;
 
+      // Tag <body> so birthday-only CSS overrides can fire without
+      // affecting any normal day. Used to grow the brand-logo slot
+      // so the TogetherBOOK wordmark inside the wider birthday logo
+      // (which also carries balloons + "Happy Birthday" script) stays
+      // at the same visual size as the everyday wordmark.
+      document.body.classList.add('qb-is-birthday');
+
       // Inject styles once.
       if (!document.getElementById('qbBirthdayStyle')) {
         const s = document.createElement('style');
         s.id = 'qbBirthdayStyle';
         s.textContent = `
+          /* Birthday logo is ~3.5× wider than the standalone wordmark
+             because it bundles balloons + a "Happy Birthday" script.
+             Grow the logo's rendered height (and the topbar with it)
+             so the wordmark portion lands at the normal reading size.
+             Topbar values are tuned to keep the brand visually centred
+             and avoid clipping. */
+          body.qb-is-birthday .qb-topbar    { height: 104px; }
+          body.qb-is-birthday .qb-brand-logo { height: 88px; }
+          @media (max-width: 960px) {
+            body.qb-is-birthday .qb-topbar    { height: 88px; }
+            body.qb-is-birthday .qb-brand-logo { height: 72px; }
+          }
+          @media (max-width: 480px) {
+            body.qb-is-birthday .qb-topbar    { height: 70px; }
+            body.qb-is-birthday .qb-brand-logo { height: 54px; }
+          }
+
           .qb-birthday-banner {
             display: flex; align-items: center; justify-content: center;
             gap: 14px; padding: 10px 18px;
@@ -233,10 +257,10 @@
             border-bottom: 1px solid var(--brass-500, #C8973F);
             font: 600 16px/1.2 var(--font-display, 'Newsreader', serif);
             color: var(--ink-900, #11192E);
-            position: sticky; top: 72px; z-index: 999;
+            position: sticky; top: 104px; z-index: 999;
           }
-          @media (max-width: 960px) { .qb-birthday-banner { top: 64px; font-size: 14px; padding: 8px 12px; gap: 8px; } }
-          @media (max-width: 480px) { .qb-birthday-banner { top: 56px; } }
+          @media (max-width: 960px) { .qb-birthday-banner { top: 88px; font-size: 14px; padding: 8px 12px; gap: 8px; } }
+          @media (max-width: 480px) { .qb-birthday-banner { top: 70px; } }
           .qb-bd-balloon {
             display: inline-block; font-size: 22px;
             animation: qbBalloon 2.4s ease-in-out infinite alternate;
