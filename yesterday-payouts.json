@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "updated_at": "2026-05-18T19:13:57.146917Z",
+  "updated_at": "2026-05-18T23:45:25.436685Z",
   "target_date": "2026-05-15",
   "totals": {
     "borrowers": 166
@@ -1368,20 +1368,20 @@
     {
       "first_name": "Zachary",
       "state": "TX",
-      "city": "Richmond",
-      "county": "Fort Bend",
-      "amount": 3000.0,
-      "lat": 29.6191,
-      "lng": -95.7527
-    },
-    {
-      "first_name": "Zachary",
-      "state": "TX",
       "city": "Houston",
       "county": "Harris",
       "amount": 3000.0,
       "lat": 29.7979,
       "lng": -95.4191
+    },
+    {
+      "first_name": "Zachary",
+      "state": "TX",
+      "city": "Richmond",
+      "county": "Fort Bend",
+      "amount": 3000.0,
+      "lat": 29.6191,
+      "lng": -95.7527
     },
     {
       "first_name": "Irma",
