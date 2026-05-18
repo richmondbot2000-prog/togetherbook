@@ -481,6 +481,10 @@ textarea.up-pay-input { resize: vertical; min-height: 50px; font-family: var(--f
   border-radius: 12px;
   font: 500 11px/1.4 var(--font-mono); color: var(--ink-700);
 }
+.up-acct-alias-chip--locked {
+  background: transparent; border-style: dashed; color: var(--ink-500);
+  cursor: help;
+}
 .up-acct-alias-x, .up-acct-alias-group {
   background: transparent; border: 0; padding: 0 4px;
   font: 500 11px/1 var(--font-body); cursor: pointer; color: var(--ink-500);
