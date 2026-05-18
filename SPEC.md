@@ -135,7 +135,7 @@ The drawer renders **all** sub-page items eagerly (no accordion), so its visible
 
 **Top-right of every topbar:** the viewer's circular avatar chip. `nav.js` resolves the signed-in email via `/api/workspace/whoami`, looks up the matching `people.json` record, and links the chip to `/directory/<slug>`. Renders a generic icon as fallback if whoami is unavailable (public mirror or transient failure) — never silently removes itself.
 
-**Birthday treatment.** When today is anyone's birthday (UK local date, computed from `people.json[].date_of_birth`), `nav.js` swaps the wordmark for `togetherbook-logo-birthday.png` (taller header slot) and injects a thin `qb-birthday-banner` row under the topbar listing every celebrant alongside a rotating GIF from `wall-media/birthday/`. Skipped inside iframes. The companion `birthday-posts.yml` cron also writes one "Happy Birthday <name>" post to the Wall per person per year. See §11.13.
+**Birthday treatment.** When today is anyone's birthday (UK local date, computed from `people.json[].date_of_birth`), `nav.js` swaps the wordmark for `togetherbook-logo-birthday.png` (same proportions as the standard wordmark, with the two O's replaced by balloons — no header height change). Skipped inside iframes. The companion `birthday-posts.yml` cron also writes one "Happy Birthday `<name>`" post to the Wall per person per year. See §11.13. (The original celebratory strip under the topbar was retired 2026-05-18 — too noisy.)
 
 ---
 
@@ -1786,25 +1786,25 @@ A top-down org chart of the Line Manager hierarchy built from `people.json[].lin
 
 **Source.** Same `people.json` everyone else reads, fetched via `/api/workspace/table?file=people` so the latest writes are reflected without GitHub Pages publish lag.
 
-### 11.13 Birthday celebrations (added 2026-05-18)
+### 11.13 Birthday celebrations (added 2026-05-18; banner retired same day)
 
-When today's date matches any active Person's `date_of_birth` (UK local time), four coordinated UI touches fire across the whole site:
+When today's date matches any active Person's `date_of_birth` (UK local time), three coordinated touches fire across the site. The original celebratory strip under the topbar was retired on 2026-05-18 — too noisy in daily browsing; the Wall post is the primary celebration channel now.
 
-1. **Top banner.** `nav.js` injects `<div class="qb-birthday-banner">` sticky-positioned just under the topbar with cream-on-brass gradient, animated balloon emojis, a small happy-birthday GIF, and a list of "Happy Birthday `<Name>`!" linking to `/directory/<slug>`. Multi-birthday days list every person. The banner is suppressed when `nav.js` runs inside an iframe (`window.self !== window.top`) so the profile page's embedded calendar doesn't render it a second time across the grid.
+1. **Logo swap.** `nav.js` swaps every `.qb-brand-logo` `src` from `/togetherbook-logo.png` to `/togetherbook-logo-birthday.png` (the wordmark with the two O's of "BOOK" replaced by balloons; same proportions as the standard wordmark so no topbar / logo height adjustment is needed). `onerror` falls back to the original asset if the birthday file is missing. Skipped inside iframes so the profile-page Calendar tab's embedded view doesn't try to swap twice.
 
-2. **Logo swap.** When the banner fires, `nav.js` also adds class `qb-is-birthday` to `<body>` and swaps `.qb-brand-logo` to `/togetherbook-logo-birthday.png` (an asset bundling the wordmark + balloons + "Happy Birthday" script). Per-breakpoint CSS grows the topbar height (72→104 desktop / 64→88 tablet / 56→70 mobile) and the logo height (50→88 / 42→72 / 32→54) so the wordmark inside the wider birthday image lands at the normal reading size. The birthday banner's `top` offset moves in lockstep. On 404 (file missing), `onerror` restores the original logo so the site degrades gracefully.
-
-3. **Wall post.** `scripts/birthday_post.py`, scheduled by `.github/workflows/birthday-posts.yml` daily at 05:00 UTC, scans `people.json` for any active Person whose `date_of_birth` month-day matches today and inserts a "Happy Birthday `<Name>`" post on the Wall, authored by `TogetherBook` (system author email `togetherbook@system`). Stable post IDs `post_birthday_<YYYY>_<slug>` make the daily run idempotent (one post per Person per year).
+2. **Wall post.** `scripts/birthday_post.py`, scheduled by `.github/workflows/birthday-posts.yml` daily at 05:00 UTC, scans `people.json` for any active Person whose `date_of_birth` month-day matches today and inserts a "Happy Birthday `<Name>`" post on the Wall, authored by `TogetherBook` (system author email `togetherbook@system`). Stable post IDs `post_birthday_<YYYY>_<slug>` make the daily run idempotent (one post per Person per year).
 
    Each post pulls from two pools:
    - **GIF rotation** — `BIRTHDAY_GIFS` lists 7 self-hosted GIFs at `wall-media/birthday/gif1-7.gif`. `pick_unused_gif()` skips any GIF used by a birthday post in the past 7 days, falling back to least-recently-used if the pool is exhausted; within a single run (multi-birthday days) the script also avoids picking the same GIF twice. All 7 GIFs were visually verified as actual Happy Birthday content — the original 12-GIF Giphy pool included several non-birthday clips that got swapped out, and we now self-host so upstream Giphy removals can't replace them with the "THIS CONTENT IS NOT AVAILABLE" placeholder.
    - **Message rotation** — `MESSAGES` lists 9 hand-picked templates with a `{name}` slot. `pick_unused_message()` skips any template whose fingerprint (last 40 chars, independent of `{name}`) appears in a birthday post from the past 7 days, again falling back to least-recently-used.
 
-4. **Team calendar balloon.** Holidays page `renderTeam()` adds a balloon emoji 🎈 to each cell that matches a direct report's birthday, with tooltip `"<First>'s birthday"`. CSS rule: `.hd-team-cell.is-birthday::before { content: "🎈" }` lives inline in `holidays.html` (around line 628; kept page-local because the rule is meaningful only on that view).
+3. **Team calendar balloon.** Holidays page `renderTeam()` adds a balloon emoji 🎈 to each cell that matches a direct report's birthday, with tooltip `"<First>'s birthday"`. CSS rule: `.hd-team-cell.is-birthday::before { content: "🎈" }` lives inline in `holidays.html` (around line 628; kept page-local because the rule is meaningful only on that view).
 
-**Data source.** All four touches read `date_of_birth` directly from `people.json`. The field is editable from the Directory profile page (admins only). Format: `YYYY-MM-DD`; only `MM-DD` is compared.
+**Data source.** All three touches read `date_of_birth` directly from `people.json`. The field is editable from the Directory profile page (admins only). Format: `YYYY-MM-DD`; only `MM-DD` is compared.
 
-**Suppression rules.** Persons with `suspended` truthy or any `deletion_time` value are skipped from all four surfaces.
+**Suppression rules.** Persons with `suspended` truthy or any `deletion_time` value are skipped from all three surfaces.
+
+**Retired (2026-05-18 afternoon).** The `qb-birthday-banner` row beneath the topbar (cream-on-brass gradient with celebrant names + animated balloons + a rotating GIF) and the body-class-driven topbar/logo height growth CSS that supported the previous wider birthday logo. The new birthday logo is sized for the everyday slot, so the growth styles aren't needed.
 
 ---
 

@@ -197,22 +197,23 @@
   }).catch(() => { /* keep the fallback icon */ });
 })();
 
-/* Birthday banner — when today is anyone's birthday (UK local date),
-   drop a celebratory strip in just under the topbar with balloons, a
-   short happy-birthday GIF, and the person's name. Multi-birthday
-   days list every person. Falls back silently if people.json is
-   missing or no one has today as their date_of_birth. */
+/* Birthday logo swap — on any date that matches an active Person's
+   date_of_birth (UK local), replace the brand wordmark with
+   /togetherbook-logo-birthday.png. The asset is the same proportions
+   as the standard wordmark with the two O's of "BOOK" replaced by
+   balloons, so no topbar / height adjustments are needed.
+
+   Retired 2026-05-18: the previous celebratory strip under the topbar
+   (with names, GIF, balloon emojis) is gone — too noisy in daily
+   browsing. The Wall post written by scripts/birthday_post.py +
+   birthday-posts.yml at 05:00 UTC remains the primary celebration
+   channel, plus the 🎈 emoji on the team-calendar cell. */
 (function () {
-  // Suppress entirely inside iframes — the profile page embeds
-  // holidays.html in an iframe for the Calendar tab; the iframed copy
-  // of nav.js was rendering the celebratory strip across the calendar
-  // grid (the outer page already shows the banner directly above it).
+  // Suppress inside iframes (profile page embeds holidays.html for
+  // the Calendar tab; the outer page already owns the swap).
   let inIframe = false;
   try { inIframe = window.self !== window.top; } catch (_) { inIframe = true; }
   if (inIframe) return;
-
-  const bar = document.querySelector('.qb-topbar');
-  if (!bar || document.querySelector('.qb-birthday-banner')) return;
 
   fetch('/people.json', { cache: 'no-store' })
     .then(r => r.ok ? r.json() : null)
@@ -222,106 +223,19 @@
       const now = new Date();
       const md = String(now.getMonth() + 1).padStart(2, '0') + '-' +
                  String(now.getDate()).padStart(2, '0');
-      const birthdays = doc.people.filter(p => {
+      const isBirthday = doc.people.some(p => {
         if (p.suspended || p.deletion_time) return false;
         const dob = p.date_of_birth || '';
         return dob.length >= 10 && dob.slice(5, 10) === md;
       });
-      if (!birthdays.length) return;
+      if (!isBirthday) return;
 
-      // Tag <body> so birthday-only CSS overrides can fire without
-      // affecting any normal day. Used to grow the brand-logo slot
-      // so the TogetherBOOK wordmark inside the wider birthday logo
-      // (which also carries balloons + "Happy Birthday" script) stays
-      // at the same visual size as the everyday wordmark.
-      document.body.classList.add('qb-is-birthday');
-
-      // Inject styles once.
-      if (!document.getElementById('qbBirthdayStyle')) {
-        const s = document.createElement('style');
-        s.id = 'qbBirthdayStyle';
-        s.textContent = `
-          /* Birthday logo is ~3.5× wider than the standalone wordmark
-             because it bundles balloons + a "Happy Birthday" script.
-             Grow the logo's rendered height (and the topbar with it)
-             so the wordmark portion lands at the normal reading size.
-             Topbar values are tuned to keep the brand visually centred
-             and avoid clipping. */
-          body.qb-is-birthday .qb-topbar    { height: 104px; }
-          body.qb-is-birthday .qb-brand-logo { height: 88px; }
-          @media (max-width: 960px) {
-            body.qb-is-birthday .qb-topbar    { height: 88px; }
-            body.qb-is-birthday .qb-brand-logo { height: 72px; }
-          }
-          @media (max-width: 480px) {
-            body.qb-is-birthday .qb-topbar    { height: 70px; }
-            body.qb-is-birthday .qb-brand-logo { height: 54px; }
-          }
-
-          .qb-birthday-banner {
-            display: flex; align-items: center; justify-content: center;
-            gap: 14px; padding: 10px 18px;
-            background: linear-gradient(90deg,#FFE7C2 0%,#FBD89A 50%,#FFE7C2 100%);
-            border-bottom: 1px solid var(--brass-500, #C8973F);
-            font: 600 16px/1.2 var(--font-display, 'Newsreader', serif);
-            color: var(--ink-900, #11192E);
-            position: sticky; top: 104px; z-index: 999;
-          }
-          @media (max-width: 960px) { .qb-birthday-banner { top: 88px; font-size: 14px; padding: 8px 12px; gap: 8px; } }
-          @media (max-width: 480px) { .qb-birthday-banner { top: 70px; } }
-          .qb-bd-balloon {
-            display: inline-block; font-size: 22px;
-            animation: qbBalloon 2.4s ease-in-out infinite alternate;
-            transform-origin: bottom center;
-          }
-          .qb-bd-balloon:nth-child(2) { animation-delay: 0.6s; }
-          .qb-bd-balloon:nth-child(3) { animation-delay: 1.2s; }
-          @keyframes qbBalloon {
-            0%   { transform: translateY(0) rotate(-3deg); }
-            100% { transform: translateY(-6px) rotate(3deg); }
-          }
-          .qb-bd-gif { height: 28px; width: auto; border-radius: 4px; }
-          .qb-bd-text a {
-            color: inherit; text-decoration: none;
-            border-bottom: 1px dotted var(--brass-600, #A47829);
-          }
-          .qb-bd-text a:hover { border-bottom-style: solid; }
-        `;
-        document.head.appendChild(s);
-      }
-
-      // Build the names list — link each to their /directory/<slug>
-      // so the banner doubles as a quick way to post on their wall.
-      const namePieces = birthdays.map(p => {
-        const slug = p.url_slug || (p.main_google_email || '').split('@')[0].toLowerCase();
-        const href = '/directory/' + slug;
-        const safe = (p.name || slug).replace(/&/g, '&amp;').replace(/</g, '&lt;');
-        return `<a href="${href}">${safe}</a>`;
-      });
-      const namesHtml = namePieces.length === 1 ? namePieces[0]
-        : namePieces.slice(0, -1).join(', ') + ' and ' + namePieces[namePieces.length - 1];
-
-      const banner = document.createElement('div');
-      banner.className = 'qb-birthday-banner';
-      banner.setAttribute('role', 'note');
-      banner.innerHTML =
-        '<span class="qb-bd-balloon" aria-hidden="true">🎈</span>' +
-        '<span class="qb-bd-balloon" aria-hidden="true">🎂</span>' +
-        '<img class="qb-bd-gif" alt="" src="/wall-media/birthday/gif1.gif">' +
-        '<span class="qb-bd-text">Happy Birthday ' + namesHtml + '!</span>' +
-        '<span class="qb-bd-balloon" aria-hidden="true">🎉</span>';
-
-      bar.parentNode.insertBefore(banner, bar.nextSibling);
-
-      // Swap the topbar logo for the birthday variant. Falls back to
-      // the original on 404 so dropping the file at /togetherbook-
-      // logo-birthday.png is the only step needed to switch it on.
-      const logos = document.querySelectorAll('.qb-brand-logo');
-      logos.forEach(img => {
+      // Swap every brand-logo on the page. onerror falls back to the
+      // original so a missing asset can't blank the wordmark.
+      document.querySelectorAll('.qb-brand-logo').forEach(img => {
         const original = img.src;
-        const birthdaySrc = '/togetherbook-logo-birthday.png?v=' + Date.now();
         img.onerror = () => { img.onerror = null; img.src = original; };
-        img.src = birthdaySrc;
+        img.src = '/togetherbook-logo-birthday.png?v=' + Date.now();
       });
     });
 })();
