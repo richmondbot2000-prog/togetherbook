@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "updated_at": "2026-05-18T21:54:20.298Z",
+  "updated_at": "2026-05-18T21:56:36.692Z",
   "source": "build_people.py bootstrap from staff.json + annotations.json",
   "people": [
     {
@@ -3027,37 +3027,6 @@
       "most_recent_payroll_id": null
     },
     {
-      "id": 115,
-      "name": "Kathaluwa Liyanage Navodi Sammani",
-      "given": "Kathaluwa Liyanage Navodi",
-      "family": "Sammani",
-      "aliases": [],
-      "main_google_email": "",
-      "alt_google_emails": [],
-      "external_google_email": "",
-      "auth0_id": "",
-      "access_level": "staff",
-      "company": "LetMe Ltd",
-      "title": "",
-      "department": "",
-      "phone": "",
-      "address": "Flat 5\n17 Wordsworth Road\nSouthampton\nHampshire\nSO15 5LY",
-      "start_date": "2025-11-01",
-      "line_manager_id": null,
-      "line_manager_email_raw": "",
-      "role": "",
-      "notes": "Person auto-created from payroll import — no Google account linked yet. Set main_google_email when known.",
-      "directory_photo_uploaded_at": "",
-      "cover_photo_uploaded_at": "",
-      "on_payroll": true,
-      "most_recent_payroll_id": 78,
-      "suspended": false,
-      "created_at": "2026-05-17T14:06:41Z",
-      "updated_at": "2026-05-17T19:56:12Z",
-      "url_slug": "kathaluwa.liyanage.navodi.sammani",
-      "date_of_birth": "1994-05-26"
-    },
-    {
       "id": 116,
       "name": "Kellee Brown",
       "given": "Kellee",
@@ -4182,7 +4151,9 @@
       "name": "Navodi Sammani",
       "given": "Navodi",
       "family": "Sammani",
-      "aliases": [],
+      "aliases": [
+        "Kathaluwa Liyanage Navodi Sammani"
+      ],
       "main_google_email": "navodi.sammani@togetherloans.com",
       "alt_google_emails": [],
       "external_google_email": "",
@@ -4192,17 +4163,18 @@
       "title": "",
       "department": "",
       "phone": "",
-      "address": "",
-      "start_date": "",
+      "address": "Flat 5\n17 Wordsworth Road\nSouthampton\nHampshire\nSO15 5LY",
+      "start_date": "2025-11-01",
       "line_manager_id": null,
       "line_manager_email_raw": "",
       "role": "",
       "directory_photo_uploaded_at": "2026-05-14T08:27:19+01:00",
-      "notes": "",
+      "notes": "Person auto-created from payroll import — no Google account linked yet. Set main_google_email when known.",
       "created_at": "2026-05-17T11:13:52Z",
-      "updated_at": "2026-05-17T11:13:52Z",
+      "updated_at": "2026-05-18T21:56:35.758Z",
       "url_slug": "navodi.sammani",
-      "most_recent_payroll_id": null
+      "most_recent_payroll_id": 78,
+      "on_payroll": true
     },
     {
       "id": 156,
