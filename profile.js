@@ -655,7 +655,16 @@
     };
   }
   function renderGoogleAccountsSection() {
-    const accts = (googleByPersonId[person.id] || []).slice()
+    // Filter out alias-only rows: when a secondary domain is attached to
+    // a Workspace tenant, the directory scan picks up an "account" at the
+    // alias address that resolves to the same underlying Google user as
+    // the primary. Such rows have no google_user_id and is_primary=false,
+    // and the actions on them (Delete / Transfer / Make primary) all
+    // fail on Google's side because there's nothing distinct to act on.
+    // The alias is already shown as a chip under the primary row.
+    // External Gmails legitimately have no google_user_id, so spare them.
+    const accts = (googleByPersonId[person.id] || [])
+      .filter(a => a.is_primary || a.google_user_id || a.tenant === "external")
       .sort((a, b) => {
         // primary first, then letme, then together, then external.
         if (a.is_primary !== b.is_primary) return a.is_primary ? -1 : 1;
