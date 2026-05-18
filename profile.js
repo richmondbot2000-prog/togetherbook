@@ -125,8 +125,22 @@
     return (u && u.photo_url) || "";
   }
   function coverSrc() {
-    if (!person || !person.cover_photo_uploaded_at || !person.main_google_email) return "";
-    return `/assets/covers/${dirPhotoKey(person.main_google_email)}.jpg?v=${encodeURIComponent(person.cover_photo_uploaded_at)}`;
+    if (!person) return "";
+    // Covers, like profile photos, are keyed by the email the upload
+    // happened under. For merged Persons that's often an alt rather
+    // than the current main_google_email — walk all linked emails and
+    // use the first one annotations.json has a cover timestamp for.
+    const candidates = [person.main_google_email, ...(person.alt_google_emails||[]), person.external_google_email].filter(Boolean);
+    for (const e of candidates) {
+      const ann = annotationsMap[e.toLowerCase()];
+      if (ann && ann.cover_photo_uploaded_at) {
+        return `/assets/covers/${dirPhotoKey(e)}.jpg?v=${encodeURIComponent(ann.cover_photo_uploaded_at)}`;
+      }
+    }
+    if (person.cover_photo_uploaded_at && person.main_google_email) {
+      return `/assets/covers/${dirPhotoKey(person.main_google_email)}.jpg?v=${encodeURIComponent(person.cover_photo_uploaded_at)}`;
+    }
+    return "";
   }
   function svgIcon(name) {
     const paths = {

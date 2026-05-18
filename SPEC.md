@@ -1838,6 +1838,62 @@ The legacy single-tenant fallback (`WORKSPACE_DELEGATE_USER`) is retained for ba
 
 ---
 
+## 15.5 Merge-safety policy (added 2026-05-18)
+
+### The bug class
+
+When two Workspace accounts get merged into a single TogetherBook `Person`, the active `main_google_email` is often **not** the email under which that user's data was originally indexed. Concrete example: James Benamor's `main_google_email` is `james.benamor@letme.com`, but his uploaded photo lives at `/assets/photos/james.benamor_at_togetherloans.com.jpg` — the file was saved under his alt address at upload time and never re-keyed.
+
+Code that looks up by `main_google_email` alone will silently:
+- 404 the avatar / cover photo file and render initials;
+- miss the annotation (`role`, `line_manager_email`, `directory_photo_uploaded_at`);
+- drop the holiday allowance and bookings;
+- under-count wall reactions or, worse, double-count if the same Person reacted under two of their emails.
+
+The bite is silent — no exception, no console error, just initials where a photo should be.
+
+### The rule
+
+**Every email-keyed lookup must walk all of a Person's linked emails before settling for a fallback.** "Linked emails" means `[main_google_email, ...alt_google_emails, external_google_email]` filtered for truthy values. The canonical pattern:
+
+```js
+const candidates = [p.main_google_email, ...(p.alt_google_emails||[]), p.external_google_email].filter(Boolean);
+for (const e of candidates) {
+  const ann = annotationsMap[e.toLowerCase()];
+  if (ann && ann.directory_photo_uploaded_at) {
+    return `/assets/photos/${dirPhotoKey(e)}.jpg?v=${encodeURIComponent(ann.directory_photo_uploaded_at)}`;
+  }
+}
+```
+
+The same pattern applies to holidays (`holidaysByEmail`), wall reactions (`reactions[emoji]` lists), and activity buckets — any map keyed by email.
+
+### The safety net
+
+`scripts/test_merge_safety.py` runs as a GitHub Action on every push to `main` and every PR (see `.github/workflows/test-merge-safety.yml`). It performs ten checks across four categories:
+
+1. **Data integrity (T1-T3)** — no email belongs to two Persons; id / url_slug / main_google_email are unique; every Person has id / name / url_slug.
+2. **Cross-file reference integrity (T4-T7)** — annotations.json, holidays.json, wall.json author emails and reaction emails, plus annotation `line_manager_email` / `manager_email` pointers all resolve to a known Person or staff.json record.
+3. **Reaction dedup (T8)** — no reaction list contains two emails belonging to the same Person (double-counting tell).
+4. **Code lint (T10)** — regex-scans every `*.html` and `*.js` at repo root and fails if any file builds an `/assets/photos/` or `/assets/covers/` URL from a single email *without* a surrounding walk-all-linked-emails structure in the same function.
+
+T9 is informational — it lists every Person whose photo / cover / holidays / wall posts live on a non-main linked email. These are the people every new lookup must work for; they're the canaries.
+
+### When you add a new feature that reads per-email data
+
+1. Read the email key out of the source (post.author_email, request.user_email, etc.).
+2. Resolve to a Person via `personByEmail[email]` or equivalent.
+3. For any further lookup keyed by email (photos, holidays, annotations), walk every linked email on that Person and pick the first hit.
+4. If the lookup feeds a *count* (reactions, activity totals), dedupe by Person before summing.
+5. Run `python3 scripts/test_merge_safety.py` locally before pushing — it's fast and self-contained.
+
+### Historic incidents (so the policy stays grounded)
+
+- **2026-05-18 — Wall avatars vanished after merge.** wall.html built `directory_photo_override` per lookup email using *that* email's filename, so post authors keyed under `letme.com` resolved to a 404. Fixed by walking each Person's linked emails against `annotationsMap` and applying the resulting override path to every email on the Person.
+- **2026-05-18 — directory.html and profile.js coverSrc had the same merge-blindness.** Both used `main_google_email` alone. Fixed by walking linked emails in both files.
+
+---
+
 ## 16. Lessons learned
 
 A short list of footguns to avoid, kept brief; longer detail in `~/Desktop/wiki/CLAUDE_CONTEXT.md` §9.

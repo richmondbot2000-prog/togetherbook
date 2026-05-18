@@ -358,6 +358,12 @@
 
   let people = [];
   let staffByEmail = {};
+  // Per-email annotations (photo timestamps, role overrides, line manager
+  // pointers). Keyed by the email under which the data was originally
+  // recorded — for merged Persons the active main_google_email is often
+  // *not* the annotation key, so any photo / cover lookup must walk
+  // every linked email on the Person before settling for initials.
+  let annotationsMap = {};
   // Pre-computed indexes — every source is now a real linked table, so
   // chip rendering is a lookup, not on-the-fly matching.
   let googleByPersonId = {};     // pid -> [google-account rows] (incl. external)
@@ -382,10 +388,26 @@
   }
   function dirPhotoKey(email) { return (email||"").toString().trim().toLowerCase().replace(/@/g,"_at_"); }
   function avatarHtml(p) {
+    // Photos live at /assets/photos/<email>_at_<host>.jpg keyed by the
+    // email under which the upload happened. For merged Persons that
+    // upload email is often an alt (e.g. @togetherloans.com) while the
+    // current main_google_email is @letme.com — so we walk every linked
+    // email and use the first one annotations.json has a timestamp for.
     let src = "";
-    if (p.directory_photo_uploaded_at && p.main_google_email) {
+    const candidates = [p.main_google_email, ...(p.alt_google_emails||[]), p.external_google_email].filter(Boolean);
+    for (const e of candidates) {
+      const ann = annotationsMap[e.toLowerCase()];
+      if (ann && ann.directory_photo_uploaded_at) {
+        src = `/assets/photos/${dirPhotoKey(e)}.jpg?v=${encodeURIComponent(ann.directory_photo_uploaded_at)}`;
+        break;
+      }
+    }
+    if (!src && p.directory_photo_uploaded_at && p.main_google_email) {
+      // Person-level timestamp without an annotation match — best guess
+      // is the main email; the onerror fallback below covers a miss.
       src = `/assets/photos/${dirPhotoKey(p.main_google_email)}.jpg?v=${encodeURIComponent(p.directory_photo_uploaded_at)}`;
-    } else {
+    }
+    if (!src) {
       const u = staffByEmail[(p.main_google_email||"").toLowerCase()];
       if (u && u.photo_url) src = u.photo_url;
     }
@@ -894,7 +916,11 @@
     fetch("/api/workspace/table?file=google-accounts",      { cache: "no-store", headers: { "Cache-Control": "no-cache, no-store, must-revalidate", "Pragma": "no-cache" } }).then(r => r.ok ? r.json() : null).catch(() => null),
     fetch("/api/workspace/table?file=warehouse-activity",   { cache: "no-store", headers: { "Cache-Control": "no-cache, no-store, must-revalidate", "Pragma": "no-cache" } }).then(r => r.ok ? r.json() : null).catch(() => null),
     fetch("/api/workspace/table?file=payroll-data",         { cache: "no-store", headers: { "Cache-Control": "no-cache, no-store, must-revalidate", "Pragma": "no-cache" } }).then(r => r.ok ? r.json() : null).catch(() => null),
-  ]).then(([who, peopleFile, staff, gaccounts, warehouse, payroll]) => {
+    fetch("/annotations.json",          { cache: "no-store", headers: { "Cache-Control": "no-cache, no-store, must-revalidate", "Pragma": "no-cache" } }).then(r => r.ok ? r.json() : null).catch(() => null),
+  ]).then(([who, peopleFile, staff, gaccounts, warehouse, payroll, annFile]) => {
+    if (annFile && annFile.annotations && typeof annFile.annotations === "object") {
+      annotationsMap = annFile.annotations;
+    }
     // Stamp the load time so the user can verify data freshness at a
     // glance — proxy reads are always canonical, so this is when
     // we last asked the GitHub Contents API.
