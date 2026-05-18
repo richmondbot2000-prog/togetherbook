@@ -51,33 +51,36 @@ The Brokers / Sources / Campaigns / SourceRef hierarchy is the most error-prone 
 
 ## 6a. Cross-session coordination (two Claude Code sessions share this repo)
 
-There are typically **two Claude Code sessions** working on TogetherBook at any time, sharing this repo + SPEC.md + the wiki. Coordination rules:
+There are typically **two Claude Code sessions** working on TogetherBook at any time, sharing this repo + SPEC.md + the wiki. The user is non-technical and will NOT remember to type slash-commands; coordination must happen automatically. Rules for the agent (you):
 
-1. **On sit-down, run `/session-start`** (skill at `.claude/skills/session-start/SKILL.md`). Generates a 6-char session ID, claims a scope in `_inflight.md`, and pulls latest. Cheap; ~10s.
-
-2. **Read `_inflight.md` first.** If the other session is touching what you're about to touch, work on something else or coordinate before proceeding.
-
-3. **Tag every commit with `Session-Id: <id>`** in the footer, alongside the Co-Authored-By line. The ID is the 6-char value from `/session-start`. Example:
+1. **On your first non-trivial action in any new conversation, run the session-start dance silently.** Do this before any other significant work — code change, doc edit, worker deploy, etc.:
+   ```bash
+   cd /Users/richmondrobot/Desktop/togetherbook
+   git pull --rebase --quiet
+   # If .claude/session.id doesn't exist OR is older than 8 hours, generate fresh.
+   if [ ! -f .claude/session.id ] || [ -z "$(find .claude/session.id -mmin -480 2>/dev/null)" ]; then
+     mkdir -p .claude
+     python3 -c "import secrets,string; print(''.join(secrets.choice(string.ascii_lowercase+string.digits) for _ in range(6)))" > .claude/session.id
+   fi
+   SID=$(cat .claude/session.id)
+   # Glance at the other session's claims + recent commits.
+   sed -n '/INFLIGHT:BEGIN/,/INFLIGHT:END/p' _inflight.md
+   git log --since='6 hours ago' --pretty='%h %an %s' --no-merges | head -20
+   echo "this session: $SID"
    ```
-   git commit -m "$(cat <<'EOF'
-   <subject>
+   If the other session has a row in `_inflight.md` that overlaps with what the user just asked for, surface it before doing anything destructive. Then append your own row to `_inflight.md` between the markers and commit it.
 
-   <body>
+2. **`git config core.hooksPath .githooks`** is already set, so the pre-commit hook auto-injects `Session-Id: <id>` into every commit footer from `.claude/session.id`. You don't have to remember it; the hook does it. (Still safe to include manually — the hook is a no-op if it's already there.)
 
-   Session-Id: abc123
-   Co-Authored-By: Claude Opus 4.7 (1M context) <noreply@anthropic.com>
-   EOF
-   )"
-   ```
-   Then `git log --grep='Session-Id: abc123'` shows exactly what this session shipped.
+3. **On sign-off (user says "we're done", "thanks", "good night", etc.), remove your row from `_inflight.md` + commit it.** Last write wins so this is safe even if the other session's row was added meanwhile.
 
-4. **On sign-off, run `/session-end`.** Removes your `_inflight.md` row + commits. Skill at `.claude/skills/session-end/SKILL.md`.
+4. **`git rerere.enabled` is true** for this repo — repeated conflict resolutions cache and auto-resolve next time.
 
-5. **Auto-resolve repeated conflicts:** `git rerere.enabled` is set true in `.git/config` for this repo so the same merge conflicts you've resolved before auto-resolve next time.
+5. **Worker deploys are guarded.** `~/.togetherbook/deploy_worker.py` refuses to deploy if local `worker/workspace-worker.js` is behind `origin/main` (pre-deploy guard added 2026-05-18). Pull first if the guard complains. `--force` overrides — only use it if you're sure.
 
-6. **Worker deploys are serialized** by `~/.togetherbook/deploy_worker.py` — it refuses to deploy if local `worker/workspace-worker.js` is behind `origin/main`. Pull first.
+6. **Auto-generated blocks have markers** — `<!-- AUTO:* BEGIN/END -->` for SPEC tables (rewritten by `scripts/generate_canonical_tables.py`) and `<!-- PENDING:BEGIN/END -->` for pending lists (rewritten by `scripts/render_pending.py`). Never hand-edit between markers; the next render clobbers it. Change the source (`.github/workflows/`, `worker/workspace-worker.js`, `pending.yaml`) and re-run the script.
 
-7. **Auto-generated blocks have markers** — `<!-- AUTO:* BEGIN/END -->` for the SPEC tables (rewritten by `scripts/generate_canonical_tables.py`) and `<!-- PENDING:BEGIN/END -->` for pending lists (rewritten by `scripts/render_pending.py`). Never hand-edit between markers; the next render clobbers it. Change the source (`.github/workflows/`, `worker/workspace-worker.js`, `pending.yaml`) and re-run the script.
+The `/session-start` and `/session-end` skills are available as opt-in overrides — but the standing instruction above means you do the work without the user typing anything.
 
 ## 7. Documentation responsibilities — the nightly directive
 

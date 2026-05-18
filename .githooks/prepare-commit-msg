@@ -1,0 +1,40 @@
+#!/usr/bin/env bash
+# prepare-commit-msg — auto-inject Session-Id footer into commit messages.
+#
+# How:
+#   1. If the commit message already has "Session-Id:" (the agent wrote it), do nothing.
+#   2. Else read .claude/session.id and append "Session-Id: <id>" to the footer.
+#   3. If .claude/session.id doesn't exist either, do nothing — no-op for ad-hoc commits.
+#
+# Result: every commit made by either Claude Code session in this repo gets
+# tagged with the current session's ID, even when the agent forgets. Then
+# `git log --grep='Session-Id: abc123'` lists exactly what that session shipped.
+#
+# Wired up via:  git config --local core.hooksPath .githooks
+
+set -euo pipefail
+MSG_FILE="$1"
+
+# Don't touch commits coming from merge / rebase / amend tooling.
+SRC="${2:-}"
+case "$SRC" in
+  merge|squash|commit) exit 0 ;;
+esac
+
+if grep -q "^Session-Id:" "$MSG_FILE"; then
+  exit 0
+fi
+
+SID_FILE="$(git rev-parse --show-toplevel)/.claude/session.id"
+[ -f "$SID_FILE" ] || exit 0
+
+SID=$(tr -d '[:space:]' < "$SID_FILE")
+[ -n "$SID" ] || exit 0
+
+# Append to the end of the message. Two trailing newlines so it lands as a
+# proper trailer block.
+{
+  cat "$MSG_FILE"
+  printf "\nSession-Id: %s\n" "$SID"
+} > "$MSG_FILE.tmp"
+mv "$MSG_FILE.tmp" "$MSG_FILE"

@@ -15,3 +15,7 @@ telegram-monitor.db-journal
 .venv/
 .DS_Store
 notify-mentions.json
+
+# Per-session Claude Code state. .claude/skills/ IS committed (shared via
+# git); .claude/session.id is per-checkout and per-session and shouldn't be.
+.claude/session.id
