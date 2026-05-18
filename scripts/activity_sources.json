@@ -13,7 +13,7 @@
       "database": "ReportingApplications",
       "schema": "dbo",
       "table": "Events",
-      "ts_col": "EventDateTime",
+      "ts_col": "DateCreatedUtc",
       "user_col": "ClientUsername",
       "human_filter": "EventTypeId = 14 AND ClientType LIKE '%CRM%'",
       "description": "Written when a CRM agent navigates into an application (BRW / prospect) record in /Payout/Caseview. The row is triggered by SmartLook starting a screen recording at the moment of view. EventTypeId 14 = 'ApplicationOpened' (per the wiki /Central_CRM.md and the feed-filter spec which classifies this as a 'View'). ClientType=CRM% scopes to clicks-from-an-agent and excludes any system caller using the same username."
@@ -23,7 +23,7 @@
       "database": "ReportingLoanbook",
       "schema": "dbo",
       "table": "Events",
-      "ts_col": "EventDateTime",
+      "ts_col": "DateCreatedUtc",
       "user_col": "ClientUsername",
       "human_filter": "EventTypeId = 11 AND ClientType LIKE '%CRM%'",
       "description": "Written when a CRM agent navigates into an existing loan case in /Collections/Caseview. SmartLook trigger, same shape as the application-side view. EventTypeId 11 = 'CaseOpened' (per Central_CRM.md and the feed-filter spec which classifies this as a 'View'). ClientType=CRM% scopes to agent clicks."
