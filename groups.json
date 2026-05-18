@@ -1,9 +1,9 @@
 {
   "schema_version": 1,
-  "updated_at": "2026-05-18T11:58:06Z",
+  "updated_at": "2026-05-18T18:25:48Z",
   "totals": {
     "groups": 105,
-    "members": 218
+    "members": 214
   },
   "tenants": [
     "letme.co.uk",
@@ -437,14 +437,8 @@
         "development@rapidamoney.pl",
         "development@rgroup.co.uk"
       ],
-      "member_count": 13,
+      "member_count": 12,
       "members": [
-        {
-          "email": "adnan.turken@rgroup.co.uk",
-          "role": "MEMBER",
-          "type": "USER",
-          "status": "ACTIVE"
-        },
         {
           "email": "ben.gardner@letme.com",
           "role": "MEMBER",
@@ -742,14 +736,8 @@
       "description": "",
       "tenant": "letme.co.uk",
       "aliases": [],
-      "member_count": 3,
+      "member_count": 2,
       "members": [
-        {
-          "email": "dan.bennett@clearloans.com.au",
-          "role": "MEMBER",
-          "type": "USER",
-          "status": "ACTIVE"
-        },
         {
           "email": "hello@clearloans.zendesk.com",
           "role": "MEMBER",
@@ -946,7 +934,7 @@
         "lunch@mail.letme.co.uk",
         "lunch@rgroup.co.uk"
       ],
-      "member_count": 3,
+      "member_count": 2,
       "members": [
         {
           "email": "mike.pursey@letme.com",
@@ -956,12 +944,6 @@
         },
         {
           "email": "mourad.malki@letme.com",
-          "role": "MEMBER",
-          "type": "USER",
-          "status": "ACTIVE"
-        },
-        {
-          "email": "tarek.benamor@letme.com",
           "role": "MEMBER",
           "type": "USER",
           "status": "ACTIVE"
@@ -1504,7 +1486,7 @@
         "waltonhouse@mail.letme.co.uk",
         "waltonhouse@rgroup.co.uk"
       ],
-      "member_count": 4,
+      "member_count": 3,
       "members": [
         {
           "email": "amber.cole@rgroup.co.uk",
@@ -1520,12 +1502,6 @@
         },
         {
           "email": "mourad.malki@rgroup.co.uk",
-          "role": "MEMBER",
-          "type": "USER",
-          "status": "ACTIVE"
-        },
-        {
-          "email": "tarek.benamor@rgroup.co.uk",
           "role": "MEMBER",
           "type": "USER",
           "status": "ACTIVE"
