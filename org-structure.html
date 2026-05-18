@@ -225,19 +225,40 @@
     fetch("staff.json", { cache: "no-store" }).then(r => r.ok ? r.json() : Promise.reject("staff.json HTTP " + (r.status))),
     fetch(`${ANNOTATIONS_RAW_URL}?ts=${Date.now()}`, { cache: "no-store" })
       .then(r => r.ok ? r.json() : ({ annotations: {} })).catch(() => ({ annotations: {} })),
-  ]).then(([who, staff, ann]) => {
+    fetch("people.json", { cache: "no-store" }).then(r => r.ok ? r.json() : null).catch(() => null),
+  ]).then(([who, staff, ann, peopleFile]) => {
     viewerEmail = (who && who.email || "").toLowerCase();
     const users = (staff.users || []).filter(u => !u.suspended && !u.deletion_time);
     const usersByEmail = new Map(users.map(u => [(u.email || "").toLowerCase(), u]));
     const anns = (ann && ann.annotations) || {};
 
-    // line_manager map: email → manager_email (lowercased)
+    // Build email → Person map so we can collapse a merged Person's
+    // multiple emails (e.g. Kelly Black: letme + togetherloans) into
+    // one org-chart node. Canonical node ID for a Person is their
+    // main_google_email; alts map to the same canonical via canon().
+    const personByEmail = {};
+    const people = (peopleFile && peopleFile.people) || [];
+    for (const p of people) {
+      const linked = [p.main_google_email, ...(p.alt_google_emails || []), p.external_google_email].filter(Boolean);
+      for (const e of linked) personByEmail[e.toLowerCase()] = p;
+    }
+    const canon = e => {
+      const lc = (e || "").toLowerCase();
+      const p = personByEmail[lc];
+      return (p && (p.main_google_email || "").toLowerCase()) || lc;
+    };
+
+    // line_manager map: email → manager_email (lowercased), keyed by
+    // canonical Person email. If a Person has annotations under two
+    // emails, last write wins — but they share the same Person so the
+    // graph stays consistent regardless of which one carried it.
     const mgrOf = {};
     for (const [k, v] of Object.entries(anns)) {
-      const mgr = v && v.line_manager ? String(v.line_manager).toLowerCase() : "";
-      if (mgr) mgrOf[k.toLowerCase()] = mgr;
+      const mgr = v && v.line_manager ? canon(v.line_manager) : "";
+      const ck = canon(k);
+      if (mgr) mgrOf[ck] = mgr;
     }
-    // Inverse: manager_email → Set(report_email)
+    // Inverse: manager_email → Set(report_email), already canonical.
     const reportsOf = {};
     for (const [k, mgr] of Object.entries(mgrOf)) {
       reportsOf[mgr] = reportsOf[mgr] || new Set();
@@ -245,7 +266,7 @@
     }
 
     // Visible set = anyone with a line_manager OR who is someone's
-    // line manager.
+    // line manager (canonical emails only).
     const visible = new Set();
     for (const k of Object.keys(mgrOf)) visible.add(k);
     for (const k of Object.keys(reportsOf)) visible.add(k);
@@ -272,23 +293,35 @@
       email: "",
     }];
 
+    const viewerCanon = canon(viewerEmail);
     for (const email of visible) {
-      const u = usersByEmail.get(email) || { email, name: email.split("@")[0] };
-      const a = anns[email] || {};
+      const person = personByEmail[email] || null;
+      // Prefer staff/annotations against the canonical email; fall
+      // back to ANY of the Person's linked emails so a node still
+      // gets a photo/name even when annotations + payroll live under
+      // the alt account.
+      const tryEmails = person
+        ? [person.main_google_email, ...(person.alt_google_emails || []), person.external_google_email].filter(Boolean).map(x => x.toLowerCase())
+        : [email];
+      let u = null, a = null;
+      for (const e of tryEmails) {
+        if (!u && usersByEmail.get(e)) u = usersByEmail.get(e);
+        if (!a && anns[e]) a = anns[e];
+      }
+      u = u || { email, name: (person && person.name) || email.split("@")[0] };
+      a = a || {};
       const mgr = mgrOf[email];
-      // Parent = the line manager IF they're also in the visible set
-      // (avoid orphan parents). Otherwise root.
       const parentId = (mgr && visible.has(mgr)) ? mgr : ROOT_ID;
       data.push({
         id: email,
         parentId,
-        name: u.name || email,
+        name: (person && person.name) || u.name || email,
         role: a.role || "",
         email,
         imageUrl: photoUrlFor(u, a),
-        initials: initialsOf(u.name || "", email),
+        initials: initialsOf((person && person.name) || u.name || "", email),
         _isManager: !!reportsOf[email],
-        _isSelf:    email === viewerEmail,
+        _isSelf:    email === viewerCanon,
       });
     }
 

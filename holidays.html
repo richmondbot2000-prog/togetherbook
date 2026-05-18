@@ -1351,12 +1351,30 @@
     const wrap = document.getElementById("hdPickerWrap");
     const sel = document.getElementById("hdPerson");
     wrap.style.display = "flex";
-    // Admin sees a sorted list of all non-suspended staff. Default is
-    // self; switching re-renders the calendar + log immediately.
-    sel.innerHTML = staff.map(u => {
-      const isSelf = (u.email || "").toLowerCase() === viewerEmail.toLowerCase();
-      return `<option value="${escapeHtml((u.email || "").toLowerCase())}" ${isSelf ? "selected" : ""}>${escapeHtml(u.name || u.email)}${isSelf ? "  ·  (you)" : ""}</option>`;
-    }).join("");
+    // Admin sees a sorted list of all non-suspended Persons (deduped
+    // across their multiple Google emails). Each option's value is the
+    // canonical main_google_email so calendar lookups in holidays.json
+    // don't drift across linked accounts. Staff with no Person record
+    // fall through as their own row.
+    const seenPid = new Set();
+    const options = [];
+    for (const u of staff) {
+      const email = (u.email || "").toLowerCase();
+      const person = personByEmail[email] || null;
+      const key = person ? "p:" + person.id : "e:" + email;
+      if (seenPid.has(key)) continue;
+      seenPid.add(key);
+      const canonEmail = person ? (person.main_google_email || email).toLowerCase() : email;
+      const name = (person && person.name) || u.name || email;
+      const isSelf = canonEmail === viewerEmail.toLowerCase() ||
+                     (person && [person.main_google_email, ...(person.alt_google_emails || []), person.external_google_email]
+                       .filter(Boolean).map(x => x.toLowerCase()).includes(viewerEmail.toLowerCase()));
+      options.push({ canonEmail, name, isSelf });
+    }
+    options.sort((a, b) => (a.name || "").localeCompare(b.name || ""));
+    sel.innerHTML = options.map(o =>
+      `<option value="${escapeHtml(o.canonEmail)}" ${o.isSelf ? "selected" : ""}>${escapeHtml(o.name)}${o.isSelf ? "  ·  (you)" : ""}</option>`
+    ).join("");
     sel.addEventListener("change", () => {
       selectedEmail = sel.value;
       renderAll();
@@ -1623,8 +1641,28 @@
     if (footer) footer.textContent = `holidays.json updated ${updated}`;
   }
 
+  // Resolve email → merged { days, notes } across every linked email
+  // of the same Person. Used everywhere we'd previously read
+  // holidaysDoc.by_user[email] directly. If the email isn't part of a
+  // multi-account Person, this just returns that one user's map.
+  function mergedUserMap(email) {
+    const e = (email || "").toLowerCase();
+    const person = personByEmail[e];
+    const linked = person
+      ? [person.main_google_email, ...(person.alt_google_emails || []), person.external_google_email]
+          .filter(Boolean).map(x => x.toLowerCase())
+      : [e];
+    const mergedDays = {}, mergedNotes = {};
+    for (const le of linked) {
+      const u = (holidaysDoc.by_user || {})[le] || {};
+      Object.assign(mergedDays, u.days || {});
+      Object.assign(mergedNotes, u.notes || {});
+    }
+    return { days: mergedDays, notes: mergedNotes };
+  }
+
   function countHolidayDays(email) {
-    const map = (holidaysDoc.by_user && holidaysDoc.by_user[email]) || {};
+    const map = mergedUserMap(email);
     const days = map.days || {};
     let count = 0;
     for (const d of iterDates(yearStart, yearEnd)) {
@@ -1660,7 +1698,7 @@
     const lastSat = new Date(yearEnd);
     lastSat.setDate(lastSat.getDate() + (6 - lastSat.getDay()));
 
-    const map = ((holidaysDoc.by_user || {})[selectedEmail] || {}).days || {};
+    const map = mergedUserMap(selectedEmail).days;
     const todayIso = isoDate(new Date());
 
     let cursor = new Date(firstSun);
@@ -1723,7 +1761,7 @@
     if (iso === todayIso) cell.classList.add("hd-day-today");
     // Note indicator (black triangle in the top-right corner for part-day
      // statuses with a note). data-note feeds the CSS hover tooltip.
-    const noteMap = ((holidaysDoc.by_user || {})[selectedEmail] || {}).notes || {};
+    const noteMap = mergedUserMap(selectedEmail).notes;
     if (noteMap[iso]) {
       cell.classList.add("has-note");
       cell.dataset.note = noteMap[iso];
@@ -1983,6 +2021,7 @@
   let activityData = null;     // D1-backed via /api/workspace/activity
   let activityFocus = null;    // { email, iso } currently expanded
   let activitySources = null;  // { sources: [...] } from /scripts/activity_sources.json
+  let mergedActivityByEmail = {};  // repEmail -> { buckets, events, linked }
 
   async function ensureActivitySources() {
     if (activitySources !== null) return activitySources;
@@ -2020,7 +2059,24 @@
     const monthStart = new Date(today.getFullYear(), today.getMonth(), 1);
     const from = isoDate(monthStart);
     const to   = isoDate(today);
-    const emails = Array.from(new Set([viewerEmail, ...directReports])).filter(Boolean).join(",");
+    // Expand each direct-report email to ALL of that Person's linked
+    // Google emails so the warehouse activity returns rows for both
+    // accounts of a merged Person (e.g. Kelly's letme + togetherloans
+    // logins both feed her single team-view row).
+    const allEmails = new Set();
+    const stash = e => { if (e) allEmails.add(e.toLowerCase()); };
+    stash(viewerEmail);
+    for (const e of directReports) {
+      const person = personByEmail[e];
+      if (person) {
+        stash(person.main_google_email);
+        for (const alt of (person.alt_google_emails || [])) stash(alt);
+        stash(person.external_google_email);
+      } else {
+        stash(e);
+      }
+    }
+    const emails = Array.from(allEmails).filter(Boolean).join(",");
     try {
       const r = await fetch(`/api/workspace/activity?from=${from}&to=${to}&emails=${encodeURIComponent(emails)}`, { cache: "no-store" });
       if (!r.ok) throw new Error("HTTP " + r.status);
@@ -2098,14 +2154,50 @@
       }
     }
 
-    const reports = [...directReports]
-      .map(e => ({ email: e, user: staffByEmail[e] || { email: e, name: e } }))
-      .sort((a, b) => (a.user.name || a.email).localeCompare(b.user.name || b.email));
+    // Same dedupe shape as renderTeam: collapse multi-email Persons
+    // into one row, merging the activity warehouse's per-email buckets
+    // and events so the count + drill-down show a single Person view.
+    const seenPersonIds = new Set();
+    const reports = [];
+    for (const e of directReports) {
+      const person = personByEmail[e] || null;
+      const linked = person
+        ? [person.main_google_email, ...(person.alt_google_emails || []), person.external_google_email]
+            .filter(Boolean).map(x => x.toLowerCase())
+        : [e];
+      const repEmail = (person && (person.main_google_email || "").toLowerCase()) || e;
+      const dedupeKey = person ? "p:" + person.id : "e:" + e;
+      if (seenPersonIds.has(dedupeKey)) continue;
+      seenPersonIds.add(dedupeKey);
+      const mergedBuckets = {}, mergedEvents = {};
+      for (const le of linked) {
+        const rec = byEmail[le] || {};
+        for (const [iso, arr] of Object.entries(rec.buckets || {})) {
+          mergedBuckets[iso] = (mergedBuckets[iso] || []).concat(arr || []);
+        }
+        for (const [iso, ev] of Object.entries(rec.events || {})) {
+          // Tag each event with its source email so the per-slot drill-
+          // down can still target the right account when the user
+          // expands a 15-min bucket.
+          const tagged = (ev || []).map(x => ({ ...x, _source_email: le }));
+          mergedEvents[iso] = (mergedEvents[iso] || []).concat(tagged);
+        }
+      }
+      const user = staffByEmail[repEmail] || staffByEmail[e] ||
+                   (person ? { email: repEmail, name: person.name } : { email: e, name: e });
+      reports.push({ email: repEmail, user, buckets: mergedBuckets, events: mergedEvents, linked });
+    }
+    reports.sort((a, b) => (a.user.name || a.email).localeCompare(b.user.name || b.email));
+
+    // Also stash the merged data keyed by repEmail so the drill-down
+    // panel (which fires off activityFocus.email) doesn't have to
+    // recompute the merge each time.
+    mergedActivityByEmail = {};
+    for (const r of reports) mergedActivityByEmail[r.email] = { buckets: r.buckets, events: r.events, linked: r.linked };
 
     for (const r of reports) {
-      const rec = byEmail[r.email] || { buckets: {}, events: {} };
-      const buckets = rec.buckets || {};
-      const events  = rec.events  || {};
+      const buckets = r.buckets;
+      const events  = r.events;
       const totalBuckets = Object.values(buckets).reduce((n, arr) => n + (arr || []).length, 0);
 
       const row = document.createElement("div");
@@ -2154,9 +2246,10 @@
       root.appendChild(row);
     }
 
-    // Drill-down panel for the focused day.
+    // Drill-down panel for the focused day. Reads the merged Person-
+    // level data so a multi-email Person's events all show up here.
     if (activityFocus) {
-      const rec = byEmail[activityFocus.email] || {};
+      const rec = mergedActivityByEmail[activityFocus.email] || byEmail[activityFocus.email] || {};
       const events = (rec.events || {})[activityFocus.iso] || [];
       const buckets = (rec.buckets || {})[activityFocus.iso] || [];
       const u = staffByEmail[activityFocus.email] || { name: activityFocus.email };
@@ -2247,7 +2340,10 @@
       bucket: tr.dataset.bucket,
     });
     const targetBucket = parseInt(tr.dataset.bucket, 10);
-    const rec = (activityData && activityData.by_email && activityData.by_email[tr.dataset.email]) || {};
+    // Prefer the merged Person rec so multi-email Persons see all
+    // sources, falling back to the raw per-email rec.
+    const rec = (mergedActivityByEmail && mergedActivityByEmail[tr.dataset.email]) ||
+                (activityData && activityData.by_email && activityData.by_email[tr.dataset.email]) || {};
     const dayEvents = (rec.events || {})[tr.dataset.iso] || [];
     const aggBySrc = {};
     for (const e of dayEvents) {
@@ -2363,7 +2459,7 @@
       return;
     }
     const iso = anchor.dataset.date;
-    const userMap = (holidaysDoc.by_user || {})[reportEmail] || {};
+    const userMap = mergedUserMap(reportEmail);
     const dayMap = userMap.days || {};
     const noteMap = userMap.notes || {};
     const current = dayMap[iso] || null;
@@ -2504,7 +2600,7 @@
       return;
     }
     const iso = anchor.dataset.date;
-    const userMap = (holidaysDoc.by_user || {})[selectedEmail] || {};
+    const userMap = mergedUserMap(selectedEmail);
     const dayMap = userMap.days || {};
     const noteMap = userMap.notes || {};
     const current = dayMap[iso] || null;
@@ -2660,7 +2756,7 @@
   function repaintTeamCell(cell, email) {
     const iso = cell.dataset.date;
     const d = parseISO(iso);
-    const userMap = (holidaysDoc.by_user || {})[email] || {};
+    const userMap = mergedUserMap(email);
     const dayMap = userMap.days || {};
     const noteMap = userMap.notes || {};
     const stored = dayMap[iso];
@@ -2693,7 +2789,7 @@
   }
   function repaintCell(cell) {
     const iso = cell.dataset.date;
-    const userMap = (holidaysDoc.by_user || {})[selectedEmail] || {};
+    const userMap = mergedUserMap(selectedEmail);
     const dayMap = userMap.days || {};
     const noteMap = userMap.notes || {};
     const stored = dayMap[iso];

@@ -1483,6 +1483,7 @@
   "use strict";
   let posts = [];
   let staffByEmail = {};
+  let personByEmail = {};    // email (lowercase) → Person record from people.json
   let annotationsMap = {};   // email (lowercase) → annotation entry (incl. directory_photo_uploaded_at)
   let viewerEmail = "";
   let viewerName  = "";
@@ -1683,6 +1684,7 @@
         const emails = [p.main_google_email, ...(p.alt_google_emails || []), p.external_google_email].filter(Boolean);
         for (const eRaw of emails) {
           const e = eRaw.toLowerCase();
+          personByEmail[e] = p;
           if (!staffByEmail[e]) {
             staffByEmail[e] = { email: e, name: p.name || p.id, photo_url: "", tenant: (p.company || "").includes("togetherloans") ? "togetherloans" : "letme.co.uk" };
           }
@@ -2811,11 +2813,31 @@
   // Render reactions as emoji-glyph pills. Each emoji animates per its
   // per-emoji keyframe on hover (thumb taps, heart pulses, etc.). Tap
   // mine to remove; tap another to switch.
+  // Collapse a list of reactor emails into one entry per Person (so a
+  // merged Person reacting from both accounts counts once). Returns the
+  // first email seen for each Person.id; emails with no Person record
+  // fall back to themselves.
+  function dedupePersonEmails(emails) {
+    const seen = new Set();
+    const out = [];
+    for (const eRaw of (emails || [])) {
+      const e = (eRaw || "").toLowerCase();
+      if (!e) continue;
+      const p = personByEmail[e];
+      const key = p ? "p:" + p.id : "e:" + e;
+      if (seen.has(key)) continue;
+      seen.add(key);
+      out.push(e);
+    }
+    return out;
+  }
   // Overlapping reaction circles (LinkedIn pattern) — up to 3 distinct
   // emoji types ranked by count, total tally to the right. Quiet when
   // there are zero reactions.
   function renderReactionCluster(reactions) {
-    const entries = Object.entries(reactions || {}).filter(([, arr]) => arr && arr.length);
+    const entries = Object.entries(reactions || {})
+      .map(([emoji, emails]) => [emoji, dedupePersonEmails(emails)])
+      .filter(([, arr]) => arr.length);
     if (!entries.length) return "";
     entries.sort((a, b) => b[1].length - a[1].length);
     const top = entries.slice(0, 3);
@@ -2840,12 +2862,19 @@
   }
 
   function renderReactionPills(rx, parentId, parentKind) {
+    const viewerPerson = personByEmail[viewerEmail] || null;
+    const viewerPersonId = viewerPerson ? viewerPerson.id : null;
     const entries = Object.entries(rx || {})
-      .filter(([_, emails]) => Array.isArray(emails) && emails.length > 0)
+      .map(([emoji, emails]) => [emoji, dedupePersonEmails(emails)])
+      .filter(([, arr]) => arr.length > 0)
       .sort((a, b) => b[1].length - a[1].length);
     if (!entries.length) return "";
     const pills = entries.slice(0, 6).map(([emoji, emails]) => {
-      const mine = emails.map(e => (e || "").toLowerCase()).includes(viewerEmail);
+      const mine = emails.some(e => {
+        if (e === viewerEmail) return true;
+        const p = personByEmail[e];
+        return viewerPersonId && p && p.id === viewerPersonId;
+      });
       const names = emails.map(e => displayName(e, "")).filter(Boolean).join(", ");
       return `<button class="wl-react-pill ${mine ? "is-mine" : ""}" data-react="${escapeHtml(emoji)}" data-on="${escapeHtml(parentId)}" data-kind="${escapeHtml(parentKind)}" title="${escapeHtml(names)}">${emojiGlyph(emoji)} ${emails.length}</button>`;
     }).join("");

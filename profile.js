@@ -1557,10 +1557,22 @@
         ? p.comments.filter(c => !c.parent_comment_id).length
         : 0;
       // wall.json schema: reactions is a dict keyed by emoji, with each
-      // value an array of reactor emails. Total = sum of array lengths.
-      // (The old `[{count, users}]` shape never existed in this repo.)
-      const reactN = Object.values(p.reactions || {})
-        .reduce((s, arr) => s + (Array.isArray(arr) ? arr.length : 0), 0);
+      // value an array of reactor emails. Dedupe by Person.id so a
+      // merged Person reacting from two of their accounts counts once.
+      const reactN = (() => {
+        const seen = new Set();
+        for (const arr of Object.values(p.reactions || {})) {
+          if (!Array.isArray(arr)) continue;
+          for (const eRaw of arr) {
+            const e = (eRaw || "").toLowerCase();
+            if (!e) continue;
+            const person = peopleByEmail[e];
+            const key = person ? "p:" + person.id : "e:" + e;
+            seen.add(key);
+          }
+        }
+        return seen.size;
+      })();
       const meta = [
         commentN ? `${commentN} comment${commentN === 1 ? "" : "s"}` : "",
         reactN   ? `${reactN} reaction${reactN === 1 ? "" : "s"}` : "",
