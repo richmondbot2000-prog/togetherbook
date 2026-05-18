@@ -275,7 +275,7 @@
       banner.innerHTML =
         '<span class="qb-bd-balloon" aria-hidden="true">🎈</span>' +
         '<span class="qb-bd-balloon" aria-hidden="true">🎂</span>' +
-        '<img class="qb-bd-gif" alt="" src="https://media.giphy.com/media/g5R9dok94mrIvplmZd/giphy.gif">' +
+        '<img class="qb-bd-gif" alt="" src="/wall-media/birthday/gif1.gif">' +
         '<span class="qb-bd-text">Happy Birthday ' + namesHtml + '!</span>' +
         '<span class="qb-bd-balloon" aria-hidden="true">🎉</span>';
 

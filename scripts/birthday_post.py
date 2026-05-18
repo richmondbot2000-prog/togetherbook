@@ -11,36 +11,96 @@ idempotent and one post per person per year is the steady state.
 from __future__ import annotations
 
 import json
+import random
 import sys
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
-from typing import Optional, Set
+from typing import List, Optional, Set
 from zoneinfo import ZoneInfo
 
 ROOT = Path(__file__).resolve().parent.parent
 PEOPLE_JSON = ROOT / "people.json"
 WALL_JSON = ROOT / "wall.json"
 
-# A pool of public happy-birthday GIFs served from Giphy's CDN. The
-# script rotates through this list and never reuses a GIF within a
-# 7-day window — see pick_unused_gif().
+# A pool of self-hosted happy-birthday GIFs. Earlier we used direct
+# Giphy URLs but several had been removed upstream and rendered as
+# Giphy's "THIS CONTENT IS NOT AVAILABLE" placeholder. Mirroring the
+# files into the repo means the rotation is stable for as long as the
+# repo is published. Add more by dropping a .gif in wall-media/birthday/
+# and listing it here. Paths are repo-root-relative so wall.html's
+# mediaUrl() handler resolves them correctly.
 BIRTHDAY_GIFS = [
-    "https://media.giphy.com/media/g5R9dok94mrIvplmZd/giphy.gif",
-    "https://media.giphy.com/media/26FPq3X8Y4Tn3aDz2/giphy.gif",
-    "https://media.giphy.com/media/3oz8xUKsTOoyAcRO64/giphy.gif",
-    "https://media.giphy.com/media/o75ajIFH0QnQC3nCeD/giphy.gif",
-    "https://media.giphy.com/media/l0MYt5jPR6QX5pnqM/giphy.gif",
-    "https://media.giphy.com/media/26AHONQ79FdWZhAI0/giphy.gif",
-    "https://media.giphy.com/media/Qvm1IxR9ZbnD8AOQDr/giphy.gif",
-    "https://media.giphy.com/media/JpG2A9P3dPHXaTYrwu/giphy.gif",
-    "https://media.giphy.com/media/qWh3K1pBzbiCpc8FBP/giphy.gif",
-    "https://media.giphy.com/media/26gscYNwoSGrZB7Q4/giphy.gif",
-    "https://media.giphy.com/media/3o6Zt5hLEiQzMMQDqg/giphy.gif",
-    "https://media.giphy.com/media/jOosNRWWzcrjxRC1KO/giphy.gif",
+    "wall-media/birthday/gif1.gif",
+    "wall-media/birthday/gif2.gif",
+    "wall-media/birthday/gif3.gif",
+    "wall-media/birthday/gif4.gif",
+    "wall-media/birthday/gif5.gif",
 ]
 
 SYSTEM_EMAIL = "togetherbook@system"
 SYSTEM_NAME = "TogetherBook"
+
+# Twenty thoughtful birthday messages. The script picks one at random
+# per person, skipping any template whose fingerprint (last 40 chars)
+# already appears in a birthday post from the past 7 days. {name} is
+# substituted in at post time.
+MESSAGES = [
+    "Happy Birthday {name}! \U0001F382 Hope today brings everything you wish for and a little more besides. Have a brilliant day.",
+    "Wishing you the happiest of birthdays, {name}! \U0001F388 Take a moment today to do something just for you — you've earned it.",
+    "Happy Birthday {name}! \U0001F389 Another year of being completely irreplaceable around here. Enjoy every minute of your day.",
+    "{name}, happy birthday! \U0001F973 Hoping today is filled with cake, laughter, and at least one moment that makes you grin from ear to ear.",
+    "Happy Birthday {name}! \U0001F382 The whole team is glad you were born — work would be far less fun without you. Have a great one.",
+    "Wishing you a wonderful birthday, {name}! \U0001F388 May the year ahead bring good news, good company, and plenty of reasons to celebrate.",
+    "Happy Birthday {name}! \U0001F389 Don't worry about getting older — you're still way ahead of where most of us were at your age. Enjoy the day.",
+    "{name}, have a brilliant birthday! \U0001F382 Here's to another year of you doing your thing and making the rest of us look good in the process.",
+    "Happy Birthday {name}! \U0001F388 May your inbox stay quiet, your coffee stay hot, and your day be everything you hope for.",
+    "Wishing you a fantastic birthday, {name}! \U0001F973 We're lucky to have you on the team — hope today is as great as you are.",
+    "Happy Birthday {name}! \U0001F382 Step away from the laptop for a bit today. The work will still be here tomorrow; your birthday won't.",
+    "{name}, happy birthday! \U0001F389 Sending you cake-shaped wishes and a hope that the year ahead is your best one yet.",
+    "Happy Birthday {name}! \U0001F388 Hope your day is filled with all the things you love and none of the things you don't.",
+    "Wishing you a very happy birthday, {name}! \U0001F382 Thank you for being part of what makes this team brilliant. Have a great one.",
+    "Happy Birthday {name}! \U0001F973 Take the long lunch. Leave early. Order the second slice. Today's the day for all of it.",
+    "{name}, happy birthday! \U0001F389 Wishing you twelve months of fortunate timing, kind colleagues, and an absurd amount of luck.",
+    "Happy Birthday {name}! \U0001F388 Hope someone you love bakes you something delicious today, and that it's exactly the right kind of sweet.",
+    "Wishing you a wonderful birthday, {name}! \U0001F382 Whatever you're up to, here's hoping it's everything you wanted and nothing you didn't.",
+    "Happy Birthday {name}! \U0001F973 The whole team is sending you a quiet, slightly off-key chorus of Happy Birthday from across the wall. Have a great one.",
+    "{name}, happy birthday! \U0001F389 A year wiser, a year warmer, a year nearer to whatever brilliant thing you're working toward. Enjoy the day.",
+]
+
+
+def pick_unused_message(posts: list, now_utc: datetime, name: str, exclude: Set[str]) -> str:
+    """Pick a MESSAGES template not used by any birthday post in the past
+    7 days, and not already chosen in this run. Falls back to least-
+    recently-used if the pool is exhausted. Returns the template string
+    (caller substitutes the name in)."""
+    cutoff = now_utc - timedelta(days=7)
+    recent_bodies: List[str] = []
+    body_seen_at = {t: datetime.min.replace(tzinfo=timezone.utc) for t in MESSAGES}
+    for p in posts:
+        if not (p.get("id") or "").startswith("post_birthday_"):
+            continue
+        when = parse_iso(p.get("created_at") or "")
+        if when is None:
+            continue
+        body = p.get("body") or ""
+        for t in MESSAGES:
+            fp = t[-40:]   # tail of the template — independent of {name}
+            if fp in body:
+                if when > body_seen_at[t]:
+                    body_seen_at[t] = when
+                if when >= cutoff:
+                    recent_bodies.append(t)
+    used_recent = set(recent_bodies)
+    candidates = [t for t in MESSAGES if t not in used_recent and t not in exclude]
+    if not candidates:
+        # Pool exhausted in 7 days — fall back to least-recently-used.
+        candidates = sorted(
+            (t for t in MESSAGES if t not in exclude),
+            key=lambda t: body_seen_at[t],
+        )
+    if not candidates:
+        candidates = list(MESSAGES)
+    return random.choice(candidates) if len(candidates) > 1 else candidates[0]
 
 
 def parse_iso(s: str) -> Optional[datetime]:
@@ -117,7 +177,8 @@ def main() -> int:
     created_at = iso_z(now_uk.replace(hour=7, minute=0, second=0, microsecond=0))
 
     now_utc = datetime.now(timezone.utc)
-    used_this_run: Set[str] = set()
+    used_gifs: Set[str] = set()
+    used_msgs: Set[str] = set()
     added = 0
     for person in birthday_people:
         slug = (person.get("url_slug") or person.get("id") or "unknown").lower()
@@ -125,17 +186,17 @@ def main() -> int:
         if post_id in existing_ids:
             continue
         name = person.get("name") or slug
-        gif = pick_unused_gif(posts, now_utc, used_this_run)
-        used_this_run.add(gif)
+        gif = pick_unused_gif(posts, now_utc, used_gifs)
+        used_gifs.add(gif)
+        template = pick_unused_message(posts, now_utc, name, used_msgs)
+        used_msgs.add(template)
+        body = template.format(name=name)
         post = {
             "id": post_id,
             "author_email": SYSTEM_EMAIL,
             "author_name": SYSTEM_NAME,
             "created_at": created_at,
-            "body": (
-                f"Happy Birthday {name}! \U0001F382\U0001F388\U0001F389\n\n"
-                "Wishing you a wonderful day from everyone at TogetherBook."
-            ),
+            "body": body,
             "photos": [gif],
             "channel": None,
             "reactions": {},
@@ -143,7 +204,7 @@ def main() -> int:
         }
         posts.insert(0, post)
         added += 1
-        print(f"Added birthday post for {name} ({post_id}) — gif {gif.rsplit('/', 2)[-2]}")
+        print(f"Added birthday post for {name} ({post_id}) — gif {gif.rsplit('/', 1)[-1]}, msg {template[:30]!r}")
 
     if added:
         wall_doc["updated_at"] = iso_z(datetime.now(timezone.utc))
