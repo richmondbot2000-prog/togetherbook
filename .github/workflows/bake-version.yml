@@ -1,0 +1,58 @@
+name: Bake version.txt
+
+# Writes the current commit SHA to version.txt on every push to main.
+# The inline live-reload script in each HTML page fetches this file with
+# a cache-busting query param, compares it to the version it last saw,
+# and triggers a hard reload if a newer version is live. Net effect:
+# a normal cmd+R on a cached HTML page detects the new build within
+# milliseconds and refreshes, instead of waiting for the browser's
+# HTML cache to expire.
+#
+# Guards against an infinite loop:
+#   - paths-ignore skips this workflow when version.txt itself changes
+#   - the [bot:bake] tag in our own commit message is also filtered
+#   - the diff check at the end exits early when nothing changed
+
+on:
+  push:
+    branches: [main]
+    paths-ignore: ['version.txt']
+
+permissions:
+  contents: write
+
+jobs:
+  bake:
+    if: "!contains(github.event.head_commit.message, '[bot:bake]')"
+    runs-on: ubuntu-latest
+    timeout-minutes: 2
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          ref: main
+
+      - name: Write current SHA to version.txt
+        run: |
+          set -euo pipefail
+          SHA=$(git rev-parse HEAD)
+          echo "$SHA" > version.txt
+          echo "baked version: $SHA"
+
+      - name: Commit + push if changed
+        run: |
+          set -euo pipefail
+          git config user.name  "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add version.txt
+          if git diff --cached --quiet; then
+            echo "no change to version.txt"
+            exit 0
+          fi
+          git commit -m "Bake version.txt [bot:bake]"
+          # Up to 3 retries to dodge races with parallel pushes.
+          for i in 1 2 3; do
+            if git push; then exit 0; fi
+            git pull --rebase --quiet origin main || true
+          done
+          echo "push failed after retries"; exit 1
