@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "updated_at": "2026-05-18T23:10:51.711Z",
+  "updated_at": "2026-05-19T06:29:20.894Z",
   "actions": [
     {
       "ts": "2026-05-13T20:27:39.210Z",
@@ -2413,6 +2413,14 @@
       "target": "james.benamor@letme.co.uk",
       "ok": false,
       "error": "insert transfer: HTTP 400 {\n  \"error\": {\n    \"code\": 400,\n    \"message\": \"New owner cant be same as old owner.\",\n    \"errors\": [\n      {\n        \"message\": \"New owner cant be same as old owner.\",\n        \"domain\": \"global\",\n        \"reason\": \"invalid\"\n      }\n    ]\n  }\n}\n"
+    },
+    {
+      "ts": "2026-05-19T06:29:20.894Z",
+      "actor": "james.benamor@letme.com",
+      "action": "user-alias-remove",
+      "target": "",
+      "ok": false,
+      "error": "Invalid Input: resource_id"
     }
   ]
 }
