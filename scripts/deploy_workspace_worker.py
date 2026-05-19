@@ -14,10 +14,12 @@ older local copy. Override with `--force` (and only when you're sure).
 """
 from __future__ import annotations
 import json
+import os
 import pathlib
 import subprocess
 import sys
 import uuid
+import urllib.error
 import urllib.request
 
 REPO_ROOT = pathlib.Path("/Users/richmondrobot/Desktop/togetherbook")
@@ -77,7 +79,6 @@ elif issues and FORCE:
     for i in issues:
         print(f"#   ! {i}")
 
-import os
 account = os.environ.get("CLOUDFLARE_ACCOUNT_ID")
 token   = os.environ.get("CLOUDFLARE_API_TOKEN")
 if not account or not token:
