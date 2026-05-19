@@ -89,7 +89,16 @@ if not account or not token:
         token   = token   or cfg["api_token"]
 if not account or not token:
     raise SystemExit("CLOUDFLARE_ACCOUNT_ID + CLOUDFLARE_API_TOKEN must be set (env vars or ~/.togetherbook/cloudflare.json)")
-db_id   = cfg["d1_activity_database_id"]
+db_id   = os.environ.get("D1_ACTIVITY_DB_ID")
+if not db_id:
+    cfg_path = pathlib.Path.home() / ".togetherbook" / "cloudflare.json"
+    if cfg_path.exists():
+        try:
+            db_id = json.loads(cfg_path.read_text()).get("d1_activity_database_id")
+        except Exception:
+            pass
+if not db_id:
+    raise SystemExit("D1_ACTIVITY_DB_ID env var (or d1_activity_database_id in cloudflare.json) is required")
 
 SCRIPT = "apifk-workspace-worker2"
 

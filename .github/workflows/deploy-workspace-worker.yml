@@ -19,6 +19,7 @@ jobs:
     env:
       CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
       CLOUDFLARE_API_TOKEN:  ${{ secrets.CLOUDFLARE_API_TOKEN }}
+      D1_ACTIVITY_DB_ID:     ${{ secrets.D1_ACTIVITY_DB_ID }}
       CI: "true"
     steps:
       - uses: actions/checkout@v4
