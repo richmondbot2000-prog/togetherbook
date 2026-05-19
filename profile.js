@@ -10,7 +10,7 @@
 */
 (function () {
   const qs = new URLSearchParams(location.search || "");
-  const initialTab = (qs.get("tab") || "wall").toLowerCase();
+  const initialTab = (qs.get("tab") || "info").toLowerCase();
 
   let targetEmail = (window.__profileEmail || qs.get("email") || "").toLowerCase().trim();
   let targetSlug  = (window.__profileSlug  || "").toLowerCase().trim();
@@ -189,7 +189,7 @@
   function setTab(tab) {
     currentTab = tab;
     const url = new URL(location.href);
-    if (tab && tab !== "wall") url.searchParams.set("tab", tab);
+    if (tab && tab !== "info") url.searchParams.set("tab", tab);
     else url.searchParams.delete("tab");
     history.replaceState({}, "", url.toString());
     document.querySelectorAll("[data-tab]").forEach(t => t.classList.toggle("is-active", t.dataset.tab === tab));
@@ -2215,8 +2215,8 @@
 
       <div class="up-body">
         <nav class="up-tabs" aria-label="Profile sections">
-          <a class="up-tab" data-tab="wall"     href="?tab=wall">${svgIcon("feed")}<span>Wall</span></a>
           <a class="up-tab" data-tab="info"     href="?tab=info">${svgIcon("info")}<span>Info</span></a>
+          <a class="up-tab" data-tab="wall"     href="?tab=wall">${svgIcon("feed")}<span>Wall</span></a>
           <a class="up-tab" data-tab="accounts" href="?tab=accounts">${svgIcon("org")}<span>Accounts</span></a>
           <a class="up-tab" data-tab="calendar" href="?tab=calendar">${svgIcon("calendar")}<span>Calendar</span></a>
         </nav>
@@ -2233,7 +2233,7 @@
     // redirect into the Accounts tab where payroll now lives as one of the
     // six source boxes.
     const initial = initialTab === "payroll" ? "accounts" : initialTab;
-    setTab(["wall","info","accounts","calendar"].includes(initial) ? initial : "wall");
+    setTab(["wall","info","accounts","calendar"].includes(initial) ? initial : "info");
   }
 
   /* ─── Photo uploads (avatar + cover) ──────────────────────────────── */
