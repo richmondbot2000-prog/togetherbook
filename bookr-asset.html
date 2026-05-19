@@ -1,0 +1,286 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<script src="/live-reload.js"></script>
+<title>TogetherBOOK — BOOKR asset</title>
+<link rel="icon" type="image/png" href="site-icon.png">
+<link rel="apple-touch-icon" href="site-icon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&family=Newsreader:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500;1,600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css?v=1779059800">
+<link rel="stylesheet" href="quiet-tokens.css?v=1779059800">
+<link rel="stylesheet" href="quiet.css?v=1779059800">
+<link rel="stylesheet" href="quiet-extras.css?v=1779059800">
+<link rel="stylesheet" href="quiet-legacy.css?v=1779059800">
+<style>
+  .ba-section { max-width: 760px; margin: 0 auto; padding: 24px 16px 48px; }
+  .ba-section h1 {
+    font-family: var(--font-display, "Newsreader", serif);
+    font-size: clamp(1.6rem, 4vw, 2.4rem);
+    font-weight: 700; letter-spacing: 0.01em;
+    margin: 0 0 6px; color: var(--ink-900);
+  }
+  .ba-sub { font: italic 500 14px/1.3 var(--font-display); color: var(--ink-600); margin: 0 0 18px; }
+  .ba-back { display: inline-block; margin: 0 0 14px; font: 500 12px/1.3 var(--font-mono); color: var(--ink-600); text-decoration: none; letter-spacing: 0.04em; }
+  .ba-back:hover { color: var(--brass-700); }
+  /* Fields are presented as a definition list — title left, value right. */
+  .ba-fields { display: grid; grid-template-columns: 160px 1fr; gap: 8px 18px; margin: 0 0 24px; padding: 14px 16px; background: var(--paper-50); border: 1px solid var(--ink-300); }
+  .ba-fields dt { font: 500 11px/1.3 var(--font-mono); letter-spacing: 0.08em; text-transform: uppercase; color: var(--ink-500); }
+  .ba-fields dd { margin: 0; font: 400 14px/1.45 var(--font-body); color: var(--ink-900); white-space: pre-wrap; word-break: break-word; }
+  .ba-fields dd a { color: var(--brass-700); text-decoration: none; border-bottom: 1px dotted var(--brass-500); }
+  .ba-fields dd a:hover { color: var(--brass-600); }
+  .ba-fields dd code { font: 500 13px/1.4 var(--font-mono); background: var(--paper-200); padding: 1px 5px; }
+  .ba-notice { background: var(--red-50); border-left: 4px solid var(--red-500); padding: 10px 14px; margin: 0 0 18px; font: 500 13px/1.4 var(--font-body); color: var(--red-700); white-space: pre-wrap; }
+  /* Comments section. */
+  .ba-comments { margin: 0 0 24px; }
+  .ba-comments h2 { font: 600 16px/1.2 var(--font-display); margin: 0 0 10px; color: var(--ink-900); letter-spacing: 0.02em; }
+  .ba-compose { display: flex; flex-direction: column; gap: 8px; padding: 12px 14px; background: var(--paper-50); border: 1px solid var(--ink-300); border-left: 4px solid var(--brass-500); }
+  .ba-compose textarea {
+    width: 100%; box-sizing: border-box; min-height: 64px; resize: vertical;
+    font: 400 14px/1.4 var(--font-body); color: var(--ink-900);
+    border: 1px solid var(--ink-300); background: var(--paper-50); padding: 8px 10px;
+  }
+  .ba-compose .ba-row { display: flex; align-items: center; gap: 10px; }
+  .ba-compose .ba-count { font: 500 11px/1 var(--font-mono); color: var(--ink-500); margin-left: auto; }
+  .ba-compose .ba-count.is-over { color: var(--red-500); font-weight: 700; }
+  .ba-btn { font: 600 12px/1 var(--font-body); padding: 8px 14px; cursor: pointer; border: 1px solid var(--brass-600); background: var(--brass-500); color: var(--paper-50); }
+  .ba-btn:hover:not(:disabled) { background: var(--brass-600); }
+  .ba-btn:disabled { background: var(--paper-300); color: var(--ink-500); border-color: var(--ink-300); cursor: not-allowed; }
+  .ba-list { list-style: none; margin: 14px 0 0; padding: 0; }
+  .ba-comment { padding: 10px 0; border-top: 1px solid var(--paper-300); }
+  .ba-comment:first-child { border-top: 0; padding-top: 0; }
+  .ba-comment-head { display: flex; gap: 10px; align-items: baseline; font: 500 12px/1.3 var(--font-body); color: var(--ink-700); }
+  .ba-comment-author { color: var(--ink-900); font-weight: 600; }
+  .ba-comment-when { color: var(--ink-500); font: 500 11px/1.3 var(--font-mono); }
+  .ba-comment-body { margin: 6px 0 0; font: 400 14px/1.45 var(--font-body); color: var(--ink-900); white-space: pre-wrap; word-break: break-word; }
+  .ba-empty { color: var(--ink-500); font-style: italic; padding: 10px 0; }
+  .ba-status { font: 400 12px/1.3 var(--font-mono); color: var(--ink-500); padding: 6px 0; }
+  /* Map link gets the brass underline. */
+  .ba-loc { display: inline-flex; align-items: center; gap: 6px; }
+  @media (max-width: 600px) {
+    .ba-fields { grid-template-columns: 1fr; gap: 4px 0; }
+    .ba-fields dt { margin-top: 8px; }
+  }
+</style>
+</head>
+<body>
+<header class="qb-topbar">
+  <a class="qb-brand" href="index.html" aria-label="TogetherBOOK — home">
+    <img class="qb-brand-logo" src="togetherbook-logo.png?v=1779059800" alt="TogetherBOOK">
+  </a>
+  <button class="qb-hamburger" aria-label="Toggle navigation menu" aria-expanded="false"
+          onclick="document.body.classList.toggle('nav-open');this.setAttribute('aria-expanded',document.body.classList.contains('nav-open'))">
+    <span></span><span></span><span></span>
+  </button>
+  <nav class="qb-nav">
+    <a class="qb-nav-link" href="/wall.html">Wall</a>
+    <a class="qb-nav-link is-active" href="/bookr.html">BOOKR</a>
+    <a class="qb-nav-link" href="/directory.html" data-sub='[{"href": "/directory.html", "label": "Directory"}, {"href": "/directory.html", "label": "Your Page", "data-yourpage": "1"}, {"href": "/holidays.html", "label": "Holidays"}, {"href": "/org-structure.html", "label": "Org Structure"}]'>People</a>
+    <a class="qb-nav-link" href="/reports.html" data-sub='[{"href": "/yesterday.html", "label": "Payouts"}, {"href": "/brandwatch.html", "label": "Brandwatch"}, {"href": "/1stcontact.html", "label": "1st Contact"}, {"href": "/topups.html", "label": "Top Ups"}, {"href": "/pipeline.html", "label": "Pipeline"}, {"href": "/brokers.html", "label": "Brokers"}, {"href": "/comms.html", "label": "Comms"}]'>Business</a>
+    <a class="qb-nav-link" href="/index.html" data-sub='[{"href": "/database.html", "label": "Schema"}, {"href": "/stats.html", "label": "Code"}, {"href": "/pending.html", "label": "Pending"}]'>System</a>
+  </nav>
+</header>
+<div class="qb-nav-backdrop" onclick="document.body.classList.remove('nav-open')"></div>
+
+<section class="ba-section">
+  <a class="ba-back" href="/bookr.html">&larr; Back to calendar</a>
+  <h1 id="baTitle">Loading…</h1>
+  <p class="ba-sub" id="baSub"></p>
+  <div id="baNotice" class="ba-notice" style="display:none"></div>
+  <dl class="ba-fields" id="baFields"></dl>
+  <section class="ba-comments">
+    <h2>Comments</h2>
+    <div class="ba-compose" id="baCompose">
+      <textarea id="baBody" placeholder="Add a note for the next person to book this…" maxlength="4000"></textarea>
+      <div class="ba-row">
+        <span class="ba-count" id="baCount">0 / 4000</span>
+        <button class="ba-btn" id="baPost" type="button" disabled>Post comment</button>
+      </div>
+    </div>
+    <div class="ba-status" id="baStatus" style="display:none"></div>
+    <ul class="ba-list" id="baList"></ul>
+  </section>
+</section>
+<script>
+(function () {
+  const params = new URLSearchParams(location.search);
+  const TYPE = params.get("type");
+  const ID = params.get("id");
+  if (!TYPE || !ID || !["cars", "properties"].includes(TYPE)) {
+    document.querySelector("#baTitle").textContent = "Missing or invalid type/id";
+    document.querySelector("#baSub").textContent = "URL must be /bookr-asset.html?type=cars|properties&id=<assetId>";
+    document.querySelector("#baCompose").style.display = "none";
+    return;
+  }
+
+  async function getJSON(url, opts) {
+    const res = await fetch(url, Object.assign({ cache: "no-store" }, opts || {}));
+    if (!res.ok) throw new Error(url + ": " + res.status);
+    return res.json();
+  }
+
+  function escAttr(s) { return String(s || "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;"); }
+
+  function pretty(field) {
+    return field.replace(/_/g, " ").replace(/\w/g, c => c.toUpperCase());
+  }
+
+  function timeAgo(ts) {
+    if (!ts) return "";
+    const s = Math.max(0, (Date.now() - ts) / 1000);
+    if (s < 60) return Math.floor(s) + "s ago";
+    if (s < 3600) return Math.floor(s / 60) + "m ago";
+    if (s < 86400) return Math.floor(s / 3600) + "h ago";
+    if (s < 86400 * 14) return Math.floor(s / 86400) + "d ago";
+    const d = new Date(ts);
+    return d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0") + "-" + String(d.getDate()).padStart(2, "0");
+  }
+
+  async function loadAsset() {
+    try {
+      const j = await getJSON("/api/bookr/assets");
+      const arr = (TYPE === "cars" ? j.cars : j.properties) || [];
+      const a = arr.find(x => x.id === ID);
+      if (!a) { renderMissing(); return; }
+      renderAsset(a);
+    } catch (e) {
+      renderMissing(e.message);
+    }
+  }
+
+  function renderMissing(msg) {
+    document.querySelector("#baTitle").textContent = "Asset not found";
+    document.querySelector("#baSub").textContent = msg || (TYPE + " · " + ID + " is not in the BookR " + TYPE + " tree.");
+    document.querySelector("#baCompose").style.display = "none";
+  }
+
+  function mapsLink(addr, lat, lng) {
+    if (lat && lng) return "https://www.google.com/maps?q=" + encodeURIComponent(lat + "," + lng);
+    if (addr) return "https://www.google.com/maps/search/?api=1&query=" + encodeURIComponent(addr);
+    return null;
+  }
+
+  function renderAsset(a) {
+    document.querySelector("#baTitle").textContent = a.title || a.id;
+    document.querySelector("#baSub").textContent = a.sub_title || (TYPE === "cars" ? "Vehicle" : "Property");
+    if (a.notice) {
+      const n = document.querySelector("#baNotice");
+      n.style.display = "";
+      n.textContent = a.notice;
+    }
+    const dl = document.querySelector("#baFields");
+    const rows = [];
+    function row(label, value, opts) {
+      if (value === null || value === undefined || value === "") return;
+      const dt = document.createElement("dt"); dt.textContent = label;
+      const dd = document.createElement("dd");
+      if (opts && opts.html) { dd.innerHTML = value; }
+      else if (opts && opts.code) { const c = document.createElement("code"); c.textContent = value; dd.appendChild(c); }
+      else { dd.textContent = String(value); }
+      rows.push(dt); rows.push(dd);
+    }
+    row("Type", TYPE === "cars" ? "Vehicle" : "Property");
+    row("Identifier", a.id, { code: true });
+    if (a.address) {
+      const link = mapsLink(a.address, a.latitude, a.longitude);
+      if (link) row("Address", "<a class=""ba-loc"" target=""_blank"" rel=""noopener"" href="" + escAttr(link) + "">" + escAttr(a.address) + "</a>", { html: true });
+      else row("Address", a.address);
+    } else if (a.latitude && a.longitude) {
+      const link = mapsLink("", a.latitude, a.longitude);
+      row("Coordinates", "<a target=""_blank"" rel=""noopener"" href="" + escAttr(link) + "">" + a.latitude + ", " + a.longitude + "</a>", { html: true });
+    }
+    row("Code", a.code, { code: true });
+    row("Safe", a.safe, { code: true });
+    row("Minimum age", a.minimum_age);
+    if (a.price !== null && a.price !== undefined && a.price !== "") row("Price", String(a.price));
+    row("Listing ID", a.listing_id, { code: true });
+    row("Description", a.description);
+    row("Key information", a.key_information);
+    rows.forEach(el => dl.appendChild(el));
+  }
+
+  async function loadComments() {
+    const list = document.querySelector("#baList");
+    const status = document.querySelector("#baStatus");
+    status.style.display = ""; status.textContent = "Loading comments…";
+    try {
+      const r = await getJSON("/api/bookr/comments?type=" + encodeURIComponent(TYPE) + "&asset=" + encodeURIComponent(ID));
+      const items = (r && r.comments) || [];
+      list.innerHTML = "";
+      if (!items.length) {
+        const empty = document.createElement("li");
+        empty.className = "ba-empty";
+        empty.textContent = "No comments yet — be the first.";
+        list.appendChild(empty);
+      } else {
+        items.forEach(c => list.appendChild(buildComment(c)));
+      }
+      status.style.display = "none";
+    } catch (e) {
+      status.textContent = "Could not load comments: " + e.message;
+    }
+  }
+
+  function buildComment(c) {
+    const li = document.createElement("li");
+    li.className = "ba-comment";
+    const head = document.createElement("div");
+    head.className = "ba-comment-head";
+    const who = document.createElement("span");
+    who.className = "ba-comment-author";
+    who.textContent = c.author_name || c.author_email || "(unknown)";
+    const when = document.createElement("span");
+    when.className = "ba-comment-when";
+    when.textContent = timeAgo(c.ts);
+    when.title = c.ts ? new Date(c.ts).toLocaleString() : "";
+    head.appendChild(who); head.appendChild(when);
+    li.appendChild(head);
+    const body = document.createElement("div");
+    body.className = "ba-comment-body";
+    body.textContent = c.body || "";
+    li.appendChild(body);
+    return li;
+  }
+
+  function wireCompose() {
+    const ta = document.querySelector("#baBody");
+    const btn = document.querySelector("#baPost");
+    const count = document.querySelector("#baCount");
+    function refresh() {
+      const len = ta.value.trim().length;
+      count.textContent = len + " / 4000";
+      count.classList.toggle("is-over", len > 4000);
+      btn.disabled = len === 0 || len > 4000;
+    }
+    ta.addEventListener("input", refresh);
+    btn.addEventListener("click", async () => {
+      const body = ta.value.trim();
+      if (!body) return;
+      btn.disabled = true; btn.textContent = "Posting…";
+      try {
+        const r = await fetch("/api/bookr/comment", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ type: TYPE, asset: ID, body: body }), cache: "no-store" });
+        const j = await r.json();
+        if (!r.ok || !j.ok) throw new Error(j.error || r.statusText);
+        ta.value = "";
+        refresh();
+        await loadComments();
+      } catch (e) {
+        alert("Could not post: " + e.message);
+      } finally {
+        btn.disabled = false; btn.textContent = "Post comment";
+      }
+    });
+    refresh();
+  }
+
+  loadAsset();
+  loadComments();
+  wireCompose();
+})();
+</script>
+<script src="nav.js?v=1779059800"></script>
+</body>
+</html>
