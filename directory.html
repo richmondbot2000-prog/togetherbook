@@ -68,6 +68,22 @@
     display: flex; gap: 10px; flex-wrap: wrap; align-items: center;
     margin-top: 14px;
   }
+  .pp-more-link {
+    color: #1a5fc0; text-decoration: underline; text-underline-offset: 2px; cursor: pointer;
+  }
+  .pp-more-link:hover { color: #0d4090; }
+  .pp-sub-more {
+    margin-top: 8px;
+    padding: 12px 14px;
+    background: var(--paper-100);
+    border-left: 2px solid var(--brass-500);
+    font: 400 13px/1.5 var(--font-body);
+    color: var(--ink-700);
+  }
+  .pp-sub-more p { margin: 0 0 10px; }
+  .pp-sub-more p:last-child { margin-bottom: 0; }
+  .pp-sub-more code { font: 500 12px/1 var(--font-mono); color: var(--ink-800); }
+  .pp-sub-more a { color: #1a5fc0; }
   .pp-thead, .pp-row {
     display: grid;
     grid-template-columns: 44px minmax(80px, 0.9fr) minmax(80px, 0.9fr) minmax(130px, 1.4fr) minmax(110px, 1fr) 200px 110px;
@@ -332,7 +348,12 @@
   <div class="pp-head">
     <div>
       <h1 class="pp-title">People</h1>
-      <p class="pp-sub">Canonical Person table. Every other system on TogetherBook should resolve identity through this list — each row links a real human to one or more Google accounts, an optional Auth0 ID, and their access level.</p>
+      <p class="pp-sub">A list of everyone who works for us, with us, or who has access to one or more of the systems we work with. <a href="#" class="pp-more-link" id="ppSubMoreToggle">More</a></p>
+      <div class="pp-sub-more" id="ppSubMore" hidden>
+        <p><strong>Where this data comes from.</strong> The canonical list is <code>people.json</code> in this site's repo — one row per real human. Linked sources (Google Workspace accounts in Letme + Together Loans, the Warehouse CRM, the Payroll system, Auth0) are scanned hourly by scheduled GitHub Actions; new rows in those sources surface on the <a href="/reconcile.html">Reconcile sources</a> page so you can attach them to an existing Person or create a new one.</p>
+        <p><strong>How it can be changed.</strong> Click any row to open that person's profile page — every editable field (name, role, phone, address, start/end date, line manager, access level, etc.) is edited there via the Edit button at the top of each card. Per-account Workspace actions (suspend, forward, delete, add alias) live on each Google account box in the Accounts tab. New Persons are added via the <strong>+ Add person</strong> button at the bottom of this page; rows are deleted from each Person's profile.</p>
+        <p><strong>Who can change it.</strong> TogetherBook admins (anyone with <code>access_level: admin</code> on their Person row) can edit any field on any row, suspend / delete Workspace accounts, link / unlink sources, and run Reconcile + Sync access. Anyone signed in (via Cloudflare Access) can edit a narrow set of their own fields on their own profile — phone, address, role, notes, date of birth, profile + cover photos — without admin involvement. The Cloudflare Access allow-list (<code>admins.json</code>) is auto-derived from <code>people.json</code>, so promoting/demoting an admin here propagates to who can reach the site.</p>
+      </div>
     </div>
     <div class="pp-tools">
       <input class="pp-search" id="ppSearch" placeholder="Search name, email, role…" autocomplete="off">
@@ -929,6 +950,14 @@
     }
   }
   document.getElementById("ppAdd").addEventListener("click", openCreate);
+  document.getElementById("ppSubMoreToggle").addEventListener("click", (e) => {
+    e.preventDefault();
+    const panel = document.getElementById("ppSubMore");
+    const link  = document.getElementById("ppSubMoreToggle");
+    const isOpen = !panel.hidden;
+    panel.hidden = isOpen;
+    link.textContent = isOpen ? "More" : "Less";
+  });
   document.getElementById("ppSync").addEventListener("click", async () => {
     const btn = document.getElementById("ppSync");
     const orig = btn.textContent;
