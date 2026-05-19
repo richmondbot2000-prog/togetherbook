@@ -221,6 +221,23 @@ body { background: var(--paper-100, #FBF6E9); }
   border: 0; border-top: 1px dashed var(--paper-300);
   margin: 16px 0 10px;
 }
+.up-admin-buttons {
+  display: flex; flex-wrap: wrap; gap: 10px;
+  margin-top: 10px;
+}
+.up-admin-detail {
+  margin-top: 14px; padding: 14px;
+  background: var(--paper-100);
+  border-left: 2px solid var(--red-500, #b14040);
+  font: 400 13px/1.5 var(--font-body); color: var(--ink-700);
+}
+.up-admin-detail p { margin: 0 0 10px; }
+.up-admin-detail p:last-of-type { margin-bottom: 12px; }
+.up-admin-detail-title {
+  font: 600 14px/1.2 var(--font-body); color: var(--ink-900);
+  margin: 0 0 10px;
+}
+.up-admin-detail select { margin-bottom: 12px; }
 .up-card-hint code {
   font: 500 11px/1 var(--font-mono, 'JetBrains Mono', monospace);
   color: var(--ink-600);

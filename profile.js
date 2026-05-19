@@ -292,30 +292,24 @@
         </select>
       </div>` : "";
 
-    // Admin-controls card: Suspend toggle + Delete person. Visible only
-    // to admins; calls people-set / people-delete (people-delete is
-    // admin-gated in the worker, see line 396).
+    // Combined Admin actions card. Three serious buttons at the top —
+    // each just a label, no explanation — so the card reads visually as
+    // "things you wouldn't click by accident". Click one and a detail
+    // pane expands below with a non-technical explanation of what'll
+    // happen, any extra controls (e.g. the Merge picker), and a final
+    // "Definitely do this" button. The actual mutation only fires from
+    // that final button.
+    const isCurrentlyAdmin = (person.access_level || "") === "admin";
     const adminControls = viewerIsAdmin ? `
-      <div class="up-card up-card--danger">
-        <div class="up-card-head">Admin controls</div>
-        <div class="up-field">
-          <div class="up-field-label">Status</div>
-          <div class="up-field-display">
-            <span class="up-pill up-pill--${person.suspended ? "suspended" : "live"}">${person.suspended ? "Suspended" : "Live"}</span>
-            <button type="button" class="up-link-btn" data-person-suspend="${person.suspended ? "unsuspend" : "suspend"}">
-              ${person.suspended ? "Reactivate" : "Suspend access"}
-            </button>
-            <span class="up-edit-status" data-edit-status="suspended"></span>
-          </div>
+      <div class="up-card up-card--danger" id="upAdminActions">
+        <div class="up-card-head">Admin actions</div>
+        <p class="up-hint">Each of these has lasting consequences. Tap one to see what'll happen, then confirm.</p>
+        <div class="up-admin-buttons">
+          ${isCurrentlyAdmin ? `<button type="button" class="up-btn-sm up-btn-sm--danger" data-admin-action="unadmin">Un-Admin</button>` : ""}
+          <button type="button" class="up-btn-sm up-btn-sm--danger" data-admin-action="merge">Merge with another record</button>
+          <button type="button" class="up-btn-sm up-btn-sm--danger" data-admin-action="delete">Delete this Person</button>
         </div>
-        <div class="up-field">
-          <div class="up-field-label">Danger zone</div>
-          <div class="up-field-display">
-            <button type="button" class="up-btn-sm up-btn-sm--danger" data-person-delete="${escapeHtml(person.id)}">Delete person</button>
-            <span class="up-card-hint">Removes the Person record. Linked Google accounts are NOT touched — use the per-account Delete button below for those.</span>
-            <span class="up-edit-status" data-edit-status="delete"></span>
-          </div>
-        </div>
+        <div class="up-admin-detail" id="upAdminDetail" hidden></div>
       </div>` : "";
 
     return `
@@ -353,9 +347,7 @@
           </div>` : ""}
       </div>
 
-      ${adminControls}
-
-      ${viewerIsAdmin ? renderMergeCard() : ""}`;
+      ${adminControls}`;
   }
 
   /* ─── Recent activity card (audit log filtered to this Person) ──── */
@@ -1169,17 +1161,90 @@
     document.querySelectorAll("[data-payroll-toggle]").forEach(btn => {
       btn.addEventListener("click", () => togglePayroll(btn.dataset.payrollToggle === "on"));
     });
-    // Admin controls — Suspend / Reactivate + Delete Person.
-    document.querySelectorAll("[data-person-suspend]").forEach(btn => {
-      btn.addEventListener("click", () => suspendPerson(btn.dataset.personSuspend === "suspend"));
-    });
-    document.querySelectorAll("[data-person-delete]").forEach(btn => {
-      btn.addEventListener("click", () => deletePerson());
+    // Admin actions — Un-Admin / Merge / Delete. Each top button opens
+    // a detail pane with explanation + final "Definitely do this".
+    document.querySelectorAll("[data-admin-action]").forEach(btn => {
+      btn.addEventListener("click", () => openAdminAction(btn.dataset.adminAction));
     });
     const saveBtn = document.querySelector("[data-payroll-save]");
     if (saveBtn) saveBtn.addEventListener("click", savePayrollEdits);
-    const mergeBtn = document.getElementById("upMergeGo");
-    if (mergeBtn) mergeBtn.addEventListener("click", runMerge);
+  }
+
+  // Each admin action expands a non-technical explanation + a final
+  // "Definitely do this" button. The actual mutation only happens from
+  // that final button — never directly from the top-of-card buttons.
+  function openAdminAction(action) {
+    const detail = document.getElementById("upAdminDetail");
+    if (!detail) return;
+    detail.hidden = false;
+    if (action === "unadmin") {
+      detail.innerHTML = `
+        <h4 class="up-admin-detail-title">Un-Admin ${escapeHtml(person.name || person.url_slug)}</h4>
+        <p>This will remove their TogetherBook admin powers. They keep their normal account and can still sign in (if their email is on one of our Workspace domains), but they can no longer edit anyone else's record, run Reconcile sources, or push the access list.</p>
+        <p>Reversible — open their Info tab and change Access level back to Admin to undo.</p>
+        <div class="up-editor-row">
+          <button type="button" class="up-btn-sm up-btn-sm--danger" data-admin-confirm="unadmin">Definitely do this</button>
+          <button type="button" class="up-btn-sm" data-admin-cancel>Cancel</button>
+          <span class="up-edit-status" data-edit-status="unadmin"></span>
+        </div>`;
+    } else if (action === "merge") {
+      const mergeOptions = people
+        .filter(p => p.id !== person.id)
+        .sort((a, b) => (a.name || "").localeCompare(b.name || ""))
+        .map(p => `<option value="${escapeHtml(p.id)}">${escapeHtml(p.name || p.id)} · ${escapeHtml(p.main_google_email || "(no email)")}</option>`)
+        .join("");
+      detail.innerHTML = `
+        <h4 class="up-admin-detail-title">Merge ${escapeHtml(person.name || person.url_slug)} into another record</h4>
+        <p>Use this when two records describe the same real person — e.g. a payroll-only record and a Google-only record that should be one human.</p>
+        <p>Pick the record that should survive. Everything on this page (Google accounts, aliases, payroll row, phone, address, etc.) moves over to that record, and this page is then removed. The other record keeps its existing URL.</p>
+        <select class="up-pay-input" id="upMergeTarget"><option value="">— pick the surviving record —</option>${mergeOptions}</select>
+        <div class="up-editor-row">
+          <button type="button" class="up-btn-sm up-btn-sm--danger" data-admin-confirm="merge">Definitely do this</button>
+          <button type="button" class="up-btn-sm" data-admin-cancel>Cancel</button>
+          <span class="up-edit-status" data-edit-status="merge"></span>
+        </div>`;
+    } else if (action === "delete") {
+      detail.innerHTML = `
+        <h4 class="up-admin-detail-title">Delete this Person record</h4>
+        <p>This removes ${escapeHtml(person.name || person.url_slug)}'s entry from the People list. Their linked Google account(s) are <strong>not</strong> touched — to actually suspend or delete the Workspace login go to the Accounts tab and use the controls on each account box.</p>
+        <p>The record can only be recovered by an engineer restoring it from git history; there's no in-app undo.</p>
+        <div class="up-editor-row">
+          <button type="button" class="up-btn-sm up-btn-sm--danger" data-admin-confirm="delete">Definitely do this</button>
+          <button type="button" class="up-btn-sm" data-admin-cancel>Cancel</button>
+          <span class="up-edit-status" data-edit-status="delete"></span>
+        </div>`;
+    }
+    detail.querySelectorAll("[data-admin-cancel]").forEach(b => b.addEventListener("click", closeAdminAction));
+    detail.querySelectorAll("[data-admin-confirm]").forEach(b => {
+      b.addEventListener("click", () => runAdminAction(b.dataset.adminConfirm));
+    });
+    detail.scrollIntoView({ behavior: "smooth", block: "nearest" });
+  }
+  function closeAdminAction() {
+    const detail = document.getElementById("upAdminDetail");
+    if (detail) { detail.hidden = true; detail.innerHTML = ""; }
+  }
+  async function runAdminAction(action) {
+    if (action === "unadmin") return unAdminPerson();
+    if (action === "delete")  return deletePerson();
+    if (action === "merge")   return runMerge();
+  }
+  async function unAdminPerson() {
+    const status = document.querySelector('[data-edit-status="unadmin"]');
+    if (status) { status.textContent = "Saving…"; status.className = "up-edit-status up-edit-status--working"; }
+    try {
+      const res = await fetch(WORKSPACE_API + "/people-set", {
+        method: "POST", headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id: person.id, access_level: "staff" }),
+      });
+      const out = await res.json();
+      if (!res.ok || !out.ok) throw new Error(out.error || `HTTP ${res.status}`);
+      Object.assign(person, out.person);
+      LS.set(person.id, "access_level", "staff");
+      renderPanel();
+    } catch (err) {
+      if (status) { status.textContent = "Failed — " + err.message; status.className = "up-edit-status up-edit-status--err"; }
+    }
   }
 
   async function runMerge() {
