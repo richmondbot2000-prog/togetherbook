@@ -1,0 +1,737 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<script src="/live-reload.js"></script>
+<title>TogetherBOOK — BOOKR</title>
+<link rel="icon" type="image/png" href="site-icon.png">
+<link rel="apple-touch-icon" href="site-icon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&family=Newsreader:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500;1,600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css?v=1779059800">
+<link rel="stylesheet" href="quiet-tokens.css?v=1779059800">
+<link rel="stylesheet" href="quiet.css?v=1779059800">
+<link rel="stylesheet" href="quiet-extras.css?v=1779059800">
+<link rel="stylesheet" href="quiet-legacy.css?v=1779059800">
+<style>
+  .bk-section { max-width: 100%; margin: 0 auto; padding: 18px 16px 48px; }
+  .bk-section h1 {
+    font-family: var(--font-display, "Newsreader", serif);
+    font-size: clamp(1.6rem, 4vw, 2.4rem);
+    font-weight: 800; letter-spacing: 0.02em; text-transform: uppercase;
+    margin: 0 0 8px; color: var(--ink);
+  }
+  .bk-eyebrow {
+    font: italic 500 13px/1.3 var(--font-display, "Newsreader", serif);
+    color: var(--ink-600); margin: 0 0 14px;
+  }
+  /* Tabs row: ledger-style underline that swaps on the active tab. */
+  .bk-tabs { display: flex; gap: 24px; border-bottom: 1px solid var(--ink-500); margin: 0 0 14px; }
+  .bk-tab {
+    background: none; border: 0; padding: 8px 0;
+    font: 600 13px/1.2 var(--font-body, "Inter", sans-serif);
+    letter-spacing: 0.08em; text-transform: uppercase; color: var(--ink-500); cursor: pointer;
+    border-bottom: 2px solid transparent; margin-bottom: -1px;
+  }
+  .bk-tab.is-active { color: var(--ink-900); border-bottom-color: var(--brass-500); }
+  .bk-tab:hover:not(.is-active) { color: var(--ink-700); }
+  /* Toolbar row above the grid: zoom, type filter, change-user picker. */
+  .bk-toolbar { display: flex; flex-wrap: wrap; gap: 14px 22px; align-items: center; margin: 0 0 12px; }
+  .bk-tool-label {
+    font: 500 11px/1 var(--font-mono, monospace); letter-spacing: 0.08em;
+    text-transform: uppercase; color: var(--ink-500); margin-right: 6px;
+  }
+  .bk-select {
+    font: 500 13px/1.2 var(--font-body); color: var(--ink-900); background: var(--paper-50);
+    border: 1px solid var(--ink-300); border-radius: 0; padding: 5px 8px;
+  }
+  .bk-seg { display: inline-flex; border: 1px solid var(--ink-300); }
+  .bk-seg button {
+    background: var(--paper-50); border: 0; border-right: 1px solid var(--ink-300);
+    padding: 5px 12px; cursor: pointer;
+    font: 500 12px/1.2 var(--font-body); color: var(--ink-700);
+  }
+  .bk-seg button:last-child { border-right: 0; }
+  .bk-seg button.is-active { background: var(--ink-900); color: var(--paper-50); }
+  /* Linked-to-BookR pill on the right. */
+  .bk-link-pill {
+    margin-left: auto;
+    font: 500 11px/1 var(--font-mono); letter-spacing: 0.04em;
+    padding: 4px 8px; border: 1px solid var(--brass-300); color: var(--brass-700); background: var(--brass-50);
+  }
+  .bk-link-pill.is-unlinked { color: var(--red-700); border-color: var(--red-300); background: var(--red-50); }
+  /* Banner shown when the viewer has no BookR uid mapping. */
+  .bk-banner {
+    background: var(--red-50); border-left: 4px solid var(--red-500);
+    padding: 10px 14px; margin: 0 0 14px;
+    font: 400 13px/1.45 var(--font-body); color: var(--ink-900);
+  }
+  /* The grid lives in a horizontally scrollable wrapper so the sticky
+     asset column always stays put on mobile. */
+  .bk-grid-wrap { overflow-x: auto; border: 1px solid var(--ink-300); background: var(--paper-50); }
+  .bk-grid {
+    display: grid; min-width: 100%;
+    /* grid-template-columns is set inline by JS once we know zoom range. */
+    font: 400 12px/1.3 var(--font-body);
+  }
+  .bk-cell { border-right: 1px solid var(--paper-300); border-bottom: 1px solid var(--paper-300); padding: 4px 6px; min-height: 36px; box-sizing: border-box; }
+  .bk-cell.is-weekend { background: var(--paper-100); }
+  .bk-cell.is-past { color: var(--ink-400); background: var(--paper-100); cursor: default; }
+  .bk-cell.is-today-col { border-left: 2px solid var(--brass-500); }
+  .bk-cell.is-free { cursor: pointer; }
+  .bk-cell.is-free:hover { background: var(--brass-50); }
+  .bk-cell.is-booked { background: rgba(44, 62, 102, 0.10); cursor: pointer; color: var(--ink-900); }
+  .bk-cell.is-mine { background: rgba(200, 151, 63, 0.18); }
+  .bk-cell.is-pending { opacity: 0.55; cursor: progress; }
+  /* Sticky asset column on the left edge. */
+  .bk-asset-cell {
+    position: sticky; left: 0; z-index: 2;
+    background: var(--paper-50);
+    border-right: 2px solid var(--ink-500);
+    padding: 8px 10px; min-width: 220px; max-width: 280px;
+    border-bottom: 1px solid var(--paper-300);
+    display: flex; flex-direction: column; gap: 2px;
+  }
+  .bk-asset-cell.is-section { background: var(--paper-200); }
+  .bk-asset-title { font: 600 13px/1.25 var(--font-body); color: var(--ink-900); }
+  .bk-asset-title a { color: inherit; text-decoration: none; border-bottom: 1px dotted var(--ink-400); }
+  .bk-asset-title a:hover { color: var(--brass-700); border-bottom-color: var(--brass-500); }
+  .bk-asset-sub { font: 400 11px/1.25 var(--font-mono); color: var(--ink-600); }
+  /* Day-header row stays at the top while you scroll the grid vertically.
+     For now the page is a single grid, no vertical sticky needed. */
+  .bk-day-head {
+    background: var(--paper-200); padding: 4px 2px;
+    text-align: center;
+    font: 600 10px/1.1 var(--font-mono); color: var(--ink-700);
+    border-right: 1px solid var(--paper-300); border-bottom: 1px solid var(--ink-400);
+  }
+  .bk-day-head.is-weekend { background: var(--paper-300); }
+  .bk-day-head.is-today-col { background: var(--brass-100); color: var(--brass-700); border-left: 2px solid var(--brass-500); }
+  .bk-day-head .bk-dow { display: block; opacity: 0.7; letter-spacing: 0.04em; }
+  .bk-day-head .bk-dn  { display: block; font-size: 12px; }
+  .bk-day-head .bk-mo  { display: block; font-size: 9px; opacity: 0.65; }
+  /* The corner cell (top-left intersection of asset col + day row). */
+  .bk-corner {
+    position: sticky; left: 0; z-index: 3;
+    background: var(--paper-200); border-right: 2px solid var(--ink-500); border-bottom: 1px solid var(--ink-400);
+    padding: 6px 10px; font: 600 10px/1.1 var(--font-mono); color: var(--ink-700);
+    text-transform: uppercase; letter-spacing: 0.08em; min-width: 220px;
+    display: flex; align-items: center;
+  }
+  .bk-cell-name { display: block; font: 500 11px/1.1 var(--font-body); color: var(--ink-900); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  /* Popover that opens when you click a cell. */
+  .bk-pop {
+    position: fixed; z-index: 1000;
+    background: var(--paper-50); border: 1px solid var(--ink-500);
+    box-shadow: none; padding: 12px 14px; min-width: 240px; max-width: 320px;
+    font: 400 13px/1.4 var(--font-body); color: var(--ink-900);
+  }
+  .bk-pop h3 { margin: 0 0 6px; font: 600 14px/1.2 var(--font-body); color: var(--ink-900); }
+  .bk-pop .bk-pop-sub { font: italic 400 12px/1.3 var(--font-display); color: var(--ink-600); margin: 0 0 8px; }
+  .bk-pop .bk-pop-meta { font: 400 12px/1.4 var(--font-mono); color: var(--ink-700); margin: 0 0 10px; }
+  .bk-pop-actions { display: flex; gap: 8px; }
+  .bk-btn { font: 600 12px/1 var(--font-body); padding: 7px 12px; border: 1px solid var(--ink-500); background: var(--paper-50); color: var(--ink-900); cursor: pointer; }
+  .bk-btn:hover { background: var(--paper-200); }
+  .bk-btn.is-danger { color: var(--red-700); border-color: var(--red-500); }
+  .bk-btn.is-danger:hover { background: var(--red-50); }
+  .bk-btn.is-primary { background: var(--brass-500); color: var(--paper-50); border-color: var(--brass-600); }
+  .bk-btn.is-primary:hover { background: var(--brass-600); }
+  .bk-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+  /* My Bookings: a quiet ledger grouped by asset. */
+  .bk-mine-section { max-width: 880px; margin: 0 auto; }
+  .bk-mine-group { margin: 0 0 22px; padding: 0 0 12px; border-bottom: 1px solid var(--paper-300); }
+  .bk-mine-group h2 { margin: 0 0 8px; font: 600 14px/1.2 var(--font-display); color: var(--ink-900); }
+  .bk-mine-group h2 a { color: inherit; text-decoration: none; border-bottom: 1px dotted var(--ink-400); }
+  .bk-mine-group h2 a:hover { color: var(--brass-700); border-bottom-color: var(--brass-500); }
+  .bk-mine-row {
+    display: grid; grid-template-columns: 200px 1fr auto; gap: 14px; align-items: center;
+    padding: 5px 0; font: 400 13px/1.3 var(--font-body); color: var(--ink-800);
+    border-top: 1px dashed var(--paper-300);
+  }
+  .bk-mine-row:first-of-type { border-top: 0; }
+  .bk-mine-row .bk-mine-when { font: 500 12px/1.2 var(--font-mono); color: var(--ink-900); }
+  .bk-mine-row .bk-mine-meta { font: 400 11px/1.3 var(--font-mono); color: var(--ink-500); }
+  .bk-mine-row.is-past { color: var(--ink-500); }
+  .bk-mine-empty { font-style: italic; color: var(--ink-500); padding: 18px 0; }
+  .bk-status { font: 400 12px/1.3 var(--font-mono); color: var(--ink-500); padding: 6px 0; }
+  @media (max-width: 720px) {
+    .bk-asset-cell, .bk-corner { min-width: 160px; max-width: 200px; }
+    .bk-mine-row { grid-template-columns: 1fr; gap: 4px; }
+  }
+</style>
+</head>
+<body>
+
+<header class="qb-topbar">
+  <a class="qb-brand" href="index.html" aria-label="TogetherBOOK — home">
+    <img class="qb-brand-logo" src="togetherbook-logo.png?v=1779059800" alt="TogetherBOOK">
+  </a>
+  <button class="qb-hamburger" aria-label="Toggle navigation menu" aria-expanded="false"
+          onclick="document.body.classList.toggle('nav-open');this.setAttribute('aria-expanded',document.body.classList.contains('nav-open'))">
+    <span></span><span></span><span></span>
+  </button>
+  <nav class="qb-nav">
+    <a class="qb-nav-link" href="/wall.html">Wall</a>
+    <a class="qb-nav-link is-active" href="/bookr.html">BOOKR</a>
+    <a class="qb-nav-link" href="/directory.html" data-sub='[{"href": "/directory.html", "label": "Directory"}, {"href": "/directory.html", "label": "Your Page", "data-yourpage": "1"}, {"href": "/holidays.html", "label": "Holidays"}, {"href": "/org-structure.html", "label": "Org Structure"}]'>People</a>
+    <a class="qb-nav-link" href="/reports.html" data-sub='[{"href": "/yesterday.html", "label": "Payouts"}, {"href": "/brandwatch.html", "label": "Brandwatch"}, {"href": "/1stcontact.html", "label": "1st Contact"}, {"href": "/topups.html", "label": "Top Ups"}, {"href": "/pipeline.html", "label": "Pipeline"}, {"href": "/brokers.html", "label": "Brokers"}, {"href": "/comms.html", "label": "Comms"}]'>Business</a>
+    <a class="qb-nav-link" href="/index.html" data-sub='[{"href": "/database.html", "label": "Schema"}, {"href": "/stats.html", "label": "Code"}, {"href": "/pending.html", "label": "Pending"}]'>System</a>
+  </nav>
+</header>
+<div class="qb-nav-backdrop" onclick="document.body.classList.remove('nav-open')"></div>
+
+<section class="bk-section">
+  <h1>BOOKR</h1>
+  <p class="bk-eyebrow">Cars &amp; properties. Click a free day to book it; click a booked day to see who has it.</p>
+  <div id="bkBanner" class="bk-banner" style="display:none"></div>
+  <div class="bk-tabs">
+    <button class="bk-tab is-active" data-tab="calendar" type="button">Calendar</button>
+    <button class="bk-tab" data-tab="mine" type="button">My Bookings</button>
+  </div>
+  <div id="bkCalendarPanel">
+    <div class="bk-toolbar">
+      <span><span class="bk-tool-label">Days</span>
+        <select id="bkZoom" class="bk-select">
+          <option value="30">Next 30</option>
+          <option value="60">Next 60</option>
+          <option value="90">Next 90</option>
+          <option value="360">Next 360</option>
+        </select></span>
+      <span><span class="bk-tool-label">Type</span>
+        <span class="bk-seg" id="bkFilter">
+          <button data-f="all" class="is-active" type="button">All</button>
+          <button data-f="cars" type="button">Cars</button>
+          <button data-f="properties" type="button">Properties</button>
+        </span></span>
+      <span id="bkChangeUserWrap" style="display:none"><span class="bk-tool-label">Book as</span>
+        <select id="bkChangeUser" class="bk-select"></select></span>
+      <span id="bkLinkPill" class="bk-link-pill" title="">Linked to BookR</span>
+    </div>
+    <div id="bkStatus" class="bk-status">Loading…</div>
+    <div class="bk-grid-wrap">
+      <div id="bkGrid" class="bk-grid"></div>
+    </div>
+  </div>
+  <div id="bkMinePanel" class="bk-mine-section" style="display:none"></div>
+</section>
+<div id="bkPop" class="bk-pop" style="display:none"></div>
+<script>
+(function () {
+  const $ = sel => document.querySelector(sel);
+  const STATE = {
+    whoami: null,
+    users: {},
+    cars: [], properties: [],
+    filter: "all",
+    zoom: 30,
+    bookings: {},      /* keyed by `type:id` -> {date: uid|free} */
+    isAdmin: false,
+    targetEmail: null, /* admin booking-on-behalf-of override */
+    tab: "calendar",
+  };
+
+  /* Date helpers — everything in UK local. */
+  const pad = n => String(n).padStart(2, "0");
+  function ymd(d) { return d.getFullYear() + "-" + pad(d.getMonth() + 1) + "-" + pad(d.getDate()); }
+  function addDays(d, n) { const x = new Date(d); x.setDate(x.getDate() + n); return x; }
+  function todayMidnight() { const d = new Date(); d.setHours(0,0,0,0); return d; }
+  function dowLetter(d) { return ["S", "M", "T", "W", "T", "F", "S"][d.getDay()]; }
+  function monShort(d) { return ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"][d.getMonth()]; }
+  function isWeekend(d) { const x = d.getDay(); return x === 0 || x === 6; }
+  function firstName(s) { return (s || "").split(/\s+/)[0] || ""; }
+  function compactName(name) {
+    const p = (name || "").split(/\s+/).filter(Boolean);
+    if (!p.length) return "";
+    if (p.length === 1) return p[0];
+    return p[0] + " " + p[p.length - 1].charAt(0).toUpperCase();
+  }
+  /* UK fiscal year: starts April 1. "Most recent April 1" = April of this year if
+     today is on/after Apr 1, else April of previous year. */
+  function fiscalStart() {
+    const t = todayMidnight();
+    const apr = new Date(t.getFullYear(), 3, 1);
+    if (t < apr) return new Date(t.getFullYear() - 1, 3, 1);
+    return apr;
+  }
+
+  async function getJSON(url, opts) {
+    const res = await fetch(url, Object.assign({ cache: "no-store" }, opts || {}));
+    if (!res.ok) throw new Error(url + ": " + res.status);
+    return res.json();
+  }
+
+  async function loadAll() {
+    setStatus("Loading…");
+    let whoami = null, users = {}, assets = null;
+    try { whoami = await getJSON("/api/bookr/whoami"); } catch (e) {}
+    try { const u = await getJSON("/api/bookr/users"); users = (u && u.users) || {}; } catch (e) {}
+    try { assets = await getJSON("/api/bookr/assets"); } catch (e) {}
+    STATE.whoami = whoami;
+    STATE.users = users;
+    STATE.cars = (assets && assets.cars) || [];
+    STATE.properties = (assets && assets.properties) || [];
+    /* Cheap admin check: workspace/whoami carries an is_admin flag on every page already.
+       Falling back to direct fetch of the workspace whoami here. */
+    try {
+      const w = await getJSON("/api/workspace/whoami");
+      STATE.isAdmin = !!(w && (w.is_admin || w.is_togetherbook_admin));
+    } catch (e) {}
+    renderTopChrome();
+    renderUserPicker();
+    await refreshAllBookings();
+    render();
+  }
+  function setStatus(msg) {
+    const el = document.querySelector("#bkStatus");
+    if (!el) return;
+    el.textContent = msg || "";
+    el.style.display = msg ? "" : "none";
+  }
+  function renderTopChrome() {
+    const pill = document.querySelector("#bkLinkPill");
+    const banner = document.querySelector("#bkBanner");
+    const w = STATE.whoami || {};
+    if (w.uid) {
+      pill.classList.remove("is-unlinked");
+      pill.textContent = "Linked to BookR";
+      pill.title = w.name || w.email || "";
+      banner.style.display = "none";
+    } else {
+      pill.classList.add("is-unlinked");
+      pill.textContent = "Not linked";
+      pill.title = w.error || "No BookR user matches your email.";
+      banner.style.display = "";
+      banner.textContent = "Your TogetherBook email is not yet linked to a BookR user. Browse only — no bookings.";
+    }
+  }
+  /* Privileged users can book on behalf of someone else; the dropdown */
+  /* is only populated when the workspace flag is true. */
+  function renderUserPicker() {
+    const wrap = document.querySelector("#bkChangeUserWrap");
+    const sel = document.querySelector("#bkChangeUser");
+    if (!STATE.isAdmin) { wrap.style.display = "none"; return; }
+    wrap.style.display = "";
+    const opts = ['<option value="">Myself</option>'];
+    const seen = new Set();
+    Object.values(STATE.users || {}).forEach(u => {
+      if (!u || u.suspended || !u.email) return;
+      const e = u.email.toLowerCase();
+      if (seen.has(e)) return; seen.add(e);
+      const label = (u.name || u.email).replace(/</g, "&lt;");
+      const v = u.email.replace(/"/g, "&quot;");
+      opts.push('<option value="' + v + '">' + label + '</option>');
+    });
+    sel.innerHTML = opts.join("");
+    sel.value = STATE.targetEmail || "";
+  }
+
+  function visibleAssets() {
+    if (STATE.filter === "cars") return STATE.cars.map(a => Object.assign({}, a, { type: "cars" }));
+    if (STATE.filter === "properties") return STATE.properties.map(a => Object.assign({}, a, { type: "properties" }));
+    const cs = STATE.cars.map(a => Object.assign({}, a, { type: "cars" }));
+    const ps = STATE.properties.map(a => Object.assign({}, a, { type: "properties" }));
+    return cs.concat(ps);
+  }
+  function dateRange() {
+    const start = todayMidnight();
+    const days = [];
+    for (let i = 0; i < STATE.zoom; i++) days.push(addDays(start, i));
+    return { start: start, end: addDays(start, STATE.zoom - 1), days: days };
+  }
+  async function refreshAllBookings() {
+    const { start, end } = dateRange();
+    const from = ymd(start), to = ymd(end);
+    const assets = visibleAssets();
+    const results = await Promise.all(assets.map(a =>
+      getJSON("/api/bookr/bookings?type=" + encodeURIComponent(a.type) + "&asset=" + encodeURIComponent(a.id) + "&from=" + from + "&to=" + to)
+        .then(r => ({ key: a.type + ":" + a.id, b: (r && r.bookings) || {} }))
+        .catch(() => ({ key: a.type + ":" + a.id, b: {} }))));
+    STATE.bookings = {};
+    results.forEach(r => { STATE.bookings[r.key] = r.b; });
+  }
+
+  function render() {
+    /* Switch the calendar/mine panels. */
+    document.querySelector("#bkCalendarPanel").style.display = (STATE.tab === "calendar") ? "" : "none";
+    document.querySelector("#bkMinePanel").style.display = (STATE.tab === "mine") ? "" : "none";
+    if (STATE.tab === "calendar") renderGrid();
+    else renderMine();
+  }
+
+  function buildAssetCell(a) {
+    const el = document.createElement("div");
+    el.className = "bk-asset-cell";
+    const titleEl = document.createElement("div");
+    titleEl.className = "bk-asset-title";
+    const link = document.createElement("a");
+    link.href = "/bookr-asset.html?type=" + encodeURIComponent(a.type) + "&id=" + encodeURIComponent(a.id);
+    link.textContent = a.title || a.id;
+    titleEl.appendChild(link);
+    el.appendChild(titleEl);
+    if (a.sub_title) {
+      const sub = document.createElement("div");
+      sub.className = "bk-asset-sub";
+      sub.textContent = a.sub_title;
+      el.appendChild(sub);
+    }
+    return el;
+  }
+
+  function buildDayHead(d, todayY) {
+    const el = document.createElement("div");
+    el.className = "bk-day-head";
+    if (isWeekend(d)) el.classList.add("is-weekend");
+    if (ymd(d) === todayY) el.classList.add("is-today-col");
+    const dow = document.createElement("span"); dow.className = "bk-dow"; dow.textContent = dowLetter(d);
+    const dn  = document.createElement("span"); dn.className  = "bk-dn";  dn.textContent  = String(d.getDate());
+    el.appendChild(dow); el.appendChild(dn);
+    if (d.getDate() === 1 || ymd(d) === todayY) {
+      const mo = document.createElement("span");
+      mo.className = "bk-mo"; mo.textContent = monShort(d);
+      el.appendChild(mo);
+    }
+    return el;
+  }
+
+  function buildBookingCell(a, d, todayY) {
+    const el = document.createElement("div");
+    el.className = "bk-cell";
+    const dy = ymd(d);
+    if (isWeekend(d)) el.classList.add("is-weekend");
+    if (dy === todayY) el.classList.add("is-today-col");
+    if (dy < todayY) el.classList.add("is-past");
+    const bookings = STATE.bookings[a.type + ":" + a.id] || {};
+    const value = bookings[dy];
+    const myUid = STATE.whoami && STATE.whoami.uid;
+    if (value && value !== "free") {
+      const u = STATE.users[value];
+      const fullName = (u && u.name) || value;
+      el.classList.add("is-booked");
+      if (myUid && value === myUid) el.classList.add("is-mine");
+      const name = document.createElement("span");
+      name.className = "bk-cell-name";
+      name.textContent = compactName(fullName);
+      el.appendChild(name);
+      el.title = fullName + " · " + a.title;
+      el.dataset.kind = "booked";
+      el.dataset.uid = value;
+    } else if (dy >= todayY) {
+      el.classList.add("is-free");
+      el.title = "Free — click to book " + a.title + " on " + dy;
+      el.dataset.kind = "free";
+    } else {
+      el.dataset.kind = "pastfree";
+    }
+    el.dataset.type = a.type;
+    el.dataset.asset = a.id;
+    el.dataset.date = dy;
+    return el;
+  }
+
+  function renderGrid() {
+    const grid = document.querySelector("#bkGrid");
+    grid.innerHTML = "";
+    const assets = visibleAssets();
+    const { days } = dateRange();
+    const todayY = ymd(todayMidnight());
+    /* grid columns: 1 sticky asset col + N day cols (each 36px wide). */
+    const dayW = 36;
+    grid.style.gridTemplateColumns = "220px repeat(" + days.length + ", " + dayW + "px)";
+    /* Header row */
+    const corner = document.createElement("div");
+    corner.className = "bk-corner";
+    corner.textContent = assets.length + " asset" + (assets.length === 1 ? "" : "s") + " · next " + STATE.zoom + " days";
+    grid.appendChild(corner);
+    days.forEach(d => grid.appendChild(buildDayHead(d, todayY)));
+    /* Asset rows */
+    assets.forEach(a => {
+      grid.appendChild(buildAssetCell(a));
+      days.forEach(d => grid.appendChild(buildBookingCell(a, d, todayY)));
+    });
+    setStatus("");
+  }
+
+  /* Walk consecutive same-uid cells around (type, id, date) to find */
+  /* the run of dates that booking spans. Returns [start, end] in YMD. */
+  function runFor(type, id, date, uid) {
+    const map = STATE.bookings[type + ":" + id] || {};
+    let s = new Date(date + "T00:00:00");
+    let e = new Date(date + "T00:00:00");
+    while (true) {
+      const prev = addDays(s, -1);
+      if (map[ymd(prev)] === uid) s = prev; else break;
+    }
+    while (true) {
+      const next = addDays(e, 1);
+      if (map[ymd(next)] === uid) e = next; else break;
+    }
+    return { from: ymd(s), to: ymd(e) };
+  }
+
+  function closePop() {
+    const pop = document.querySelector("#bkPop");
+    pop.style.display = "none";
+    pop.innerHTML = "";
+  }
+
+  function openPop(cell) {
+    const pop = document.querySelector("#bkPop");
+    pop.innerHTML = "";
+    const t = cell.dataset.type;
+    const id = cell.dataset.asset;
+    const date = cell.dataset.date;
+    const kind = cell.dataset.kind;
+    const asset = (t === "cars" ? STATE.cars : STATE.properties).find(a => a.id === id) || {};
+    const myUid = STATE.whoami && STATE.whoami.uid;
+    /* Position the popover near the clicked cell. */
+    const r = cell.getBoundingClientRect();
+    pop.style.display = "";
+    pop.style.top  = Math.min(window.innerHeight - 200, r.bottom + 6) + "px";
+    pop.style.left = Math.min(window.innerWidth - 340, Math.max(8, r.left)) + "px";
+    /* Build inner HTML */
+    const h = document.createElement("h3");
+    const link = document.createElement("a");
+    link.href = "/bookr-asset.html?type=" + encodeURIComponent(t) + "&id=" + encodeURIComponent(id);
+    link.textContent = asset.title || id;
+    link.style.color = "inherit";
+    h.appendChild(link);
+    pop.appendChild(h);
+    if (asset.sub_title) {
+      const s = document.createElement("div"); s.className = "bk-pop-sub"; s.textContent = asset.sub_title;
+      pop.appendChild(s);
+    }
+    const meta = document.createElement("div");
+    meta.className = "bk-pop-meta";
+    pop.appendChild(meta);
+    const actions = document.createElement("div");
+    actions.className = "bk-pop-actions";
+    pop.appendChild(actions);
+    /* CONTENT depending on kind */
+    if (kind === "free") {
+      meta.textContent = "Free on " + date;
+      const bookBtn = document.createElement("button");
+      bookBtn.className = "bk-btn is-primary";
+      bookBtn.textContent = STATE.isAdmin && STATE.targetEmail ? ("Book for " + STATE.targetEmail) : "Book this day";
+      if (!myUid && !(STATE.isAdmin && STATE.targetEmail)) bookBtn.disabled = true;
+      bookBtn.onclick = () => bookOne(t, id, date, cell);
+      actions.appendChild(bookBtn);
+    } else if (kind === "booked") {
+      const uid = cell.dataset.uid;
+      const u = STATE.users[uid] || {};
+      const name = u.name || uid;
+      const run = runFor(t, id, date, uid);
+      meta.textContent = name + " · " + (run.from === run.to ? run.from : (run.from + " — " + run.to));
+      const cancelBtn = document.createElement("button");
+      cancelBtn.className = "bk-btn is-danger";
+      cancelBtn.textContent = "Cancel " + date;
+      const canCancel = STATE.isAdmin || (myUid && uid === myUid);
+      if (!canCancel) cancelBtn.disabled = true;
+      cancelBtn.onclick = () => cancelOne(t, id, date, cell);
+      actions.appendChild(cancelBtn);
+    }
+    const closeBtn = document.createElement("button");
+    closeBtn.className = "bk-btn"; closeBtn.textContent = "Close";
+    closeBtn.onclick = closePop;
+    actions.appendChild(closeBtn);
+  }
+
+  async function bookOne(type, asset, date, cell) {
+    cell.classList.add("is-pending");
+    closePop();
+    const payload = { type: type, asset: asset, date: date };
+    if (STATE.isAdmin && STATE.targetEmail) payload.target_email = STATE.targetEmail;
+    try {
+      const r = await fetch("/api/bookr/book", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(payload), cache: "no-store" });
+      const j = await r.json();
+      if (!r.ok || !j.ok) throw new Error(j.error || r.statusText);
+      /* Optimistic patch + re-fetch */
+      const key = type + ":" + asset;
+      STATE.bookings[key] = STATE.bookings[key] || {};
+      STATE.bookings[key][date] = j.uid;
+    } catch (e) {
+      alert("Could not book: " + e.message);
+    } finally {
+      cell.classList.remove("is-pending");
+      refreshAllBookings().then(render);
+    }
+  }
+
+  async function cancelOne(type, asset, date, cell) {
+    cell.classList.add("is-pending");
+    closePop();
+    try {
+      const r = await fetch("/api/bookr/cancel", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ type: type, asset: asset, date: date }), cache: "no-store" });
+      const j = await r.json();
+      if (!r.ok || !j.ok) throw new Error(j.error || r.statusText);
+      const key = type + ":" + asset;
+      if (STATE.bookings[key]) STATE.bookings[key][date] = "free";
+    } catch (e) {
+      alert("Could not cancel: " + e.message);
+    } finally {
+      cell.classList.remove("is-pending");
+      refreshAllBookings().then(render);
+    }
+  }
+
+  /* My Bookings — list every cell whose value equals my uid, from the
+     most recent April 1 forwards, grouped by asset. Fetches the full */
+  /* bookings tree for every asset (no from/to) and filters. */
+  async function renderMine() {
+    const panel = document.querySelector("#bkMinePanel");
+    panel.innerHTML = "";
+    const myUid = STATE.whoami && STATE.whoami.uid;
+    if (!myUid) {
+      panel.innerHTML = "<div class=""bk-mine-empty"">You are not linked to a BookR user yet, so there are no bookings to list.</div>";
+      return;
+    }
+    panel.innerHTML = "<div class=""bk-status"">Loading your bookings…</div>";
+    const since = ymd(fiscalStart());
+    const assets = [
+      ...STATE.cars.map(a => Object.assign({}, a, { type: "cars" })),
+      ...STATE.properties.map(a => Object.assign({}, a, { type: "properties" })),
+    ];
+    const fetches = await Promise.all(assets.map(a =>
+      getJSON("/api/bookr/bookings?type=" + encodeURIComponent(a.type) + "&asset=" + encodeURIComponent(a.id) + "&from=" + since + "&to=2099-12-31")
+        .then(r => ({ a: a, b: (r && r.bookings) || {} }))
+        .catch(() => ({ a: a, b: {} }))));
+    /* Build runs of consecutive same-uid dates per asset. */
+    const groups = [];
+    fetches.forEach(({ a, b }) => {
+      const dates = Object.keys(b).filter(d => b[d] === myUid).sort();
+      if (!dates.length) return;
+      const runs = [];
+      let s = dates[0], prev = dates[0];
+      for (let i = 1; i < dates.length; i++) {
+        const expected = ymd(addDays(new Date(prev + "T00:00:00"), 1));
+        if (dates[i] === expected) { prev = dates[i]; continue; }
+        runs.push({ from: s, to: prev });
+        s = dates[i]; prev = dates[i];
+      }
+      runs.push({ from: s, to: prev });
+      groups.push({ a: a, runs: runs });
+    });
+    panel.innerHTML = "";
+    if (!groups.length) {
+      panel.innerHTML = "<div class=""bk-mine-empty"">No bookings since " + since + ".</div>";
+      return;
+    }
+    const todayY = ymd(todayMidnight());
+    groups.forEach(g => panel.appendChild(buildMineGroup(g, todayY)));
+  }
+
+  function buildMineGroup(g, todayY) {
+    const wrap = document.createElement("div");
+    wrap.className = "bk-mine-group";
+    const h = document.createElement("h2");
+    const link = document.createElement("a");
+    link.href = "/bookr-asset.html?type=" + encodeURIComponent(g.a.type) + "&id=" + encodeURIComponent(g.a.id);
+    link.textContent = g.a.title || g.a.id;
+    h.appendChild(link);
+    if (g.a.sub_title) {
+      const su = document.createElement("span");
+      su.style.cssText = "margin-left:8px;color:var(--ink-500);font-weight:400;font-size:12px;";
+      su.textContent = g.a.sub_title;
+      h.appendChild(su);
+    }
+    wrap.appendChild(h);
+    g.runs.sort((x, y) => x.from < y.from ? -1 : x.from > y.from ? 1 : 0);
+    g.runs.forEach(r => {
+      const row = document.createElement("div");
+      row.className = "bk-mine-row";
+      const isPast = r.to < todayY;
+      if (isPast) row.classList.add("is-past");
+      const when = document.createElement("span");
+      when.className = "bk-mine-when";
+      when.textContent = r.from === r.to ? r.from : (r.from + "  →  " + r.to);
+      row.appendChild(when);
+      const meta = document.createElement("span");
+      meta.className = "bk-mine-meta";
+      const days = (new Date(r.to + "T00:00:00") - new Date(r.from + "T00:00:00"))/86400000 + 1;
+      meta.textContent = days + " day" + (days === 1 ? "" : "s") + (isPast ? " · past" : " · upcoming");
+      row.appendChild(meta);
+      if (!isPast) {
+        const btn = document.createElement("button");
+        btn.className = "bk-btn is-danger";
+        btn.textContent = days === 1 ? "Cancel" : "Cancel run";
+        btn.onclick = () => cancelRun(g.a.type, g.a.id, r.from, r.to);
+        row.appendChild(btn);
+      } else {
+        const spacer = document.createElement("span"); spacer.textContent = "";
+        row.appendChild(spacer);
+      }
+      wrap.appendChild(row);
+    });
+    return wrap;
+  }
+
+  async function cancelRun(type, asset, from, to) {
+    const start = new Date(from + "T00:00:00");
+    const end = new Date(to + "T00:00:00");
+    const dates = [];
+    for (let d = new Date(start); d <= end; d = addDays(d, 1)) dates.push(ymd(d));
+    if (!confirm("Cancel " + dates.length + " day" + (dates.length === 1 ? "" : "s") + "?")) return;
+    for (const d of dates) {
+      try {
+        const r = await fetch("/api/bookr/cancel", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ type: type, asset: asset, date: d }), cache: "no-store" });
+        const j = await r.json();
+        if (!r.ok || !j.ok) throw new Error(j.error || r.statusText);
+      } catch (e) {
+        alert("Failed to cancel " + d + ": " + e.message);
+        break;
+      }
+    }
+    await refreshAllBookings();
+    render();
+  }
+
+  /* Event wiring. */
+  function wire() {
+    document.querySelectorAll(".bk-tab").forEach(b => {
+      b.addEventListener("click", () => {
+        STATE.tab = b.dataset.tab;
+        document.querySelectorAll(".bk-tab").forEach(x => x.classList.toggle("is-active", x === b));
+        render();
+      });
+    });
+    document.querySelector("#bkZoom").addEventListener("change", async (e) => {
+      STATE.zoom = parseInt(e.target.value, 10) || 30;
+      setStatus("Reloading…");
+      await refreshAllBookings();
+      render();
+    });
+    document.querySelector("#bkFilter").addEventListener("click", async (e) => {
+      const b = e.target.closest("button");
+      if (!b) return;
+      document.querySelectorAll("#bkFilter button").forEach(x => x.classList.toggle("is-active", x === b));
+      STATE.filter = b.dataset.f;
+      setStatus("Reloading…");
+      await refreshAllBookings();
+      render();
+    });
+    document.querySelector("#bkChangeUser").addEventListener("change", (e) => {
+      STATE.targetEmail = (e.target.value || "").toLowerCase() || null;
+    });
+    document.querySelector("#bkGrid").addEventListener("click", (e) => {
+      const cell = e.target.closest(".bk-cell");
+      if (!cell || !cell.dataset.type) return;
+      const kind = cell.dataset.kind;
+      if (kind === "pastfree") return;
+      openPop(cell);
+    });
+    document.addEventListener("click", (e) => {
+      const pop = document.querySelector("#bkPop");
+      if (pop.style.display === "none") return;
+      if (pop.contains(e.target)) return;
+      if (e.target.closest(".bk-cell")) return;
+      closePop();
+    });
+  }
+  wire();
+  loadAll();
+})();
+</script>
+<script src="nav.js?v=1779059800"></script>
+</body>
+</html>
