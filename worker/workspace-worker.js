@@ -1095,31 +1095,58 @@ async function doAliasToGroup(token, body) {
   if (!body.alias) return { ok: false, error: "missing alias" };
   if (!body.group_name) return { ok: false, error: "missing group_name" };
 
+  // Idempotent: alias-remove may already have run in a previous failed
+  // attempt, leaving the address freed and possibly a Group already
+  // created. Tolerate "not found" on the alias-remove and "already
+  // exists" on the group-create + member-add so a retry completes
+  // whatever's missing rather than wedging on a partial state.
   const rem = await adminApi(
     token,
     "DELETE",
     `users/${encodeURIComponent(body.user_email)}/aliases/${encodeURIComponent(body.alias)}`,
   );
-  if (!rem.ok) return { ok: false, step: "alias-remove", error: rem.error || "alias removal failed", status: rem.status };
+  if (!rem.ok && rem.status !== 404 && !/not found|resource_id|invalid input/i.test(rem.error || "")) {
+    return { ok: false, step: "alias-remove", error: rem.error || "alias removal failed", status: rem.status };
+  }
+  const aliasAlreadyGone = !rem.ok;
 
   // Brief propagation pause — Workspace usually frees the address in <2s.
   await new Promise(r => setTimeout(r, 1500));
 
+  let groupAlreadyExisted = false;
   const gc = await adminApi(token, "POST", "groups", {
     email: body.alias,
     name: body.group_name,
     ...(body.description ? { description: body.description } : {}),
   });
-  if (!gc.ok) return { ok: false, step: "group-create", error: gc.error || "group creation failed", status: gc.status };
+  if (!gc.ok) {
+    if (gc.status === 409 || /already exists|duplicate/i.test(gc.error || "")) {
+      groupAlreadyExisted = true;
+    } else {
+      return { ok: false, step: "group-create", error: gc.error || "group creation failed", status: gc.status };
+    }
+  }
 
   const member = body.initial_member || body.user_email;
   const mb = await adminApi(token, "POST", `groups/${encodeURIComponent(body.alias)}/members`, {
     email: member,
     role: "MEMBER",
   });
-  if (!mb.ok) return { ok: false, step: "member-add", error: mb.error || "member add failed", status: mb.status, group_created: true };
+  if (!mb.ok && mb.status !== 409 && !/duplicate|already exists/i.test(mb.error || "")) {
+    return { ok: false, step: "member-add", error: mb.error || "member add failed", status: mb.status, group_created: !groupAlreadyExisted };
+  }
+  const memberAlreadyExisted = !mb.ok;
 
-  return { ok: true, group_email: body.alias, group_name: body.group_name, member };
+  return {
+    ok: true,
+    group_email: body.alias,
+    group_name: body.group_name,
+    member,
+    note:
+      (aliasAlreadyGone   ? "alias was already removed in a prior run · "  : "") +
+      (groupAlreadyExisted ? "group already existed at this address · "    : "") +
+      (memberAlreadyExisted ? `${member} was already a member`             : `${member} added as initial member`),
+  };
 }
 
 async function gmailApi(token, userEmail, method, suffix, payload) {

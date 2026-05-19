@@ -771,50 +771,102 @@
       </div>`;
   }
   function renderAccountButtons(email, st, isMine, rec) {
-    const buttons = [];
-    // Add-alias sits at the top of the action row across all non-deleted
-    // states so it's always visible and never buried in a long chip list.
-    if (!st.deletion_time) {
-      buttons.push(`<button data-acc-alias-add="1">+ Add alias</button>`);
-    }
+    // Each entry is [button-html, one-line rationale]. The rationale
+    // renders inline on the page so the admin doesn't have to guess
+    // what a button does. Compound "do-this-AND-that" buttons have
+    // been split into their atomic parts — chain them yourself if you
+    // want both effects.
+    const items = [];
     if (st.deletion_time) {
-      buttons.push(`<button data-acc-action="recover">Recover</button>`);
-    } else if (st.suspended) {
-      buttons.push(`<button data-acc-action="unsuspend" class="up-acct-btn-primary">Unsuspend</button>`);
-      if (st.forwarding_to)
-        buttons.push(`<button data-acc-action="cancel-forwarding">Cancel forwarding</button>`);
-      buttons.push(`<button data-acc-action="delete-now" class="danger">Delete account</button>`);
-    } else if (st.pending) {
-      buttons.push(`<button disabled title="Drive + Mail migration in flight">Transferring…</button>`);
-    } else {
-      if (st.forwarding_to) {
-        buttons.push(`<button data-acc-action="disable-forwarding">Turn off forwarding</button>`);
-      } else {
-        buttons.push(`<button data-acc-action="forward">Add forwarding</button>`);
-      }
-      if (!isMine) buttons.push(`<button data-acc-action="suspend-route" class="up-acct-btn-primary">Suspend & forward</button>`);
-      buttons.push(`<button data-acc-action="reset-password">Reset password</button>`);
-      // Alt → primary promotion (only meaningful on a non-primary,
-      // not-mine row that has a same-tenant primary it can replace).
-      if (rec && !rec.is_primary && !isMine) {
-        buttons.push(`<button data-acc-action="promote-primary" title="Rename this account to be the person's primary email">Make primary</button>`);
-      }
-      // Convert in-place — frees the email as a forwarding Group with
-      // the user themselves dropped as the initial member. Different
-      // from "Delete + convert to group" which migrates Drive/Mail to a
-      // colleague first.
-      if (!isMine) {
-        buttons.push(`<button data-acc-action="convert-to-group" title="Replace this user account with a forwarding Group at the same address — anyone you add as a member receives the mail">Convert to group</button>`);
-      }
-      if (!isMine) buttons.push(`<button data-acc-action="transfer-delete" class="danger">Delete (transfer Drive + Mail first)</button>`);
-      // The 21-day delayed group flow: queues Drive + Mail transfer to
-      // a colleague, then converts the freed address into a forwarding
-      // Group after Google's 20-day reuse lockout expires (~+21 days).
-      if (!isMine) {
-        buttons.push(`<button data-acc-action="delete-and-group" class="danger" title="Migrate Drive + Mail to a colleague; in ~21 days the freed email becomes a forwarding Group that delivers to whoever you specify">Delete + replace with group in 21 days</button>`);
-      }
+      items.push([
+        `<button data-acc-action="recover">Recover</button>`,
+        "Restore this user before Google's 20-day cleanup permanently wipes the data.",
+      ]);
+      return renderActionList(items);
     }
-    return `<div class="up-acct-actions">${buttons.join("")}</div>`;
+    items.push([
+      `<button data-acc-alias-add="1">+ Add alias</button>`,
+      "Make another email address also deliver to this same mailbox.",
+    ]);
+    if (st.pending) {
+      items.push([
+        `<button disabled>Transferring…</button>`,
+        "Drive + Mail migration in flight — wait for completion before further changes.",
+      ]);
+      return renderActionList(items);
+    }
+    if (st.suspended) {
+      items.push([
+        `<button data-acc-action="unsuspend" class="up-acct-btn-primary">Unsuspend</button>`,
+        "Re-enable sign-in. Mail resumes normal delivery. The seat goes back to £11/month.",
+      ]);
+      if (st.forwarding_to) {
+        items.push([
+          `<button data-acc-action="cancel-forwarding">Cancel forwarding</button>`,
+          "Stop forwarding inbound mail. Future mail lands in this (suspended) mailbox — effectively a black hole until you unsuspend.",
+        ]);
+      }
+      items.push([
+        `<button data-acc-action="delete-now" class="danger">Delete account</button>`,
+        "Permanently remove. Google keeps the data for 20 days (recoverable) then wipes it. Seat charge stops at next billing tick.",
+      ]);
+      return renderActionList(items);
+    }
+    // Live (normal) account
+    if (st.forwarding_to) {
+      items.push([
+        `<button data-acc-action="disable-forwarding">Turn off forwarding</button>`,
+        `Stop forwarding to ${escapeHtml(st.forwarding_to)}. Inbound mail returns to this inbox.`,
+      ]);
+    } else {
+      items.push([
+        `<button data-acc-action="forward">Add forwarding</button>`,
+        "Copy every incoming mail to a colleague. This inbox keeps receiving too — useful for handovers, audit visibility, or holiday cover.",
+      ]);
+    }
+    if (!isMine) {
+      items.push([
+        `<button data-acc-action="suspend-now">Suspend</button>`,
+        "Block sign-in. Mail still queues in the mailbox (nothing is lost) and the £11/month seat keeps billing. Reversible. Pair with Add forwarding if you also want covers.",
+      ]);
+    }
+    items.push([
+      `<button data-acc-action="reset-password">Reset password</button>`,
+      "Generate a new password for the user. Use for lockouts or suspected account compromise. The new password is shown once — copy it then.",
+    ]);
+    if (rec && !rec.is_primary && !isMine) {
+      items.push([
+        `<button data-acc-action="promote-primary">Make primary</button>`,
+        "Rename in Workspace so this becomes the user's main email. The old primary becomes a forwarding alias for ~21 days, then expires.",
+      ]);
+    }
+    if (!isMine) {
+      items.push([
+        `<button data-acc-action="convert-to-group">Convert to group</button>`,
+        "Replace this single mailbox with a Workspace Group at the same address. Mail then fans out to whoever you add as members. The original mailbox + Drive are deleted.",
+      ]);
+    }
+    if (!isMine) {
+      items.push([
+        `<button data-acc-action="transfer-drive">Transfer Drive ownership</button>`,
+        "Move ownership of every Drive file the user owns to a colleague. The user's account itself isn't touched — do this BEFORE Delete account if you want the documents preserved.",
+      ]);
+    }
+    if (!isMine) {
+      items.push([
+        `<button data-acc-action="delete-now" class="danger">Delete account</button>`,
+        "Permanently remove the user. Stops the £11/month seat charge immediately. Drive + Gmail are kept by Google for 20 days then wiped — do Transfer Drive first if you want to preserve files.",
+      ]);
+    }
+    return renderActionList(items);
+  }
+
+  function renderActionList(items) {
+    return `<div class="up-acct-actions">${items.map(([btn, why]) => `
+      <div class="up-acct-action-row">
+        <div class="up-acct-action-btn">${btn}</div>
+        <p class="up-acct-action-rationale">${why}</p>
+      </div>`).join("")}</div>`;
   }
   function renderExternalIdentitySection() {
     const html = [];
@@ -1043,13 +1095,12 @@
     const form = card.querySelector(".up-acct-form");
     const t = tenantFor(email);
 
-    // Single-target prompt actions: forward / suspend-route / transfer-delete.
-    const NEEDS_TARGET = new Set(["forward", "suspend-route", "transfer-delete"]);
+    // Single-target prompt actions: forward / transfer-drive.
+    const NEEDS_TARGET = new Set(["forward", "transfer-drive"]);
     if (NEEDS_TARGET.has(action)) {
       const labels = {
-        "forward":          ["Forward mail to colleague", "When mail arrives at this account, deliver it to:"],
-        "suspend-route":    ["Suspend & forward",        "Suspend this account and forward all mail to:"],
-        "transfer-delete":  ["Transfer Drive + mail, then delete", "Drive files + Gmail will be migrated to:"],
+        "forward":          ["Forward mail to colleague",    "When mail arrives at this account, deliver it to:"],
+        "transfer-drive":   ["Transfer Drive ownership",     "Move all this user's Drive files to:"],
       }[action];
       form.hidden = false;
       form.innerHTML = `
@@ -1157,10 +1208,11 @@
 
     // Instant actions — confirm and fire.
     const CONFIRM = {
+      "suspend-now":        { msg: `Suspend ${email}?\n\nUser can't sign in but mail keeps queuing in the mailbox (nothing is lost). The seat still bills £11/month while suspended. Reversible at any time.` },
       "unsuspend":          { msg: `Unsuspend ${email}? Mail will resume delivery and the seat goes back to £11/month.` },
       "cancel-forwarding":  { msg: `Stop forwarding mail from ${email}? Future mail will land in the suspended account's inbox (effectively a black hole).` },
       "disable-forwarding": { msg: `Turn off mail forwarding on ${email}? Mail will land in this account's inbox again.` },
-      "delete-now":         { msg: `DELETE ${email} now?\n\nThis is permanent after 20 days. Use "Delete (transfer Drive + Mail first)" instead if the account has files to keep.` },
+      "delete-now":         { msg: `DELETE ${email} now?\n\nThis is permanent after 20 days. Run Transfer Drive ownership first if the account has files worth keeping.` },
       "reset-password":     { msg: `Reset password for ${email}?\n\nA new password will be generated and shown — copy it now, it's only visible once.` },
       "recover":            { msg: `Recover ${email}?\n\nRestores the deleted account to live, billed £11/month from today.` },
     }[action];
@@ -1174,18 +1226,15 @@
     // Action → [worker route, body]. `extra` lets callers slot extra
     // fields onto the body without rewriting the map.
     const map = {
-      "suspend-route":      ["suspend-and-route",  { email, route_to: target }],
       "forward":            ["add-forwarding",     { email, route_to: target }],
       "cancel-forwarding":  ["cancel-forwarding",  { email }],
       "disable-forwarding": ["disable-forwarding", { email }],
+      "suspend-now":        ["suspend-no-forward", { email }],
       "unsuspend":          ["unsuspend",          { email }],
       "delete-now":         ["delete-account",     { email }],
-      "transfer-delete":    ["queue-transfer-and-delete", { email, target_email: target }],
+      "transfer-drive":     ["data-transfer",      { email, target_email: target }],
       "reset-password":     ["reset-password",     { email }],
       "recover":            ["recover",            { email }],
-      // Two-step delete: queue Drive + Mail migration now,
-      // convert-to-group when the 20-day reuse lockout expires.
-      "delete-and-group":   ["queue-transfer-and-delete", { email, target_email: target }],
       // Convert primary email to a forwarding Group. `forward_to`
       // arrives via `extra` from the convert-to-group form below.
       "convert-to-group":   ["convert-to-group",   { email }],
