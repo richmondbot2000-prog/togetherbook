@@ -204,6 +204,23 @@ body { background: var(--paper-100, #FBF6E9); }
   margin-top: 14px; padding-top: 12px;
   border-top: 1px dashed var(--paper-300);
 }
+.up-pay-provenance {
+  margin: 0 0 12px;
+  padding: 10px 12px;
+  background: var(--paper-100);
+  border-left: 2px solid var(--brass-500);
+  font: 400 12px/1.5 var(--font-body);
+  color: var(--ink-700);
+}
+.up-pay-provenance code { font: 500 11px/1 var(--font-mono); color: var(--ink-800); }
+.up-pay-toolbar {
+  display: flex; align-items: baseline; justify-content: space-between;
+  gap: 12px; margin-bottom: 10px;
+}
+.up-pay-divider {
+  border: 0; border-top: 1px dashed var(--paper-300);
+  margin: 16px 0 10px;
+}
 .up-card-hint code {
   font: 500 11px/1 var(--font-mono, 'JetBrains Mono', monospace);
   color: var(--ink-600);

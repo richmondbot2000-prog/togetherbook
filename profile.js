@@ -204,7 +204,6 @@
       else if (currentTab === "wall")     panel.innerHTML = renderFeedPanel();
       else if (currentTab === "calendar") panel.innerHTML = renderCalendarPanel();
       else if (currentTab === "accounts") panel.innerHTML = renderAccountsPanel();
-      else if (currentTab === "payroll")  panel.innerHTML = renderPayrollPanel();
     } catch (err) {
       panel.innerHTML = `<div class="up-error" style="padding:24px;">
         Render error in <strong>${escapeHtml(currentTab)}</strong> tab:<br>
@@ -565,21 +564,85 @@
   }
 
   function renderPayrollBox() {
-    const linked = !!person.on_payroll;
-    const recId = person.most_recent_payroll_id;
-    const summary = linked
-      ? `<span>Payroll record ${recId ? `#${escapeHtml(recId)}` : "(no record yet)"}</span>`
+    const onPayroll = !!person.on_payroll;
+    let rec = payrollByPersonId[person.id] || (person.most_recent_payroll_id ? payrollRecordsById[person.most_recent_payroll_id] : null);
+    // Local-cache overlay so the user's last edit appears immediately even
+    // if the GitHub Pages refresh hasn't propagated yet.
+    const lsRec = LS.get(person.id, "payroll");
+    if (lsRec && lsRec.v) rec = { ...(rec || {}), ...lsRec.v };
+
+    const recId = (rec && rec.id) || person.most_recent_payroll_id || "";
+    const summary = onPayroll
+      ? `<span>Payroll record ${recId ? `#${escapeHtml(String(recId))}` : "(no record yet)"}</span>`
       : `<span class="up-empty-val">not on payroll</span>`;
-    const body = linked
-      ? `<p class="up-hint">This Person is flagged on payroll. Salary, NI number, holiday entitlement etc. are managed on the <a href="?tab=payroll">Payroll tab →</a></p>`
-      : `<p class="up-hint">Not currently on payroll. Toggle this on the <a href="?tab=payroll">Payroll tab →</a> to start a record (admin only).</p>`;
+
+    // Provenance/refresh wording is verbatim from how the system actually
+    // works today (per worker/workspace-worker.js:1970-1988 and the
+    // start_date propagation in savePersonField/savePersonCard).
+    const provenance = `
+      <p class="up-hint up-pay-provenance">
+        Payroll data lives in <code>payroll-data.json</code> in the site repo — one canonical row per Person, linked from <code>Person.most_recent_payroll_id</code>. Edits below write straight to that row via the workspace worker; there is no scheduled external refresh today, so manual edits are not overwritten. When the planned bulk <code>payroll-import</code> (not yet built) ships, fresh imports will <em>append</em> a new row and re-point <code>most_recent_payroll_id</code> — your previous hand-edits stay preserved on the older row in history. <strong>Start date</strong> is mirrored to <code>Person.start_date</code>, so editing it here updates the Info tab's Start date too; the rest of the fields are payroll-only and don't appear elsewhere on the Person page.
+      </p>`;
+
+    if (!onPayroll) {
+      const offToggle = viewerIsAdmin ? `
+        <div class="up-editor-row">
+          <button type="button" class="up-btn-sm up-btn-sm--primary" data-payroll-toggle="on">Mark as ON payroll</button>
+          <span class="up-edit-status" data-edit-status="on_payroll"></span>
+        </div>` : "";
+      return `
+        <details class="up-src-box up-src-box--payroll up-src-box--empty">
+          <summary class="up-src-box-summary">
+            <span class="up-src-box-label">Payroll</span>
+            <span class="up-src-box-value">${summary}</span>
+          </summary>
+          <div class="up-src-box-body">
+            ${provenance}
+            <p class="up-hint">This Person isn't on payroll. Marking them on creates a blank row in <code>payroll-data.json</code>; you can then fill it in.</p>
+            ${offToggle}
+          </div>
+        </details>`;
+    }
+
+    // On-payroll path: render every payroll field as text by default;
+    // Edit (admin-only) swaps the read block for the same form that the
+    // old Payroll tab used.
+    const r = rec || { employer:"", employee_number:"", first_name:person.given||"", last_name:person.family||"", email:person.main_google_email||"", start_date:"", termination_date:"", mobile:person.phone||"", address:person.address||"", annual_salary:null, monthly_pay:null, tax_code:"", ni_number:"", bank_sort_code:"", bank_account_last4:"", notes:"" };
+    const readHtml = `<div class="up-fields-grid">${payrollReadOnlyHtml(r)}</div>`;
+    const editHtml = viewerIsAdmin ? `
+      <div class="up-pay-edit" hidden>
+        ${payrollEditorHtml(r)}
+        <div class="up-editor-row">
+          <button type="button" class="up-btn-sm up-btn-sm--primary" data-payroll-save>Save</button>
+          <button type="button" class="up-btn-sm" data-payroll-edit-cancel>Cancel</button>
+          <span class="up-edit-status" data-edit-status="payroll"></span>
+        </div>
+      </div>` : "";
+    const editToggle = viewerIsAdmin ? `
+      <button type="button" class="up-link-btn up-card-edit-toggle" data-payroll-edit>Edit</button>` : "";
+    const onToggle = viewerIsAdmin ? `
+      <div class="up-editor-row">
+        <button type="button" class="up-btn-sm" data-payroll-toggle="off">Mark as NOT on payroll</button>
+        <span class="up-card-hint">Doesn't delete the row — just unflags the Person.</span>
+        <span class="up-edit-status" data-edit-status="on_payroll"></span>
+      </div>` : "";
     return `
-      <details class="up-src-box up-src-box--payroll${linked ? "" : " up-src-box--empty"}">
+      <details class="up-src-box up-src-box--payroll">
         <summary class="up-src-box-summary">
           <span class="up-src-box-label">Payroll</span>
           <span class="up-src-box-value">${summary}</span>
         </summary>
-        <div class="up-src-box-body">${body}</div>
+        <div class="up-src-box-body">
+          ${provenance}
+          <div class="up-pay-toolbar">
+            <span class="up-card-hint">${recId ? `Record <code>#${escapeHtml(String(recId))}</code>` : "No record yet — save any change to create one"}</span>
+            ${editToggle}
+          </div>
+          <div class="up-pay-read">${readHtml}</div>
+          ${editHtml}
+          <hr class="up-pay-divider">
+          ${onToggle}
+        </div>
       </details>`;
   }
 
@@ -1070,6 +1133,31 @@
     });
     document.querySelectorAll("[data-acc-alias-group]").forEach(btn => {
       btn.addEventListener("click", () => handleAliasAction(btn, "to-group"));
+    });
+    // Payroll box edit toggle — swaps the read-only field grid for the
+    // editable form already produced by payrollEditorHtml.
+    document.querySelectorAll("[data-payroll-edit]").forEach(btn => {
+      btn.addEventListener("click", () => {
+        const box = btn.closest(".up-src-box--payroll");
+        if (!box) return;
+        box.querySelector(".up-pay-read").hidden = true;
+        const ed = box.querySelector(".up-pay-edit");
+        if (ed) ed.hidden = false;
+        btn.hidden = true;
+      });
+    });
+    document.querySelectorAll("[data-payroll-edit-cancel]").forEach(btn => {
+      btn.addEventListener("click", () => {
+        const box = btn.closest(".up-src-box--payroll");
+        if (!box) return;
+        box.querySelector(".up-pay-read").hidden = false;
+        const ed = box.querySelector(".up-pay-edit");
+        if (ed) ed.hidden = true;
+        const toggle = box.querySelector("[data-payroll-edit]");
+        if (toggle) toggle.hidden = false;
+        const status = box.querySelector('[data-edit-status="payroll"]');
+        if (status) { status.textContent = ""; status.className = "up-edit-status"; }
+      });
     });
     // Wall-tab feed cards — outer wrapper is an <article>, not an <a>,
     // so nested links + the YouTube iframe render as valid HTML.
@@ -2025,7 +2113,6 @@
           <a class="up-tab" data-tab="wall"     href="?tab=wall">${svgIcon("feed")}<span>Wall</span></a>
           <a class="up-tab" data-tab="info"     href="?tab=info">${svgIcon("info")}<span>Info</span></a>
           <a class="up-tab" data-tab="accounts" href="?tab=accounts">${svgIcon("org")}<span>Accounts</span></a>
-          <a class="up-tab" data-tab="payroll"  href="?tab=payroll">${svgIcon("info")}<span>Payroll</span></a>
           <a class="up-tab" data-tab="calendar" href="?tab=calendar">${svgIcon("calendar")}<span>Calendar</span></a>
         </nav>
         <section class="up-panel" id="upPanel"></section>
@@ -2037,7 +2124,11 @@
       t.addEventListener("click", e => { e.preventDefault(); setTab(t.dataset.tab); });
     });
     if (editable) wirePhotoUploads();
-    setTab(["wall","info","accounts","payroll","calendar"].includes(initialTab) ? initialTab : "wall");
+    // Stale ?tab=payroll URLs from before the tab was retired (2026-05-19)
+    // redirect into the Accounts tab where payroll now lives as one of the
+    // six source boxes.
+    const initial = initialTab === "payroll" ? "accounts" : initialTab;
+    setTab(["wall","info","accounts","calendar"].includes(initial) ? initial : "wall");
   }
 
   /* ─── Photo uploads (avatar + cover) ──────────────────────────────── */
