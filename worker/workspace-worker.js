@@ -3670,11 +3670,17 @@ async function handleBookr(req, env, url) {
       const tt = url.searchParams.get("to");
       return json(await bookrBookingsRange(env, t, id, f, tt), 200, req);
     }
+    if (action === "comments") {
+      const t  = url.searchParams.get("type");
+      const id = url.searchParams.get("asset");
+      return json(await bookrComments(env, t, id), 200, req);
+    }
     if (req.method !== "POST") return json({ error: "method not allowed" }, 405, req);
     let body = {};
     try { body = await req.json(); } catch (e) { return json({ error: "bad JSON body" }, 400, req); }
-    if (action === "book")   return json(await bookrBook(env, viewerEmail, body),   200, req);
-    if (action === "cancel") return json(await bookrCancel(env, viewerEmail, body), 200, req);
+    if (action === "book")    return json(await bookrBook(env, viewerEmail, body),    200, req);
+    if (action === "cancel")  return json(await bookrCancel(env, viewerEmail, body),  200, req);
+    if (action === "comment") return json(await bookrComment(env, viewerEmail, body), 200, req);
     return json({ error: `unknown bookr action: ${action}` }, 404, req);
   } catch (e) {
     return json({ ok: false, error: e.message || String(e) }, 500, req);
@@ -3842,4 +3848,55 @@ async function bookrCancel(env, viewerEmail, body) {
   await bookrFetch(env, path, { method: "PUT", body: JSON.stringify("free"), headers: { "Content-Type": "application/json" } });
   return { ok: true, type, asset, date };
 }
+
+async function bookrComments(env, type, id) {
+  if (!["cars", "properties"].includes(type)) throw new Error("type must be cars|properties");
+  if (!id) throw new Error("missing asset");
+  const all = (await bookrFetch(env, `/${type}/${encodeURIComponent(id)}/comments.json`)) || {};
+  const out = Object.entries(all).map(([cid, c]) => ({
+    id: cid,
+    author_email: (c && c.author_email) || "",
+    author_name:  (c && c.author_name)  || "",
+    body:         (c && c.body)         || "",
+    ts:           (c && c.ts)           || 0,
+  }));
+  out.sort((a, b) => (b.ts || 0) - (a.ts || 0));
+  return { ok: true, type, asset: id, comments: out };
+}
+
+async function bookrComment(env, viewerEmail, body) {
+  const type = body.type, asset = body.asset, text = (body.body || "").toString().trim();
+  if (!["cars", "properties"].includes(type)) throw new Error("type must be cars|properties");
+  if (!asset) throw new Error("missing asset");
+  if (!text) throw new Error("empty comment body");
+  if (text.length > 4000) throw new Error("comment too long (max 4000 chars)");
+  let authorName = "";
+  try {
+    const who = await bookrWhoami(env, viewerEmail);
+    authorName = (who && who.name) || "";
+  } catch (e) {}
+  if (!authorName) {
+    try {
+      const { file } = await fetchPeopleFile(env);
+      const ve = (viewerEmail || "").toLowerCase();
+      const person = (file.people || []).find(p =>
+        [p.main_google_email, ...(p.alt_google_emails || []), p.external_google_email]
+          .filter(Boolean).map(e => e.toLowerCase()).includes(ve));
+      if (person) authorName = person.name || "";
+    } catch (e) {}
+  }
+  const entry = {
+    author_email: viewerEmail || "",
+    author_name:  authorName,
+    body:         text,
+    ts:           Date.now(),
+  };
+  const res = await bookrFetch(env, `/${type}/${encodeURIComponent(asset)}/comments.json`, {
+    method: "POST",
+    body: JSON.stringify(entry),
+    headers: { "Content-Type": "application/json" },
+  });
+  return { ok: true, type, asset, comment: { id: (res && res.name) || "", ...entry } };
+}
+
 
