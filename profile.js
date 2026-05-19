@@ -270,24 +270,21 @@
       const savedBadge = savedLabel
         ? `<span class="up-saved-badge" title="Your last edit to this field — overlaid from local cache for 5 min so it can't appear to revert">✓ ${escapeHtml(savedLabel)}</span>`
         : "";
+      // Per-row Save/Cancel buttons are gone — the whole card now has a
+      // single Edit button at the top that flips every editor on at once
+      // and one Save at the bottom that submits them as a batch.
       const editor = readonly ? "" : `
           <div class="up-field-editor" hidden>
             ${type === "textarea"
-              ? `<textarea name="${field}" rows="3">${escapeHtml(value || "")}</textarea>`
-              : `<input type="${type}" name="${field}" value="${escapeHtml(value || "")}">`}
+              ? `<textarea name="${field}" rows="3" data-orig="${escapeHtml(value || "")}">${escapeHtml(value || "")}</textarea>`
+              : `<input type="${type}" name="${field}" value="${escapeHtml(value || "")}" data-orig="${escapeHtml(value || "")}">`}
             ${hint ? `<p class="up-hint">${hint}</p>` : ""}
-            <div class="up-editor-row">
-              <button type="button" class="up-btn-sm up-btn-sm--primary" data-edit-save="${field}">Save</button>
-              <button type="button" class="up-btn-sm" data-edit-cancel="${field}">Cancel</button>
-              <span class="up-edit-status" data-edit-status="${field}"></span>
-            </div>
           </div>`;
       return `
         <div class="up-field" data-edit-field="${field}">
           <div class="up-field-label">${escapeHtml(label)} ${savedBadge}</div>
           <div class="up-field-display">
             <span class="up-field-value ${value ? "" : "up-empty-val"}" style="white-space:pre-wrap;">${escapeHtml(value) || "Not set"}</span>
-            ${readonly ? "" : `<button type="button" class="up-link-btn" data-edit-toggle="${field}">Edit</button>`}
           </div>
           ${editor}
         </div>`;
@@ -302,14 +299,9 @@
       .join("");
     const lineMgrEditor = viewerIsAdmin ? `
       <div class="up-field-editor" hidden>
-        <select name="line_manager_id">
+        <select name="line_manager_id" data-orig="${escapeHtml(String(person.line_manager_id || ""))}">
           <option value="">(none)</option>${lineMgrOptions}
         </select>
-        <div class="up-editor-row">
-          <button type="button" class="up-btn-sm up-btn-sm--primary" data-edit-save="line_manager_id">Save</button>
-          <button type="button" class="up-btn-sm" data-edit-cancel="line_manager_id">Cancel</button>
-          <span class="up-edit-status" data-edit-status="line_manager_id"></span>
-        </div>
       </div>` : "";
 
     // Access-level editor (admin only).
@@ -321,14 +313,9 @@
     ];
     const accessLevelEditor = viewerIsAdmin ? `
       <div class="up-field-editor" hidden>
-        <select name="access_level">
+        <select name="access_level" data-orig="${escapeHtml(person.access_level || "")}">
           ${accessLevels.map(([v, l]) => `<option value="${v}" ${person.access_level === v ? "selected" : ""}>${l}</option>`).join("")}
         </select>
-        <div class="up-editor-row">
-          <button type="button" class="up-btn-sm up-btn-sm--primary" data-edit-save="access_level">Save</button>
-          <button type="button" class="up-btn-sm" data-edit-cancel="access_level">Cancel</button>
-          <span class="up-edit-status" data-edit-status="access_level"></span>
-        </div>
       </div>` : "";
 
     // Admin-controls card: Suspend toggle + Delete person. Visible only
@@ -360,8 +347,11 @@
     return `
       <h2 class="up-panel-title">Information</h2>
 
-      <div class="up-card">
-        <div class="up-card-head">Editable details ${lockedBadge}</div>
+      <div class="up-card up-card--editable" data-edit-card>
+        <div class="up-card-head">
+          Editable details ${lockedBadge}
+          ${editable ? `<button type="button" class="up-link-btn up-card-edit-toggle" data-card-edit>Edit</button>` : ""}
+        </div>
         ${editableRow("name",       "Display name", "text",     person.name)}
         ${editableRow("aliases",    "Aliases",      "text",     (person.aliases || []).join(", "), "Comma-separated — used in name search + mentions")}
         ${editableRow("role",       "Role",         "text",     person.role)}
@@ -372,20 +362,22 @@
         ${editableRow("notes",      "Notes",        "textarea", person.notes)}
         <div class="up-field" data-edit-field="line_manager_id">
           <div class="up-field-label">Line manager</div>
-          <div class="up-field-display">
-            ${lineMgrDisplay}
-            ${viewerIsAdmin ? `<button type="button" class="up-link-btn" data-edit-toggle="line_manager_id">Edit</button>` : ""}
-          </div>
+          <div class="up-field-display">${lineMgrDisplay}</div>
           ${lineMgrEditor}
         </div>
         <div class="up-field" data-edit-field="access_level">
           <div class="up-field-label">Access level</div>
           <div class="up-field-display">
             <span class="up-pill up-pill--${escapeHtml(person.access_level || "staff")}">${escapeHtml(person.access_level || "staff")}</span>
-            ${viewerIsAdmin ? `<button type="button" class="up-link-btn" data-edit-toggle="access_level">Edit</button>` : ""}
           </div>
           ${accessLevelEditor}
         </div>
+        ${editable ? `
+          <div class="up-card-edit-footer" hidden>
+            <button type="button" class="up-btn-sm up-btn-sm--primary" data-card-save>Save</button>
+            <button type="button" class="up-btn-sm" data-card-cancel>Cancel</button>
+            <span class="up-edit-status" data-card-status></span>
+          </div>` : ""}
       </div>
 
       <div class="up-card">
@@ -895,6 +887,8 @@
   }
 
   function wirePanel() {
+    // Per-field Edit/Save/Cancel still used by the Auth0 ID + external-Gmail
+    // fields in Other identities (one field per editor, no card-level batch).
     document.querySelectorAll("[data-edit-toggle]").forEach(btn => {
       btn.addEventListener("click", () => {
         const root = btn.closest("[data-edit-field]");
@@ -916,6 +910,44 @@
     });
     document.querySelectorAll("[data-edit-save]").forEach(btn => {
       btn.addEventListener("click", () => savePersonField(btn.dataset.editSave));
+    });
+    // Card-level batch edit on the Editable details card. One Edit at the
+    // top flips every row's editor on; one Save at the bottom submits all
+    // changed fields as a single people-set call.
+    document.querySelectorAll("[data-card-edit]").forEach(btn => {
+      btn.addEventListener("click", () => {
+        const card = btn.closest("[data-edit-card]");
+        if (!card) return;
+        card.querySelectorAll(".up-field-display").forEach(el => el.hidden = true);
+        card.querySelectorAll(".up-field-editor").forEach(el => el.hidden = false);
+        const footer = card.querySelector(".up-card-edit-footer");
+        if (footer) footer.hidden = false;
+        btn.hidden = true;
+        const first = card.querySelector(".up-field-editor input, .up-field-editor textarea, .up-field-editor select");
+        if (first) { first.focus(); first.select && first.select(); }
+      });
+    });
+    document.querySelectorAll("[data-card-cancel]").forEach(btn => {
+      btn.addEventListener("click", () => {
+        const card = btn.closest("[data-edit-card]");
+        if (!card) return;
+        // Revert each input back to its data-orig value so the user
+        // sees their unsaved typing thrown away.
+        card.querySelectorAll(".up-field-editor input, .up-field-editor textarea, .up-field-editor select").forEach(inp => {
+          inp.value = inp.dataset.orig != null ? inp.dataset.orig : inp.defaultValue;
+        });
+        card.querySelectorAll(".up-field-editor").forEach(el => el.hidden = true);
+        card.querySelectorAll(".up-field-display").forEach(el => el.hidden = false);
+        const footer = card.querySelector(".up-card-edit-footer");
+        if (footer) footer.hidden = true;
+        const toggle = card.querySelector("[data-card-edit]");
+        if (toggle) toggle.hidden = false;
+        const status = card.querySelector("[data-card-status]");
+        if (status) { status.textContent = ""; status.className = "up-edit-status"; }
+      });
+    });
+    document.querySelectorAll("[data-card-save]").forEach(btn => {
+      btn.addEventListener("click", () => savePersonCard(btn.closest("[data-edit-card]")));
     });
     document.querySelectorAll("[data-acc-action]").forEach(btn => {
       btn.addEventListener("click", () => handleAccountAction(btn));
@@ -1459,6 +1491,75 @@
       for (const p of pending.entries) {
         const k = (p.source_email || "").toLowerCase();
         if (k) pendingTransfersByEmail[k] = p;
+      }
+    }
+  }
+
+  // Batch save for the Editable details card: collects every changed
+  // field, fires one people-set, then propagates start_date to
+  // PayrollData (same logic as the per-field save used to do).
+  async function savePersonCard(card) {
+    if (!card) return;
+    const status = card.querySelector("[data-card-status]");
+    const changes = {};
+    card.querySelectorAll(".up-field-editor input, .up-field-editor textarea, .up-field-editor select").forEach(inp => {
+      const field = inp.name;
+      if (!field) return;
+      let value = inp.value || "";
+      const orig = inp.dataset.orig != null ? inp.dataset.orig : "";
+      if (inp.tagName !== "SELECT" && inp.type !== "date") value = value.trim();
+      if (value === orig) return;
+      let payload = value;
+      if (field === "aliases") {
+        payload = Array.from(new Set(value.split(",").map(s => s.trim()).filter(Boolean)));
+      } else if (field === "line_manager_id") {
+        payload = value === "" ? null : value;
+      }
+      changes[field] = payload;
+    });
+    if (Object.keys(changes).length === 0) {
+      // Nothing changed — just exit edit mode without a server roundtrip.
+      card.querySelectorAll(".up-field-editor").forEach(el => el.hidden = true);
+      card.querySelectorAll(".up-field-display").forEach(el => el.hidden = false);
+      const footer = card.querySelector(".up-card-edit-footer");
+      if (footer) footer.hidden = true;
+      const toggle = card.querySelector("[data-card-edit]");
+      if (toggle) toggle.hidden = false;
+      return;
+    }
+    if (status) { status.textContent = "Saving…"; status.className = "up-edit-status up-edit-status--working"; }
+    try {
+      const res = await fetch(WORKSPACE_API + "/people-set", {
+        method: "POST", headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id: person.id, ...changes }),
+      });
+      const out = await res.json();
+      if (!res.ok || !out.ok) throw new Error(out.error || `HTTP ${res.status}`);
+      Object.assign(person, out.person);
+      for (const [f, v] of Object.entries(changes)) LS.set(person.id, f, v);
+      if ("start_date" in changes && person.on_payroll && person.most_recent_payroll_id) {
+        try {
+          const payRes = await fetch(WORKSPACE_API + "/payroll-set", {
+            method: "POST", headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ action: "payroll-set", person_id: person.id, start_date: changes.start_date || "" }),
+          });
+          const payOut = await payRes.json();
+          if (payRes.ok && payOut.ok && payOut.record) {
+            payrollRecordsById[payOut.record.id] = payOut.record;
+            payrollByPersonId[person.id] = payOut.record;
+          }
+        } catch (e) { /* non-fatal; People was already saved */ }
+      }
+      const stamp = new Date();
+      if (status) {
+        status.textContent = `Saved at ${String(stamp.getHours()).padStart(2,"0")}:${String(stamp.getMinutes()).padStart(2,"0")}:${String(stamp.getSeconds()).padStart(2,"0")}`;
+        status.className = "up-edit-status up-edit-status--ok up-edit-status--persistent";
+      }
+      setTimeout(() => { renderPanel(); }, 350);
+    } catch (err) {
+      if (status) {
+        status.textContent = "Failed — " + (err && err.message || err);
+        status.className = "up-edit-status up-edit-status--err";
       }
     }
   }
