@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "updated_at": "2026-05-19T06:30:39.329Z",
+  "updated_at": "2026-05-19T06:47:59.565Z",
   "actions": [
     {
       "ts": "2026-05-13T20:27:39.210Z",
@@ -2444,6 +2444,14 @@
       "target": "",
       "ok": false,
       "error": "Invalid Input: resource_id"
+    },
+    {
+      "ts": "2026-05-19T06:47:59.565Z",
+      "actor": "james.benamor@letme.com",
+      "action": "add-forwarding",
+      "target": "james.benamor@togetherloans.com",
+      "ok": false,
+      "error": "missing route_to"
     }
   ]
 }
