@@ -2,7 +2,7 @@
 
 _The source-of-truth document for `togetherbook.net` / `richmondbot2000-prog/togetherbook`. Lives in this repo so future maintainers find it next to the code. **A successor Claude or engineer should be able to pick this up cold and operate the site competently.**_
 
-**Last reviewed:** 2026-05-19 (nightly auto-refresh) — Nightly doc refresh: GH Actions cron at 02:00 UK updates SPEC + wiki; SPEC §11.10: document Accounts-tab test coverage + the two 2026-05-19 fixes; Accounts: brand logos in box labels; tenant pill gone; Unlink as link; Accounts: optimistic local patch for every Google-account action; Accounts: optimistic local patch on alias add/remove/to-group; +20 more
+**Last reviewed:** 2026-05-19 (nightly auto-refresh) — Accounts box: drop the leading triangle + worker self-edit tightening; Profile Info: reorder rows + admin-only gate on the HR fields; Profile Info: remove Un-Admin from Admin actions; Profile Info: Access level moves to the bottom of Editable details; Profile Info: autocomplete on Role + Team from other people's values; +33 more
 
 ## Contents
 
