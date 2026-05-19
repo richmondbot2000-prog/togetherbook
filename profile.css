@@ -756,3 +756,8 @@ textarea.up-pay-input { resize: vertical; min-height: 50px; font-family: var(--f
   color: var(--ink-500); font: italic 400 14px/1.4 var(--font-body);
 }
 .up-error { padding: 60px 0; text-align: center; color: var(--red-500, #b3261e); font: italic 500 14px/1.4 var(--font-body); }
+
+/* BookR Accounts box: side-by-side "Match" / "Create" columns when there's room. */
+.up-bookr-link-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 18px 24px; margin-top: 8px; }
+@media (max-width: 720px) { .up-bookr-link-grid { grid-template-columns: 1fr; } }
+.up-bookr-link-col h4.up-card-head { margin: 0 0 6px 0; font-size: 0.95rem; }
