@@ -541,13 +541,7 @@ textarea.up-pay-input { resize: vertical; min-height: 50px; font-family: var(--f
   user-select: none;
 }
 .up-src-box-summary::-webkit-details-marker { display: none; }
-.up-src-box-summary::before {
-  content: "▸";
-  color: var(--ink-500); font-size: 11px;
-  transition: transform 120ms ease;
-  flex: 0 0 auto;
-}
-.up-src-box[open] > .up-src-box-summary::before { transform: rotate(90deg); }
+.up-src-box-summary::marker { content: ""; }
 .up-src-box-label {
   display: inline-flex; align-items: center; gap: 8px;
   font: 600 12px/1 var(--font-body);

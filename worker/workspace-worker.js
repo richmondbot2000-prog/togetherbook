@@ -1614,12 +1614,13 @@ const PEOPLE_ALLOWED_FIELDS = new Set([
   "holiday_plan",
 ]);
 // Fields a person can self-edit on their own profile page without admin
-// rights. Everything else (access_level, main/alt google emails, auth0,
-// line manager, dates) is admin-only — but date_of_birth is the unique
-// disambiguator when two people share a name, so we treat it as
-// self-editable too.
+// rights. Tightened 2026-05-19 to match the UI: name + aliases + phone +
+// address only. Photo timestamps stay because the photo-upload endpoint
+// writes them on behalf of the self-uploader. Everything else (role,
+// team, line manager, start date, access level, emails, auth0,
+// date_of_birth, notes, etc.) is admin-only.
 const PEOPLE_SELF_EDITABLE = new Set([
-  "phone", "address", "role", "notes", "date_of_birth",
+  "name", "aliases", "phone", "address",
   "directory_photo_uploaded_at", "cover_photo_uploaded_at",
 ]);
 const PEOPLE_ACCESS_LEVELS = new Set(["admin", "staff", "outsider", "former"]);
