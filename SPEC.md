@@ -1757,6 +1757,12 @@ The canonical view of a single person — the front door that replaced the old i
 
 **Known UI gaps** (carried over from §16.8 — still true at time of writing): Display name, Aliases, Suspend toggle, Delete person, Add alt account editors are deferred from the inline-expand and not yet wired here. Schema supports them; the editors just need building.
 
+**Test coverage.** `tests/smoke/accounts.spec.ts` (added 2026-05-19) is a 32-case Playwright suite for the Accounts tab. Stubs every `/api/workspace/*` call with synthetic fixtures, then asserts the rendered DOM + the exact POST shape each button produces. Covers: row ordering (primary → letme → together → external), every status badge (Live / Suspended / Deleted / Transferring / Primary / Workspace admin / forwarding-to), alias chips (Workspace-secondary-domain locked vs editable, × + → group buttons), per-action POST wiring (suspend / unsuspend / delete / recover / reset-password / forward / disable-forwarding / cancel-forwarding / make-primary / convert-to-group / transfer-drive / alias-add / alias-remove / alias-to-group / unlink), inline forms (Add Letme/Together/external Google account), isMine suppression on the viewer's own row, alias-only-row filtering, non-admin viewer suppression, and the Auth0 ID card save. Runs alongside `site.spec.ts` in the existing CI job; 96 runs across desktop/tablet/mobile chromium projects.
+
+**Fixed bugs (2026-05-19).** Two silent 400s the test suite caught on first run:
+- **Recover** sent `{ email }` only; worker `doRecover` requires `user_id` (immutable Google id, since the email may be recycled inside the 20-day undelete window). Page now threads `google_user_id` through from the matching `googleByPersonId` row.
+- **Reset password** sent `{ email }` only; worker `doResetPassword` requires `body.password` (never generates one). Page now generates a 16-char `crypto.getRandomValues` password client-side and surfaces it in the success alert (matches the rationale text "shown once — copy it then").
+
 ### 11.11 Reconcile page (`reconcile.html`)
 
 **Admin tool** for resolving FK orphans across the four canonical source tables. Lists every row whose `person_id` is null — i.e. a record exists in one of the source tables but doesn't link to a `Person`. The page renders four sections (Payroll · Google Letme · Google Together · Warehouse CRM); each row offers two actions:
