@@ -305,6 +305,34 @@ body { background: var(--paper-100, #FBF6E9); }
 .up-editor-row { display: flex; align-items: center; gap: 10px; margin-top: 8px; flex-wrap: wrap; }
 .up-hint { font: 400 12px/1.4 var(--font-body); color: var(--ink-500); margin: 6px 0 0; }
 
+/* Per-field Save: input on the left, Save button + status on the right.
+   Save is disabled until input.value diverges from data-orig (handled
+   in JS); the disabled style is the muted grey below. */
+.up-field-editor-row {
+  display: flex; align-items: center; gap: 8px; flex-wrap: wrap;
+}
+.up-field-editor-row input,
+.up-field-editor-row textarea,
+.up-field-editor-row select {
+  flex: 1 1 0; min-width: 160px;
+  box-sizing: border-box;
+  font: 400 14px/1.4 var(--font-body);
+  color: var(--ink-900);
+  background: var(--paper-100, #FBF6E9);
+  border: 1px solid var(--ink-300, #B6BECF);
+  padding: 8px 10px;
+}
+.up-field-editor-row textarea { resize: vertical; min-height: 60px; }
+.up-field-editor-row input:focus,
+.up-field-editor-row textarea:focus,
+.up-field-editor-row select:focus {
+  outline: 0; border-color: var(--brass-500, #C8973F);
+}
+.up-field-editor-row button[data-edit-save]:disabled {
+  opacity: 0.4; cursor: default;
+  background: var(--paper-100); color: var(--ink-500); border-color: var(--paper-300);
+}
+
 .up-btn-sm {
   font: 600 12px/1 var(--font-body);
   padding: 7px 12px;
