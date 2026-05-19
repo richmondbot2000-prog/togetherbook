@@ -59,7 +59,7 @@
   }
   .pp-thead, .pp-row {
     display: grid;
-    grid-template-columns: 44px minmax(110px, 1.1fr) minmax(110px, 1.1fr) minmax(120px, 1fr) 200px 110px;
+    grid-template-columns: 44px minmax(110px, 1.1fr) minmax(110px, 1.1fr) minmax(110px, 1fr) minmax(120px, 1fr) 200px 110px;
     align-items: center;
     gap: 12px;
     padding: 10px 14px;
@@ -67,6 +67,9 @@
   .pp-company { font: 500 13px/1.3 var(--font-body); color: var(--ink-700); overflow-wrap: anywhere; }
   .pp-first   { font: 500 14px/1.3 var(--font-body); color: var(--ink-900); overflow-wrap: anywhere; }
   .pp-surname { font: 600 14px/1.3 var(--font-body); color: var(--ink-900); overflow-wrap: anywhere; }
+  .pp-linemgr { font: 500 13px/1.3 var(--font-body); color: var(--ink-700); overflow-wrap: anywhere; }
+  .pp-linemgr a { color: inherit; text-decoration: none; }
+  .pp-linemgr a:hover { color: var(--ink-900); text-decoration: underline; }
 
   /* Stats / filter chips. Click toggles the filter, click again clears. */
   .pp-stat {
@@ -82,13 +85,12 @@
     background: #fbf3e1; border-color: var(--brass-500); color: var(--ink-900);
   }
   .pp-stat.is-active strong { color: #835F1F; }
-  .pp-stats-clear {
-    margin-left: auto;
-    font: 500 11px/1 var(--font-body); color: var(--ink-500);
-    background: none; border: 0; cursor: pointer; padding: 5px 8px;
+  .pp-stats-count {
+    flex-basis: 100%;
+    margin-top: 6px;
+    font: 400 12px/1.3 var(--font-body); color: var(--ink-600);
   }
-  .pp-stats-clear:hover { color: var(--ink-900); }
-  .pp-stats-clear[hidden] { display: none; }
+  .pp-stats-count strong { color: var(--ink-900); font-weight: 600; }
   /* Row is now an anchor — strip default link styling and keep the
      existing grid layout + hover affordance from the previous div row. */
   a.pp-row { color: inherit; text-decoration: none; }
@@ -372,8 +374,10 @@
   let isAdmin = false;
   let viewerEmail = "";
   let sortBy = "family", sortDir = 1;
-  // Active stat-row filter: null | "live" | "letme" | "together" | "payroll" | "warehouse".
-  let statFilter = null;
+  // Active filter chips — multi-select. Empty Set means "All" (no
+  // restriction); any active chip removes "All" automatically. Filters
+  // combine with AND: a row must match every active predicate.
+  let statFilters = new Set();
   let expandedId = null;
 
   function escapeHtml(s) {
@@ -492,38 +496,48 @@
     payroll:   p => !!p.on_payroll,
     warehouse: p => !!warehouseByPersonId[p.id],
   };
-  function renderStats() {
-    const total     = people.length;
-    const live      = people.filter(FILTERS.live).length;
-    const letme     = people.filter(FILTERS.letme).length;
-    const together  = people.filter(FILTERS.together).length;
-    const payroll   = people.filter(FILTERS.payroll).length;
-    const warehouse = people.filter(FILTERS.warehouse).length;
-    const chip = (key, count, label) =>
-      `<button class="pp-stat${statFilter === key ? " is-active" : ""}" data-stat="${key}"><strong>${count}</strong> ${escapeHtml(label)}</button>`;
+  function renderStats(visibleCount) {
+    const total = people.length;
+    const allActive = statFilters.size === 0;
+    const chip = (key, label) => {
+      const active = key === "all" ? allActive : statFilters.has(key);
+      return `<button class="pp-stat${active ? " is-active" : ""}" data-stat="${key}">${escapeHtml(label)}</button>`;
+    };
+    // Order: All first, then the five named filters in the order the
+    // user specified (Payroll · Together · LetMe · Live · on CRM).
     document.getElementById("ppStats").innerHTML = `
-      ${chip("all",       total,     "people")}
-      ${chip("live",      live,      "live")}
-      ${chip("letme",     letme,     "Letme Gmail")}
-      ${chip("together",  together,  "Together Loans Gmail")}
-      ${chip("payroll",   payroll,   "on payroll")}
-      ${chip("warehouse", warehouse, "in Warehouse CRM")}
-      <button class="pp-stats-clear" id="ppStatsClear" ${statFilter ? "" : "hidden"}>clear filter</button>`;
+      ${chip("all",       "All")}
+      ${chip("payroll",   "Payroll")}
+      ${chip("together",  "Together")}
+      ${chip("letme",     "LetMe")}
+      ${chip("live",      "Live")}
+      ${chip("warehouse", "on CRM")}
+      <div class="pp-stats-count">showing <strong>${visibleCount}</strong> records out of <strong>${total}</strong></div>`;
     document.querySelectorAll("#ppStats [data-stat]").forEach(btn => {
       btn.addEventListener("click", () => {
         const k = btn.dataset.stat;
-        statFilter = (statFilter === k || k === "all") ? null : k;
+        if (k === "all") {
+          // "All" clears every active filter.
+          statFilters.clear();
+        } else {
+          // Any other chip toggles; selecting any chip implicitly deselects
+          // "All" (which is just visual — the empty-set state).
+          if (statFilters.has(k)) statFilters.delete(k);
+          else statFilters.add(k);
+        }
         render();
       });
     });
-    const clr = document.getElementById("ppStatsClear");
-    if (clr) clr.addEventListener("click", () => { statFilter = null; render(); });
   }
 
   // Sortable accessors per column key. Returns a comparable string.
   const SORT_KEYS = {
     given:   p => (p.given || (p.name || "").split(" ")[0] || "").toLowerCase(),
     family:  p => (p.family || (p.name || "").split(" ").slice(-1)[0] || "").toLowerCase(),
+    linemgr: p => {
+      const mgr = p.line_manager_id != null ? people.find(x => String(x.id) === String(p.line_manager_id)) : null;
+      return (mgr ? (mgr.name || mgr.url_slug || "") : (p.line_manager_email_raw || "")).toLowerCase();
+    },
     company: p => companyLabel(p).toLowerCase(),
     access:  p => accessLabel(p).toLowerCase(),
   };
@@ -533,7 +547,15 @@
     const af = document.getElementById("ppAccess").value;
     const sf = document.getElementById("ppStatus").value;
     let rows = people.slice();
-    if (statFilter && FILTERS[statFilter]) rows = rows.filter(FILTERS[statFilter]);
+    if (statFilters.size > 0) {
+      // AND across active filter chips — a row must match every one.
+      rows = rows.filter(p => {
+        for (const k of statFilters) {
+          if (!FILTERS[k] || !FILTERS[k](p)) return false;
+        }
+        return true;
+      });
+    }
     if (af) rows = rows.filter(p => p.access_level === af);
     if (sf) rows = rows.filter(p => statusOf(p) === sf);
     if (q)  rows = rows.filter(p => {
@@ -564,10 +586,21 @@
           ${p.role || p.title ? `<div class="pp-role">${escapeHtml(p.role || p.title)}</div>` : ""}
         </div>
         <div class="pp-surname">${escapeHtml(family || "")}</div>
+        <div class="pp-linemgr">${lineMgrCellHtml(p)}</div>
         <div class="pp-company">${company ? escapeHtml(company) : '<span class="alt">—</span>'}</div>
         <div class="pp-src-chips">${sourceChipsHtml(p)}</div>
         <div><span class="pp-pill ${pillClass(access)}">${escapeHtml(access)}</span></div>
       </a>`;
+  }
+
+  function lineMgrCellHtml(p) {
+    if (p.line_manager_id == null || p.line_manager_id === "") return '<span class="alt">—</span>';
+    const mgr = people.find(x => String(x.id) === String(p.line_manager_id));
+    if (!mgr) {
+      const raw = p.line_manager_email_raw;
+      return raw ? escapeHtml(raw) : '<span class="alt">—</span>';
+    }
+    return escapeHtml(mgr.name || mgr.url_slug || "—");
   }
 
   function accountRow(p, email, isPrimary) {
@@ -651,13 +684,14 @@
   }
 
   function render() {
-    renderStats();
     const rows = getVisible();
+    renderStats(rows.length);
     const html = `
       <div class="pp-thead">
         <div></div>
         <div><button data-sort="given">First name${sortBy === "given" ? (sortDir > 0 ? " ▲" : " ▼") : ""}</button></div>
         <div><button data-sort="family">Surname${sortBy === "family" ? (sortDir > 0 ? " ▲" : " ▼") : ""}</button></div>
+        <div><button data-sort="linemgr">Line manager${sortBy === "linemgr" ? (sortDir > 0 ? " ▲" : " ▼") : ""}</button></div>
         <div><button data-sort="company">Company${sortBy === "company" ? (sortDir > 0 ? " ▲" : " ▼") : ""}</button></div>
         <div title="Linked sources: Google Letme · Google Together · Warehouse · Payroll · External Gmail · ! = an account is deleted/suspended">Sources</div>
         <div><button data-sort="access">Access${sortBy === "access" ? (sortDir > 0 ? " ▲" : " ▼") : ""}</button></div>
