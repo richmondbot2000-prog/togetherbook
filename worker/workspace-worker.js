@@ -1617,6 +1617,7 @@ const PEOPLE_ALLOWED_FIELDS = new Set([
   "suspended", "deletion_time",
   "on_payroll", "most_recent_payroll_id",
   "holiday_plan",
+  "bookr_uid",
 ]);
 // Fields a person can self-edit on their own profile page without admin
 // rights. Tightened 2026-05-19 to match the UI: name + aliases + phone +
@@ -1890,6 +1891,22 @@ async function doPeopleSet(env, body, actor, isAdmin) {
       // Don't fail people-set if the payroll bootstrap couldn't write;
       // the user can re-trigger by editing payroll on the Person page.
       payrollBootstrapError = e.message;
+    }
+  }
+
+  // Auto-sync hook: new Person -> match-or-create a BookR user and
+  // stash the uid on the row so the commit ships with bookr_uid set.
+  // Non-fatal: failure is logged but doesn't abort the Person create.
+  let bookrAutoSync = null;
+  if (created && env.BOOKR_SERVICE_ACCOUNT_JSON) {
+    try {
+      const r = await bookrMatchOrCreateForPerson(env, person);
+      person.bookr_uid = r.bookr_uid || "";
+      bookrAutoSync = { ok: true, ...r };
+      console.log("bookr auto-sync ok", JSON.stringify({ person_id: person.id, bookr_uid: person.bookr_uid, matched: !!r.matched, created: !!r.created }));
+    } catch (e) {
+      bookrAutoSync = { ok: false, error: e.message };
+      console.log("bookr auto-sync FAILED", JSON.stringify({ person_id: person.id, error: e.message }));
     }
   }
 
@@ -3687,6 +3704,9 @@ async function handleBookr(req, env, url) {
     if (action === "book")    return json(await bookrBook(env, viewerEmail, body),    200, req);
     if (action === "cancel")  return json(await bookrCancel(env, viewerEmail, body),  200, req);
     if (action === "comment") return json(await bookrComment(env, viewerEmail, body), 200, req);
+    if (action === "user-match-or-create") return json(await bookrUserMatchOrCreate(env, viewerEmail, body), 200, req);
+    if (action === "user-link")            return json(await bookrUserLink(env, viewerEmail, body),         200, req);
+    if (action === "user-unlink")          return json(await bookrUserUnlink(env, viewerEmail, body),       200, req);
     return json({ error: `unknown bookr action: ${action}` }, 404, req);
   } catch (e) {
     return json({ ok: false, error: e.message || String(e) }, 500, req);
@@ -3928,3 +3948,104 @@ async function bookrAllBookings(env, filter, from, to) {
   return { ok: true, bookings: out };
 }
 
+/* ----------- BookR <-> Person link helpers -----------
+ * A TogetherBook-minted BookR user gets a Firebase RTDB push key as its
+ * uid rather than a Firebase Auth uid; the BookR mobile app cannot sign
+ * in as that record until a Firebase Auth account is provisioned for
+ * the same email separately. Bookings made for them still work because
+ * BookR keys those on whatever string is in /users.
+ */
+function personCandidateEmails(p) {
+  return [p.main_google_email, ...(p.alt_google_emails || []), p.external_google_email]
+    .filter(Boolean).map(e => e.toString().toLowerCase());
+}
+
+async function bookrUserExists(env, uid) {
+  if (!uid) return null;
+  const u = await bookrFetch(env, `/users/${encodeURIComponent(uid)}.json`);
+  if (!u) return null;
+  return { uid, email: (u && u.email) || "", name: (u && u.name) || "" };
+}
+
+// Best-effort match-or-create for one Person. Used by both the explicit
+// /api/bookr/user-match-or-create endpoint and the auto-sync hook in
+// peopleSet. Returns { matched, created, already_linked, bookr_uid,
+// bookr_email, bookr_name } on success.
+async function bookrMatchOrCreateForPerson(env, person) {
+  if (person.bookr_uid) {
+    const existing = await bookrUserExists(env, person.bookr_uid);
+    if (existing) return { already_linked: true, bookr_uid: existing.uid, bookr_email: existing.email, bookr_name: existing.name };
+  }
+  const candidates = personCandidateEmails(person);
+  const hit = await bookrFindUidByEmail(env, candidates);
+  if (hit) return { matched: true, bookr_uid: hit.uid, bookr_email: hit.email, bookr_name: hit.name };
+  const primary = (person.main_google_email || candidates[0] || "").toString();
+  if (!primary) throw new Error("cannot create BookR user: Person has no email");
+  const body = {
+    email: primary,
+    name: person.name || "",
+    mobile: person.phone || "0",
+    last_online: 0,
+    suspended: false,
+  };
+  const res = await bookrFetch(env, "/users.json", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(body),
+  });
+  const newUid = res && res.name;
+  if (!newUid) throw new Error("BookR user create returned no push key");
+  return { created: true, bookr_uid: newUid, bookr_email: primary, bookr_name: body.name };
+}
+
+// Writes bookr_uid onto one Person row inside people.json. Standalone
+// fetch -> mutate -> commit so callers don't trip peopleSet's admin-sync
+// side-effects on what is a pure link metadata change.
+async function bookrWritePersonUid(env, personId, bookrUid, actor) {
+  const { sha, file } = await fetchPeopleFile(env);
+  const p = (file.people || []).find(x => String(x.id) === String(personId));
+  if (!p) throw new Error(`no Person with id ${personId}`);
+  p.bookr_uid = bookrUid || "";
+  p.updated_at = new Date().toISOString();
+  await commitPeopleFile(env, file, sha,
+    bookrUid
+      ? `People: link Person #${p.id} to BookR uid ${bookrUid} (by ${actor})`
+      : `People: clear BookR uid on Person #${p.id} (by ${actor})`);
+  return p;
+}
+
+async function bookrUserMatchOrCreate(env, viewerEmail, body) {
+  const admins = await fetchAdmins();
+  if (!admins.includes((viewerEmail || "").toLowerCase())) throw new Error("admin required");
+  const pid = body && body.person_id;
+  if (!pid) throw new Error("missing person_id");
+  const { file } = await fetchPeopleFile(env);
+  const person = (file.people || []).find(p => String(p.id) === String(pid));
+  if (!person) throw new Error(`no Person with id ${pid}`);
+  const result = await bookrMatchOrCreateForPerson(env, person);
+  if (result.already_linked) return { ok: true, already_linked: true, bookr_uid: result.bookr_uid, bookr_email: result.bookr_email, bookr_name: result.bookr_name };
+  await bookrWritePersonUid(env, person.id, result.bookr_uid, viewerEmail);
+  return { ok: true, matched: !!result.matched, created: !!result.created, bookr_uid: result.bookr_uid, bookr_email: result.bookr_email, bookr_name: result.bookr_name };
+}
+
+async function bookrUserLink(env, viewerEmail, body) {
+  const admins = await fetchAdmins();
+  if (!admins.includes((viewerEmail || "").toLowerCase())) throw new Error("admin required");
+  const pid = body && body.person_id;
+  const uid = ((body && body.bookr_uid) || "").toString().trim();
+  if (!pid) throw new Error("missing person_id");
+  if (!uid) throw new Error("missing bookr_uid");
+  const existing = await bookrUserExists(env, uid);
+  if (!existing) throw new Error(`no BookR user with uid ${uid}`);
+  await bookrWritePersonUid(env, pid, uid, viewerEmail);
+  return { ok: true, bookr_uid: existing.uid, bookr_email: existing.email, bookr_name: existing.name };
+}
+
+async function bookrUserUnlink(env, viewerEmail, body) {
+  const admins = await fetchAdmins();
+  if (!admins.includes((viewerEmail || "").toLowerCase())) throw new Error("admin required");
+  const pid = body && body.person_id;
+  if (!pid) throw new Error("missing person_id");
+  await bookrWritePersonUid(env, pid, "", viewerEmail);
+  return { ok: true, person_id: pid, cleared: true };
+}
