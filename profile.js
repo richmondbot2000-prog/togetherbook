@@ -1169,7 +1169,7 @@
     // fields onto the body without rewriting the map.
     const map = {
       "suspend-route":      ["suspend-and-route",  { email, route_to: target }],
-      "forward":            ["add-forwarding",     { email, target }],
+      "forward":            ["add-forwarding",     { email, route_to: target }],
       "cancel-forwarding":  ["cancel-forwarding",  { email }],
       "disable-forwarding": ["disable-forwarding", { email }],
       "unsuspend":          ["unsuspend",          { email }],
