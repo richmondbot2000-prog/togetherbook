@@ -355,8 +355,6 @@
 
       ${adminControls}
 
-      ${renderActivityCard()}
-
       ${viewerIsAdmin ? renderMergeCard() : ""}`;
   }
 
