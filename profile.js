@@ -1547,7 +1547,12 @@
         const alias  = (form.querySelector("[data-acc-alias-input]").value || "").trim().toLowerCase();
         const status = form.querySelector("[data-acc-status]");
         if (!alias.includes("@")) { status.textContent = "Valid email required"; status.className = "up-edit-status up-edit-status--err"; return; }
-        runWorkspace(form, "user-alias-add", { user_email: userEmail, alias, tenant: t });
+        runWorkspace(form, "user-alias-add", { user_email: userEmail, alias, tenant: t }, () => {
+          patchLocalAccountAliases(userEmail, a => {
+            a.aliases          = Array.from(new Set([...(a.aliases || []),          alias])).sort();
+            a.aliases_editable = Array.from(new Set([...(a.aliases_editable || []), alias])).sort();
+          });
+        });
       });
       form.querySelector("[data-acc-alias-input]").focus();
       return;
@@ -1556,7 +1561,12 @@
       const alias = btn.dataset.accAliasRemove;
       if (!alias) return;
       if (!confirm(`Remove the alias ${alias} from ${userEmail}?\n\nMail sent to ${alias} after removal bounces back to the sender. Non-editable aliases (auto-created by Workspace) can't be removed this way and will surface an error.`)) return;
-      runWorkspace(null, "user-alias-remove", { user_email: userEmail, alias, tenant: t });
+      runWorkspace(null, "user-alias-remove", { user_email: userEmail, alias, tenant: t }, () => {
+        patchLocalAccountAliases(userEmail, a => {
+          a.aliases          = (a.aliases          || []).filter(x => x !== alias);
+          a.aliases_editable = (a.aliases_editable || []).filter(x => x !== alias);
+        });
+      });
       return;
     }
     if (kind === "to-group") {
@@ -1578,7 +1588,12 @@
         const name   = (form.querySelector("[data-acc-group-name]").value || "").trim();
         const status = form.querySelector("[data-acc-status]");
         if (!name) { status.textContent = "Group name required"; status.className = "up-edit-status up-edit-status--err"; return; }
-        runWorkspace(form, "alias-to-group", { user_email: userEmail, alias, group_name: name, tenant: t });
+        runWorkspace(form, "alias-to-group", { user_email: userEmail, alias, group_name: name, tenant: t }, () => {
+          patchLocalAccountAliases(userEmail, a => {
+            a.aliases          = (a.aliases          || []).filter(x => x !== alias);
+            a.aliases_editable = (a.aliases_editable || []).filter(x => x !== alias);
+          });
+        });
       });
       form.querySelector("[data-acc-group-name]").focus();
       return;
@@ -1588,7 +1603,7 @@
   // Generic worker caller — same status-text + reload-on-success
   // pattern as runAccountAction but for actions whose body is known at
   // the call site (no map needed).
-  async function runWorkspace(form, action, payload) {
+  async function runWorkspace(form, action, payload, onSuccess) {
     const status = form && form.querySelector("[data-acc-status]");
     if (status) { status.textContent = "Working…"; status.className = "up-edit-status up-edit-status--working"; }
     try {
@@ -1598,6 +1613,11 @@
       });
       const out = await res.json();
       if (!res.ok || !out.ok) throw new Error(out.error || `HTTP ${res.status}`);
+      // Optimistic local-state patch BEFORE the re-render. The scan that
+      // produces google-accounts.json runs hourly, so without this patch
+      // alias add/remove/to-group succeeds at Google but the page keeps
+      // showing the stale snapshot until the next refresh.
+      if (onSuccess) onSuccess(out);
       await reloadAccountData();
       renderPanel();
     } catch (err) {
@@ -1605,6 +1625,14 @@
       if (status) { status.textContent = msg; status.className = "up-edit-status up-edit-status--err"; }
       else alert(msg);
     }
+  }
+
+  // Patch googleByPersonId in-place so alias chip lists update immediately
+  // after a worker write, rather than waiting for the hourly directory scan.
+  function patchLocalAccountAliases(userEmail, mutator) {
+    const list = googleByPersonId[person.id] || [];
+    const target = list.find(a => (a.email || "").toLowerCase() === (userEmail || "").toLowerCase());
+    if (target) mutator(target);
   }
 
   function openAccountAdd(tenant) {
