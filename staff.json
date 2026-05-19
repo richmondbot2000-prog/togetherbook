@@ -1,7 +1,7 @@
 {
   "schema_version": 2,
-  "updated_at": "2026-05-18T12:05:45.560646Z",
-  "snapshot_date": "2026-05-18",
+  "updated_at": "2026-05-19T16:54:31.176699Z",
+  "snapshot_date": "2026-05-19",
   "domain": "letme.co.uk",
   "tenants": [
     {
@@ -16,19 +16,19 @@
       "name": "togetherloans",
       "domain": "togetherloans.com",
       "delegate": "james.benamor@togetherloans.com",
-      "users": 129,
+      "users": 128,
       "suspended_hidden": 1,
       "error": null
     }
   ],
   "totals": {
-    "users": 195,
+    "users": 194,
     "suspended_hidden": 1,
     "by_department": {
-      "(unspecified)": 195
+      "(unspecified)": 194
     },
     "by_tenant": {
-      "togetherloans": 129,
+      "togetherloans": 128,
       "letme.co.uk": 66
     }
   },
@@ -196,7 +196,7 @@
       "suspended": false,
       "admin": false,
       "deletion_time": "",
-      "last_login": "2026-05-15T22:54:07.000Z",
+      "last_login": "2026-05-18T11:39:30.000Z",
       "tenant": "togetherloans",
       "tenants": [
         "togetherloans"
@@ -245,33 +245,9 @@
     {
       "id": "101521104788722573768",
       "email": "autobots@clearloans.com.au",
-      "aliases": [
-        "automessaging@clearloans.com.au",
-        "cash.payments@clearloans.com.au",
-        "collections@clearloans.com.au",
-        "communications.collector@clearloans.com.au",
-        "help@grenwich-clearloans.com",
-        "help@letme.co.uk",
-        "help@mail.amigohome.co.uk",
-        "help@mail.letme.co.uk",
-        "help@rgroup.co.uk",
-        "makeacomplaint@grenwich-clearloans.com",
-        "makeacomplaint@letme.co.uk",
-        "makeacomplaint@mail.amigohome.co.uk",
-        "makeacomplaint@mail.letme.co.uk",
-        "makeacomplaint@rgroup.co.uk",
-        "noreply@clearloans.com.au"
-      ],
-      "aliases_editable": [
-        "automessaging@clearloans.com.au",
-        "cash.payments@clearloans.com.au",
-        "collections@clearloans.com.au",
-        "communications.collector@clearloans.com.au",
-        "help@letme.co.uk",
-        "makeacomplaint@letme.co.uk",
-        "noreply@clearloans.com.au"
-      ],
-      "name": "Clearloans Autobots",
+      "aliases": [],
+      "aliases_editable": [],
+      "name": "",
       "given": "Clearloans",
       "family": "Autobots",
       "title": "",
@@ -279,7 +255,7 @@
       "photo_url": "",
       "suspended": false,
       "admin": false,
-      "deletion_time": "",
+      "deletion_time": "2026-05-18T16:57:39.000Z",
       "last_login": "2025-06-20T11:00:48.000Z",
       "tenant": "letme.co.uk",
       "tenants": [
@@ -384,7 +360,7 @@
       "suspended": false,
       "admin": true,
       "deletion_time": "",
-      "last_login": "2026-05-14T14:54:35.000Z",
+      "last_login": "2026-05-19T10:23:46.000Z",
       "tenant": "togetherloans",
       "tenants": [
         "togetherloans"
@@ -414,26 +390,20 @@
       "id": "105699055280704464982",
       "email": "james.benamor@letme.com",
       "aliases": [
-        "james.b@letme.com",
         "james.benamor@grenwich-clearloans.com",
         "james.benamor@letme.co.uk",
         "james.benamor@mail.amigohome.co.uk",
         "james.benamor@mail.letme.co.uk",
-        "james.benamor@memini.co.uk",
         "james.benamor@rgroup.co.uk",
         "paul.benamor@grenwich-clearloans.com",
         "paul.benamor@letme.co.uk",
-        "paul.benamor@letme.com",
         "paul.benamor@mail.amigohome.co.uk",
         "paul.benamor@mail.letme.co.uk",
         "paul.benamor@rgroup.co.uk"
       ],
       "aliases_editable": [
-        "james.b@letme.com",
         "james.benamor@letme.co.uk",
-        "james.benamor@memini.co.uk",
-        "paul.benamor@letme.co.uk",
-        "paul.benamor@letme.com"
+        "paul.benamor@letme.co.uk"
       ],
       "name": "James Benamor",
       "given": "James",
@@ -444,7 +414,7 @@
       "suspended": false,
       "admin": true,
       "deletion_time": "",
-      "last_login": "2026-05-16T15:16:56.000Z",
+      "last_login": "2026-05-19T09:22:34.000Z",
       "tenant": "letme.co.uk",
       "tenants": [
         "letme.co.uk"
@@ -453,8 +423,14 @@
     {
       "id": "105514325807777352220",
       "email": "james.benamor@togetherloans.com",
-      "aliases": [],
-      "aliases_editable": [],
+      "aliases": [
+        "sqirrel@togetherloans.com",
+        "squirrel@togetherloans.com"
+      ],
+      "aliases_editable": [
+        "sqirrel@togetherloans.com",
+        "squirrel@togetherloans.com"
+      ],
       "name": "James Benamor",
       "given": "James",
       "family": "Benamor",
@@ -464,7 +440,7 @@
       "suspended": false,
       "admin": true,
       "deletion_time": "",
-      "last_login": "2026-05-13T14:46:18.000Z",
+      "last_login": "2026-05-19T06:45:29.000Z",
       "tenant": "togetherloans",
       "tenants": [
         "togetherloans"
@@ -493,17 +469,9 @@
     {
       "id": "103394639471044980563",
       "email": "tarek.benamor@letme.com",
-      "aliases": [
-        "tarek.benamor@grenwich-clearloans.com",
-        "tarek.benamor@letme.co.uk",
-        "tarek.benamor@mail.amigohome.co.uk",
-        "tarek.benamor@mail.letme.co.uk",
-        "tarek.benamor@rgroup.co.uk"
-      ],
-      "aliases_editable": [
-        "tarek.benamor@letme.co.uk"
-      ],
-      "name": "Tarek Benamor",
+      "aliases": [],
+      "aliases_editable": [],
+      "name": "",
       "given": "Tarek",
       "family": "Benamor",
       "title": "",
@@ -511,7 +479,7 @@
       "photo_url": "",
       "suspended": false,
       "admin": false,
-      "deletion_time": "",
+      "deletion_time": "2026-05-18T15:49:16.000Z",
       "last_login": "2026-04-23T16:07:23.000Z",
       "tenant": "letme.co.uk",
       "tenants": [
@@ -551,21 +519,9 @@
     {
       "id": "105702000376357597854",
       "email": "dan.bennett@clearloans.com.au",
-      "aliases": [
-        "dan.bennett@alerts.clearloans.com.au",
-        "dan.bennett@grenwich-clearloans.com",
-        "dan.bennett@letme.co.uk",
-        "dan.bennett@letme.com",
-        "dan.bennett@mail.amigohome.co.uk",
-        "dan.bennett@mail.letme.co.uk",
-        "dan.bennett@rgroup.co.uk"
-      ],
-      "aliases_editable": [
-        "dan.bennett@alerts.clearloans.com.au",
-        "dan.bennett@letme.co.uk",
-        "dan.bennett@letme.com"
-      ],
-      "name": "Dan Bennett",
+      "aliases": [],
+      "aliases_editable": [],
+      "name": "",
       "given": "Dan",
       "family": "Bennett",
       "title": "",
@@ -573,7 +529,7 @@
       "photo_url": "",
       "suspended": false,
       "admin": false,
-      "deletion_time": "",
+      "deletion_time": "2026-05-18T15:48:10.000Z",
       "last_login": "2025-10-07T17:02:15.000Z",
       "tenant": "letme.co.uk",
       "tenants": [
@@ -636,7 +592,7 @@
       "suspended": false,
       "admin": true,
       "deletion_time": "",
-      "last_login": "2026-05-13T20:50:38.000Z",
+      "last_login": "2026-05-18T17:26:47.000Z",
       "tenant": "letme.co.uk",
       "tenants": [
         "letme.co.uk"
@@ -656,7 +612,7 @@
       "suspended": false,
       "admin": true,
       "deletion_time": "",
-      "last_login": "2026-05-13T21:30:02.000Z",
+      "last_login": "2026-05-18T17:26:06.000Z",
       "tenant": "togetherloans",
       "tenants": [
         "togetherloans"
@@ -696,7 +652,7 @@
       "suspended": false,
       "admin": false,
       "deletion_time": "",
-      "last_login": "2026-05-15T08:34:29.000Z",
+      "last_login": "2026-05-18T12:06:40.000Z",
       "tenant": "letme.co.uk",
       "tenants": [
         "letme.co.uk"
@@ -716,7 +672,7 @@
       "suspended": false,
       "admin": false,
       "deletion_time": "",
-      "last_login": "2026-05-14T17:07:00.000Z",
+      "last_login": "2026-05-17T21:21:48.000Z",
       "tenant": "togetherloans",
       "tenants": [
         "togetherloans"
@@ -736,7 +692,7 @@
       "suspended": false,
       "admin": false,
       "deletion_time": "",
-      "last_login": "2026-05-14T16:40:45.000Z",
+      "last_login": "2026-05-18T16:01:55.000Z",
       "tenant": "letme.co.uk",
       "tenants": [
         "letme.co.uk"
@@ -864,7 +820,7 @@
       "suspended": false,
       "admin": false,
       "deletion_time": "",
-      "last_login": "2026-05-14T11:35:35.000Z",
+      "last_login": "2026-05-18T08:50:18.000Z",
       "tenant": "togetherloans",
       "tenants": [
         "togetherloans"
@@ -873,14 +829,9 @@
     {
       "id": "106527320841852358251",
       "email": "joshua.carless@letme.co.uk",
-      "aliases": [
-        "joshua.carless@grenwich-clearloans.com",
-        "joshua.carless@mail.amigohome.co.uk",
-        "joshua.carless@mail.letme.co.uk",
-        "joshua.carless@rgroup.co.uk"
-      ],
+      "aliases": [],
       "aliases_editable": [],
-      "name": "Joshua Carless",
+      "name": "",
       "given": "Joshua",
       "family": "Carless",
       "title": "",
@@ -888,8 +839,8 @@
       "photo_url": "",
       "suspended": false,
       "admin": false,
-      "deletion_time": "",
-      "last_login": "2026-05-12T08:48:30.000Z",
+      "deletion_time": "2026-05-18T15:48:17.000Z",
+      "last_login": "2026-05-14T09:33:45.000Z",
       "tenant": "letme.co.uk",
       "tenants": [
         "letme.co.uk"
@@ -957,7 +908,7 @@
       "suspended": false,
       "admin": false,
       "deletion_time": "",
-      "last_login": "2026-05-15T21:13:12.000Z",
+      "last_login": "2026-05-18T07:22:27.000Z",
       "tenant": "togetherloans",
       "tenants": [
         "togetherloans"
@@ -1033,7 +984,7 @@
       "suspended": false,
       "admin": true,
       "deletion_time": "",
-      "last_login": "2026-05-16T15:16:56.000Z",
+      "last_login": "2026-05-18T15:55:29.000Z",
       "tenant": "letme.co.uk",
       "tenants": [
         "letme.co.uk"
@@ -1213,7 +1164,7 @@
       "suspended": false,
       "admin": false,
       "deletion_time": "",
-      "last_login": "2026-05-16T10:46:32.000Z",
+      "last_login": "2026-05-18T15:02:11.000Z",
       "tenant": "togetherloans",
       "tenants": [
         "togetherloans"
@@ -1386,7 +1337,7 @@
       "suspended": false,
       "admin": false,
       "deletion_time": "",
-      "last_login": "2026-05-16T16:05:52.000Z",
+      "last_login": "2026-05-17T01:14:36.000Z",
       "tenant": "letme.co.uk",
       "tenants": [
         "letme.co.uk"
@@ -1530,7 +1481,7 @@
       "suspended": false,
       "admin": false,
       "deletion_time": "",
-      "last_login": "2026-05-18T10:59:04.000Z",
+      "last_login": "2026-05-18T16:01:54.000Z",
       "tenant": "letme.co.uk",
       "tenants": [
         "letme.co.uk"
@@ -1554,26 +1505,6 @@
       "tenant": "letme.co.uk",
       "tenants": [
         "letme.co.uk"
-      ]
-    },
-    {
-      "id": "100692203808918014859",
-      "email": "danny.flores@togetherloans.com",
-      "aliases": [],
-      "aliases_editable": [],
-      "name": "",
-      "given": "Danny",
-      "family": "Flores",
-      "title": "",
-      "department": "",
-      "photo_url": "",
-      "suspended": false,
-      "admin": false,
-      "deletion_time": "2026-04-29T14:34:09.000Z",
-      "last_login": "2026-04-27T21:23:01.000Z",
-      "tenant": "togetherloans",
-      "tenants": [
-        "togetherloans"
       ]
     },
     {
@@ -1744,7 +1675,7 @@
       "suspended": false,
       "admin": false,
       "deletion_time": "",
-      "last_login": "2026-05-08T15:40:35.000Z",
+      "last_login": "2026-05-18T09:10:32.000Z",
       "tenant": "letme.co.uk",
       "tenants": [
         "letme.co.uk"
@@ -1764,7 +1695,7 @@
       "suspended": false,
       "admin": true,
       "deletion_time": "",
-      "last_login": "2026-05-11T10:45:52.000Z",
+      "last_login": "2026-05-18T09:09:36.000Z",
       "tenant": "togetherloans",
       "tenants": [
         "togetherloans"
@@ -1953,17 +1884,9 @@
     {
       "id": "115204447757688611598",
       "email": "edward.heaney@letme.com",
-      "aliases": [
-        "edward.heaney@grenwich-clearloans.com",
-        "edward.heaney@letme.co.uk",
-        "edward.heaney@mail.amigohome.co.uk",
-        "edward.heaney@mail.letme.co.uk",
-        "edward.heaney@rgroup.co.uk"
-      ],
-      "aliases_editable": [
-        "edward.heaney@letme.co.uk"
-      ],
-      "name": "Edward Heaney",
+      "aliases": [],
+      "aliases_editable": [],
+      "name": "",
       "given": "Edward",
       "family": "Heaney",
       "title": "",
@@ -1971,7 +1894,7 @@
       "photo_url": "",
       "suspended": false,
       "admin": false,
-      "deletion_time": "",
+      "deletion_time": "2026-05-19T08:28:50.000Z",
       "last_login": "2026-05-06T08:01:49.000Z",
       "tenant": "letme.co.uk",
       "tenants": [
@@ -2100,7 +2023,7 @@
       "suspended": false,
       "admin": true,
       "deletion_time": "",
-      "last_login": "2026-05-17T21:04:08.000Z",
+      "last_login": "2026-05-18T16:29:47.000Z",
       "tenant": "letme.co.uk",
       "tenants": [
         "letme.co.uk"
@@ -2151,7 +2074,7 @@
       "email": "katarzyna.jiddou@letme.com",
       "aliases": [],
       "aliases_editable": [],
-      "name": "Katarzyna Jiddou",
+      "name": "",
       "given": "Katarzyna",
       "family": "Jiddou",
       "title": "",
@@ -2159,7 +2082,7 @@
       "photo_url": "",
       "suspended": false,
       "admin": false,
-      "deletion_time": "",
+      "deletion_time": "2026-05-18T15:48:11.000Z",
       "last_login": "2026-05-14T16:39:00.000Z",
       "tenant": "letme.co.uk",
       "tenants": [
@@ -2220,7 +2143,7 @@
       "suspended": false,
       "admin": false,
       "deletion_time": "",
-      "last_login": "2026-05-15T21:52:36.000Z",
+      "last_login": "2026-05-18T10:10:14.000Z",
       "tenant": "togetherloans",
       "tenants": [
         "togetherloans"
@@ -2248,7 +2171,7 @@
       "suspended": false,
       "admin": false,
       "deletion_time": "",
-      "last_login": "2026-05-15T00:53:46.000Z",
+      "last_login": "2026-05-18T05:27:50.000Z",
       "tenant": "letme.co.uk",
       "tenants": [
         "letme.co.uk"
@@ -2268,7 +2191,7 @@
       "suspended": false,
       "admin": false,
       "deletion_time": "",
-      "last_login": "2026-05-15T00:53:46.000Z",
+      "last_login": "2026-05-18T15:37:26.000Z",
       "tenant": "togetherloans",
       "tenants": [
         "togetherloans"
@@ -2380,7 +2303,7 @@
       "suspended": false,
       "admin": true,
       "deletion_time": "",
-      "last_login": "2026-05-15T12:35:21.000Z",
+      "last_login": "2026-05-19T12:42:33.000Z",
       "tenant": "letme.co.uk",
       "tenants": [
         "letme.co.uk"
@@ -2400,7 +2323,7 @@
       "suspended": false,
       "admin": true,
       "deletion_time": "",
-      "last_login": "2026-05-12T17:23:07.000Z",
+      "last_login": "2026-05-19T12:41:40.000Z",
       "tenant": "togetherloans",
       "tenants": [
         "togetherloans"
@@ -2488,7 +2411,7 @@
       "suspended": false,
       "admin": true,
       "deletion_time": "",
-      "last_login": "2026-05-11T20:26:00.000Z",
+      "last_login": "2026-05-19T08:41:32.000Z",
       "tenant": "togetherloans",
       "tenants": [
         "togetherloans"
@@ -2709,7 +2632,7 @@
       "suspended": false,
       "admin": false,
       "deletion_time": "",
-      "last_login": "2026-05-15T12:54:15.000Z",
+      "last_login": "2026-05-18T11:38:55.000Z",
       "tenant": "togetherloans",
       "tenants": [
         "togetherloans"
@@ -2765,7 +2688,7 @@
       "suspended": false,
       "admin": false,
       "deletion_time": "",
-      "last_login": "2026-05-14T12:41:55.000Z",
+      "last_login": "2026-05-18T20:22:32.000Z",
       "tenant": "letme.co.uk",
       "tenants": [
         "letme.co.uk"
@@ -2785,7 +2708,7 @@
       "suspended": false,
       "admin": true,
       "deletion_time": "",
-      "last_login": "2026-05-13T12:04:02.000Z",
+      "last_login": "2026-05-18T21:52:41.000Z",
       "tenant": "togetherloans",
       "tenants": [
         "togetherloans"
@@ -2885,7 +2808,7 @@
       "suspended": false,
       "admin": false,
       "deletion_time": "",
-      "last_login": "2026-05-11T14:44:43.000Z",
+      "last_login": "2026-05-16T16:07:54.000Z",
       "tenant": "togetherloans",
       "tenants": [
         "togetherloans"
@@ -3157,7 +3080,7 @@
       "suspended": false,
       "admin": false,
       "deletion_time": "",
-      "last_login": "1970-01-01T00:00:00.000Z",
+      "last_login": "2026-05-19T16:45:14.000Z",
       "tenant": "togetherloans",
       "tenants": [
         "togetherloans"
@@ -3177,7 +3100,7 @@
       "suspended": false,
       "admin": false,
       "deletion_time": "",
-      "last_login": "2026-05-15T22:52:44.000Z",
+      "last_login": "2026-05-18T02:15:34.000Z",
       "tenant": "togetherloans",
       "tenants": [
         "togetherloans"
@@ -3226,13 +3149,9 @@
     {
       "id": "108294034980135133708",
       "email": "skanpoczta.parked.1778680794@rapidamoney.pl",
-      "aliases": [
-        "skanpoczta@rapidamoney.pl"
-      ],
-      "aliases_editable": [
-        "skanpoczta@rapidamoney.pl"
-      ],
-      "name": "Rapida Poat-Scanning",
+      "aliases": [],
+      "aliases_editable": [],
+      "name": "",
       "given": "Rapida",
       "family": "Poat-Scanning",
       "title": "",
@@ -3240,7 +3159,7 @@
       "photo_url": "",
       "suspended": false,
       "admin": false,
-      "deletion_time": "",
+      "deletion_time": "2026-05-19T16:34:58.000Z",
       "last_login": "2025-03-24T16:04:34.000Z",
       "tenant": "letme.co.uk",
       "tenants": [
@@ -3261,7 +3180,7 @@
       "suspended": false,
       "admin": false,
       "deletion_time": "",
-      "last_login": "2026-05-15T09:24:10.000Z",
+      "last_login": "2026-05-16T18:21:37.000Z",
       "tenant": "togetherloans",
       "tenants": [
         "togetherloans"
@@ -3354,7 +3273,7 @@
       "suspended": false,
       "admin": false,
       "deletion_time": "",
-      "last_login": "2026-05-15T11:53:48.000Z",
+      "last_login": "2026-05-18T08:51:30.000Z",
       "tenant": "letme.co.uk",
       "tenants": [
         "letme.co.uk"
@@ -3473,23 +3392,9 @@
     {
       "id": "105860758388691187197",
       "email": "george.roche.parked.1778681073@letme.co.uk",
-      "aliases": [
-        "george.roche.parked.1778681073@grenwich-clearloans.com",
-        "george.roche.parked.1778681073@mail.amigohome.co.uk",
-        "george.roche.parked.1778681073@mail.letme.co.uk",
-        "george.roche.parked.1778681073@rgroup.co.uk",
-        "george.roche@grenwich-clearloans.com",
-        "george.roche@letme.co.uk",
-        "george.roche@letme.com",
-        "george.roche@mail.amigohome.co.uk",
-        "george.roche@mail.letme.co.uk",
-        "george.roche@rgroup.co.uk"
-      ],
-      "aliases_editable": [
-        "george.roche@letme.co.uk",
-        "george.roche@letme.com"
-      ],
-      "name": "George Roche",
+      "aliases": [],
+      "aliases_editable": [],
+      "name": "",
       "given": "George",
       "family": "Roche",
       "title": "",
@@ -3497,7 +3402,7 @@
       "photo_url": "",
       "suspended": false,
       "admin": false,
-      "deletion_time": "",
+      "deletion_time": "2026-05-19T16:35:05.000Z",
       "last_login": "2026-05-15T09:14:28.000Z",
       "tenant": "letme.co.uk",
       "tenants": [
@@ -3598,7 +3503,7 @@
       "suspended": false,
       "admin": false,
       "deletion_time": "",
-      "last_login": "2026-05-16T13:55:52.000Z",
+      "last_login": "2026-05-18T13:53:21.000Z",
       "tenant": "letme.co.uk",
       "tenants": [
         "letme.co.uk"
@@ -3609,7 +3514,7 @@
       "email": "nikolay.savov@rapida.bg",
       "aliases": [],
       "aliases_editable": [],
-      "name": "Nikolay Savov",
+      "name": "",
       "given": "Nikolay",
       "family": "Savov",
       "title": "",
@@ -3617,7 +3522,7 @@
       "photo_url": "",
       "suspended": false,
       "admin": false,
-      "deletion_time": "",
+      "deletion_time": "2026-05-18T15:48:17.000Z",
       "last_login": "2026-05-08T12:43:20.000Z",
       "tenant": "letme.co.uk",
       "tenants": [
@@ -3854,10 +3759,30 @@
       "suspended": false,
       "admin": false,
       "deletion_time": "",
-      "last_login": "2026-05-16T00:38:33.000Z",
+      "last_login": "2026-05-18T16:14:23.000Z",
       "tenant": "letme.co.uk",
       "tenants": [
         "letme.co.uk"
+      ]
+    },
+    {
+      "id": "100918951017779978024",
+      "email": "shannen.stitt@togetherloans.com",
+      "aliases": [],
+      "aliases_editable": [],
+      "name": "shannen Stitt",
+      "given": "shannen",
+      "family": "Stitt",
+      "title": "",
+      "department": "",
+      "photo_url": "",
+      "suspended": false,
+      "admin": false,
+      "deletion_time": "",
+      "last_login": "2026-05-19T15:47:06.000Z",
+      "tenant": "togetherloans",
+      "tenants": [
+        "togetherloans"
       ]
     },
     {
@@ -4003,17 +3928,9 @@
     {
       "id": "114890135673193102189",
       "email": "lucian.teodoroiu@letme.co.uk",
-      "aliases": [
-        "lucian.teodoroiu@grenwich-clearloans.com",
-        "lucian.teodoroiu@letme.com",
-        "lucian.teodoroiu@mail.amigohome.co.uk",
-        "lucian.teodoroiu@mail.letme.co.uk",
-        "lucian.teodoroiu@rgroup.co.uk"
-      ],
-      "aliases_editable": [
-        "lucian.teodoroiu@letme.com"
-      ],
-      "name": "Lucian Teodoroiu",
+      "aliases": [],
+      "aliases_editable": [],
+      "name": "",
       "given": "Lucian",
       "family": "Teodoroiu",
       "title": "",
@@ -4021,7 +3938,7 @@
       "photo_url": "",
       "suspended": false,
       "admin": false,
-      "deletion_time": "",
+      "deletion_time": "2026-05-18T15:48:20.000Z",
       "last_login": "2026-05-15T17:47:40.000Z",
       "tenant": "letme.co.uk",
       "tenants": [
@@ -4042,7 +3959,7 @@
       "suspended": false,
       "admin": true,
       "deletion_time": "",
-      "last_login": "2026-05-15T10:31:33.000Z",
+      "last_login": "2026-05-18T18:12:51.000Z",
       "tenant": "togetherloans",
       "tenants": [
         "togetherloans"
@@ -4162,7 +4079,7 @@
       "suspended": false,
       "admin": false,
       "deletion_time": "",
-      "last_login": "2026-05-12T10:38:30.000Z",
+      "last_login": "2026-05-18T16:38:49.000Z",
       "tenant": "togetherloans",
       "tenants": [
         "togetherloans"
@@ -4171,17 +4088,9 @@
     {
       "id": "107201626699585246635",
       "email": "adnan.turken@letme.co.uk",
-      "aliases": [
-        "adnan.turken@grenwich-clearloans.com",
-        "adnan.turken@letme.com",
-        "adnan.turken@mail.amigohome.co.uk",
-        "adnan.turken@mail.letme.co.uk",
-        "adnan.turken@rgroup.co.uk"
-      ],
-      "aliases_editable": [
-        "adnan.turken@letme.com"
-      ],
-      "name": "Adnan Türken",
+      "aliases": [],
+      "aliases_editable": [],
+      "name": "",
       "given": "Adnan",
       "family": "Türken",
       "title": "",
@@ -4189,7 +4098,7 @@
       "photo_url": "",
       "suspended": false,
       "admin": false,
-      "deletion_time": "",
+      "deletion_time": "2026-05-18T15:48:17.000Z",
       "last_login": "2026-05-06T07:04:35.000Z",
       "tenant": "letme.co.uk",
       "tenants": [
@@ -4293,26 +4202,6 @@
       ]
     },
     {
-      "id": "114517170481844861494",
-      "email": "kandi.vaughn@togetherloans.com",
-      "aliases": [],
-      "aliases_editable": [],
-      "name": "",
-      "given": "Kandi",
-      "family": "Vaughn",
-      "title": "",
-      "department": "",
-      "photo_url": "https://lh3.googleusercontent.com/a/ACg8ocIiDrTpggqEy-pRXBOzhIE4_dBPhcTxn-u7DA1Dv_3Jxty35mY=s96-c",
-      "suspended": false,
-      "admin": false,
-      "deletion_time": "2026-04-29T13:19:54.000Z",
-      "last_login": "2026-04-29T13:09:41.000Z",
-      "tenant": "togetherloans",
-      "tenants": [
-        "togetherloans"
-      ]
-    },
-    {
       "id": "105874186229839063517",
       "email": "james.webster@letme.co.uk",
       "aliases": [
@@ -4334,7 +4223,7 @@
       "suspended": false,
       "admin": false,
       "deletion_time": "",
-      "last_login": "2026-05-11T22:56:18.000Z",
+      "last_login": "2026-05-19T11:13:12.000Z",
       "tenant": "letme.co.uk",
       "tenants": [
         "letme.co.uk"
@@ -4354,7 +4243,7 @@
       "suspended": false,
       "admin": false,
       "deletion_time": "",
-      "last_login": "2026-05-14T21:49:47.000Z",
+      "last_login": "2026-05-19T09:51:13.000Z",
       "tenant": "togetherloans",
       "tenants": [
         "togetherloans"
@@ -4439,7 +4328,7 @@
       "suspended": false,
       "admin": false,
       "deletion_time": "",
-      "last_login": "2026-05-10T20:08:02.000Z",
+      "last_login": "2026-05-18T15:34:25.000Z",
       "tenant": "letme.co.uk",
       "tenants": [
         "letme.co.uk"
