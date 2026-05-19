@@ -1,0 +1,21 @@
+{
+  "schema_version": 1,
+  "default_plan": "OpsPlan1",
+  "statutory_min_days_per_month": 2.333333,
+  "tax_year_start_month": 4,
+  "tax_year_start_day": 1,
+  "plans": [
+    {
+      "id": "OpsPlan1",
+      "label": "Ops Plan 1",
+      "annual_max_days": 28,
+      "description": "Default UK plan. 28 days per full tax year, pro-rated by month worked if start_date falls within the current tax year."
+    },
+    {
+      "id": "Unlimited",
+      "label": "Unlimited",
+      "annual_max_days": 365,
+      "description": "Trust-based, self-managed. Counter still renders so people can see what they've taken; the 28-day statutory floor still applies."
+    }
+  ]
+}
