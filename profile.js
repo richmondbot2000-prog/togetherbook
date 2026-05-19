@@ -357,7 +357,6 @@
         ${editableRow("phone",      "Phone",        "tel",      person.phone)}
         ${editableRow("address",    "Address",      "textarea", person.address)}
         ${editableRow("start_date", "Start date",   "date",     person.start_date)}
-        ${editableRow("notes",      "Notes",        "textarea", person.notes)}
         <div class="up-field" data-edit-field="line_manager_id">
           <div class="up-field-label">Line manager</div>
           <div class="up-field-display">${lineMgrDisplay}</div>
