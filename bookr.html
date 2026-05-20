@@ -78,12 +78,12 @@
   }
   .bk-cell {
     border-right: 1px solid var(--paper-300); border-bottom: 1px solid var(--paper-300);
-    padding: 4px 6px; min-height: 44px; box-sizing: border-box;
+    padding: 4px 6px; min-height: 88px; box-sizing: border-box;
     display: flex; align-items: center; justify-content: center; text-align: center;
   }
+  .bk-cell.is-today-col { background: var(--paper-200); }
   .bk-cell.is-weekend { background: var(--paper-100); }
   .bk-cell.is-past { color: var(--ink-400); background: var(--paper-100); cursor: default; }
-  .bk-cell.is-today-col { border-left: 2px solid var(--brass-500); }
   .bk-cell.is-free { cursor: pointer; }
   .bk-cell.is-free:hover { background: var(--brass-50); }
   .bk-cell.is-booked { background: rgba(44, 62, 102, 0.10); cursor: pointer; color: var(--ink-900); }
@@ -237,7 +237,6 @@
 
 <section class="bk-section">
   <h1>BOOKR</h1>
-  <p class="bk-eyebrow">Cars &amp; properties. Click a free day to book it; click a booked day to see who has it.</p>
   <div id="bkBanner" class="bk-banner" style="display:none"></div>
   <div class="bk-tabs">
     <button class="bk-tab is-active" data-tab="calendar" type="button">Calendar</button>
@@ -422,27 +421,40 @@
 
   async function loadBookingsProgressively() {
     const { days } = dateRange();
+    STATE.isLoadingBookings = true;
     const chunks = [];
     for (let i = 0; i < days.length; i += 7) chunks.push(days.slice(i, i + 7));
-    for (const chunk of chunks) {
-      const from = ymd(chunk[0]);
-      const to   = ymd(chunk[chunk.length - 1]);
-      const params = "type=" + encodeURIComponent(STATE.filter || "all") +
-                     "&from=" + from + "&to=" + to;
-      try {
-        const res = await getJSON("/api/bookr/all-bookings?" + params);
-        const tree = (res && res.bookings) || { cars: {}, properties: {} };
-        for (const kind of ["cars", "properties"]) {
-          for (const [id, dates] of Object.entries(tree[kind] || {})) {
-            const key = kind + ":" + id;
-            STATE.bookings[key] = Object.assign(STATE.bookings[key] || {}, dates);
+    try {
+      for (const chunk of chunks) {
+        const from = ymd(chunk[0]);
+        const to   = ymd(chunk[chunk.length - 1]);
+        const params = "type=" + encodeURIComponent(STATE.filter || "all") +
+                       "&from=" + from + "&to=" + to;
+        try {
+          const res = await getJSON("/api/bookr/all-bookings?" + params);
+          const tree = (res && res.bookings) || { cars: {}, properties: {} };
+          for (const kind of ["cars", "properties"]) {
+            for (const [id, dates] of Object.entries(tree[kind] || {})) {
+              const key = kind + ":" + id;
+              STATE.bookings[key] = Object.assign(STATE.bookings[key] || {}, dates);
+            }
           }
+        } catch (e) {
+          console.warn("bookr week fetch failed", from, to, e);
         }
-      } catch (e) {
-        console.warn("bookr week fetch failed", from, to, e);
+        chunk.forEach(d => STATE.pendingDates.delete(ymd(d)));
+        if (STATE.tab === "calendar") renderGrid();
       }
-      chunk.forEach(d => STATE.pendingDates.delete(ymd(d)));
-      if (STATE.tab === "calendar") renderGrid();
+    } finally {
+      STATE.isLoadingBookings = false;
+      // Run the (expensive) name-fit pass once now that every chunk has
+      // landed. Skipping the per-chunk passes saves ~52 full sweeps on
+      // a 365-day zoom.
+      const grid = document.querySelector("#bkGrid");
+      // Same 2000-cell cap as renderGrid — at 365-day zoom the layout-
+      // reflow cost of measuring ~11k cells crashes mobile Safari.
+      const cellCount = visibleAssets().length * dateRange().days.length;
+      if (grid && cellCount < 2000) fitNamesInGrid(grid);
     }
     setStatus("");
   }
@@ -676,7 +688,13 @@
       grid.appendChild(buildAssetCell(a));
       days.forEach(d => grid.appendChild(buildBookingCell(a, d, todayY)));
     });
-    fitNamesInGrid(grid);
+    // Skip the expensive per-cell measure pass while the progressive
+    // loader is firing renderGrid() once per week — it'll run a single
+    // pass at the end. Also skip on huge zooms (360 days) where the
+    // cell count makes the layout-reflow cost crash mobile Safari.
+    if (!STATE.isLoadingBookings && (assets.length * days.length) < 2000) {
+      fitNamesInGrid(grid);
+    }
     setStatus("");
   }
 
