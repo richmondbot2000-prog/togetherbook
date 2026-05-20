@@ -1709,27 +1709,50 @@ function validatePeopleFile(file) {
   if (errs.length) throw new Error("people.json validation failed: " + errs.slice(0, 5).join("; "));
 }
 
-async function commitPeopleFile(env, file, sha, message) {
-  validatePeopleFile(file);
-  file.schema_version = 1;
-  file.updated_at = new Date().toISOString();
-  file.people.sort((a, b) => ((a.name || "").toLowerCase().localeCompare((b.name || "").toLowerCase())) || (a.id || "").localeCompare(b.id || ""));
-  const body = JSON.stringify(file, null, 2) + "\n";
-  const ghHeaders = {
-    "Authorization": `Bearer ${env.GITHUB_TOKEN}`,
-    "Accept": "application/vnd.github+json",
-    "User-Agent": "apifk-workspace-worker",
-    "Content-Type": "application/json",
-  };
-  const res = await fetch(`https://api.github.com/repos/${REPO}/contents/${PEOPLE_PATH}`, {
-    method: "PUT",
-    headers: ghHeaders,
-    body: JSON.stringify({ message, content: b64Encode(body), branch: BRANCH, sha: sha || undefined }),
-  });
-  if (!res.ok) {
+async function commitPeopleFile(env, file, sha, message, mutatedPersonId) {
+  // Retry on 409 (concurrent commit raced ours). On conflict we
+  // re-fetch the file, splice our mutated Person record into the
+  // fresh copy, and try the commit again with the fresh SHA. Up to
+  // 3 attempts. Other people's concurrent edits to OTHER rows are
+  // preserved; concurrent edits to the SAME row are last-write-wins
+  // (which matches the pre-retry behaviour when two commits land
+  // sequentially with no race).
+  const MAX_ATTEMPTS = 3;
+  let currentFile = file;
+  let currentSha  = sha;
+  let lastErr     = null;
+  for (let attempt = 0; attempt < MAX_ATTEMPTS; attempt++) {
+    validatePeopleFile(currentFile);
+    currentFile.schema_version = 1;
+    currentFile.updated_at = new Date().toISOString();
+    currentFile.people.sort((a, b) => ((a.name || "").toLowerCase().localeCompare((b.name || "").toLowerCase())) || (a.id || "").localeCompare(b.id || ""));
+    const body = JSON.stringify(currentFile, null, 2) + "\n";
+    const ghHeaders = {
+      "Authorization": `Bearer ${env.GITHUB_TOKEN}`,
+      "Accept": "application/vnd.github+json",
+      "User-Agent": "apifk-workspace-worker",
+      "Content-Type": "application/json",
+    };
+    const res = await fetch(`https://api.github.com/repos/${REPO}/contents/${PEOPLE_PATH}`, {
+      method: "PUT",
+      headers: ghHeaders,
+      body: JSON.stringify({ message, content: b64Encode(body), branch: BRANCH, sha: currentSha || undefined }),
+    });
+    if (res.ok) return;
     const detail = (await res.text()).slice(0, 200);
-    throw new Error(`people.json commit failed (${res.status}): ${detail}`);
+    lastErr = new Error(`people.json commit failed (${res.status}): ${detail}`);
+    if (res.status !== 409 || mutatedPersonId == null || attempt === MAX_ATTEMPTS - 1) throw lastErr;
+    // Race lost — re-fetch + splice our mutation onto the fresh file.
+    const ourPerson = currentFile.people.find(p => String(p.id) === String(mutatedPersonId));
+    if (!ourPerson) throw lastErr;
+    const fresh = await fetchPeopleFile(env);
+    const idx = fresh.file.people.findIndex(p => String(p.id) === String(mutatedPersonId));
+    if (idx === -1) fresh.file.people.push(ourPerson);
+    else fresh.file.people[idx] = ourPerson;
+    currentFile = fresh.file;
+    currentSha  = fresh.sha;
   }
+  throw lastErr;
 }
 
 function normalisePeoplePatch(patch) {
@@ -1917,7 +1940,7 @@ async function doPeopleSet(env, body, actor, isAdmin) {
   const msg = created
     ? `People: create #${person.id} ${person.name || person.url_slug} (by ${actor})`
     : `People: update #${person.id} ${person.name || person.url_slug} (by ${actor})`;
-  await commitPeopleFile(env, file, sha, msg);
+  await commitPeopleFile(env, file, sha, msg, person.id);
 
   // If anything access-relevant changed, refresh admins.json + push the
   // new allow-list to Cloudflare Access. Non-fatal: people-set itself
@@ -4189,7 +4212,7 @@ async function bookrWritePersonUids(env, personId, bookrUids, actor) {
   const msg = arr.length
     ? `People: link Person #${p.id} to ${arr.length} BookR uid(s) (by ${actor})`
     : `People: clear BookR uids on Person #${p.id} (by ${actor})`;
-  await commitPeopleFile(env, file, sha, msg);
+  await commitPeopleFile(env, file, sha, msg, p.id);
   return p;
 }
 
