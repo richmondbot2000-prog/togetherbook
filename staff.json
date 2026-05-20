@@ -1,7 +1,7 @@
 {
   "schema_version": 2,
-  "updated_at": "2026-05-19T16:54:31.176699Z",
-  "snapshot_date": "2026-05-19",
+  "updated_at": "2026-05-20T10:29:53.354688Z",
+  "snapshot_date": "2026-05-20",
   "domain": "letme.co.uk",
   "tenants": [
     {
@@ -16,19 +16,19 @@
       "name": "togetherloans",
       "domain": "togetherloans.com",
       "delegate": "james.benamor@togetherloans.com",
-      "users": 128,
+      "users": 125,
       "suspended_hidden": 1,
       "error": null
     }
   ],
   "totals": {
-    "users": 194,
+    "users": 191,
     "suspended_hidden": 1,
     "by_department": {
-      "(unspecified)": 194
+      "(unspecified)": 191
     },
     "by_tenant": {
-      "togetherloans": 128,
+      "togetherloans": 125,
       "letme.co.uk": 66
     }
   },
@@ -103,26 +103,6 @@
       ]
     },
     {
-      "id": "113498836455446195753",
-      "email": "guillermo.aguirre@togetherloans.com",
-      "aliases": [],
-      "aliases_editable": [],
-      "name": "",
-      "given": "Guillermo",
-      "family": "Aguirre",
-      "title": "",
-      "department": "",
-      "photo_url": "",
-      "suspended": false,
-      "admin": false,
-      "deletion_time": "2026-04-30T09:37:40.000Z",
-      "last_login": "2026-04-21T13:03:45.000Z",
-      "tenant": "togetherloans",
-      "tenants": [
-        "togetherloans"
-      ]
-    },
-    {
       "id": "114980307176202609533",
       "email": "alerts@togetherloans.com",
       "aliases": [],
@@ -160,26 +140,6 @@
       "tenant": "letme.co.uk",
       "tenants": [
         "letme.co.uk"
-      ]
-    },
-    {
-      "id": "117317112397760970398",
-      "email": "rafael.arias@togetherloans.com",
-      "aliases": [],
-      "aliases_editable": [],
-      "name": "",
-      "given": "Rafael",
-      "family": "Arias",
-      "title": "",
-      "department": "",
-      "photo_url": "",
-      "suspended": false,
-      "admin": false,
-      "deletion_time": "2026-04-30T09:33:07.000Z",
-      "last_login": "2026-04-27T13:32:32.000Z",
-      "tenant": "togetherloans",
-      "tenants": [
-        "togetherloans"
       ]
     },
     {
@@ -1015,7 +975,7 @@
       "email": "chelsea.concini@togetherloans.com",
       "aliases": [],
       "aliases_editable": [],
-      "name": "Chelsea Concini",
+      "name": "",
       "given": "Chelsea",
       "family": "Concini",
       "title": "",
@@ -1023,8 +983,8 @@
       "photo_url": "",
       "suspended": false,
       "admin": false,
-      "deletion_time": "",
-      "last_login": "2026-05-01T15:45:57.000Z",
+      "deletion_time": "2026-05-19T17:21:24.000Z",
+      "last_login": "2026-05-18T11:57:10.000Z",
       "tenant": "togetherloans",
       "tenants": [
         "togetherloans"
@@ -1185,26 +1145,6 @@
       "admin": false,
       "deletion_time": "",
       "last_login": "2026-05-12T13:06:24.000Z",
-      "tenant": "togetherloans",
-      "tenants": [
-        "togetherloans"
-      ]
-    },
-    {
-      "id": "114957536046881745271",
-      "email": "kellie.dickson@togetherloans.com",
-      "aliases": [],
-      "aliases_editable": [],
-      "name": "",
-      "given": "Kellie",
-      "family": "Dickson",
-      "title": "",
-      "department": "",
-      "photo_url": "",
-      "suspended": false,
-      "admin": false,
-      "deletion_time": "2026-04-29T21:13:24.000Z",
-      "last_login": "2026-04-28T23:04:06.000Z",
       "tenant": "togetherloans",
       "tenants": [
         "togetherloans"
@@ -2928,7 +2868,7 @@
       "suspended": false,
       "admin": false,
       "deletion_time": "",
-      "last_login": "1970-01-01T00:00:00.000Z",
+      "last_login": "2026-05-20T08:58:09.000Z",
       "tenant": "togetherloans",
       "tenants": [
         "togetherloans"
@@ -4167,7 +4107,7 @@
       "suspended": false,
       "admin": false,
       "deletion_time": "",
-      "last_login": "2026-05-12T18:53:49.000Z",
+      "last_login": "2026-05-19T17:30:24.000Z",
       "tenant": "togetherloans",
       "tenants": [
         "togetherloans"
