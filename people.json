@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "updated_at": "2026-05-20T10:10:24.551Z",
+  "updated_at": "2026-05-20T10:10:26.031Z",
   "source": "build_people.py bootstrap from staff.json + annotations.json",
   "people": [
     {
@@ -1407,14 +1407,15 @@
       "directory_photo_uploaded_at": "2026-05-14T08:54:40+01:00",
       "notes": "",
       "created_at": "2026-05-17T11:13:52Z",
-      "updated_at": "2026-05-20T10:10:23.083Z",
+      "updated_at": "2026-05-20T10:10:26.031Z",
       "most_recent_payroll_id": 2,
       "on_payroll": true,
       "url_slug": "david.byatt",
       "date_of_birth": "1984-09-02",
       "bookr_uids": [
         "quW6m73sftbmzhF6HEDSzHEYW7B3"
-      ]
+      ],
+      "team": "Property"
     },
     {
       "id": 56,
