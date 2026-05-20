@@ -92,14 +92,14 @@
   .pp-sub-more a { color: #1a5fc0; }
   .pp-thead, .pp-row {
     display: grid;
-    grid-template-columns: 44px minmax(80px, 0.9fr) minmax(80px, 0.9fr) minmax(130px, 1.4fr) minmax(110px, 1fr) 200px 110px;
+    grid-template-columns: 44px minmax(90px, 1.2fr) minmax(90px, 1.2fr) minmax(80px, 0.85fr) minmax(100px, 1fr) 200px 110px;
     align-items: center;
     gap: 10px;
     padding: 10px 14px;
   }
   @media (max-width: 600px) {
     .pp-thead, .pp-row {
-      grid-template-columns: 36px minmax(60px, 0.8fr) minmax(60px, 0.8fr) minmax(110px, 1.4fr) minmax(80px, 1fr) 200px 90px;
+      grid-template-columns: 36px minmax(70px, 1.1fr) minmax(70px, 1.1fr) minmax(70px, 0.85fr) minmax(70px, 0.9fr) 200px 90px;
       gap: 6px;
       padding: 8px 10px;
     }
@@ -646,6 +646,10 @@
       const raw = p.line_manager_email_raw;
       return raw ? escapeHtml(raw) : '<span class="alt">—</span>';
     }
+    // Split first + surname onto two lines so the column stays narrow.
+    const given  = mgr.given  || (mgr.name || "").split(" ")[0] || "";
+    const family = mgr.family || (mgr.name || "").split(" ").slice(1).join(" ") || "";
+    if (given && family) return `${escapeHtml(given)}<br>${escapeHtml(family)}`;
     return escapeHtml(mgr.name || mgr.url_slug || "—");
   }
 
