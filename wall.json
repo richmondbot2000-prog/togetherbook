@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "updated_at": "2026-05-20T10:02:42.778Z",
+  "updated_at": "2026-05-20T10:52:14.685Z",
   "posts": [
     {
       "id": "post_mpdsge97_z03sf8",
@@ -12,8 +12,22 @@
         "https://media1.giphy.com/media/v1.Y2lkPWYzOWU3YTk3MTI0bzZwaWxjaXl2ZTh2NDA2bXI4dnM2MWMxcndwaGt6ZG0zMmlycSZlcD12MV9naWZzX3NlYXJjaCZjdD1n/JgWZYoIgjzsIQO8joZ/giphy.gif"
       ],
       "channel": null,
-      "reactions": {},
-      "comments": []
+      "reactions": {
+        "👍": [
+          "ben.gardner@togetherloans.com"
+        ]
+      },
+      "comments": [],
+      "react_events": [
+        {
+          "actor_email": "ben.gardner@togetherloans.com",
+          "emoji": "👍",
+          "target_kind": "post",
+          "target_id": "post_mpdsge97_z03sf8",
+          "at": "2026-05-20T10:52:14.481Z",
+          "kind": "added"
+        }
+      ]
     },
     {
       "id": "post_mpaytpuv_p51jep",
