@@ -3671,6 +3671,18 @@ function b64Encode(s) {
 }
 
 /* BookR: read+write rg-bookr Realtime DB. See SPEC for endpoints. */
+const BOOKR_AVAIL_PATH = "bookr-asset-availability.json";
+async function fetchBookrAvailability() {
+  try {
+    const res = await fetch(
+      `https://raw.githubusercontent.com/${REPO}/${BRANCH}/${BOOKR_AVAIL_PATH}?ts=${Date.now()}`,
+      { cf: { cacheTtl: 30, cacheEverything: true } },
+    );
+    if (!res.ok) return { cars: {}, properties: {} };
+    const doc = await res.json();
+    return { cars: doc.cars || {}, properties: doc.properties || {} };
+  } catch (e) { return { cars: {}, properties: {} }; }
+}
 const BOOKR_DB_URL = "https://rg-bookr.firebaseio.com";
 let _bookrToken = { value: null, exp: 0 };
 
@@ -3711,6 +3723,7 @@ async function handleBookr(req, env, url) {
     if (action === "user-match-or-create") return json(await bookrUserMatchOrCreate(env, viewerEmail, body), 200, req);
     if (action === "user-link")            return json(await bookrUserLink(env, viewerEmail, body),         200, req);
     if (action === "user-add")             return json(await bookrUserAdd(env, viewerEmail, body),          200, req);
+    if (action === "asset-availability")   return json(await bookrSetAssetAvailability(env, viewerEmail, body), 200, req);
     if (action === "user-unlink")          return json(await bookrUserUnlink(env, viewerEmail, body),       200, req);
     return json({ error: `unknown bookr action: ${action}` }, 404, req);
   } catch (e) {
@@ -3828,9 +3841,10 @@ async function bookrUsers(env) {
 }
 
 async function bookrAssets(env) {
-  const [cars, props] = await Promise.all([
+  const [cars, props, avail] = await Promise.all([
     bookrFetch(env, "/cars.json"),
     bookrFetch(env, "/properties.json"),
+    fetchBookrAvailability(),
   ]);
   const flatten = (kind, dict) => Object.entries(dict || {}).map(([id, a]) => ({
     id, type: kind,
@@ -3841,8 +3855,36 @@ async function bookrAssets(env) {
     listing_id: a.listing_id || a.listingId || "",
     minimum_age: a.minimum_age || "",
     price: (a.price === undefined ? null : a.price),
+    // Availability: default true; only false when the asset id is
+    // explicitly flagged in bookr-asset-availability.json. The admin
+    // page (/bookr-admin.html) is the only place that writes this.
+    available: (avail[kind] && avail[kind][id] === false) ? false : true,
   }));
   return { ok: true, cars: flatten("cars", cars), properties: flatten("properties", props) };
+}
+
+async function bookrSetAssetAvailability(env, viewerEmail, body) {
+  const admins = await fetchAdmins();
+  if (!admins.includes((viewerEmail || "").toLowerCase())) throw new Error("admin required");
+  const type = body && body.type;
+  const id   = body && body.id;
+  const available = !!(body && body.available);
+  if (!["cars", "properties"].includes(type)) throw new Error("type must be cars|properties");
+  if (!id) throw new Error("missing id");
+  let final = null;
+  await updateGhJson(env, BOOKR_AVAIL_PATH, doc => {
+    doc.cars       = doc.cars       || {};
+    doc.properties = doc.properties || {};
+    if (available) {
+      // True is the default -- store it by deleting the explicit-false
+      // entry, which keeps the file small over time.
+      delete doc[type][id];
+    } else {
+      doc[type][id] = false;
+    }
+    final = doc;
+  }, `BookR: ${available ? "enable" : "disable"} ${type}/${id} (by ${viewerEmail})`);
+  return { ok: true, type, id, available, file: final };
 }
 
 async function bookrBookingsRange(env, type, id, from, to) {

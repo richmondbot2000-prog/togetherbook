@@ -170,6 +170,8 @@
   .bk-cell.bk-has-avatar:hover .bk-cell-name,
   .bk-cell.bk-has-avatar.bk-pressed .bk-cell-name { opacity: 1; pointer-events: auto; }
   .bk-cell.is-external .bk-cell-avatar { background: #FF5A5F; }
+  .bk-admin-link { padding: 18px 0 8px; text-align: center; font: italic 400 12px/1.4 var(--font-display); color: var(--ink-500); }
+  .bk-admin-link a { color: inherit; text-decoration: underline; text-decoration-style: dotted; }
   /* Popover that opens when you click a cell. */
   .bk-pop {
     position: fixed; z-index: 1000;
@@ -263,6 +265,9 @@
     </div>
   </div>
   <div id="bkMinePanel" class="bk-mine-section" style="display:none"></div>
+  <div id="bkAdminLink" class="bk-admin-link" hidden>
+    <a href="/bookr-admin.html">Admin &mdash; manage which assets are bookable</a>
+  </div>
 </section>
 <div id="bkPop" class="bk-pop" style="display:none"></div>
 <script>
@@ -341,11 +346,30 @@
     renderTopChrome();
     render();
     usersP.then(u => { STATE.users = u; if (STATE.tab === "calendar") renderGrid(); });
-    adminP.then(a => { STATE.isAdmin = a; renderUserPicker(); });
-    fetch("/people.json", { cache: "no-store" }).then(r => r.ok ? r.json() : null).catch(() => null).then(doc => {
-      const list = (doc && doc.people) || [];
+    adminP.then(a => {
+      STATE.isAdmin = a;
+      renderUserPicker();
+      const el = document.querySelector("#bkAdminLink");
+      if (el) el.hidden = !a;
+    });
+    /* Pull people.json via the worker, not /people.json directly, so we
+       see the just-committed bookr_uids without GH Pages CDN lag. Also
+       fold in annotations.json for any photo timestamp that lives there
+       rather than on the Person record. */
+    Promise.all([
+      fetch("/api/workspace/table?file=people", { cache: "no-store", headers: { "Cache-Control": "no-cache" } }).then(r => r.ok ? r.json() : null).catch(() => null),
+      fetch("/annotations.json", { cache: "no-store" }).then(r => r.ok ? r.json() : null).catch(() => null),
+    ]).then(([peopleDoc, annDoc]) => {
+      const list = (peopleDoc && peopleDoc.people) || [];
+      const ann = (annDoc && annDoc.annotations) || {};
       const map = {};
       for (const p of list) {
+        // Fold any annotations-side photo timestamp onto the Person so the
+        // avatar lookup is a single .directory_photo_uploaded_at field.
+        if (!p.directory_photo_uploaded_at && p.main_google_email) {
+          const a = ann[p.main_google_email.toLowerCase()];
+          if (a && a.directory_photo_uploaded_at) p.directory_photo_uploaded_at = a.directory_photo_uploaded_at;
+        }
         for (const uid of (p.bookr_uids || [])) {
           if (uid) map[uid] = p;
         }
@@ -470,10 +494,11 @@
   function renderUserPicker() { /* removed */ }
 
   function visibleAssets() {
-    if (STATE.filter === "cars") return STATE.cars.map(a => Object.assign({}, a, { type: "cars" }));
-    if (STATE.filter === "properties") return STATE.properties.map(a => Object.assign({}, a, { type: "properties" }));
-    const cs = STATE.cars.map(a => Object.assign({}, a, { type: "cars" }));
-    const ps = STATE.properties.map(a => Object.assign({}, a, { type: "properties" }));
+    const keep = a => (a && a.available !== false);
+    if (STATE.filter === "cars") return STATE.cars.filter(keep).map(a => Object.assign({}, a, { type: "cars" }));
+    if (STATE.filter === "properties") return STATE.properties.filter(keep).map(a => Object.assign({}, a, { type: "properties" }));
+    const cs = STATE.cars.filter(keep).map(a => Object.assign({}, a, { type: "cars" }));
+    const ps = STATE.properties.filter(keep).map(a => Object.assign({}, a, { type: "properties" }));
     return cs.concat(ps);
   }
   function dateRange() {

@@ -1,0 +1,194 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>BookR Admin &middot; TogetherBOOK</title>
+<link rel="icon" type="image/png" href="/site-icon.png">
+<link rel="apple-touch-icon" href="/site-icon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&family=Newsreader:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500;1,600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/quiet-tokens.css">
+<link rel="stylesheet" href="/quiet.css">
+<link rel="stylesheet" href="/quiet-extras.css">
+<style>
+  .ba-page { max-width: 920px; margin: 16px auto 56px; padding: 0 16px; font: 400 14px/1.5 var(--font-body); color: var(--ink-900); }
+  .ba-page h1 { font: 700 24px/1.2 var(--font-display); margin: 12px 0 4px; }
+  .ba-page .ba-lede { font: italic 400 14px/1.4 var(--font-display); color: var(--ink-600); margin: 0 0 18px; }
+  .ba-status { font: 400 13px/1.4 var(--font-mono); color: var(--ink-500); padding: 8px 0; min-height: 22px; }
+  .ba-deny { padding: 18px; background: var(--paper-100); border: 1px solid var(--ink-300); color: var(--ink-900); font: 500 14px/1.4 var(--font-body); }
+  .ba-section h2 { font: 600 14px/1.2 var(--font-body); margin: 22px 0 8px; text-transform: uppercase; letter-spacing: 0.04em; color: var(--ink-600); }
+  .ba-list { border: 1px solid var(--ink-300); background: var(--paper-50); }
+  .ba-row {
+    display: grid; grid-template-columns: 56px 1fr 110px;
+    gap: 12px; align-items: center;
+    padding: 10px 12px; border-bottom: 1px solid var(--paper-300);
+  }
+  .ba-row:last-child { border-bottom: 0; }
+  .ba-row.is-off { background: var(--paper-100); color: var(--ink-500); }
+  .ba-row-id { font: 500 12px/1.2 var(--font-mono); color: var(--ink-500); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .ba-row-main { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+  .ba-row-title { font: 600 14px/1.2 var(--font-body); }
+  .ba-row-sub { font: 400 12px/1.3 var(--font-mono); color: var(--ink-500); white-space: normal; overflow-wrap: anywhere; }
+  .ba-toggle { display: flex; align-items: center; gap: 8px; justify-content: flex-end; }
+  .ba-toggle label { font: 500 12px/1.2 var(--font-body); user-select: none; }
+  .ba-toggle input { width: 18px; height: 18px; accent-color: var(--brass-500, #C8973F); cursor: pointer; }
+  .ba-row .ba-rowstatus { font: italic 400 11px/1.2 var(--font-display); color: var(--ink-500); min-width: 70px; text-align: right; }
+  .ba-row .ba-rowstatus.is-ok  { color: var(--ink-700); }
+  .ba-row .ba-rowstatus.is-err { color: var(--red-600, #b04b3a); }
+  .ba-foot { padding: 18px 0; font: italic 400 12px/1.4 var(--font-display); color: var(--ink-500); text-align: center; }
+  .ba-foot a { color: inherit; text-decoration: underline; text-decoration-style: dotted; }
+</style>
+</head>
+<body>
+
+<header class="qb-topbar">
+  <a class="qb-brand" href="/wall.html" aria-label="TogetherBOOK &mdash; home">
+    <img class="qb-brand-logo" src="/togetherbook-logo.png" alt="TogetherBOOK">
+  </a>
+  <button class="qb-hamburger" aria-label="Toggle navigation menu" aria-expanded="false"
+          onclick="document.body.classList.toggle('nav-open');this.setAttribute('aria-expanded',document.body.classList.contains('nav-open'))">
+    <span></span><span></span><span></span>
+  </button>
+  <nav class="qb-nav">
+    <a class="qb-nav-link" href="/wall.html">Wall</a>
+    <a class="qb-nav-link is-active" href="/bookr.html">BOOKR</a>
+    <a class="qb-nav-link" href="/directory.html">People</a>
+    <a class="qb-nav-link" href="/reports.html">Business</a>
+    <a class="qb-nav-link" href="/index.html">System</a>
+  </nav>
+</header>
+<div class="qb-nav-backdrop" onclick="document.body.classList.remove('nav-open')"></div>
+
+<main class="ba-page">
+  <h1>BookR &middot; Asset availability</h1>
+  <p class="ba-lede">Untick an asset to remove it from the calendar. This only hides the row from the booking grid in TogetherBook &mdash; the asset itself stays in BookR untouched, and any existing bookings stay where they are.</p>
+  <div class="ba-status" id="baStatus">Loading&hellip;</div>
+  <div id="baGate"></div>
+  <div id="baBody"></div>
+  <div class="ba-foot"><a href="/bookr.html">&larr; back to the calendar</a></div>
+</main>
+
+<script>
+(function () {
+  const $ = sel => document.querySelector(sel);
+  const STATE = { isAdmin: false, cars: [], properties: [] };
+
+  function setStatus(msg) {
+    const el = $("#baStatus");
+    if (!el) return;
+    el.textContent = msg || "";
+  }
+
+  async function load() {
+    setStatus("Loading…");
+    let whoami = null, assets = null;
+    try {
+      [whoami, assets] = await Promise.all([
+        fetch("/api/workspace/whoami", { cache: "no-store" }).then(r => r.ok ? r.json() : null).catch(() => null),
+        fetch("/api/bookr/assets",      { cache: "no-store" }).then(r => r.ok ? r.json() : null).catch(() => null),
+      ]);
+    } catch (e) {}
+    STATE.isAdmin = !!(whoami && (whoami.is_admin || whoami.is_togetherbook_admin));
+    if (!STATE.isAdmin) {
+      $("#baGate").innerHTML = '<div class="ba-deny">Admin only. Sign in as a TogetherBook admin to edit availability.</div>';
+      setStatus("");
+      return;
+    }
+    STATE.cars       = (assets && assets.cars)       || [];
+    STATE.properties = (assets && assets.properties) || [];
+    render();
+    setStatus("");
+  }
+
+  function render() {
+    const body = $("#baBody");
+    body.innerHTML = "";
+    body.appendChild(renderSection("cars",       "Cars",       STATE.cars));
+    body.appendChild(renderSection("properties", "Properties", STATE.properties));
+  }
+
+  function renderSection(kind, label, list) {
+    const sec = document.createElement("section");
+    sec.className = "ba-section";
+    const h = document.createElement("h2");
+    h.textContent = label + " (" + list.length + ")";
+    sec.appendChild(h);
+    const ul = document.createElement("div");
+    ul.className = "ba-list";
+    const sorted = list.slice().sort((a, b) => (a.title || a.id).localeCompare(b.title || b.id));
+    for (const a of sorted) ul.appendChild(renderRow(kind, a));
+    sec.appendChild(ul);
+    return sec;
+  }
+
+  function renderRow(kind, a) {
+    const row = document.createElement("div");
+    row.className = "ba-row" + (a.available === false ? " is-off" : "");
+    const id = document.createElement("div");
+    id.className = "ba-row-id";
+    id.textContent = a.id;
+    row.appendChild(id);
+    const main = document.createElement("div");
+    main.className = "ba-row-main";
+    const t = document.createElement("div");
+    t.className = "ba-row-title";
+    t.textContent = a.title || a.id;
+    main.appendChild(t);
+    if (a.sub_title || a.address) {
+      const s = document.createElement("div");
+      s.className = "ba-row-sub";
+      s.textContent = [a.sub_title, a.address].filter(Boolean).join(" · ");
+      main.appendChild(s);
+    }
+    row.appendChild(main);
+
+    const toggle = document.createElement("div");
+    toggle.className = "ba-toggle";
+    const status = document.createElement("span");
+    status.className = "ba-rowstatus";
+    const cb = document.createElement("input");
+    cb.type = "checkbox";
+    cb.checked = (a.available !== false);
+    const lbl = document.createElement("label");
+    lbl.textContent = "Available?";
+    lbl.prepend(cb);
+    cb.addEventListener("change", async () => {
+      const wantAvailable = cb.checked;
+      cb.disabled = true;
+      status.textContent = "Saving…";
+      status.className = "ba-rowstatus";
+      try {
+        const res = await fetch("/api/bookr/asset-availability", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ type: kind, id: a.id, available: wantAvailable }),
+        });
+        const out = await res.json();
+        if (!res.ok || !out.ok) throw new Error(out.error || ("HTTP " + res.status));
+        a.available = wantAvailable;
+        row.classList.toggle("is-off", !wantAvailable);
+        const stamp = new Date();
+        status.textContent = "Saved " + String(stamp.getHours()).padStart(2,"0") + ":" + String(stamp.getMinutes()).padStart(2,"0");
+        status.className = "ba-rowstatus is-ok";
+      } catch (err) {
+        cb.checked = !wantAvailable;
+        status.textContent = "Failed";
+        status.className = "ba-rowstatus is-err";
+        status.title = err.message || String(err);
+      } finally {
+        cb.disabled = false;
+      }
+    });
+    toggle.appendChild(lbl);
+    toggle.appendChild(status);
+    row.appendChild(toggle);
+    return row;
+  }
+
+  load();
+})();
+</script>
+</body>
+</html>
