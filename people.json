@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "updated_at": "2026-05-20T15:01:37.465Z",
+  "updated_at": "2026-05-20T15:02:47.487Z",
   "source": "build_people.py bootstrap from staff.json + annotations.json",
   "people": [
     {
@@ -2045,7 +2045,7 @@
       "department": "",
       "phone": "07590267556",
       "address": "36\nStanfield road\nBournemouth\nDorset\nBH9 2NP",
-      "start_date": "2026-04-06",
+      "start_date": "2004-01-05",
       "line_manager_id": "184",
       "line_manager_email_raw": "",
       "role": "",
@@ -2056,7 +2056,7 @@
       "most_recent_payroll_id": 89,
       "suspended": false,
       "created_at": "2026-05-17T14:06:41Z",
-      "updated_at": "2026-05-20T15:01:37.465Z",
+      "updated_at": "2026-05-20T15:02:47.487Z",
       "url_slug": "gabriella.bacci",
       "date_of_birth": "1991-12-13",
       "team": "Underwriting"
