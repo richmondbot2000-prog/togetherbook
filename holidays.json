@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "updated_at": "2026-05-20T10:32:30.828Z",
+  "updated_at": "2026-05-20T10:32:34.955Z",
   "year_start": "2026-04-01",
   "year_end": "2027-03-31",
   "by_user": {
@@ -58,7 +58,6 @@
         "2026-04-13": "office",
         "2026-04-14": "office",
         "2026-04-15": "office",
-        "2026-04-16": "office",
         "2026-04-17": "office",
         "2026-04-20": "office",
         "2026-04-24": "office",
@@ -1093,6 +1092,14 @@
       "to": null,
       "changed_by": "clementia.dsouza@togetherloans.com",
       "changed_at": "2026-05-20T10:32:30.828Z"
+    },
+    {
+      "user_email": "clementia.dsouza@togetherloans.com",
+      "date": "2026-04-16",
+      "from": "office",
+      "to": null,
+      "changed_by": "clementia.dsouza@togetherloans.com",
+      "changed_at": "2026-05-20T10:32:34.955Z"
     }
   ]
 }
