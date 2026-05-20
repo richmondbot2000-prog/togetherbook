@@ -1,19 +1,25 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" aria-label="Airbnb">
-  <circle cx="50" cy="50" r="50" fill="#FF5A5F"/>
-  <path d="M50 22.5
-           C 41 22.5, 35 31.5, 35 43
-           C 35 51, 39.5 60, 44 67
-           C 47 71.5, 48.5 73.5, 50 75
-           C 51.5 73.5, 53 71.5, 56 67
-           C 60.5 60, 65 51, 65 43
-           C 65 31.5, 59 22.5, 50 22.5 Z
-           M 50 32
-           C 55 32, 58.5 37, 58.5 43
-           C 58.5 49, 55.5 56, 52 61.5
-           C 51 63, 50.5 63.5, 50 64
-           C 49.5 63.5, 49 63, 48 61.5
-           C 44.5 56, 41.5 49, 41.5 43
-           C 41.5 37, 45 32, 50 32 Z"
-        fill="white"/>
+  <circle cx="50" cy="50" r="50" fill="#000000"/>
+  <g transform="translate(22.5,4) scale(0.55)">
+    <path d="M50 22.5
+             C 41 22.5, 35 31.5, 35 43
+             C 35 51, 39.5 60, 44 67
+             C 47 71.5, 48.5 73.5, 50 75
+             C 51.5 73.5, 53 71.5, 56 67
+             C 60.5 60, 65 51, 65 43
+             C 65 31.5, 59 22.5, 50 22.5 Z
+             M 50 32
+             C 55 32, 58.5 37, 58.5 43
+             C 58.5 49, 55.5 56, 52 61.5
+             C 51 63, 50.5 63.5, 50 64
+             C 49.5 63.5, 49 63, 48 61.5
+             C 44.5 56, 41.5 49, 41.5 43
+             C 41.5 37, 45 32, 50 32 Z"
+          fill="#ffffff"/>
+  </g>
+  <text x="50" y="82" text-anchor="middle"
+        font-family="-apple-system, BlinkMacSystemFont, system-ui, sans-serif"
+        font-size="16" font-weight="700" letter-spacing="-0.4"
+        fill="#ffffff">airbnb</text>
 </svg>
