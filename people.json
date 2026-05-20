@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "updated_at": "2026-05-20T10:02:48.413Z",
+  "updated_at": "2026-05-20T10:02:51.189Z",
   "source": "build_people.py bootstrap from staff.json + annotations.json",
   "people": [
     {
@@ -481,13 +481,13 @@
       "phone": "",
       "address": "30 Endfield Road\nBournemouth\nDorset\nBH9 1TH",
       "start_date": "2025-09-15",
-      "line_manager_id": null,
+      "line_manager_id": "184",
       "line_manager_email_raw": "",
       "role": "",
       "directory_photo_uploaded_at": "2026-05-14T09:02:42+01:00",
       "notes": "",
       "created_at": "2026-05-17T11:13:52Z",
-      "updated_at": "2026-05-20T10:02:48.413Z",
+      "updated_at": "2026-05-20T10:02:51.189Z",
       "most_recent_payroll_id": 11,
       "on_payroll": true,
       "url_slug": "axel.horsfall",
