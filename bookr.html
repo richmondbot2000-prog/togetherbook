@@ -989,20 +989,18 @@
         render();
       });
     });
-    document.querySelector("#bkZoom").addEventListener("change", async (e) => {
+    document.querySelector("#bkZoom").addEventListener("change", (e) => {
       STATE.zoom = parseInt(e.target.value, 10) || 30;
-      setStatus("Reloading…");
-      await refreshAllBookings();
-      render();
+      setStatus("Loading…");
+      requestAnimationFrame(() => { refreshAllBookings(); });
     });
-    document.querySelector("#bkFilter").addEventListener("click", async (e) => {
+    document.querySelector("#bkFilter").addEventListener("click", (e) => {
       const b = e.target.closest("button");
       if (!b) return;
       document.querySelectorAll("#bkFilter button").forEach(x => x.classList.toggle("is-active", x === b));
       STATE.filter = b.dataset.f;
-      setStatus("Reloading…");
-      await refreshAllBookings();
-      render();
+      setStatus("Loading…");
+      requestAnimationFrame(() => { refreshAllBookings(); });
     });
     // #bkChangeUser dropdown was removed — users only book as themselves now.
     /* Mobile: press-and-hold over an avatar reveals the name. */
