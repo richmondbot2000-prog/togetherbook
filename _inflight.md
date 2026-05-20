@@ -21,6 +21,6 @@ _Cross-session coordination file. Each active Claude Code session adds a row her
 
 | HH:MM UTC | session | scope | note |
 |---|---|---|---|
-| now | hmbqa1 | bookr_uid->bookr_uids migration | worker+profile.js+bookr.html+scripts |
+| _no active sessions_ | | | |
 
 <!-- INFLIGHT:END -->
