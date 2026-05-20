@@ -144,7 +144,7 @@
   .bk-cell-name {
     display: block;
     font: 500 11px/1.15 var(--font-body); color: var(--ink-900);
-    white-space: normal; word-break: break-word; overflow-wrap: anywhere;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
     max-width: 100%;
   }
   /* Avatar+name overlay. Image fills the cell; name shows on hover */
@@ -676,7 +676,24 @@
       grid.appendChild(buildAssetCell(a));
       days.forEach(d => grid.appendChild(buildBookingCell(a, d, todayY)));
     });
+    fitNamesInGrid(grid);
     setStatus("");
+  }
+
+  function fitNamesInGrid(grid) {
+    const names = grid.querySelectorAll(".bk-cell-name");
+    for (const el of names) {
+      el.style.fontSize = "";
+      const parent = el.parentElement;
+      if (!parent) continue;
+      const max = parent.clientWidth - 6;
+      if (max <= 0) continue;
+      let size = 11;
+      while (el.scrollWidth > max && size > 7) {
+        size -= 0.5;
+        el.style.fontSize = size + "px";
+      }
+    }
   }
 
   /* Walk consecutive same-uid cells around (type, id, date) to find */
