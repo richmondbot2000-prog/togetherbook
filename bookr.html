@@ -321,6 +321,21 @@
     loadBookingsProgressively();
   }
 
+  // Full re-fetch of all bookings in the current zoom range. Called
+  // after a book / cancel / zoom / filter / tab change so the grid
+  // reflects everyone's current state, not just the local optimistic
+  // patch. Was previously referenced 5 places but never defined —
+  // which silently broke the post-action re-render and made bookings
+  // look like they didn't take until a hard browser refresh.
+  async function refreshAllBookings() {
+    STATE.bookings = {};
+    STATE.pendingDates = new Set();
+    const { days } = dateRange();
+    days.forEach(d => STATE.pendingDates.add(ymd(d)));
+    render();
+    await loadBookingsProgressively();
+  }
+
   async function loadBookingsProgressively() {
     const { days } = dateRange();
     const chunks = [];
@@ -644,37 +659,42 @@
     closePop();
     const payload = { type: type, asset: asset, date: date };
     if (STATE.isAdmin && STATE.targetEmail) payload.target_email = STATE.targetEmail;
+    let ok = false;
     try {
       const r = await fetch("/api/bookr/book", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(payload), cache: "no-store" });
       const j = await r.json();
       if (!r.ok || !j.ok) throw new Error(j.error || r.statusText);
-      /* Optimistic patch + re-fetch */
+      // Optimistic patch — book appears in the cell on the next
+      // render, no waiting for the background refresh.
       const key = type + ":" + asset;
       STATE.bookings[key] = STATE.bookings[key] || {};
       STATE.bookings[key][date] = j.uid;
+      ok = true;
     } catch (e) {
       alert("Could not book: " + e.message);
-    } finally {
-      cell.classList.remove("is-pending");
-      refreshAllBookings().then(render);
     }
+    cell.classList.remove("is-pending");
+    render();
+    if (ok) loadBookingsProgressively().catch(() => {});
   }
 
   async function cancelOne(type, asset, date, cell) {
     cell.classList.add("is-pending");
     closePop();
+    let ok = false;
     try {
       const r = await fetch("/api/bookr/cancel", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ type: type, asset: asset, date: date }), cache: "no-store" });
       const j = await r.json();
       if (!r.ok || !j.ok) throw new Error(j.error || r.statusText);
       const key = type + ":" + asset;
       if (STATE.bookings[key]) STATE.bookings[key][date] = "free";
+      ok = true;
     } catch (e) {
       alert("Could not cancel: " + e.message);
-    } finally {
-      cell.classList.remove("is-pending");
-      refreshAllBookings().then(render);
     }
+    cell.classList.remove("is-pending");
+    render();
+    if (ok) loadBookingsProgressively().catch(() => {});
   }
 
   /* My Bookings — list every cell whose value equals my uid, from the
