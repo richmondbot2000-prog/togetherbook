@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "updated_at": "2026-05-20T10:24:47.120Z",
+  "updated_at": "2026-05-20T10:24:48.937Z",
   "year_start": "2026-04-01",
   "year_end": "2027-03-31",
   "by_user": {
@@ -85,7 +85,8 @@
         "2026-08-10": "holiday",
         "2026-08-11": "holiday",
         "2026-08-12": "holiday",
-        "2026-08-13": "holiday"
+        "2026-08-13": "holiday",
+        "2026-08-14": "holiday"
       },
       "notes": {}
     }
@@ -698,6 +699,14 @@
       "to": "holiday",
       "changed_by": "sophia.ugwunne@letme.com",
       "changed_at": "2026-05-20T10:24:47.120Z"
+    },
+    {
+      "user_email": "grainne.cranna@togetherloans.com",
+      "date": "2026-08-14",
+      "from": null,
+      "to": "holiday",
+      "changed_by": "sophia.ugwunne@letme.com",
+      "changed_at": "2026-05-20T10:24:48.937Z"
     }
   ]
 }
