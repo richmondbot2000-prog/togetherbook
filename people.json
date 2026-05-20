@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "updated_at": "2026-05-20T10:07:06.410Z",
+  "updated_at": "2026-05-20T10:07:28.465Z",
   "source": "build_people.py bootstrap from staff.json + annotations.json",
   "people": [
     {
@@ -1078,7 +1078,7 @@
       "directory_photo_uploaded_at": "2026-05-14T08:56:24+01:00",
       "notes": "",
       "created_at": "2026-05-17T11:13:52Z",
-      "updated_at": "2026-05-20T10:07:06.410Z",
+      "updated_at": "2026-05-20T10:07:28.465Z",
       "most_recent_payroll_id": 15,
       "on_payroll": true,
       "url_slug": "clementia.dsouza",
@@ -1086,7 +1086,8 @@
       "bookr_uids": [
         "54YEk0W4JkY4XFQhSI5NfA2riEH2"
       ],
-      "team": "Finance"
+      "team": "Finance",
+      "holiday_plan": "Unlimited"
     },
     {
       "id": 44,
