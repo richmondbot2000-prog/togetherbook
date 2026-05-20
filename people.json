@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "updated_at": "2026-05-20T15:03:01.920Z",
+  "updated_at": "2026-05-20T15:03:08.110Z",
   "source": "build_people.py bootstrap from staff.json + annotations.json",
   "people": [
     {
@@ -2056,9 +2056,9 @@
       "most_recent_payroll_id": 89,
       "suspended": false,
       "created_at": "2026-05-17T14:06:41Z",
-      "updated_at": "2026-05-20T15:03:01.920Z",
+      "updated_at": "2026-05-20T15:03:08.110Z",
       "url_slug": "gabriella.bacci",
-      "date_of_birth": "1991-12-13",
+      "date_of_birth": "2004-01-05",
       "team": "Underwriting"
     },
     {
