@@ -1202,6 +1202,31 @@
   // staff + annotations load. Drives whether the Team tab appears, and
   // whether the manager view's edit popover offers "Approved Holiday".
   let directReports = new Set();
+
+  // Direct reports = anyone whose line_manager points at the viewer,
+  // sourced from BOTH annotations.json (legacy) AND people.json's
+  // Person.line_manager_id (the canonical store the Directory writes).
+  // Returns a Set of every email linked to those Persons so look-ups
+  // work whichever address the report's holidays.json entry uses.
+  function buildDirectReports(viewer) {
+    const out = new Set();
+    const vlc = (viewer || "").toLowerCase();
+    if (!vlc) return out;
+    for (const [emp, mgr] of Object.entries(lineManagerByEmail || {})) {
+      if ((mgr || "").toLowerCase() === vlc) out.add(emp.toLowerCase());
+    }
+    const me = personByEmail[vlc];
+    if (me) {
+      for (const pp of peopleList) {
+        if (pp.line_manager_id == null || pp.line_manager_id === "") continue;
+        if (String(pp.line_manager_id) !== String(me.id)) continue;
+        const linked = [pp.main_google_email, ...(pp.alt_google_emails || []), pp.external_google_email]
+          .filter(Boolean).map(x => x.toLowerCase());
+        for (const e of linked) out.add(e);
+      }
+    }
+    return out;
+  }
   let currentView = "own"; // "own" | "team"
 
   let holidaysDoc = null; // full holidays.json
@@ -1311,11 +1336,7 @@
       const mgr = (v && v.line_manager) ? String(v.line_manager).toLowerCase() : "";
       if (mgr) lineManagerByEmail[k.toLowerCase()] = mgr;
     }
-    directReports = new Set(
-      Object.entries(lineManagerByEmail)
-        .filter(([_, mgr]) => mgr === viewerEmail.toLowerCase())
-        .map(([emp]) => emp.toLowerCase())
-    );
+    directReports = buildDirectReports(viewerEmail);
     selectedEmail = viewerEmail.toLowerCase();
     // Load seen-event IDs for the bell.
     if (seen && seen.by_user && seen.by_user[viewerEmail.toLowerCase()]) {
@@ -1599,11 +1620,7 @@
         const mgr = (v && v.line_manager) ? String(v.line_manager).toLowerCase() : "";
         if (mgr) lineManagerByEmail[k.toLowerCase()] = mgr;
       }
-      directReports = new Set(
-        Object.entries(lineManagerByEmail)
-          .filter(([_, mgr]) => mgr === viewerEmail.toLowerCase())
-          .map(([emp]) => emp.toLowerCase())
-      );
+      directReports = buildDirectReports(viewerEmail);
       // Re-run setupViewTabs so the Team tab can appear / disappear as
       // the report set changes — without a hard refresh.
       setupViewTabs();
