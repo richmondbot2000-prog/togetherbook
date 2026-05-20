@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "updated_at": "2026-05-20T10:05:53.140Z",
+  "updated_at": "2026-05-20T10:05:54.882Z",
   "source": "build_people.py bootstrap from staff.json + annotations.json",
   "people": [
     {
@@ -3718,18 +3718,17 @@
       "phone": "07510664251",
       "address": "68 Cucklington Gardens\nBournemouth\nDorset\nBH9 3QS",
       "start_date": "2026-01-05",
-      "line_manager_id": null,
+      "line_manager_id": "184",
       "line_manager_email_raw": "",
       "role": "",
       "directory_photo_uploaded_at": "",
       "notes": "",
       "created_at": "2026-05-17T11:13:52Z",
-      "updated_at": "2026-05-20T10:05:53.140Z",
+      "updated_at": "2026-05-20T10:05:53.868Z",
       "most_recent_payroll_id": 28,
       "on_payroll": true,
       "url_slug": "maisey.lapskas",
-      "date_of_birth": "2002-06-29",
-      "team": "Underwriting"
+      "date_of_birth": "2002-06-29"
     },
     {
       "id": 135,
