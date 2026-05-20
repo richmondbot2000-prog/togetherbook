@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "updated_at": "2026-05-20T14:23:27.371Z",
+  "updated_at": "2026-05-20T14:23:38.284Z",
   "source": "build_people.py bootstrap from staff.json + annotations.json",
   "people": [
     {
@@ -957,11 +957,11 @@
       "start_date": "2026-12-15",
       "line_manager_id": "10",
       "line_manager_email_raw": "",
-      "role": "",
+      "role": "Accounts",
       "directory_photo_uploaded_at": "2026-05-14T08:58:36+01:00",
       "notes": "",
       "created_at": "2026-05-17T11:13:52Z",
-      "updated_at": "2026-05-20T14:23:27.371Z",
+      "updated_at": "2026-05-20T14:23:38.284Z",
       "url_slug": "cherry.liu",
       "most_recent_payroll_id": null,
       "holiday_plan": "Unlimited"
