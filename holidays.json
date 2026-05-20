@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "updated_at": "2026-05-20T11:15:55.290Z",
+  "updated_at": "2026-05-20T11:15:56.755Z",
   "year_start": "2026-04-01",
   "year_end": "2027-03-31",
   "by_user": {
@@ -140,7 +140,8 @@
         "2026-04-08": "approved-holiday",
         "2026-04-09": "approved-holiday",
         "2026-04-10": "approved-holiday",
-        "2026-04-14": "approved-holiday"
+        "2026-04-14": "approved-holiday",
+        "2026-04-15": "approved-holiday"
       },
       "notes": {}
     }
@@ -1393,6 +1394,14 @@
       "to": "approved-holiday",
       "changed_by": "clementia.dsouza@togetherloans.com",
       "changed_at": "2026-05-20T11:15:55.290Z"
+    },
+    {
+      "user_email": "navodi.sammani@togetherloans.com",
+      "date": "2026-04-15",
+      "from": null,
+      "to": "approved-holiday",
+      "changed_by": "clementia.dsouza@togetherloans.com",
+      "changed_at": "2026-05-20T11:15:56.755Z"
     }
   ]
 }
