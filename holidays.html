@@ -1567,7 +1567,13 @@
   // even with no direct reports, but the *contents* of Team and
   // Activity stay scoped to actual direct reports for everyone.
   function effectiveTeamMembers() {
-    return directReports;
+    // Managers see themselves alongside their reports in the Team
+    // Calendar — so they can spot clashes against their own time-off
+    // without flipping to "My calendar".
+    if (!directReports || directReports.size === 0) return directReports;
+    const set = new Set(directReports);
+    if (viewerEmail) set.add(viewerEmail.toLowerCase());
+    return set;
   }
 
   function setupViewTabs() {
@@ -1923,16 +1929,40 @@
     root.innerHTML = "";
     if (!viewerIsAdmin) return;
     const me = (viewerEmail || "").toLowerCase();
-    const myMgr = (lineManagerByEmail[me] || "").toLowerCase();
     const countEl = document.getElementById("hdMgmtCount");
     if (countEl) countEl.textContent = "0";
+    let myMgr = (lineManagerByEmail[me] || "").toLowerCase();
+    let myMgrPerson = null;
     if (!myMgr) {
+      const mePerson = personByEmail[me];
+      if (mePerson && mePerson.line_manager_id != null && mePerson.line_manager_id !== "") {
+        myMgrPerson = peopleById[mePerson.line_manager_id] || null;
+        if (myMgrPerson) myMgr = (myMgrPerson.main_google_email || "").toLowerCase();
+      }
+    } else {
+      myMgrPerson = personByEmail[myMgr] || null;
+    }
+    if (!myMgr && !myMgrPerson) {
       root.innerHTML = `<div class="hd-team-empty">No line manager is set for you on the Directory page yet, so there's no management team to show.</div>`;
       return;
     }
     const peers = new Set();
     for (const [emp, mgr] of Object.entries(lineManagerByEmail)) {
       if ((mgr || "").toLowerCase() === myMgr) peers.add(emp.toLowerCase());
+    }
+    if (myMgrPerson) {
+      for (const pp of peopleList) {
+        if (pp.line_manager_id == null || pp.line_manager_id === "") continue;
+        if (String(pp.line_manager_id) !== String(myMgrPerson.id)) continue;
+        const linked = [pp.main_google_email, ...(pp.alt_google_emails || []), pp.external_google_email]
+          .filter(Boolean).map(x => x.toLowerCase());
+        for (const e of linked) peers.add(e);
+      }
+      const mgrLinked = [myMgrPerson.main_google_email, ...(myMgrPerson.alt_google_emails || []), myMgrPerson.external_google_email]
+        .filter(Boolean).map(x => x.toLowerCase());
+      for (const e of mgrLinked) peers.add(e);
+    } else if (myMgr) {
+      peers.add(myMgr);
     }
     if (peers.size === 0) {
       root.innerHTML = `<div class="hd-team-empty">No one is listed as reporting to your line manager.</div>`;
