@@ -70,23 +70,33 @@
   }
   /* The grid lives in a horizontally scrollable wrapper so the sticky
      asset column always stays put on mobile. */
-  .bk-grid-wrap { overflow-x: auto; border: 1px solid var(--ink-300); background: var(--paper-50); }
+  .bk-grid-wrap {
+    overflow-x: auto; max-width: 100%;
+    border: 1px solid var(--ink-300); background: var(--paper-50);
+    -webkit-overflow-scrolling: touch;
+  }
   .bk-grid {
     display: grid; min-width: 100%;
     /* grid-template-columns is set inline by JS once we know zoom range. */
     font: 400 12px/1.3 var(--font-body);
   }
   .bk-cell {
-    border-right: 1px solid var(--paper-300); border-bottom: 1px solid var(--paper-300);
+    border-right: 1px solid #ffffff; border-bottom: 1px solid #ffffff;
     padding: 2px; min-height: 64px; box-sizing: border-box;
     display: flex; align-items: center; justify-content: center; text-align: center;
   }
-  .bk-cell.is-today-col { background: var(--paper-200); }
-  .bk-cell.is-weekend { background: var(--paper-100); }
-  .bk-cell.is-past { color: var(--ink-400); background: var(--paper-100); cursor: default; }
+  /* Today gets thick black side-borders so it pops without changing
+     the column width (no border-left + border-right would push the
+     grid out of alignment; box-shadow inset draws inside the cell). */
+  .bk-cell.is-today-col {
+    box-shadow: inset 2px 0 0 0 #000, inset -2px 0 0 0 #000;
+  }
+  .bk-cell.is-weekend { background: #ffffff; }
+  .bk-cell.is-past { color: var(--ink-400); background: #ffffff; cursor: default; }
   .bk-cell.is-free { cursor: pointer; }
   .bk-cell.is-free:hover { background: var(--brass-50); }
-  .bk-cell.is-booked { background: rgba(44, 62, 102, 0.10); cursor: pointer; color: var(--ink-900); }
+  /* Booked cells: 75% grey (≈ #404040) so the round avatar pops on top. */
+  .bk-cell.is-booked { background: rgba(0, 0, 0, 0.75); cursor: pointer; color: var(--paper-50); }
   .bk-cell.is-mine { background: rgba(200, 151, 63, 0.18); }
   .bk-cell.is-pending { opacity: 0.55; cursor: progress; }
   .bk-cell.is-loading { position: relative; cursor: progress; background: var(--paper-100); }
@@ -101,9 +111,9 @@
   .bk-asset-cell {
     position: sticky; left: 0; z-index: 2;
     background: var(--paper-50);
-    border-right: 2px solid var(--ink-500);
+    border-right: 2px solid #000;
     padding: 3px 5px; min-width: 75px; max-width: 75px;
-    border-bottom: 1px solid var(--paper-300);
+    border-bottom: 1px solid #ffffff;
     display: flex; flex-direction: column; gap: 0;
     box-sizing: border-box;
     text-align: center;
@@ -125,17 +135,20 @@
     background: var(--paper-200); padding: 4px 2px;
     text-align: center;
     font: 600 10px/1.1 var(--font-mono); color: var(--ink-700);
-    border-right: 1px solid var(--paper-300); border-bottom: 1px solid var(--ink-400);
+    border-right: 1px solid #ffffff; border-bottom: 1px solid #ffffff;
   }
-  .bk-day-head.is-weekend { background: var(--paper-300); }
-  .bk-day-head.is-today-col { background: var(--paper-300); color: var(--ink-900); }
+  .bk-day-head.is-weekend { background: var(--paper-200); }
+  .bk-day-head.is-today-col {
+    background: var(--paper-300); color: var(--ink-900);
+    box-shadow: inset 2px 0 0 0 #000, inset -2px 0 0 0 #000;
+  }
   .bk-day-head .bk-dow { display: block; opacity: 0.7; letter-spacing: 0.04em; }
   .bk-day-head .bk-dn  { display: block; font: 700 22px/1.1 var(--font-body); margin-top: 2px; }
   .bk-day-head .bk-mo  { display: block; font-size: 9px; opacity: 0.65; }
   /* The corner cell (top-left intersection of asset col + day row). */
   .bk-corner {
     position: sticky; left: 0; z-index: 3;
-    background: var(--paper-200); border-right: 2px solid var(--ink-500); border-bottom: 1px solid var(--ink-400);
+    background: var(--paper-200); border-right: 2px solid #000; border-bottom: 1px solid #ffffff;
     padding: 4px 4px; font: 600 8px/1.15 var(--font-mono); color: var(--ink-700);
     text-transform: uppercase; letter-spacing: 0.04em;
     min-width: 75px; max-width: 75px; box-sizing: border-box;
