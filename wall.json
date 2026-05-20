@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "updated_at": "2026-05-20T08:17:03.209Z",
+  "updated_at": "2026-05-20T09:19:39.260Z",
   "posts": [
     {
       "id": "post_mpdsge97_z03sf8",
@@ -27,7 +27,8 @@
       "channel": null,
       "reactions": {
         "🎉": [
-          "james.benamor@letme.com"
+          "james.benamor@letme.com",
+          "berginie.botero@togetherloans.com"
         ]
       },
       "comments": [
@@ -49,6 +50,14 @@
           "target_kind": "post",
           "target_id": "post_mpaytpuv_p51jep",
           "at": "2026-05-18T21:11:58.860Z",
+          "kind": "added"
+        },
+        {
+          "actor_email": "berginie.botero@togetherloans.com",
+          "emoji": "🎉",
+          "target_kind": "post",
+          "target_id": "post_mpaytpuv_p51jep",
+          "at": "2026-05-20T09:19:38.957Z",
           "kind": "added"
         }
       ]
