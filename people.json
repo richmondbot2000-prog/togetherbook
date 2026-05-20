@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "updated_at": "2026-05-20T10:19:50.191Z",
+  "updated_at": "2026-05-20T10:20:50.624Z",
   "source": "build_people.py bootstrap from staff.json + annotations.json",
   "people": [
     {
@@ -193,11 +193,11 @@
       "start_date": "",
       "line_manager_id": "27",
       "line_manager_email_raw": "james.benamor@letme.com",
-      "role": "",
+      "role": "Collection Agent",
       "directory_photo_uploaded_at": "2026-05-14T09:07:34+01:00",
       "notes": "",
       "created_at": "2026-05-17T11:13:52Z",
-      "updated_at": "2026-05-20T10:19:50.191Z",
+      "updated_at": "2026-05-20T10:20:50.624Z",
       "url_slug": "alishia.kasdorf",
       "most_recent_payroll_id": null
     },
