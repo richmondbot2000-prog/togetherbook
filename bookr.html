@@ -154,8 +154,9 @@
   .bk-cell-name {
     display: flex; flex-direction: column;
     align-items: center; justify-content: center;
-    font: 600 19px/1.05 var(--font-body); color: #ffffff;
-    max-width: 100%; line-height: 1.05; gap: 1px;
+    font: 600 10pt/1.05 var(--font-body); color: #ffffff;
+    max-width: 100%; gap: 1px;
+    word-break: break-word; overflow-wrap: anywhere;
   }
   .bk-name-line { display: block; white-space: nowrap; }
   .bk-cell:not(.is-booked) .bk-cell-name { color: var(--ink-900); }
@@ -641,21 +642,20 @@
       const fullName = isExternalChannel ? "AirBnb" : ((u && u.name) || value);
       el.classList.add("is-booked");
       if (isExternalChannel) el.classList.add("is-external");
-      if (myUids.length && myUids.indexOf(value) >= 0) el.classList.add("is-mine");
-      // Name is a link to the booker's TogetherBook profile. We pass
-      // ?bookr_uid= rather than ?email= because the BookR `email` is
-      // often on a different domain (e.g. @lendingmate.ca, @rgroup.co.uk)
-      // than the Person's main_google_email, so profile.js resolves by
-      // the Person.bookr_uid field instead of by email match.
-      const name = isExternalChannel
-        ? document.createElement("span")
-        : document.createElement("a");
+      const isMine = (myUids.length && myUids.indexOf(value) >= 0);
+      if (isMine) el.classList.add("is-mine");
+      // Name is a link to the booker's TogetherBook profile EXCEPT
+      // when this is the viewer's own booking — for that case we
+      // want the tap to open the cancel-this-booking confirm dialog
+      // wired in the grid click handler. So: plain span for mine +
+      // external channel; <a> link only for other people's bookings.
+      const useLink = !isExternalChannel && !isMine;
+      const name = useLink ? document.createElement("a") : document.createElement("span");
       name.className = "bk-cell-name";
-      if (!isExternalChannel) name.href = "/user.html?bookr_uid=" + encodeURIComponent(value);
+      if (useLink) name.href = "/user.html?bookr_uid=" + encodeURIComponent(value);
       // Split into two stacked lines: everything before the last space
-      // goes on top, surname on the bottom. fitNamesInGrid then shrinks
-      // the font until the widest line fits the cell. One-word names
-      // (e.g. "AirBnb") render as a single line.
+      // goes on top, surname on the bottom. One-word names (e.g.
+      // "AirBnb") render as a single line.
       const _parts = (fullName || "").trim().split(/\s+/).filter(Boolean);
       const _last = _parts.length > 1 ? _parts.pop() : "";
       const _first = _parts.join(" ");
@@ -1035,14 +1035,27 @@
     _grid.addEventListener("touchend",    _clearPress, { passive: true });
     _grid.addEventListener("touchcancel", _clearPress, { passive: true });
     document.querySelector("#bkGrid").addEventListener("click", (e) => {
-      // Names inside booked cells are real <a> links to the booker's
-      // TogetherBook profile. Let the browser handle that navigation
-      // instead of also opening the popover.
+      // Names inside booked cells (other people's bookings) are real
+      // <a> links to that person's TogetherBook profile. Let the
+      // browser handle that navigation instead of opening anything.
       if (e.target.closest("a.bk-cell-name")) return;
       const cell = e.target.closest(".bk-cell");
       if (!cell || !cell.dataset.type) return;
       const kind = cell.dataset.kind;
       if (kind === "pastfree") return;
+      // Tap on your own booking → native confirm to cancel just that
+      // day. Matches the BookR app's interaction. Tap on someone
+      // else's booking or a free cell → the usual popover flow.
+      if (kind === "booked" && cell.classList.contains("is-mine")) {
+        const type    = cell.dataset.type;
+        const asset   = cell.dataset.asset;
+        const date    = cell.dataset.date;
+        const assetTitle = (visibleAssets().find(a => String(a.id) === String(asset) && a.type === type) || {}).title || asset;
+        if (confirm(`Cancel your booking?\n\n${assetTitle} booked for ${date}`)) {
+          cancelOne(type, asset, date, cell);
+        }
+        return;
+      }
       openPop(cell);
     });
     document.addEventListener("click", (e) => {
