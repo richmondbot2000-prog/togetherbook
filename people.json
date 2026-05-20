@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "updated_at": "2026-05-20T14:24:34.896Z",
+  "updated_at": "2026-05-20T14:25:37.521Z",
   "source": "build_people.py bootstrap from staff.json + annotations.json",
   "people": [
     {
@@ -1173,9 +1173,10 @@
       "directory_photo_uploaded_at": "",
       "notes": "",
       "created_at": "2026-05-17T11:13:52Z",
-      "updated_at": "2026-05-17T11:13:52Z",
+      "updated_at": "2026-05-20T14:25:37.521Z",
       "url_slug": "cyrus.leung",
-      "most_recent_payroll_id": null
+      "most_recent_payroll_id": null,
+      "date_of_birth": "1995-01-16"
     },
     {
       "id": 47,
