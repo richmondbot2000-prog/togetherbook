@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "updated_at": "2026-05-20T15:07:42.384Z",
+  "updated_at": "2026-05-20T15:08:00.017Z",
   "source": "build_people.py bootstrap from staff.json + annotations.json",
   "people": [
     {
@@ -2054,10 +2054,11 @@
       "directory_photo_uploaded_at": "",
       "notes": "Person auto-created from payroll import — no Google account linked yet. Set main_google_email when known.",
       "created_at": "2026-05-17T11:13:52Z",
-      "updated_at": "2026-05-20T15:07:41.890Z",
+      "updated_at": "2026-05-20T15:08:00.017Z",
       "url_slug": "gabriella.debacci",
       "most_recent_payroll_id": 89,
-      "on_payroll": true
+      "on_payroll": true,
+      "team": "Underwriting"
     },
     {
       "id": 79,
