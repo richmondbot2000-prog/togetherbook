@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "updated_at": "2026-05-20T14:33:00.233Z",
+  "updated_at": "2026-05-20T14:33:40.133Z",
   "source": "build_people.py bootstrap from staff.json + annotations.json",
   "people": [
     {
@@ -1025,14 +1025,15 @@
       "directory_photo_uploaded_at": "2026-05-14T08:57:07+01:00",
       "notes": "",
       "created_at": "2026-05-17T11:13:52Z",
-      "updated_at": "2026-05-20T12:33:52.116Z",
+      "updated_at": "2026-05-20T14:33:40.133Z",
       "most_recent_payroll_id": 14,
       "on_payroll": true,
       "url_slug": "claire.stratford",
       "date_of_birth": "1992-02-17",
       "bookr_uids": [
         "7SqY8g6yKrPlYVrLaULqEAWLbfl1"
-      ]
+      ],
+      "holiday_plan": "Unlimited"
     },
     {
       "id": 18,
