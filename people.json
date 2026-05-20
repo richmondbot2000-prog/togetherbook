@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "updated_at": "2026-05-20T14:25:42.473Z",
+  "updated_at": "2026-05-20T14:25:45.408Z",
   "source": "build_people.py bootstrap from staff.json + annotations.json",
   "people": [
     {
@@ -1167,17 +1167,15 @@
       "phone": "",
       "address": "",
       "start_date": "",
-      "line_manager_id": null,
+      "line_manager_id": "10",
       "line_manager_email_raw": "",
       "role": "",
       "directory_photo_uploaded_at": "",
       "notes": "",
       "created_at": "2026-05-17T11:13:52Z",
-      "updated_at": "2026-05-20T14:25:39.632Z",
+      "updated_at": "2026-05-20T14:25:38.480Z",
       "url_slug": "cyrus.leung",
-      "most_recent_payroll_id": null,
-      "date_of_birth": "1995-01-16",
-      "team": "Paralegal"
+      "most_recent_payroll_id": null
     },
     {
       "id": 47,
