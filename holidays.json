@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "updated_at": "2026-05-20T14:22:17.210Z",
+  "updated_at": "2026-05-20T14:22:19.619Z",
   "year_start": "2026-04-01",
   "year_end": "2027-03-31",
   "by_user": {
@@ -181,7 +181,7 @@
     "jack.bassilious@togetherloans.com": {
       "days": {
         "2026-06-17": "approved-holiday",
-        "2026-06-01": "office"
+        "2026-06-01": "part-holiday-paid"
       },
       "notes": {}
     }
@@ -1770,6 +1770,14 @@
       "to": "office",
       "changed_by": "jack.bassilious@togetherloans.com",
       "changed_at": "2026-05-20T14:22:17.210Z"
+    },
+    {
+      "user_email": "jack.bassilious@togetherloans.com",
+      "date": "2026-06-01",
+      "from": "office",
+      "to": "part-holiday-paid",
+      "changed_by": "jack.bassilious@togetherloans.com",
+      "changed_at": "2026-05-20T14:22:19.619Z"
     }
   ]
 }
