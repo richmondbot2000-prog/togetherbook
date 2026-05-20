@@ -3395,7 +3395,11 @@ const HOLIDAY_STATUSES = new Set([
   // looks identical to any other override.
   "approved-holiday",
 ]);
-const MANAGER_ONLY_STATUSES = new Set(["approved-holiday"]);
+// approved-holiday is admin-only. The previous flow let line managers
+// set it; we now restrict that to admins so the approval is centralised.
+// Standard users can set every OTHER status on their OWN calendar
+// only — and cannot overwrite a day that's already approved-holiday.
+const ADMIN_ONLY_STATUSES = new Set(["approved-holiday"]);
 
 // Reads annotations.json from raw.githubusercontent.com and returns the
 // map of email → line_manager email (lowercased). Used by the holidays
@@ -3579,20 +3583,14 @@ async function holidaysSet(env, viewerEmail, body) {
 
   const admins = await fetchAdmins();
   const isAdmin = admins.includes(viewerEmail);
-  let isManagerOfTarget = false;
+  // Standard users can only edit their OWN calendar. Cross-user edits
+  // are admin-only — the previous line-manager carve-out is gone.
   if (target !== viewerEmail && !isAdmin) {
-    const lineManagers = await fetchLineManagers();
-    isManagerOfTarget = (lineManagers[target] || "") === viewerEmail;
-    if (!isManagerOfTarget) {
-      throw new Error("not allowed — you must be the user's line manager or an admin");
-    }
+    throw new Error("not allowed — only an admin can edit another person's calendar");
   }
-  // Manager-only statuses can only be set by admin / a line manager.
-  if (status && MANAGER_ONLY_STATUSES.has(status)) {
-    if (target === viewerEmail) {
-      throw new Error("'approved-holiday' can only be set by a line manager or an admin");
-    }
-    // (target !== viewerEmail) — we already verified admin OR manager above.
+  // approved-holiday is admin-only on every calendar (including own).
+  if (status && ADMIN_ONLY_STATUSES.has(status) && !isAdmin) {
+    throw new Error("'approved-holiday' can only be set by an admin");
   }
 
   let logEntry = null;
@@ -3613,6 +3611,11 @@ async function holidaysSet(env, viewerEmail, body) {
     const days  = doc.by_user[target].days;
     const notes = doc.by_user[target].notes;
     const prev = days[date] || null;
+    // Non-admins cannot overwrite or clear a day that's already
+    // approved-holiday — only an admin can undo their own approval.
+    if (prev === "approved-holiday" && !isAdmin) {
+      throw new Error("approved-holiday days can only be changed by an admin");
+    }
     if (status === null) {
       delete days[date];
       delete notes[date];

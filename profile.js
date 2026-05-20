@@ -266,8 +266,13 @@
     "2026-12-25": "Christmas Day",
   };
   const HOLIDAY_KIND_LABEL = {
-    annual: "Annual leave", sick: "Sick", maternity: "Maternity",
-    paternity: "Paternity", wfh: "Working from home", training: "Training",
+    holiday: "Requested Holiday", "approved-holiday": "Approved Holiday",
+    sick: "Sick", maternity: "Maternity", paternity: "Paternity",
+    wfh: "Worked from Home", training: "Training",
+    "part-paid-unpaid": "Part Paid / Unpaid",
+    "part-holiday-paid": "Part Holiday / Paid",
+    "non-working": "Non-working",
+    annual: "Annual leave",
     "in-lieu": "Time in lieu", unpaid: "Unpaid", other: "Off",
   };
 

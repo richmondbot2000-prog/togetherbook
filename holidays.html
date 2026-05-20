@@ -1079,7 +1079,7 @@
       <span class="hd-legend-item"><span class="hd-legend-sw" style="background:#2F8F87"></span>Worked From Home</span>
       <span class="hd-legend-item"><span class="hd-legend-sw" style="background:linear-gradient(180deg,#6FA94A 0 50%,#8B95A6 50% 100%)"></span>Part Paid / Unpaid</span>
       <span class="hd-legend-item"><span class="hd-legend-sw" style="background:linear-gradient(180deg,#E8A82A 0 50%,#6FA94A 50% 100%)"></span>Part Holiday / Paid</span>
-      <span class="hd-legend-item"><span class="hd-legend-sw" style="background:#E8A82A"></span>Paid Holiday</span>
+      <span class="hd-legend-item"><span class="hd-legend-sw" style="background:#E8A82A"></span>Requested Holiday</span>
       <span class="hd-legend-item"><span class="hd-legend-sw hd-legend-letter" style="background:#E8A82A">A</span>Approved Holiday</span>
       <span class="hd-legend-item"><span class="hd-legend-sw hd-legend-letter" style="background:#E8A82A">M</span>Maternity</span>
       <span class="hd-legend-item"><span class="hd-legend-sw" style="background:#8B95A6"></span>Non-working</span>
@@ -1145,7 +1145,7 @@
     { key: "wfh",                label: "Worked from Home",     swatch: "#2F8F87" },
     { key: "part-paid-unpaid",   label: "Part Paid / Unpaid",   swatch: "linear-gradient(180deg,#6FA94A 0 50%,#8B95A6 50% 100%)", hasNote: true },
     { key: "part-holiday-paid",  label: "Part Holiday / Paid",  swatch: "linear-gradient(180deg,#E8A82A 0 50%,#6FA94A 50% 100%)", hasNote: true },
-    { key: "holiday",            label: "Paid Holiday",         swatch: "#E8A82A" },
+    { key: "holiday",            label: "Requested Holiday",    swatch: "#E8A82A" },
     { key: "sick",               label: "Sickness",             swatch: "#C0392B" },
     { key: "maternity",          label: "Maternity",            swatch: "#E8A82A", mark: "M" },
     { key: "non-working",        label: "Non-Working",          swatch: "#8B95A6" },
@@ -2470,7 +2470,8 @@
     const isWeekend = (dow === 0 || dow === 6);
     const isBh = UK_BANK_HOLIDAYS.has(iso);
     const defaultStatus = isWeekend ? "non-working" : (isBh ? "holiday" : "office");
-    const showApproved = (viewerIsAdmin || directReports.has(reportEmail));
+    // Approved Holiday is admin-only (set OR change) on every calendar.
+    const showApproved = viewerIsAdmin;
     const opts = showApproved ? [...STATUSES, APPROVED_HOLIDAY] : STATUSES.slice();
     const pop = document.createElement("div");
     pop.className = "hd-pop";
@@ -2611,8 +2612,8 @@
     const isWeekend = (dow === 0 || dow === 6);
     const isBh = UK_BANK_HOLIDAYS.has(iso);
     const defaultStatus = isWeekend ? "non-working" : (isBh ? "holiday" : "office");
-    const editingOther = selectedEmail !== viewerEmail.toLowerCase();
-    const showApproved = editingOther && (viewerIsAdmin || directReports.has(selectedEmail));
+    // Approved Holiday is admin-only — including on the admin's own calendar.
+    const showApproved = viewerIsAdmin;
     const opts = showApproved ? [...STATUSES, APPROVED_HOLIDAY] : STATUSES.slice();
     const pop = document.createElement("div");
     pop.className = "hd-pop";
