@@ -500,7 +500,10 @@
       if (myUid && value === myUid) el.classList.add("is-mine");
       const name = document.createElement("span");
       name.className = "bk-cell-name";
-      name.textContent = compactName(fullName);
+      // Full name, allowed to wrap onto 2-3 lines — matches the BookR
+      // app which shows e.g. "Natasha Wright" / "Sophie Polychronopulos"
+      // in full inside the cell rather than initialising the surname.
+      name.textContent = fullName;
       el.appendChild(name);
       el.title = fullName + " · " + a.title;
       el.dataset.kind = "booked";
@@ -533,7 +536,10 @@
     /* Header row */
     const corner = document.createElement("div");
     corner.className = "bk-corner";
-    corner.textContent = assets.length + " asset" + (assets.length === 1 ? "" : "s") + " · next " + STATE.zoom + " days";
+    // Corner cell left blank — was "N ASSETS · NEXT M DAYS" but that
+    // info is already in the toolbar (the Days picker + the filter
+    // pills) so the label was redundant.
+    corner.textContent = "";
     grid.appendChild(corner);
     days.forEach(d => grid.appendChild(buildDayHead(d, todayY)));
     /* Asset rows */
