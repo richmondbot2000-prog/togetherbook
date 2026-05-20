@@ -147,6 +147,29 @@
     white-space: normal; word-break: break-word; overflow-wrap: anywhere;
     max-width: 100%;
   }
+  /* Avatar+name overlay. Image fills the cell; name shows on hover */
+  /* (mouse) or while the cell is touch-pressed (mobile). The .is-external */
+  /* class swaps in the AirBnb logo asset. */
+  .bk-cell.bk-has-avatar { padding: 0; position: relative; }
+  .bk-cell-avatar {
+    position: absolute; inset: 0; width: 100%; height: 100%;
+    object-fit: cover; display: block;
+    transition: opacity 0.12s ease-in;
+  }
+  .bk-cell.bk-has-avatar .bk-cell-name {
+    position: absolute; inset: 0;
+    display: flex; align-items: center; justify-content: center; text-align: center;
+    padding: 2px 4px;
+    background: var(--paper-50);
+    color: var(--ink-900);
+    opacity: 0; transition: opacity 0.12s ease-in;
+    pointer-events: none;
+  }
+  .bk-cell.bk-has-avatar:hover .bk-cell-avatar,
+  .bk-cell.bk-has-avatar.bk-pressed .bk-cell-avatar { opacity: 0; }
+  .bk-cell.bk-has-avatar:hover .bk-cell-name,
+  .bk-cell.bk-has-avatar.bk-pressed .bk-cell-name { opacity: 1; pointer-events: auto; }
+  .bk-cell.is-external .bk-cell-avatar { background: #FF5A5F; }
   /* Popover that opens when you click a cell. */
   .bk-pop {
     position: fixed; z-index: 1000;
@@ -256,6 +279,7 @@
     targetEmail: null, /* removed UI — kept for back-compat with payload helpers */
     tab: "calendar",
     pendingDates: new Set(),
+    peopleByBookrUid: {},  /* uid -> Person record (for avatar lookup) */
   };
 
   /* Date helpers — everything in UK local. */
@@ -318,6 +342,18 @@
     render();
     usersP.then(u => { STATE.users = u; if (STATE.tab === "calendar") renderGrid(); });
     adminP.then(a => { STATE.isAdmin = a; renderUserPicker(); });
+    fetch("/people.json", { cache: "no-store" }).then(r => r.ok ? r.json() : null).catch(() => null).then(doc => {
+      const list = (doc && doc.people) || [];
+      const map = {};
+      for (const p of list) {
+        for (const uid of (p.bookr_uids || [])) {
+          if (uid) map[uid] = p;
+        }
+        if (p.bookr_uid) map[p.bookr_uid] = p;  // legacy back-compat
+      }
+      STATE.peopleByBookrUid = map;
+      if (STATE.tab === "calendar") renderGrid();
+    });
     loadBookingsProgressively();
   }
 
@@ -489,7 +525,17 @@
     return el;
   }
 
-  function buildBookingCell(a, d, todayY) {
+  function avatarUrlForBookrUid(uid) {
+    if (!uid) return null;
+    if (uid === "smartbnb") return "/assets/airbnb-logo.svg";
+    const p = STATE.peopleByBookrUid[uid];
+    if (!p || !p.main_google_email) return null;
+    if (!p.directory_photo_uploaded_at) return null;
+    const key = p.main_google_email.toLowerCase().replace(/@/g, "_at_");
+    return "/assets/photos/" + key + ".jpg?v=" + encodeURIComponent(p.directory_photo_uploaded_at);
+  }
+
+    function buildBookingCell(a, d, todayY) {
     const el = document.createElement("div");
     el.className = "bk-cell";
     const dy = ymd(d);
@@ -529,6 +575,18 @@
       name.className = "bk-cell-name";
       if (!isExternalChannel) name.href = "/user.html?bookr_uid=" + encodeURIComponent(value);
       name.textContent = fullName;
+      // If we have an avatar (or the AirBnb logo for smartbnb), put it
+      // over the name; CSS swaps it for the name on :hover / .bk-pressed.
+      const avatarUrl = avatarUrlForBookrUid(value);
+      if (avatarUrl) {
+        const img = document.createElement("img");
+        img.className = "bk-cell-avatar";
+        img.src = avatarUrl;
+        img.alt = "";
+        img.onerror = () => { img.remove(); el.classList.remove("bk-has-avatar"); };
+        el.classList.add("bk-has-avatar");
+        el.appendChild(img);
+      }
       el.appendChild(name);
       el.title = fullName + " · " + a.title;
       el.dataset.kind = "booked";
@@ -839,6 +897,15 @@
       render();
     });
     // #bkChangeUser dropdown was removed — users only book as themselves now.
+    /* Mobile: press-and-hold over an avatar reveals the name. */
+    const _grid = document.querySelector("#bkGrid");
+    _grid.addEventListener("touchstart", (e) => {
+      const cell = e.target.closest(".bk-cell.bk-has-avatar");
+      if (cell) cell.classList.add("bk-pressed");
+    }, { passive: true });
+    const _clearPress = () => document.querySelectorAll(".bk-cell.bk-pressed").forEach(c => c.classList.remove("bk-pressed"));
+    _grid.addEventListener("touchend",    _clearPress, { passive: true });
+    _grid.addEventListener("touchcancel", _clearPress, { passive: true });
     document.querySelector("#bkGrid").addEventListener("click", (e) => {
       // Names inside booked cells are real <a> links to the booker's
       // TogetherBook profile. Let the browser handle that navigation
