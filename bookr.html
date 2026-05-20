@@ -514,15 +514,14 @@
       const bookerEmail = (u && u.email) || "";
       el.classList.add("is-booked");
       if (myUid && value === myUid) el.classList.add("is-mine");
-      // Name is a link to the booker's TogetherBook profile. Wrap in
-      // <a> so a tap on the name navigates; the surrounding cell still
-      // opens the booking popover via the delegated grid click handler
-      // (which skips when e.target.closest("a") matches).
-      const name = bookerEmail
-        ? document.createElement("a")
-        : document.createElement("span");
+      // Name is a link to the booker's TogetherBook profile. We pass
+      // ?bookr_uid= rather than ?email= because the BookR `email` is
+      // often on a different domain (e.g. @lendingmate.ca, @rgroup.co.uk)
+      // than the Person's main_google_email, so profile.js resolves by
+      // the Person.bookr_uid field instead of by email match.
+      const name = document.createElement("a");
       name.className = "bk-cell-name";
-      if (bookerEmail) name.href = "/user.html?email=" + encodeURIComponent(bookerEmail);
+      name.href = "/user.html?bookr_uid=" + encodeURIComponent(value);
       name.textContent = fullName;
       el.appendChild(name);
       el.title = fullName + " · " + a.title;

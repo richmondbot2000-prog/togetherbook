@@ -14,6 +14,7 @@
 
   let targetEmail = (window.__profileEmail || qs.get("email") || "").toLowerCase().trim();
   let targetSlug  = (window.__profileSlug  || "").toLowerCase().trim();
+  const targetBookrUid = (qs.get("bookr_uid") || "").trim();
 
   /* ─── localStorage write-through ──────────────────────────────────
    * Every successful save also stashes the edit in localStorage under
@@ -2723,16 +2724,19 @@
   }
 
   function renderProfile() {
-    // Resolve target: slug → Person, email → Person.
+    // Resolve target: slug → Person, email → Person, or bookr_uid → Person
+    // (used when navigating from /bookr.html where the booker's email is
+    // their BookR email, not a TogetherBook one).
     if (targetSlug && peopleBySlug[targetSlug]) person = peopleBySlug[targetSlug];
     else if (targetEmail && peopleByEmail[targetEmail]) person = peopleByEmail[targetEmail];
+    else if (targetBookrUid) person = people.find(p => (p.bookr_uid || "") === targetBookrUid) || null;
 
     // Overlay any localStorage recent edit so the user's own session
     // is guaranteed-correct even if some cache layer served stale.
     if (person) person = LS.overlay(person);
 
     if (!person) {
-      renderEmpty(`No person matched "${targetSlug || targetEmail || "(missing)"}".`);
+      renderEmpty(`No person matched "${targetSlug || targetEmail || targetBookrUid || "(missing)"}".`);
       return;
     }
 
