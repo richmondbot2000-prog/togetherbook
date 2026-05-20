@@ -2463,6 +2463,27 @@ async function doPeopleMerge(env, body, actor) {
   if (!winnerId || !loserId) return { ok: false, error: "winner_id and loser_id are both required" };
   if (winnerId === loserId)   return { ok: false, error: "winner and loser must be different" };
 
+  // The merge writes people.json + payroll-data + google-accounts +
+  // warehouse-activity. The people.json commit can race with concurrent
+  // edits and return 409. Retry the whole merge (idempotent on fresh
+  // data) with backoff so a stranger's people-set or the BookR backfill
+  // can't kill this admin's merge attempt.
+  const MAX_ATTEMPTS = 5;
+  let lastErr = null;
+  for (let attempt = 0; attempt < MAX_ATTEMPTS; attempt++) {
+    try { return await doPeopleMergeOnce(env, winnerId, loserId, actor); }
+    catch (e) {
+      lastErr = e;
+      const msg = String(e && e.message || e);
+      const is409 = /\b409\b/.test(msg);
+      if (!is409 || attempt === MAX_ATTEMPTS - 1) throw e;
+      await new Promise(r => setTimeout(r, 200 * (attempt + 1)));
+    }
+  }
+  throw lastErr;
+}
+
+async function doPeopleMergeOnce(env, winnerId, loserId, actor) {
   const { sha: pSha, file: pFile } = await fetchPeopleFile(env);
   const winner = pFile.people.find(p => String(p.id) === winnerId);
   const loser  = pFile.people.find(p => String(p.id) === loserId);
