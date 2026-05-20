@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "updated_at": "2026-05-20T14:35:55.059Z",
+  "updated_at": "2026-05-20T14:36:35.588Z",
   "source": "build_people.py bootstrap from staff.json + annotations.json",
   "people": [
     {
@@ -608,14 +608,14 @@
       "department": "",
       "phone": "7535156170",
       "address": "55 Avon Road \nBournemouth \nBH8 8 SE",
-      "start_date": "2024-01-01",
+      "start_date": "2021-01-22",
       "line_manager_id": "152",
       "line_manager_email_raw": "",
       "role": "",
       "directory_photo_uploaded_at": "2026-05-14T09:01:25+01:00",
       "notes": "Person auto-created from payroll import — no Google account linked yet. Set main_google_email when known.",
       "created_at": "2026-05-17T11:13:52Z",
-      "updated_at": "2026-05-20T14:35:55.059Z",
+      "updated_at": "2026-05-20T14:36:35.588Z",
       "url_slug": "berginie.botero",
       "most_recent_payroll_id": 86,
       "on_payroll": true,
