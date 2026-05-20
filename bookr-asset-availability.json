@@ -2,5 +2,7 @@
   "cars": {
     "megatron": false
   },
-  "properties": {}
+  "properties": {
+    "loft_bedroom_3": false
+  }
 }
