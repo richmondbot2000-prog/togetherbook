@@ -10,11 +10,11 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&family=Newsreader:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500;1,600&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="style.css?v=1778938352">
-<link rel="stylesheet" href="quiet-tokens.css?v=1778938352">
-<link rel="stylesheet" href="quiet.css?v=1778938352">
-<link rel="stylesheet" href="quiet-extras.css?v=1779059756">
-<link rel="stylesheet" href="quiet-legacy.css?v=1778938352">
+<link rel="stylesheet" href="style.css?v=1779281795">
+<link rel="stylesheet" href="quiet-tokens.css?v=1779281795">
+<link rel="stylesheet" href="quiet.css?v=1779281795">
+<link rel="stylesheet" href="quiet-extras.css?v=1779281795">
+<link rel="stylesheet" href="quiet-legacy.css?v=1779281795">
 <style>
   .os-section { max-width: 1320px; margin: 0 auto; padding: 24px 0 48px; }
   .os-section h1 {
@@ -132,7 +132,7 @@
 
 <header class="qb-topbar">
   <a class="qb-brand" href="/wall.html" aria-label="TogetherBOOK — home">
-    <img class="qb-brand-logo" src="togetherbook-logo.png?v=1778938352" alt="TogetherBOOK">
+    <img class="qb-brand-logo" src="togetherbook-logo.png?v=1779281795" alt="TogetherBOOK">
   </a>
   <button class="qb-hamburger" aria-label="Toggle navigation menu" aria-expanded="false"
           onclick="document.body.classList.toggle('nav-open');this.setAttribute('aria-expanded',document.body.classList.contains('nav-open'))">
@@ -240,8 +240,10 @@
     // one org-chart node. Canonical node ID for a Person is their
     // main_google_email; alts map to the same canonical via canon().
     const personByEmail = {};
+    const peopleById = {};
     const people = (peopleFile && peopleFile.people) || [];
     for (const p of people) {
+      peopleById[p.id] = p;
       const linked = [p.main_google_email, ...(p.alt_google_emails || []), p.external_google_email].filter(Boolean);
       for (const e of linked) personByEmail[e.toLowerCase()] = p;
     }
@@ -251,15 +253,20 @@
       return (p && (p.main_google_email || "").toLowerCase()) || lc;
     };
 
-    // line_manager map: email → manager_email (lowercased), keyed by
-    // canonical Person email. If a Person has annotations under two
-    // emails, last write wins — but they share the same Person so the
-    // graph stays consistent regardless of which one carried it.
+    // line_manager map: canonical_email → manager_canonical_email.
+    // Source: people.json's Person.line_manager_id — the canonical store
+    // the Directory writes to. annotations.json's legacy 'line_manager'
+    // string field is ignored because it isn't kept in sync with Directory
+    // edits, so reading it surfaces stale reporting relationships.
     const mgrOf = {};
-    for (const [k, v] of Object.entries(anns)) {
-      const mgr = v && v.line_manager ? canon(v.line_manager) : "";
-      const ck = canon(k);
-      if (mgr) mgrOf[ck] = mgr;
+    for (const p of people) {
+      if (p.line_manager_id == null || p.line_manager_id === "") continue;
+      const mgr = peopleById[p.line_manager_id];
+      if (!mgr) continue;
+      const mgrEmail = (mgr.main_google_email || "").toLowerCase();
+      const myEmail  = (p.main_google_email   || "").toLowerCase();
+      if (!mgrEmail || !myEmail) continue;
+      mgrOf[myEmail] = mgrEmail;
     }
     // Inverse: manager_email → Set(report_email), already canonical.
     const reportsOf = {};
@@ -419,6 +426,6 @@
     a.addEventListener('click', () => document.body.classList.remove('nav-open'))
   );
 </script>
-<script src="nav.js?v=1779136390" defer></script>
+<script src="nav.js?v=1779281795" defer></script>
 </body>
 </html>

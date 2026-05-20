@@ -10,11 +10,11 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&family=Newsreader:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500;1,600&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="style.css?v=1779280823">
-<link rel="stylesheet" href="quiet-tokens.css?v=1779280823">
-<link rel="stylesheet" href="quiet.css?v=1779280823">
-<link rel="stylesheet" href="quiet-extras.css?v=1779280823">
-<link rel="stylesheet" href="quiet-legacy.css?v=1779280823">
+<link rel="stylesheet" href="style.css?v=1779281795">
+<link rel="stylesheet" href="quiet-tokens.css?v=1779281795">
+<link rel="stylesheet" href="quiet.css?v=1779281795">
+<link rel="stylesheet" href="quiet-extras.css?v=1779281795">
+<link rel="stylesheet" href="quiet-legacy.css?v=1779281795">
 <style>
   .hd-section { max-width: 1080px; margin: 0 auto; padding: 24px 0 48px; }
 
@@ -1027,7 +1027,7 @@
 
 <header class="qb-topbar">
   <a class="qb-brand" href="/wall.html" aria-label="TogetherBOOK — home">
-    <img class="qb-brand-logo" src="togetherbook-logo.png?v=1779280823" alt="TogetherBOOK">
+    <img class="qb-brand-logo" src="togetherbook-logo.png?v=1779281795" alt="TogetherBOOK">
   </a>
   <button class="qb-hamburger" aria-label="Toggle navigation menu" aria-expanded="false"
           onclick="document.body.classList.toggle('nav-open');this.setAttribute('aria-expanded',document.body.classList.contains('nav-open'))">
@@ -1205,27 +1205,42 @@
   // whether the manager view's edit popover offers "Approved Holiday".
   let directReports = new Set();
 
+  // Rebuild lineManagerByEmail from people.json's line_manager_id.
+  // Each linked email of an employee maps to the *main* email of their
+  // manager's Person record, so downstream lookups stay consistent no
+  // matter which Google account the employee was using at edit time.
+  function buildLineManagerByEmailFromPeople() {
+    const out = {};
+    for (const emp of peopleList || []) {
+      if (emp.line_manager_id == null || emp.line_manager_id === "") continue;
+      const mgr = peopleById[emp.line_manager_id];
+      if (!mgr) continue;
+      const mgrEmail = (mgr.main_google_email || "").toLowerCase();
+      if (!mgrEmail) continue;
+      const linked = [emp.main_google_email, ...(emp.alt_google_emails || []), emp.external_google_email]
+        .filter(Boolean).map(x => x.toLowerCase());
+      for (const e of linked) out[e] = mgrEmail;
+    }
+    return out;
+  }
+
   // Direct reports = anyone whose line_manager points at the viewer,
-  // sourced from BOTH annotations.json (legacy) AND people.json's
-  // Person.line_manager_id (the canonical store the Directory writes).
-  // Returns a Set of every email linked to those Persons so look-ups
-  // work whichever address the report's holidays.json entry uses.
+  // sourced from people.json's Person.line_manager_id (the canonical
+  // store the Directory writes). Returns a Set of every linked email
+  // of those Persons so look-ups work whichever address their
+  // holidays.json entry uses.
   function buildDirectReports(viewer) {
     const out = new Set();
     const vlc = (viewer || "").toLowerCase();
     if (!vlc) return out;
-    for (const [emp, mgr] of Object.entries(lineManagerByEmail || {})) {
-      if ((mgr || "").toLowerCase() === vlc) out.add(emp.toLowerCase());
-    }
     const me = personByEmail[vlc];
-    if (me) {
-      for (const pp of peopleList) {
-        if (pp.line_manager_id == null || pp.line_manager_id === "") continue;
-        if (String(pp.line_manager_id) !== String(me.id)) continue;
-        const linked = [pp.main_google_email, ...(pp.alt_google_emails || []), pp.external_google_email]
-          .filter(Boolean).map(x => x.toLowerCase());
-        for (const e of linked) out.add(e);
-      }
+    if (!me) return out;
+    for (const pp of peopleList || []) {
+      if (pp.line_manager_id == null || pp.line_manager_id === "") continue;
+      if (String(pp.line_manager_id) !== String(me.id)) continue;
+      const linked = [pp.main_google_email, ...(pp.alt_google_emails || []), pp.external_google_email]
+        .filter(Boolean).map(x => x.toLowerCase());
+      for (const e of linked) out.add(e);
     }
     return out;
   }
@@ -1331,13 +1346,11 @@
     holidaysDoc = hd;
     if (hd.year_start) yearStart = parseISO(hd.year_start);
     if (hd.year_end)   yearEnd   = parseISO(hd.year_end);
-    // Build the manager-of map from annotations.
-    const anns = (an && an.annotations) || {};
-    lineManagerByEmail = {};
-    for (const [k, v] of Object.entries(anns)) {
-      const mgr = (v && v.line_manager) ? String(v.line_manager).toLowerCase() : "";
-      if (mgr) lineManagerByEmail[k.toLowerCase()] = mgr;
-    }
+    // Build the manager-of map from people.json's line_manager_id —
+    // that's the canonical store the Directory writes to. annotations.json
+    // still carries a legacy 'line_manager' email field on some rows but
+    // it's not kept in sync, so reading it would surface stale reports.
+    lineManagerByEmail = buildLineManagerByEmailFromPeople();
     directReports = buildDirectReports(viewerEmail);
     selectedEmail = viewerEmail.toLowerCase();
     // Load seen-event IDs for the bell.
@@ -1616,18 +1629,26 @@
     });
   }
 
-  // Pull annotations.json straight from raw.githubusercontent.com and
-  // rebuild lineManagerByEmail + directReports. Idempotent — safe to
-  // call repeatedly.
+  // Pull people.json straight from the api.github.com contents endpoint
+  // and rebuild peopleList / peopleById / personByEmail, then derive
+  // lineManagerByEmail + directReports from it. people.json is the
+  // canonical source for line-manager edits (written by the Directory
+  // page); annotations.json's legacy line_manager field is no longer
+  // consulted. Idempotent — safe to call repeatedly.
   async function refreshLineManagers() {
     try {
-      const an = await fetchFreshJson("annotations.json", ANNOTATIONS_RAW_URL, null);
-      if (!an) return;
-      lineManagerByEmail = {};
-      for (const [k, v] of Object.entries((an && an.annotations) || {})) {
-        const mgr = (v && v.line_manager) ? String(v.line_manager).toLowerCase() : "";
-        if (mgr) lineManagerByEmail[k.toLowerCase()] = mgr;
+      const pf = await fetchFreshJson("people.json", null, null);
+      if (!pf || !Array.isArray(pf.people)) return;
+      peopleList = pf.people;
+      peopleById = {};
+      personByEmail = {};
+      for (const p of peopleList) {
+        peopleById[p.id] = p;
+        const linked = [p.main_google_email, ...(p.alt_google_emails || []), p.external_google_email]
+          .filter(Boolean).map(x => x.toLowerCase());
+        for (const e of linked) personByEmail[e] = p;
       }
+      lineManagerByEmail = buildLineManagerByEmailFromPeople();
       directReports = buildDirectReports(viewerEmail);
       // Re-run setupViewTabs so the Team tab can appear / disappear as
       // the report set changes — without a hard refresh.
@@ -3060,7 +3081,7 @@
     a.addEventListener('click', () => document.body.classList.remove('nav-open'))
   );
 </script>
-<script src="nav.js?v=1779280823" defer></script>
+<script src="nav.js?v=1779281795" defer></script>
 
 <script>
   // Embed-mode height reporter — the parent /directory/<slug> page listens
