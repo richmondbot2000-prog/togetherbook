@@ -1600,7 +1600,10 @@
     // reports for non-admins, always-on for admins so they can navigate.
     const team = effectiveTeamMembers();
     wrap.style.display = (viewerIsAdmin || team.size > 0) ? "flex" : "none";
-    if (count) count.textContent = String(team.size);
+    // Show the same post-filter number that renderTeam() will render.
+    // Avoids the badge drifting between tabs when the raw set carries
+    // emails the on-payroll filter would drop.
+    if (count) count.textContent = String(buildTeamReports(team).length);
     // Management Team is an admin-only escape hatch — peers + self.
     if (mgmtBtn) mgmtBtn.style.display = viewerIsAdmin ? "" : "none";
     if (viewTabsWired) return;
@@ -1622,7 +1625,7 @@
           await refreshLineManagers();
           const team = effectiveTeamMembers();
           wrap.style.display = (viewerIsAdmin || team.size > 0) ? "flex" : "none";
-          if (count) count.textContent = String(team.size);
+          if (count) count.textContent = String(buildTeamReports(team).length);
         }
         renderAll();
       });
@@ -1973,6 +1976,7 @@
     for (const [emp, mgr] of Object.entries(lineManagerByEmail)) {
       if ((mgr || "").toLowerCase() === myMgr) peers.add(emp.toLowerCase());
     }
+    const peersFromAnnotations = peers.size;
     if (myMgrPerson) {
       for (const pp of peopleList) {
         if (pp.line_manager_id == null || pp.line_manager_id === "") continue;
