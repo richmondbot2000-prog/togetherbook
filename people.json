@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "updated_at": "2026-05-20T08:26:22.282Z",
+  "updated_at": "2026-05-20T08:46:20.568Z",
   "source": "build_people.py bootstrap from staff.json + annotations.json",
   "people": [
     {
@@ -4934,7 +4934,7 @@
       ],
       "external_google_email": "",
       "auth0_id": "",
-      "access_level": "staff",
+      "access_level": "admin",
       "company": "letme.com",
       "title": "",
       "department": "",
@@ -4947,7 +4947,7 @@
       "directory_photo_uploaded_at": "2026-05-14T08:17:13+01:00",
       "notes": "Person auto-created from payroll import — no Google account linked yet. Set main_google_email when known.",
       "created_at": "2026-05-17T11:13:52Z",
-      "updated_at": "2026-05-17T20:53:16.927Z",
+      "updated_at": "2026-05-20T08:46:20.568Z",
       "url_slug": "sophia.ugwunne",
       "most_recent_payroll_id": 87,
       "on_payroll": true,
