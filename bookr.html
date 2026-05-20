@@ -128,9 +128,9 @@
     border-right: 1px solid var(--paper-300); border-bottom: 1px solid var(--ink-400);
   }
   .bk-day-head.is-weekend { background: var(--paper-300); }
-  .bk-day-head.is-today-col { background: var(--brass-100); color: var(--brass-700); border-left: 2px solid var(--brass-500); }
+  .bk-day-head.is-today-col { background: var(--paper-300); color: var(--ink-900); }
   .bk-day-head .bk-dow { display: block; opacity: 0.7; letter-spacing: 0.04em; }
-  .bk-day-head .bk-dn  { display: block; font-size: 12px; }
+  .bk-day-head .bk-dn  { display: block; font: 700 22px/1.1 var(--font-body); margin-top: 2px; }
   .bk-day-head .bk-mo  { display: block; font-size: 9px; opacity: 0.65; }
   /* The corner cell (top-left intersection of asset col + day row). */
   .bk-corner {
@@ -150,10 +150,12 @@
   /* Avatar+name overlay. Image fills the cell; name shows on hover */
   /* (mouse) or while the cell is touch-pressed (mobile). The .is-external */
   /* class swaps in the AirBnb logo asset. */
-  .bk-cell.bk-has-avatar { padding: 0; position: relative; }
+  .bk-cell.bk-has-avatar { padding: 6px; position: relative; }
   .bk-cell-avatar {
-    position: absolute; inset: 0; width: 100%; height: 100%;
+    width: 64px; height: 64px;
     object-fit: cover; display: block;
+    border-radius: 50%;
+    margin: auto;
     transition: opacity 0.12s ease-in;
   }
   .bk-cell.bk-has-avatar .bk-cell-name {
@@ -537,11 +539,17 @@
     const ps = STATE.properties.filter(keep).map(a => Object.assign({}, a, { type: "properties" }));
     return cs.concat(ps);
   }
+  // Three days of history sit to the LEFT of today's column. They
+  // load and render normally, but the initial horizontal scroll
+  // position is set so they're off-screen — the user can swipe right
+  // to reveal them.
+  const HISTORY_DAYS = 3;
   function dateRange() {
-    const start = todayMidnight();
+    const start = addDays(todayMidnight(), -HISTORY_DAYS);
+    const total = STATE.zoom + HISTORY_DAYS;
     const days = [];
-    for (let i = 0; i < STATE.zoom; i++) days.push(addDays(start, i));
-    return { start: start, end: addDays(start, STATE.zoom - 1), days: days };
+    for (let i = 0; i < total; i++) days.push(addDays(start, i));
+    return { start: start, end: addDays(start, total - 1), days: days };
   }
   function render() {
     /* Switch the calendar/mine panels. */
@@ -668,12 +676,18 @@
     const assets = visibleAssets();
     const { days } = dateRange();
     const todayY = ymd(todayMidnight());
-    /* grid columns: 1 sticky asset col (compact) + N day cols wide
-       enough to fit "Marina G" / "Natasha W" on a single line at the
-       cell font size. The matching .bk-corner + .bk-asset-cell CSS
-       widths are kept in sync. */
-    const dayW = 64;
+    /* Day columns are now square — same width as the cell min-height
+       (88px) so each booking slot reads as a tile. Asset column stays
+       compact at 75px. */
+    const dayW = 88;
     grid.style.gridTemplateColumns = "75px repeat(" + days.length + ", " + dayW + "px)";
+    // Initial scroll: skip past the 3 history days so today's column
+    // is the first thing the user sees. Swipe right reveals history.
+    const wrap = grid.parentElement;
+    if (wrap && wrap.classList.contains("bk-grid-wrap")) {
+      // Defer one frame so the layout's measured before we scroll.
+      requestAnimationFrame(() => { wrap.scrollLeft = HISTORY_DAYS * dayW; });
+    }
     /* Header row */
     const corner = document.createElement("div");
     corner.className = "bk-corner";
