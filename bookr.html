@@ -102,9 +102,10 @@
     position: sticky; left: 0; z-index: 2;
     background: var(--paper-50);
     border-right: 2px solid var(--ink-500);
-    padding: 4px 8px; min-width: 110px; max-width: 150px;
+    padding: 4px 6px; min-width: 100px; max-width: 100px;
     border-bottom: 1px solid var(--paper-300);
     display: flex; flex-direction: column; gap: 0;
+    box-sizing: border-box;
   }
   .bk-asset-cell.is-section { background: var(--paper-200); }
   .bk-asset-title {
@@ -134,9 +135,10 @@
   .bk-corner {
     position: sticky; left: 0; z-index: 3;
     background: var(--paper-200); border-right: 2px solid var(--ink-500); border-bottom: 1px solid var(--ink-400);
-    padding: 6px 10px; font: 600 10px/1.1 var(--font-mono); color: var(--ink-700);
-    text-transform: uppercase; letter-spacing: 0.08em; min-width: 220px;
-    display: flex; align-items: center;
+    padding: 4px 6px; font: 600 9px/1.15 var(--font-mono); color: var(--ink-700);
+    text-transform: uppercase; letter-spacing: 0.05em;
+    min-width: 100px; max-width: 100px; box-sizing: border-box;
+    display: flex; align-items: center; justify-content: center; text-align: center;
   }
   .bk-cell-name {
     display: block;
@@ -228,9 +230,6 @@
           <button data-f="cars" type="button">Cars</button>
           <button data-f="properties" type="button">Properties</button>
         </span></span>
-      <span id="bkChangeUserWrap" style="display:none"><span class="bk-tool-label">Book as</span>
-        <select id="bkChangeUser" class="bk-select"></select></span>
-      <span id="bkLinkPill" class="bk-link-pill" title="">Linked to BookR</span>
     </div>
     <div id="bkStatus" class="bk-status">Loading…</div>
     <div class="bk-grid-wrap">
@@ -251,7 +250,7 @@
     zoom: 30,
     bookings: {},      /* keyed by `type:id` -> {date: uid|free} */
     isAdmin: false,
-    targetEmail: null, /* admin booking-on-behalf-of override */
+    targetEmail: null, /* removed UI — kept for back-compat with payload helpers */
     tab: "calendar",
     pendingDates: new Set(),
   };
@@ -403,42 +402,18 @@
     return String(s == null ? "" : s).replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
   }
   function renderTopChrome() {
-    const pill = document.querySelector("#bkLinkPill");
+    // The "Linked to BookR" pill + the "Not linked" red banner were
+    // removed — users only ever book as themselves and the worker
+    // refuses calls from unlinked accounts already. Nothing to render
+    // here now, but the function stays as a no-op for the existing
+    // callers in case future top-chrome bits land.
     const banner = document.querySelector("#bkBanner");
-    const w = STATE.whoami || {};
-    if (w.uid) {
-      pill.classList.remove("is-unlinked");
-      pill.textContent = "Linked to BookR";
-      pill.title = w.name || w.email || "";
-      banner.style.display = "none";
-    } else {
-      pill.classList.add("is-unlinked");
-      pill.textContent = "Not linked";
-      pill.title = w.error || "No BookR user matches your email.";
-      banner.style.display = "";
-      banner.textContent = "Your TogetherBook email is not yet linked to a BookR user. Browse only — no bookings.";
-    }
+    if (banner) banner.style.display = "none";
   }
-  /* Privileged users can book on behalf of someone else; the dropdown */
-  /* is only populated when the workspace flag is true. */
-  function renderUserPicker() {
-    const wrap = document.querySelector("#bkChangeUserWrap");
-    const sel = document.querySelector("#bkChangeUser");
-    if (!STATE.isAdmin) { wrap.style.display = "none"; return; }
-    wrap.style.display = "";
-    const opts = ['<option value="">Myself</option>'];
-    const seen = new Set();
-    Object.values(STATE.users || {}).forEach(u => {
-      if (!u || u.suspended || !u.email) return;
-      const e = u.email.toLowerCase();
-      if (seen.has(e)) return; seen.add(e);
-      const label = (u.name || u.email).replace(/</g, "&lt;");
-      const v = u.email.replace(/"/g, "&quot;");
-      opts.push('<option value="' + v + '">' + label + '</option>');
-    });
-    sel.innerHTML = opts.join("");
-    sel.value = STATE.targetEmail || "";
-  }
+  // renderUserPicker removed — the "Book as" dropdown is gone; every
+  // user books as themselves. The bookrBook handler also defaults to
+  // the viewer's own uid when no target_user_uid is supplied.
+  function renderUserPicker() { /* removed */ }
 
   function visibleAssets() {
     if (STATE.filter === "cars") return STATE.cars.map(a => Object.assign({}, a, { type: "cars" }));
@@ -546,9 +521,12 @@
     const assets = visibleAssets();
     const { days } = dateRange();
     const todayY = ymd(todayMidnight());
-    /* grid columns: 1 sticky asset col + N day cols (each 36px wide). */
-    const dayW = 36;
-    grid.style.gridTemplateColumns = "220px repeat(" + days.length + ", " + dayW + "px)";
+    /* grid columns: 1 sticky asset col (compact) + N day cols wide
+       enough to fit "Marina G" / "Natasha W" on a single line at the
+       cell font size. The matching .bk-corner + .bk-asset-cell CSS
+       widths are kept in sync. */
+    const dayW = 64;
+    grid.style.gridTemplateColumns = "100px repeat(" + days.length + ", " + dayW + "px)";
     /* Header row */
     const corner = document.createElement("div");
     corner.className = "bk-corner";
@@ -820,9 +798,7 @@
       await refreshAllBookings();
       render();
     });
-    document.querySelector("#bkChangeUser").addEventListener("change", (e) => {
-      STATE.targetEmail = (e.target.value || "").toLowerCase() || null;
-    });
+    // #bkChangeUser dropdown was removed — users only book as themselves now.
     document.querySelector("#bkGrid").addEventListener("click", (e) => {
       const cell = e.target.closest(".bk-cell");
       if (!cell || !cell.dataset.type) return;
