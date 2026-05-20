@@ -1717,7 +1717,7 @@ async function commitPeopleFile(env, file, sha, message, mutatedPersonId) {
   // preserved; concurrent edits to the SAME row are last-write-wins
   // (which matches the pre-retry behaviour when two commits land
   // sequentially with no race).
-  const MAX_ATTEMPTS = 3;
+  const MAX_ATTEMPTS = 5;
   let currentFile = file;
   let currentSha  = sha;
   let lastErr     = null;
@@ -1742,7 +1742,12 @@ async function commitPeopleFile(env, file, sha, message, mutatedPersonId) {
     const detail = (await res.text()).slice(0, 200);
     lastErr = new Error(`people.json commit failed (${res.status}): ${detail}`);
     if (res.status !== 409 || mutatedPersonId == null || attempt === MAX_ATTEMPTS - 1) throw lastErr;
-    // Race lost — re-fetch + splice our mutation onto the fresh file.
+    // Race lost — give GitHub a moment to publish the winning commit
+    // to its read replicas before we GET the fresh file. Without this,
+    // the immediate re-fetch can return the SAME stale sha and we 409
+    // again on the next PUT, exhausting the retry budget on a single
+    // racing writer.
+    await new Promise(r => setTimeout(r, 200 * (attempt + 1)));
     const ourPerson = currentFile.people.find(p => String(p.id) === String(mutatedPersonId));
     if (!ourPerson) throw lastErr;
     const fresh = await fetchPeopleFile(env);
