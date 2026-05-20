@@ -10,11 +10,11 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&family=Newsreader:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500;1,600&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="style.css?v=1779274677">
-<link rel="stylesheet" href="quiet-tokens.css?v=1779274677">
-<link rel="stylesheet" href="quiet.css?v=1779274677">
-<link rel="stylesheet" href="quiet-extras.css?v=1779274677">
-<link rel="stylesheet" href="quiet-legacy.css?v=1779274677">
+<link rel="stylesheet" href="style.css?v=1779275729">
+<link rel="stylesheet" href="quiet-tokens.css?v=1779275729">
+<link rel="stylesheet" href="quiet.css?v=1779275729">
+<link rel="stylesheet" href="quiet-extras.css?v=1779275729">
+<link rel="stylesheet" href="quiet-legacy.css?v=1779275729">
 <style>
   .hd-section { max-width: 1080px; margin: 0 auto; padding: 24px 0 48px; }
 
@@ -1026,7 +1026,7 @@
 
 <header class="qb-topbar">
   <a class="qb-brand" href="/wall.html" aria-label="TogetherBOOK — home">
-    <img class="qb-brand-logo" src="togetherbook-logo.png?v=1779274677" alt="TogetherBOOK">
+    <img class="qb-brand-logo" src="togetherbook-logo.png?v=1779275729" alt="TogetherBOOK">
   </a>
   <button class="qb-hamburger" aria-label="Toggle navigation menu" aria-expanded="false"
           onclick="document.body.classList.toggle('nav-open');this.setAttribute('aria-expanded',document.body.classList.contains('nav-open'))">
@@ -1534,25 +1534,12 @@
     });
   }
 
-  // Effective Team membership for the Team + Activity views.
-  // - Admins manage holidays for everyone, so their Team is every
-  //   on-payroll Person (canonical main_google_email per Person).
-  // - Non-admins see only the people they're set as line manager of
-  //   (the historical directReports Set built from annotations).
+  // Effective Team membership = the viewer's direct reports.
+  // Admins always see the Team / Activity submenu so they can navigate
+  // even with no direct reports, but the *contents* of Team and
+  // Activity stay scoped to actual direct reports for everyone.
   function effectiveTeamMembers() {
-    if (!viewerIsAdmin) return directReports;
-    const out = new Set();
-    const seenPersonIds = new Set();
-    for (const [email, p] of Object.entries(personByEmail)) {
-      if (!p) continue;
-      if (seenPersonIds.has(p.id)) continue;
-      const canonical = (p.main_google_email || email || "").toLowerCase();
-      if (!canonical) continue;
-      if (!isOnPayroll(canonical)) continue;
-      seenPersonIds.add(p.id);
-      out.add(canonical);
-    }
-    return out;
+    return directReports;
   }
 
   function setupViewTabs() {
@@ -2958,7 +2945,7 @@
     a.addEventListener('click', () => document.body.classList.remove('nav-open'))
   );
 </script>
-<script src="nav.js?v=1779274677" defer></script>
+<script src="nav.js?v=1779275729" defer></script>
 
 <script>
   // Embed-mode height reporter — the parent /directory/<slug> page listens
