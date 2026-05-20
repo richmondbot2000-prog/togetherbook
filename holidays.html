@@ -10,11 +10,11 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&family=Newsreader:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500;1,600&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="style.css?v=1778940663">
-<link rel="stylesheet" href="quiet-tokens.css?v=1778940663">
-<link rel="stylesheet" href="quiet.css?v=1778940663">
-<link rel="stylesheet" href="quiet-extras.css?v=1779059756">
-<link rel="stylesheet" href="quiet-legacy.css?v=1778940663">
+<link rel="stylesheet" href="style.css?v=1779274677">
+<link rel="stylesheet" href="quiet-tokens.css?v=1779274677">
+<link rel="stylesheet" href="quiet.css?v=1779274677">
+<link rel="stylesheet" href="quiet-extras.css?v=1779274677">
+<link rel="stylesheet" href="quiet-legacy.css?v=1779274677">
 <style>
   .hd-section { max-width: 1080px; margin: 0 auto; padding: 24px 0 48px; }
 
@@ -1026,7 +1026,7 @@
 
 <header class="qb-topbar">
   <a class="qb-brand" href="/wall.html" aria-label="TogetherBOOK — home">
-    <img class="qb-brand-logo" src="togetherbook-logo.png?v=1778940663" alt="TogetherBOOK">
+    <img class="qb-brand-logo" src="togetherbook-logo.png?v=1779274677" alt="TogetherBOOK">
   </a>
   <button class="qb-hamburger" aria-label="Toggle navigation menu" aria-expanded="false"
           onclick="document.body.classList.toggle('nav-open');this.setAttribute('aria-expanded',document.body.classList.contains('nav-open'))">
@@ -1533,14 +1533,36 @@
     });
   }
 
+  // Effective Team membership for the Team + Activity views.
+  // - Admins manage holidays for everyone, so their Team is every
+  //   on-payroll Person (canonical main_google_email per Person).
+  // - Non-admins see only the people they're set as line manager of
+  //   (the historical directReports Set built from annotations).
+  function effectiveTeamMembers() {
+    if (!viewerIsAdmin) return directReports;
+    const out = new Set();
+    const seenPersonIds = new Set();
+    for (const [email, p] of Object.entries(personByEmail)) {
+      if (!p) continue;
+      if (seenPersonIds.has(p.id)) continue;
+      const canonical = (p.main_google_email || email || "").toLowerCase();
+      if (!canonical) continue;
+      if (!isOnPayroll(canonical)) continue;
+      seenPersonIds.add(p.id);
+      out.add(canonical);
+    }
+    return out;
+  }
+
   function setupViewTabs() {
     const wrap = document.getElementById("hdViewTabs");
     const count = document.getElementById("hdTeamCount");
     if (!wrap) return;
-    // Visibility tracks the current direct-report set so the Team tab
-    // can appear / disappear mid-session as managers are reassigned.
-    wrap.style.display = (directReports.size > 0) ? "flex" : "none";
-    if (count) count.textContent = String(directReports.size);
+    // Tabs are visible whenever there's a Team to look at — direct
+    // reports for non-admins, every on-payroll person for admins.
+    const team = effectiveTeamMembers();
+    wrap.style.display = (viewerIsAdmin || team.size > 0) ? "flex" : "none";
+    if (count) count.textContent = String(team.size);
     if (viewTabsWired) return;
     viewTabsWired = true;
     wrap.querySelectorAll(".hd-view-tab").forEach(btn => {
@@ -1558,8 +1580,9 @@
         // visibility too in case the report set just changed.
         if (currentView === "team") {
           await refreshLineManagers();
-          wrap.style.display = (directReports.size > 0) ? "flex" : "none";
-          if (count) count.textContent = String(directReports.size);
+          const team = effectiveTeamMembers();
+          wrap.style.display = (viewerIsAdmin || team.size > 0) ? "flex" : "none";
+          if (count) count.textContent = String(team.size);
         }
         renderAll();
       });
@@ -1812,8 +1835,12 @@
   function renderTeam() {
     const root = document.getElementById("hdTeam");
     root.innerHTML = "";
-    if (directReports.size === 0) {
-      root.innerHTML = `<div class="hd-team-empty">You have no direct reports on file. Have admins set you as someone's line manager on the Directory page.</div>`;
+    const team = effectiveTeamMembers();
+    if (team.size === 0) {
+      const msg = viewerIsAdmin
+        ? `<div class="hd-team-empty">No on-payroll staff to show.</div>`
+        : `<div class="hd-team-empty">You have no direct reports on file. Have admins set you as someone's line manager on the Directory page.</div>`;
+      root.innerHTML = msg;
       return;
     }
 
@@ -1825,7 +1852,7 @@
     // shows up exactly once. The Team — N count tracks the deduped list.
     const seenPersonIds = new Set();
     const reports = [];
-    for (const e of directReports) {
+    for (const e of team) {
       if (!isOnPayroll(e)) continue;
       const person = personByEmail[e] || null;
       const linked = person
@@ -2068,7 +2095,7 @@
     const allEmails = new Set();
     const stash = e => { if (e) allEmails.add(e.toLowerCase()); };
     stash(viewerEmail);
-    for (const e of directReports) {
+    for (const e of team) {
       const person = personByEmail[e];
       if (person) {
         stash(person.main_google_email);
@@ -2093,9 +2120,13 @@
     const root = document.getElementById("hdAct");
     const meta = document.getElementById("hdActivityMeta");
     root.innerHTML = "";
-    if (directReports.size === 0) {
+    const team = effectiveTeamMembers();
+    if (team.size === 0) {
       meta.textContent = "";
-      root.innerHTML = `<div class="hd-act-empty">You have no direct reports on file. Have admins set you as someone's line manager on the Directory page.</div>`;
+      const msg = viewerIsAdmin
+        ? `<div class="hd-act-empty">No on-payroll staff to show.</div>`
+        : `<div class="hd-act-empty">You have no direct reports on file. Have admins set you as someone's line manager on the Directory page.</div>`;
+      root.innerHTML = msg;
       return;
     }
 
@@ -2161,7 +2192,7 @@
     // and events so the count + drill-down show a single Person view.
     const seenPersonIds = new Set();
     const reports = [];
-    for (const e of directReports) {
+    for (const e of team) {
       const person = personByEmail[e] || null;
       const linked = person
         ? [person.main_google_email, ...(person.alt_google_emails || []), person.external_google_email]
@@ -2913,7 +2944,7 @@
     a.addEventListener('click', () => document.body.classList.remove('nav-open'))
   );
 </script>
-<script src="nav.js?v=1779136390" defer></script>
+<script src="nav.js?v=1779274677" defer></script>
 
 <script>
   // Embed-mode height reporter — the parent /directory/<slug> page listens
