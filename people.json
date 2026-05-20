@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "updated_at": "2026-05-20T10:06:28.421Z",
+  "updated_at": "2026-05-20T10:06:30.118Z",
   "source": "build_people.py bootstrap from staff.json + annotations.json",
   "people": [
     {
@@ -4901,17 +4901,18 @@
       "phone": "8/9/1999",
       "address": "23 Kimmeridge Avenue\nPoole\nDorset\nBH12 3NT",
       "start_date": "2025-10-27",
-      "line_manager_id": "184",
+      "line_manager_id": null,
       "line_manager_email_raw": "",
       "role": "",
       "directory_photo_uploaded_at": "2026-05-14T08:18:33+01:00",
       "notes": "",
       "created_at": "2026-05-17T11:13:52Z",
-      "updated_at": "2026-05-20T10:06:28.421Z",
+      "updated_at": "2026-05-20T10:06:27.965Z",
       "url_slug": "saoirse-brooke.polywka",
       "most_recent_payroll_id": 93,
       "on_payroll": true,
-      "date_of_birth": "1999-08-09"
+      "date_of_birth": "1999-08-09",
+      "team": "Underwriting"
     },
     {
       "id": 182,
