@@ -359,9 +359,18 @@
     Promise.all([
       fetch("/api/workspace/table?file=people", { cache: "no-store", headers: { "Cache-Control": "no-cache" } }).then(r => r.ok ? r.json() : null).catch(() => null),
       fetch("/annotations.json", { cache: "no-store" }).then(r => r.ok ? r.json() : null).catch(() => null),
-    ]).then(([peopleDoc, annDoc]) => {
+      fetch("/staff.json",       { cache: "no-store" }).then(r => r.ok ? r.json() : null).catch(() => null),
+    ]).then(([peopleDoc, annDoc, staffDoc]) => {
       const list = (peopleDoc && peopleDoc.people) || [];
       const ann = (annDoc && annDoc.annotations) || {};
+      // Google Workspace directory photos (googleusercontent URLs) keyed
+      // by email — same source profile.js falls back to. Lets people who
+      // never uploaded a local photo still show their Google avatar.
+      const staffByEmail = {};
+      for (const u of ((staffDoc && staffDoc.users) || [])) {
+        const e = (u && u.email || "").toLowerCase();
+        if (e && u.photo_url) staffByEmail[e] = u.photo_url;
+      }
       const map = {};
       for (const p of list) {
         const emails = [p.main_google_email, ...(p.alt_google_emails || []), p.external_google_email]
@@ -378,6 +387,12 @@
         if (chosenEmail) {
           const key = chosenEmail.replace(/@/g, "_at_");
           p._photo_url = "/assets/photos/" + key + ".jpg?v=" + encodeURIComponent(chosenTs || "");
+        } else {
+          // No locally-uploaded photo — fall back to the Workspace
+          // directory photo from staff.json (same fallback profile.js uses).
+          for (const e of emails) {
+            if (staffByEmail[e]) { p._photo_url = staffByEmail[e]; break; }
+          }
         }
         for (const uid of (p.bookr_uids || [])) {
           if (uid) map[uid] = p;
