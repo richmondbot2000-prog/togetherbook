@@ -679,6 +679,7 @@
           ${viewerIsAdmin ? lineMgrEditor : `<div class="up-field-value">${lineMgrDisplay}</div>`}
         </div>
         ${editableRow("start_date", "Start date",   "date",     person.start_date, null, null, /*adminOnly*/ true)}
+        ${editableRow("date_of_birth", "Date of birth", "date", person.date_of_birth, "Drives the team-calendar balloon emoji + the daily birthday Wall post.", null, /*adminOnly*/ true)}
         ${holidayPlanRow()}
         ${editableRow("name",       "Display name", "text",     person.name)}
         ${editableRow("aliases",    "Aliases",      "text",     (person.aliases || []).join(", "), "Comma-separated — used in name search + mentions")}
