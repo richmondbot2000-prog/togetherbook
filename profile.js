@@ -539,11 +539,22 @@
 
     // Line-manager picker (admin only). The display falls back to the
     // read-only chip / "No line manager" when the viewer isn't admin.
-    const lineMgrOptions = people
-      .filter(x => x.id !== person.id)
-      .sort((a, b) => (a.name || "").localeCompare(b.name || ""))
-      .map(x => `<option value="${escapeHtml(x.id)}" ${String(x.id) === String(person.line_manager_id) ? "selected" : ""}>${escapeHtml(x.name || x.url_slug)}</option>`)
-      .join("");
+    // Ordering: admins first (most likely candidates to be a line
+    // manager), then everyone else by surname. Both groups
+    // alphabetised within themselves; an <optgroup> divider makes
+    // the split obvious in the open dropdown.
+    const surnameKey = (p) => (p.family || (p.name || "").split(" ").slice(-1)[0] || "").toLowerCase();
+    const lineMgrCandidates = people.filter(x => x.id !== person.id);
+    const lineMgrAdmins = lineMgrCandidates
+      .filter(x => (x.access_level || "") === "admin")
+      .sort((a, b) => surnameKey(a).localeCompare(surnameKey(b)));
+    const lineMgrOthers = lineMgrCandidates
+      .filter(x => (x.access_level || "") !== "admin")
+      .sort((a, b) => surnameKey(a).localeCompare(surnameKey(b)));
+    const optHtml = (x) => `<option value="${escapeHtml(x.id)}" ${String(x.id) === String(person.line_manager_id) ? "selected" : ""}>${escapeHtml(x.name || x.url_slug)}</option>`;
+    const lineMgrOptions =
+      (lineMgrAdmins.length ? `<optgroup label="Admins">${lineMgrAdmins.map(optHtml).join("")}</optgroup>` : "") +
+      (lineMgrOthers.length ? `<optgroup label="Everyone else">${lineMgrOthers.map(optHtml).join("")}</optgroup>` : "");
     const lineMgrEditor = viewerIsAdmin ? `
       <div class="up-field-editor-row">
         <select name="line_manager_id" data-orig="${escapeHtml(String(person.line_manager_id || ""))}">
