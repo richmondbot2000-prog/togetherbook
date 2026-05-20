@@ -7,9 +7,9 @@
 <title>TogetherBOOK — Wall</title>
 <link rel="icon" type="image/png" href="site-icon.png">
 <link rel="apple-touch-icon" href="site-icon.png">
-<link rel="stylesheet" href="quiet-tokens.css?v=1778923602">
-<link rel="stylesheet" href="quiet.css?v=1778923602">
-<link rel="stylesheet" href="quiet-extras.css?v=1779059756">
+<link rel="stylesheet" href="quiet-tokens.css?v=1779289673">
+<link rel="stylesheet" href="quiet.css?v=1779289673">
+<link rel="stylesheet" href="quiet-extras.css?v=1779289673">
 <style>
   /* 648 px column — sweet spot per editorial line-length research
      (60–75 chars per line at 15 px body). Wider feels marketing-y. */
@@ -479,8 +479,14 @@
     display: inline-block;
     transition: transform 180ms ease;
   }
-  .wl-react-pill:hover { border-color: var(--brass-500); }
-  .wl-react-pill:hover .wl-emoji { animation: var(--react-anim, wl-bounce) 600ms ease; }
+  /* Hover-only effects live behind @media (hover: hover) so they don't
+     engage on touch devices — on iOS a "first tap = hover" state would
+     scale the emoji up and make the user think the click didn't land,
+     so they tap again and end up toggling their own reaction back off. */
+  @media (hover: hover) {
+    .wl-react-pill:hover { border-color: var(--brass-500); }
+    .wl-react-pill:hover .wl-emoji { animation: var(--react-anim, wl-bounce) 600ms ease; }
+  }
   .wl-react-pill.is-mine {
     border-color: var(--brass-500);
     background: var(--brass-50);
@@ -522,10 +528,12 @@
     display: inline-flex; align-items: center; justify-content: center;
     transition: transform 180ms ease, background 180ms ease;
   }
-  .wl-emoji-popover button:hover {
-    background: var(--paper-100);
-    transform: scale(1.35) translateY(-2px);
-    animation: var(--react-anim, wl-bounce) 600ms ease infinite;
+  @media (hover: hover) {
+    .wl-emoji-popover button:hover {
+      background: var(--paper-100);
+      transform: scale(1.35) translateY(-2px);
+      animation: var(--react-anim, wl-bounce) 600ms ease infinite;
+    }
   }
   /* Tooltip below the picker on hover */
   .wl-emoji-popover button::after {
@@ -539,7 +547,9 @@
     transition: opacity 100ms ease 200ms;
     white-space: nowrap;
   }
-  .wl-emoji-popover button:hover::after { opacity: 1; }
+  @media (hover: hover) {
+    .wl-emoji-popover button:hover::after { opacity: 1; }
+  }
   /* "+" button on the named-reaction picker — opens the any-emoji grid. */
   .wl-emoji-plus { color: var(--ink-600); }
   .wl-emoji-plus-icon { font: 700 24px/1 var(--font-body); }
@@ -579,10 +589,12 @@
     display: inline-flex; align-items: center; justify-content: center;
     transition: background-color 120ms ease, transform 120ms ease;
   }
-  .wl-emoji-popover--grid .wl-emoji-grid-cell:hover {
-    background: var(--paper-100);
-    transform: scale(1.15);
-    animation: none;
+  @media (hover: hover) {
+    .wl-emoji-popover--grid .wl-emoji-grid-cell:hover {
+      background: var(--paper-100);
+      transform: scale(1.15);
+      animation: none;
+    }
   }
   .wl-emoji-popover--grid .wl-emoji-grid-cell::after { content: none; }
 
@@ -942,6 +954,15 @@
   }
   @media (max-width: 480px) {
     .wl-photo-peek { height: 180px; }
+  }
+  /* GIFs render full-height (capped) instead of cropped — short looping
+     clips are meaningless when the bottom is cut off. */
+  .wl-photo-peek.wl-photo-peek--gif { height: auto; background: transparent; }
+  .wl-photo-peek.wl-photo-peek--gif .wl-photo-peek-img {
+    height: auto; min-height: 0; max-height: 420px;
+    width: auto; max-width: 100%;
+    object-fit: contain; object-position: center;
+    margin: 0 auto;
   }
   /* The single comment surfaced under a preview post — same flex shape
      as a regular .wl-comment but rendered without the action row, reply
@@ -1398,7 +1419,7 @@
 
 <header class="qb-topbar">
   <a class="qb-brand" href="/wall.html" aria-label="TogetherBOOK — home">
-    <img class="qb-brand-logo" src="togetherbook-logo.png?v=1778923602" alt="TogetherBOOK">
+    <img class="qb-brand-logo" src="togetherbook-logo.png?v=1779289673" alt="TogetherBOOK">
   </a>
   <button class="qb-hamburger" aria-label="Toggle navigation menu" aria-expanded="false"
           onclick="document.body.classList.toggle('nav-open');this.setAttribute('aria-expanded',document.body.classList.contains('nav-open'))">
@@ -1480,7 +1501,7 @@
   </section>
 </main>
 
-<script src="nav.js?v=1779136390" defer></script>
+<script src="nav.js?v=1779289673" defer></script>
 <script>
 (function () {
   "use strict";
@@ -2409,8 +2430,9 @@
     const photo = photoUrlFor(staffByEmail[(comment.author_email || "").toLowerCase()] || {});
     const trimmed = bodyTeaser(comment.body || "", 200);
     const firstPhoto = (comment.photos || []).find(Boolean);
+    const isGif = !!firstPhoto && (/\.gif($|\?)/i.test(firstPhoto) || /giphy\.com/i.test(firstPhoto));
     const photoPeek = firstPhoto
-      ? `<div class="wl-photo-peek wl-photo-peek--comment"><img class="wl-media-img wl-photo-peek-img" src="${escapeHtml(mediaUrl(firstPhoto))}" alt="" loading="lazy"></div>`
+      ? `<div class="wl-photo-peek wl-photo-peek--comment${isGif ? " wl-photo-peek--gif" : ""}"><img class="wl-media-img wl-photo-peek-img" src="${escapeHtml(mediaUrl(firstPhoto))}" alt="" loading="lazy"></div>`
       : "";
     return `
       <div class="wl-preview-comment">
@@ -2747,7 +2769,9 @@
     if (!photos || !photos.length) return "";
     const first = photos[0];
     const extra = photos.length - 1;
-    return `<div class="wl-photo-peek">
+    const isGif = /\.gif($|\?)/i.test(first) || /giphy\.com/i.test(first);
+    const gifMod = isGif ? " wl-photo-peek--gif" : "";
+    return `<div class="wl-photo-peek${gifMod}">
       <img class="wl-media-img wl-photo-peek-img" src="${escapeHtml(mediaUrl(first))}" alt="" loading="lazy">
       ${extra > 0 ? `<div class="wl-photo-peek-more">+${extra} more</div>` : ""}
     </div>`;
