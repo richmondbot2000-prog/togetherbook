@@ -1966,6 +1966,18 @@
     } else if (myMgr) {
       peers.add(myMgr);
     }
+    // The viewer always appears in their own Management Team — even if
+    // the line_manager_id walk missed them (e.g. data still on the
+    // annotations side only). Their own linked emails go into peers so
+    // their row paints alongside their manager and siblings.
+    const mePerson = personByEmail[me];
+    if (mePerson) {
+      const linked = [mePerson.main_google_email, ...(mePerson.alt_google_emails || []), mePerson.external_google_email]
+        .filter(Boolean).map(x => x.toLowerCase());
+      for (const e of linked) peers.add(e);
+    } else if (me) {
+      peers.add(me);
+    }
     if (peers.size === 0) {
       root.innerHTML = `<div class="hd-team-empty">No one is listed as reporting to your line manager.</div>`;
       return;
