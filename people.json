@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "updated_at": "2026-05-20T09:58:31.966Z",
+  "updated_at": "2026-05-20T09:58:52.615Z",
   "source": "build_people.py bootstrap from staff.json + annotations.json",
   "people": [
     {
@@ -2480,14 +2480,15 @@
       "directory_photo_uploaded_at": "",
       "notes": "",
       "created_at": "2026-05-17T11:13:52Z",
-      "updated_at": "2026-05-17T19:59:31Z",
+      "updated_at": "2026-05-20T09:58:52.615Z",
       "most_recent_payroll_id": 22,
       "on_payroll": true,
       "url_slug": "james.harlow",
       "date_of_birth": "2001-08-16",
       "bookr_uids": [
         "LWZCREVTCgaaqSauqQnSnanBadi2"
-      ]
+      ],
+      "team": "Underwriting"
     },
     {
       "id": 93,
