@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "updated_at": "2026-05-20T14:40:31.037Z",
+  "updated_at": "2026-05-20T14:40:47.825Z",
   "source": "build_people.py bootstrap from staff.json + annotations.json",
   "people": [
     {
@@ -1158,7 +1158,10 @@
       "name": "Cyrus Leung",
       "given": "Cyrus",
       "family": "Leung",
-      "aliases": [],
+      "aliases": [
+        "cyrus",
+        "Ho Chun Cyrus Leung"
+      ],
       "main_google_email": "cyrus.leung@letme.com",
       "alt_google_emails": [],
       "external_google_email": "",
@@ -1168,18 +1171,19 @@
       "title": "",
       "department": "",
       "phone": "",
-      "address": "",
+      "address": "Flat 3 West Cliff Views\n52 St. Michaels Road\nBournemouth\nDorset\nBH2 5DY",
       "start_date": "2025-11-18",
       "line_manager_id": "10",
       "line_manager_email_raw": "",
-      "role": "",
+      "role": "Paralegal",
       "directory_photo_uploaded_at": "",
-      "notes": "",
+      "notes": "Person auto-created from payroll import — no Google account linked yet. Set main_google_email when known.",
       "created_at": "2026-05-17T11:13:52Z",
-      "updated_at": "2026-05-20T14:31:12.433Z",
+      "updated_at": "2026-05-20T14:40:46.721Z",
       "url_slug": "cyrus.leung",
-      "most_recent_payroll_id": null,
-      "team": "Paralegal"
+      "most_recent_payroll_id": 77,
+      "team": "Paralegal",
+      "on_payroll": true
     },
     {
       "id": 47,
@@ -2277,41 +2281,6 @@
       "updated_at": "2026-05-17T11:13:52Z",
       "url_slug": "historic",
       "most_recent_payroll_id": null
-    },
-    {
-      "id": 86,
-      "name": "Ho Chun Cyrus Leung",
-      "given": "Ho Chun Cyrus",
-      "family": "Leung",
-      "aliases": [
-        "cyrus"
-      ],
-      "main_google_email": "",
-      "alt_google_emails": [],
-      "external_google_email": "",
-      "auth0_id": "",
-      "access_level": "staff",
-      "company": "LetMe Ltd",
-      "title": "",
-      "department": "",
-      "phone": "",
-      "address": "Flat 3 West Cliff Views\n52 St. Michaels Road\nBournemouth\nDorset\nBH2 5DY",
-      "start_date": "2025-11-18",
-      "line_manager_id": "10",
-      "line_manager_email_raw": "",
-      "role": "Paralegal",
-      "notes": "Person auto-created from payroll import — no Google account linked yet. Set main_google_email when known.",
-      "directory_photo_uploaded_at": "",
-      "cover_photo_uploaded_at": "",
-      "on_payroll": true,
-      "most_recent_payroll_id": 77,
-      "suspended": false,
-      "created_at": "2026-05-17T14:06:41Z",
-      "updated_at": "2026-05-20T09:08:28.679Z",
-      "url_slug": "ho.chun.cyrus.leung",
-      "date_of_birth": "1995-01-16",
-      "team": "Paralegal",
-      "holiday_plan": "Unlimited"
     },
     {
       "id": 87,
