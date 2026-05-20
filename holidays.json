@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "updated_at": "2026-05-20T07:38:18.373Z",
+  "updated_at": "2026-05-20T07:38:23.068Z",
   "year_start": "2026-04-01",
   "year_end": "2027-03-31",
   "by_user": {
@@ -24,7 +24,6 @@
         "2026-04-06": "approved-holiday",
         "2026-05-06": "part-paid-unpaid",
         "2026-05-07": "part-holiday-paid",
-        "2026-06-18": "sick",
         "2026-05-15": "sick",
         "2026-04-01": "holiday",
         "2026-04-02": "holiday"
@@ -301,6 +300,14 @@
       "to": "office",
       "changed_by": "amber.cole@letme.com",
       "changed_at": "2026-05-20T07:38:18.373Z"
+    },
+    {
+      "user_email": "amber.cole@letme.com",
+      "date": "2026-06-18",
+      "from": "sick",
+      "to": null,
+      "changed_by": "amber.cole@letme.com",
+      "changed_at": "2026-05-20T07:38:23.068Z"
     }
   ]
 }
