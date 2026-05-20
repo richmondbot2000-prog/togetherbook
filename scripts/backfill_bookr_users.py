@@ -111,80 +111,110 @@ def candidate_emails(person: dict) -> list:
     return [(e or "").strip().lower() for e in out if e]
 
 
+import re
+
+def _norm_name(s):
+    s = (s or "").lower()
+    return re.sub(r"[^a-z0-9]+", " ", s).strip()
+
+def _email_local(e):
+    e = (e or "").strip().lower()
+    at = e.find("@")
+    return e[:at] if at > 0 else ""
+
+def score_match(person, bookr):
+    b_email = (bookr.get("email") or "").strip().lower()
+    b_name  = _norm_name(bookr.get("name"))
+    p_emails = candidate_emails(person)
+    if b_email and b_email in p_emails:
+        return 100
+    b_local = _email_local(b_email)
+    if b_local and any(_email_local(e) == b_local for e in p_emails):
+        return 80
+    p_name = _norm_name(person.get("name"))
+    p_given = _norm_name(person.get("given") or "")
+    p_fam   = _norm_name(person.get("family") or "")
+    if p_name and b_name and p_name == b_name:
+        return 60
+    if p_given and p_fam and p_given in b_name and p_fam in b_name:
+        return 40
+    return 0
+
 def main() -> int:
+    allow_create = "--create" in sys.argv
+    min_score = 80
+    for a in sys.argv[1:]:
+        if a.startswith("--min-score="):
+            try: min_score = int(a.split("=", 1)[1])
+            except: pass
     if not PEOPLE_JSON_PATH.exists():
         raise SystemExit(f"missing {PEOPLE_JSON_PATH} -- run from repo root")
     token = get_bookr_access_token()
     bookr_users = bookr_fetch(token, "/users.json") or {}
-    print(f"loaded {len(bookr_users)} BookR users", flush=True)
-    email_to_uid = {}
-    for uid, u in bookr_users.items():
-        e = ((u or {}).get("email") or "").strip().lower()
-        if e and e not in email_to_uid:
-            email_to_uid[e] = (uid, u or {})
-
+    print(f"loaded {len(bookr_users)} BookR users (allow_create={allow_create}, min_score={min_score})", flush=True)
     file = json.loads(PEOPLE_JSON_PATH.read_text())
     people = file.get("people") or []
-    counts = {"matched": 0, "created": 0, "already_linked": 0, "skipped_no_email": 0, "errored": 0}
+    counts = {"matched": 0, "created": 0, "already_linked": 0,
+              "needs_review": 0, "no_candidates": 0,
+              "skipped_no_email": 0, "errored": 0}
     rows = []
-
     for p in people:
         pid = p.get("id")
         name = p.get("name") or p.get("url_slug") or f"#{pid}"
         existing_uid = (p.get("bookr_uid") or "").strip()
         if existing_uid and existing_uid in bookr_users:
             counts["already_linked"] += 1
-            rows.append((pid, name, "already_linked", existing_uid))
+            rows.append((pid, name, "already_linked", 100, existing_uid))
             continue
-        cands = candidate_emails(p)
-        match_uid = None
-        for e in cands:
-            if e in email_to_uid:
-                match_uid = email_to_uid[e][0]
-                break
-        if match_uid:
-            p["bookr_uid"] = match_uid
+        best_uid, best_score = "", 0
+        for uid, u in bookr_users.items():
+            sc = score_match(p, u or {})
+            if sc > best_score:
+                best_uid, best_score = uid, sc
+        if best_score >= min_score:
+            p["bookr_uid"] = best_uid
             counts["matched"] += 1
-            rows.append((pid, name, "matched", match_uid))
+            rows.append((pid, name, f"matched(score={best_score})", best_score, best_uid))
             continue
-        primary = (p.get("main_google_email") or (cands[0] if cands else "")).strip()
+        if best_score > 0:
+            counts["needs_review"] += 1
+            rows.append((pid, name, f"needs_review(score={best_score})", best_score, best_uid))
+            continue
+        if not allow_create:
+            counts["no_candidates"] += 1
+            rows.append((pid, name, "no_candidates", 0, ""))
+            continue
+        primary = (p.get("main_google_email") or (candidate_emails(p) or [""])[0]).strip()
         if not primary:
             counts["skipped_no_email"] += 1
-            rows.append((pid, name, "skipped_no_email", ""))
+            rows.append((pid, name, "skipped_no_email", 0, ""))
             continue
         try:
             new = bookr_fetch(token, "/users.json", method="POST", body={
-                "email": primary,
-                "name": p.get("name") or "",
-                "mobile": p.get("phone") or "0",
-                "last_online": 0,
-                "suspended": False,
+                "email": primary, "name": p.get("name") or "",
+                "mobile": p.get("phone") or "0", "last_online": 0, "suspended": False,
             })
             new_uid = (new or {}).get("name")
-            if not new_uid:
-                raise RuntimeError("Firebase POST returned no push key")
+            if not new_uid: raise RuntimeError("Firebase POST returned no push key")
             p["bookr_uid"] = new_uid
-            email_to_uid[primary.lower()] = (new_uid, {"email": primary, "name": p.get("name") or ""})
+            bookr_users[new_uid] = {"email": primary, "name": p.get("name") or ""}
             counts["created"] += 1
-            rows.append((pid, name, "created", new_uid))
+            rows.append((pid, name, "created", 0, new_uid))
         except Exception as exc:
             counts["errored"] += 1
-            rows.append((pid, name, f"errored:{exc}", ""))
-
+            rows.append((pid, name, f"errored:{exc}", 0, ""))
     file["people"] = people
     PEOPLE_JSON_PATH.write_text(json.dumps(file, indent=2) + "\n")
-
     print()
-    print(f"{'pid':>5}  {'name':<32}  {'status':<22}  bookr_uid")
-    print("-" * 90)
-    for pid, name, status, uid in rows:
-        print(f"{pid!s:>5}  {name[:32]:<32}  {status:<22}  {uid}")
+    print(f"{'pid':>5}  {'name':<32}  {'status':<32}  {'sc':>3}  bookr_uid")
+    print("-" * 100)
+    for pid, name, status, sc, uid in rows:
+        print(f"{pid!s:>5}  {name[:32]:<32}  {status[:32]:<32}  {sc:>3}  {uid}")
     print()
-    print(f"summary: matched={counts['matched']} created={counts['created']} "
-          f"already_linked={counts['already_linked']} "
-          f"skipped_no_email={counts['skipped_no_email']} errored={counts['errored']}")
+    print(f"summary: matched={counts['matched']} already_linked={counts['already_linked']} "
+          f"needs_review={counts['needs_review']} no_candidates={counts['no_candidates']} "
+          f"created={counts['created']} skipped_no_email={counts['skipped_no_email']} "
+          f"errored={counts['errored']}")
     return 0 if counts["errored"] == 0 else 1
-
-
 if __name__ == "__main__":
     sys.exit(main())
