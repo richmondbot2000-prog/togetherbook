@@ -203,6 +203,33 @@ def main() -> int:
         print(f"  {'name':<28} {'email':<36} {'future':<7} {'uid'}")
         for r in orphaned_bookr:
             print(f"  {r['name'][:28]:<28} {r['email'][:36]:<36} {r['future_bookings']:<7} {r['uid']}")
+    print()
+    # ── List C — full pairing matrix (every BookR <-> Person candidate)
+    people_by_id = {p["id"]: p for p in people}
+    pair_rows = []
+    for uid, candidates in uid_to_persons.items():
+        bu = bookr_users.get(uid) or {}
+        for (pid, sc) in sorted(candidates, key=lambda x: -x[1]):
+            pers = people_by_id.get(pid) or {}
+            pair_rows.append({
+                "score": sc,
+                "bookr_name": bu.get("name") or "",
+                "bookr_email": bu.get("email") or "",
+                "bookr_uid": uid,
+                "person_id": pid,
+                "person_name": pers.get("name") or "",
+                "person_email": pers.get("main_google_email") or "",
+                "currently_linked": (pers.get("bookr_uid") or "") == uid,
+            })
+    def _sk(r):
+        bucket = 0 if 40 <= r["score"] < 80 else (1 if r["score"] >= 80 else 2)
+        return (bucket, -r["score"], (r["bookr_name"] or r["bookr_email"]).lower())
+    pair_rows.sort(key=_sk)
+    print(f"==== C. {len(pair_rows)} BookR<->Person candidate pairs (all score>=40) ====")
+    print(f"  {'sc':<3} {'lnk':<4} {'BookR name':<24} {'BookR email':<32} {'->':<3} {'Person':<24} Person email")
+    for r in pair_rows:
+        link = "yes" if r["currently_linked"] else "no"
+        print(f"  {r['score']:<3} {link:<4} {r['bookr_name'][:24]:<24} {r['bookr_email'][:32]:<32} -> {r['person_name'][:24]:<24} {r['person_email']}")
     return 0
 
 
