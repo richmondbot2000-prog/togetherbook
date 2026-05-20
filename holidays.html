@@ -10,11 +10,11 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&family=Newsreader:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500;1,600&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="style.css?v=1779275729">
-<link rel="stylesheet" href="quiet-tokens.css?v=1779275729">
-<link rel="stylesheet" href="quiet.css?v=1779275729">
-<link rel="stylesheet" href="quiet-extras.css?v=1779275729">
-<link rel="stylesheet" href="quiet-legacy.css?v=1779275729">
+<link rel="stylesheet" href="style.css?v=1779276048">
+<link rel="stylesheet" href="quiet-tokens.css?v=1779276048">
+<link rel="stylesheet" href="quiet.css?v=1779276048">
+<link rel="stylesheet" href="quiet-extras.css?v=1779276048">
+<link rel="stylesheet" href="quiet-legacy.css?v=1779276048">
 <style>
   .hd-section { max-width: 1080px; margin: 0 auto; padding: 24px 0 48px; }
 
@@ -1026,7 +1026,7 @@
 
 <header class="qb-topbar">
   <a class="qb-brand" href="/wall.html" aria-label="TogetherBOOK — home">
-    <img class="qb-brand-logo" src="togetherbook-logo.png?v=1779275729" alt="TogetherBOOK">
+    <img class="qb-brand-logo" src="togetherbook-logo.png?v=1779276048" alt="TogetherBOOK">
   </a>
   <button class="qb-hamburger" aria-label="Toggle navigation menu" aria-expanded="false"
           onclick="document.body.classList.toggle('nav-open');this.setAttribute('aria-expanded',document.body.classList.contains('nav-open'))">
@@ -1072,6 +1072,7 @@
     <nav class="hd-view-tabs" id="hdViewTabs" style="display:none;" role="tablist" aria-label="Holidays view">
       <button type="button" class="hd-view-tab is-active" data-view="own"      role="tab" aria-selected="true">My calendar</button>
       <button type="button" class="hd-view-tab"           data-view="team"     role="tab" aria-selected="false">Team — <span id="hdTeamCount">0</span></button>
+      <button type="button" class="hd-view-tab"           data-view="mgmt"     role="tab" aria-selected="false" style="display:none;">Management Team — <span id="hdMgmtCount">0</span></button>
       <button type="button" class="hd-view-tab"           data-view="activity" role="tab" aria-selected="false">Activity</button>
     </nav>
 
@@ -1105,6 +1106,12 @@
       <!-- One matrix at any width — desktop and mobile share the same
            layout, just compressed via @media. -->
       <div class="hd-team" id="hdTeam" role="grid" aria-label="Team calendar strip"></div>
+    </div>
+    <div id="hdMgmtView" style="display:none;">
+      <!-- Admin-only Management Team: same matrix layout as the Team view,
+           but populated with the viewer's line manager's direct reports
+           (peers + the viewer). Identical rendering — reuses .hd-team. -->
+      <div class="hd-team" id="hdMgmt" role="grid" aria-label="Management team calendar strip"></div>
     </div>
     <div id="hdActivityView" style="display:none;">
       <div class="hd-act-toolbar">
@@ -1325,7 +1332,7 @@
     const deepView = (qs.get("view") || "").toLowerCase();
     const deepUser = qs.get("user");
     const deepDate = qs.get("date");
-    if (["own","team","activity"].includes(deepView)) currentView = deepView;
+    if (["own","team","mgmt","activity"].includes(deepView)) currentView = deepView;
     if (deepUser && deepDate) {
       requestAnimationFrame(() => jumpToHolidayDay(deepUser, deepDate));
     } else {
@@ -1545,12 +1552,15 @@
   function setupViewTabs() {
     const wrap = document.getElementById("hdViewTabs");
     const count = document.getElementById("hdTeamCount");
+    const mgmtBtn = wrap && wrap.querySelector('[data-view="mgmt"]');
     if (!wrap) return;
     // Tabs are visible whenever there's a Team to look at — direct
-    // reports for non-admins, every on-payroll person for admins.
+    // reports for non-admins, always-on for admins so they can navigate.
     const team = effectiveTeamMembers();
     wrap.style.display = (viewerIsAdmin || team.size > 0) ? "flex" : "none";
     if (count) count.textContent = String(team.size);
+    // Management Team is an admin-only escape hatch — peers + self.
+    if (mgmtBtn) mgmtBtn.style.display = viewerIsAdmin ? "" : "none";
     if (viewTabsWired) return;
     viewTabsWired = true;
     wrap.querySelectorAll(".hd-view-tab").forEach(btn => {
@@ -1562,11 +1572,11 @@
           b.classList.toggle("is-active", on);
           b.setAttribute("aria-selected", String(on));
         });
-        // Switching to Team re-fetches annotations.json from raw GH —
-        // so a Line Manager edit made on the Directory page in another
-        // tab shows up here without a hard-refresh. Toggles tab
+        // Switching to Team or Management Team re-fetches annotations.json
+        // from raw GH — so a Line Manager edit made on the Directory page
+        // in another tab shows up here without a hard-refresh. Toggles tab
         // visibility too in case the report set just changed.
-        if (currentView === "team") {
+        if (currentView === "team" || currentView === "mgmt") {
           await refreshLineManagers();
           const team = effectiveTeamMembers();
           wrap.style.display = (viewerIsAdmin || team.size > 0) ? "flex" : "none";
@@ -1614,6 +1624,7 @@
   function renderAll() {
     document.getElementById("hdOwnView").style.display      = (currentView === "own")      ? "" : "none";
     document.getElementById("hdTeamView").style.display     = (currentView === "team")     ? "" : "none";
+    document.getElementById("hdMgmtView").style.display     = (currentView === "mgmt")     ? "" : "none";
     document.getElementById("hdActivityView").style.display = (currentView === "activity") ? "" : "none";
     // The "Holiday days marked this year" stat block + the admin-only
     // person picker are only relevant on the My-calendar view. Hide them
@@ -1631,6 +1642,10 @@
     if (currentView === "team") {
       renderHeader();
       renderTeam();
+      renderLog();
+    } else if (currentView === "mgmt") {
+      renderHeader();
+      renderMgmt();
       renderLog();
     } else if (currentView === "activity") {
       renderHeader();
@@ -1820,6 +1835,48 @@
   // in its actual DOW column; leading + trailing cells are transparent
   // pads. Because every row starts on Sunday, column N has the same
   // day-of-week across all months — DOWs line up vertically.
+  // Collapse a Set of emails into one matrix row per Person:
+  //   - drop off-payroll entries
+  //   - dedupe multi-email Persons via Person.id
+  //   - merge dayMap + noteMap across every linked email so a holiday
+  //     recorded under whichever Google account they used at the time
+  //     still shows up exactly once
+  // Returns the sorted reports array consumed by paintTeamMatrix.
+  function buildTeamReports(emails) {
+    const seenPersonIds = new Set();
+    const reports = [];
+    for (const e of emails) {
+      if (!isOnPayroll(e)) continue;
+      const person = personByEmail[e] || null;
+      const linked = person
+        ? [person.main_google_email, ...(person.alt_google_emails || []), person.external_google_email]
+            .filter(Boolean).map(x => x.toLowerCase())
+        : [e];
+      const repEmail = (person && (person.main_google_email || "").toLowerCase()) || e;
+      const dedupeKey = person ? "p:" + person.id : "e:" + e;
+      if (seenPersonIds.has(dedupeKey)) continue;
+      seenPersonIds.add(dedupeKey);
+      const mergedDays = {}; const mergedNotes = {};
+      for (const le of linked) {
+        const u = (holidaysDoc.by_user || {})[le] || {};
+        Object.assign(mergedDays, u.days || {});
+        Object.assign(mergedNotes, u.notes || {});
+      }
+      const user = staffByEmail[repEmail] || staffByEmail[e] ||
+                   (person ? { email: repEmail, name: person.name } : { email: e, name: e });
+      const dobMd = (person && person.date_of_birth || "").slice(5, 10);
+      const givenName = (person && person.given) ||
+                        ((person && person.name) || user.name || "").split(/\s+/)[0] ||
+                        repEmail;
+      reports.push({
+        email: repEmail, user, dayMap: mergedDays, noteMap: mergedNotes,
+        dobMd, givenName,
+      });
+    }
+    reports.sort((a, b) => (a.user.name || a.email).localeCompare(b.user.name || b.email));
+    return reports;
+  }
+
   function renderTeam() {
     const root = document.getElementById("hdTeam");
     root.innerHTML = "";
@@ -1831,55 +1888,52 @@
       root.innerHTML = msg;
       return;
     }
-
-    // Drop off-payroll directs entirely, then collapse multi-email
-    // Persons (e.g. Kelly Black: letme + togetherloans) into one row
-    // each. `repEmail` is the chosen calendar key (main_google_email
-    // when known), and `dayMap` is the merged set of statuses across
-    // every linked email so a holiday recorded under either account
-    // shows up exactly once. The Team — N count tracks the deduped list.
-    const seenPersonIds = new Set();
-    const reports = [];
-    for (const e of team) {
-      if (!isOnPayroll(e)) continue;
-      const person = personByEmail[e] || null;
-      const linked = person
-        ? [person.main_google_email, ...(person.alt_google_emails || []), person.external_google_email]
-            .filter(Boolean).map(x => x.toLowerCase())
-        : [e];
-      const repEmail = (person && (person.main_google_email || "").toLowerCase()) || e;
-      const dedupeKey = person ? "p:" + person.id : "e:" + e;
-      if (seenPersonIds.has(dedupeKey)) continue;
-      seenPersonIds.add(dedupeKey);
-      // Merge dayMaps + noteMaps across every linked email — most
-      // recent entry wins on collision. Holidays may live under whichever
-      // Google account the person was using when they last edited.
-      const mergedDays = {}; const mergedNotes = {};
-      for (const le of linked) {
-        const u = (holidaysDoc.by_user || {})[le] || {};
-        Object.assign(mergedDays, u.days || {});
-        Object.assign(mergedNotes, u.notes || {});
-      }
-      const user = staffByEmail[repEmail] || staffByEmail[e] ||
-                   (person ? { email: repEmail, name: person.name } : { email: e, name: e });
-      const dobMd = (person && person.date_of_birth || "").slice(5, 10);  // "MM-DD"
-      const givenName = (person && person.given) ||
-                        ((person && person.name) || user.name || "").split(/\s+/)[0] ||
-                        repEmail;
-      reports.push({
-        email: repEmail, user, dayMap: mergedDays, noteMap: mergedNotes,
-        dobMd, givenName,
-      });
-    }
-    reports.sort((a, b) => (a.user.name || a.email).localeCompare(b.user.name || b.email));
-
+    const reports = buildTeamReports(team);
     const countEl = document.getElementById("hdTeamCount");
     if (countEl) countEl.textContent = String(reports.length);
-
     if (!reports.length) {
       root.innerHTML = `<div class="hd-team-empty">None of your direct reports are on payroll yet.</div>`;
       return;
     }
+    paintTeamMatrix(root, reports);
+  }
+
+  // Admin-only view: every direct report of the viewer's own line manager.
+  // Mirrors what the manager would see in their own Team view, so admins
+  // who report to someone else can stay aligned with their peers' time off.
+  function renderMgmt() {
+    const root = document.getElementById("hdMgmt");
+    root.innerHTML = "";
+    if (!viewerIsAdmin) return;
+    const me = (viewerEmail || "").toLowerCase();
+    const myMgr = (lineManagerByEmail[me] || "").toLowerCase();
+    const countEl = document.getElementById("hdMgmtCount");
+    if (countEl) countEl.textContent = "0";
+    if (!myMgr) {
+      root.innerHTML = `<div class="hd-team-empty">No line manager is set for you on the Directory page yet, so there's no management team to show.</div>`;
+      return;
+    }
+    const peers = new Set();
+    for (const [emp, mgr] of Object.entries(lineManagerByEmail)) {
+      if ((mgr || "").toLowerCase() === myMgr) peers.add(emp.toLowerCase());
+    }
+    if (peers.size === 0) {
+      root.innerHTML = `<div class="hd-team-empty">No one is listed as reporting to your line manager.</div>`;
+      return;
+    }
+    const reports = buildTeamReports(peers);
+    if (countEl) countEl.textContent = String(reports.length);
+    if (!reports.length) {
+      root.innerHTML = `<div class="hd-team-empty">Nobody in your management team is on payroll yet.</div>`;
+      return;
+    }
+    paintTeamMatrix(root, reports);
+  }
+
+  // Render the fiscal-year months × people matrix. Shared by the Team
+  // view and the admin-only Management Team view; both feed a `reports`
+  // array built by buildTeamReports().
+  function paintTeamMatrix(root, reports) {
 
     // Inner wrapper carries the 852 px min-width; .hd-team itself
     // stays at viewport-width and scrolls this wrapper horizontally
@@ -2083,7 +2137,7 @@
     const allEmails = new Set();
     const stash = e => { if (e) allEmails.add(e.toLowerCase()); };
     stash(viewerEmail);
-    for (const e of team) {
+    for (const e of effectiveTeamMembers()) {
       const person = personByEmail[e];
       if (person) {
         stash(person.main_google_email);
@@ -2945,7 +2999,7 @@
     a.addEventListener('click', () => document.body.classList.remove('nav-open'))
   );
 </script>
-<script src="nav.js?v=1779275729" defer></script>
+<script src="nav.js?v=1779276048" defer></script>
 
 <script>
   // Embed-mode height reporter — the parent /directory/<slug> page listens
