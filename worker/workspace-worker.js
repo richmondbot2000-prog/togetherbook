@@ -3672,14 +3672,29 @@ function b64Encode(s) {
 
 /* BookR: read+write rg-bookr Realtime DB. See SPEC for endpoints. */
 const BOOKR_AVAIL_PATH = "bookr-asset-availability.json";
-async function fetchBookrAvailability() {
+async function fetchBookrAvailability(env) {
+  // Read via the GitHub Contents API at HEAD of main — same trick the
+  // people.json / payroll-data.json paths use. Avoids raw.githubusercontent
+  // CDN lag (which can serve stale data for minutes after a commit),
+  // which would make the admin toggle look like it had no effect.
+  if (!env || !env.GITHUB_TOKEN) return { cars: {}, properties: {} };
   try {
     const res = await fetch(
-      `https://raw.githubusercontent.com/${REPO}/${BRANCH}/${BOOKR_AVAIL_PATH}?ts=${Date.now()}`,
-      { cf: { cacheTtl: 30, cacheEverything: true } },
+      `https://api.github.com/repos/${REPO}/contents/${BOOKR_AVAIL_PATH}?ref=${BRANCH}&_=${Date.now()}`,
+      {
+        headers: {
+          "Authorization": `Bearer ${env.GITHUB_TOKEN}`,
+          "Accept": "application/vnd.github+json",
+          "User-Agent": "apifk-workspace-worker",
+        },
+        cf: { cacheTtl: 0, cacheEverything: false },
+      },
     );
     if (!res.ok) return { cars: {}, properties: {} };
-    const doc = await res.json();
+    const meta = await res.json();
+    const bin = atob((meta.content || "").replace(/\s/g, ""));
+    const bytes = Uint8Array.from(bin, c => c.charCodeAt(0));
+    const doc = JSON.parse(new TextDecoder("utf-8").decode(bytes));
     return { cars: doc.cars || {}, properties: doc.properties || {} };
   } catch (e) { return { cars: {}, properties: {} }; }
 }
@@ -3844,7 +3859,7 @@ async function bookrAssets(env) {
   const [cars, props, avail] = await Promise.all([
     bookrFetch(env, "/cars.json"),
     bookrFetch(env, "/properties.json"),
-    fetchBookrAvailability(),
+    fetchBookrAvailability(env),
   ]);
   const flatten = (kind, dict) => Object.entries(dict || {}).map(([id, a]) => ({
     id, type: kind,

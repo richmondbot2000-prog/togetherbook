@@ -364,16 +364,25 @@
       const ann = (annDoc && annDoc.annotations) || {};
       const map = {};
       for (const p of list) {
-        // Fold any annotations-side photo timestamp onto the Person so the
-        // avatar lookup is a single .directory_photo_uploaded_at field.
-        if (!p.directory_photo_uploaded_at && p.main_google_email) {
-          const a = ann[p.main_google_email.toLowerCase()];
-          if (a && a.directory_photo_uploaded_at) p.directory_photo_uploaded_at = a.directory_photo_uploaded_at;
+        const emails = [p.main_google_email, ...(p.alt_google_emails || []), p.external_google_email]
+          .filter(Boolean).map(e => e.toLowerCase());
+        let chosenEmail = null, chosenTs = null;
+        for (const e of emails) {
+          const ts = (ann[e] && ann[e].directory_photo_uploaded_at) || null;
+          if (ts) { chosenEmail = e; chosenTs = ts; break; }
+        }
+        if (!chosenEmail && p.directory_photo_uploaded_at && p.main_google_email) {
+          chosenEmail = p.main_google_email.toLowerCase();
+          chosenTs = p.directory_photo_uploaded_at;
+        }
+        if (chosenEmail) {
+          const key = chosenEmail.replace(/@/g, "_at_");
+          p._photo_url = "/assets/photos/" + key + ".jpg?v=" + encodeURIComponent(chosenTs || "");
         }
         for (const uid of (p.bookr_uids || [])) {
           if (uid) map[uid] = p;
         }
-        if (p.bookr_uid) map[p.bookr_uid] = p;  // legacy back-compat
+        if (p.bookr_uid) map[p.bookr_uid] = p;
       }
       STATE.peopleByBookrUid = map;
       if (STATE.tab === "calendar") renderGrid();
@@ -554,10 +563,7 @@
     if (!uid) return null;
     if (uid === "smartbnb") return "/assets/airbnb-logo.svg";
     const p = STATE.peopleByBookrUid[uid];
-    if (!p || !p.main_google_email) return null;
-    if (!p.directory_photo_uploaded_at) return null;
-    const key = p.main_google_email.toLowerCase().replace(/@/g, "_at_");
-    return "/assets/photos/" + key + ".jpg?v=" + encodeURIComponent(p.directory_photo_uploaded_at);
+    return (p && p._photo_url) || null;
   }
 
     function buildBookingCell(a, d, todayY) {
