@@ -10,11 +10,11 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&family=Newsreader:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500;1,600&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="style.css?v=1779276048">
-<link rel="stylesheet" href="quiet-tokens.css?v=1779276048">
-<link rel="stylesheet" href="quiet.css?v=1779276048">
-<link rel="stylesheet" href="quiet-extras.css?v=1779276048">
-<link rel="stylesheet" href="quiet-legacy.css?v=1779276048">
+<link rel="stylesheet" href="style.css?v=1779280823">
+<link rel="stylesheet" href="quiet-tokens.css?v=1779280823">
+<link rel="stylesheet" href="quiet.css?v=1779280823">
+<link rel="stylesheet" href="quiet-extras.css?v=1779280823">
+<link rel="stylesheet" href="quiet-legacy.css?v=1779280823">
 <style>
   .hd-section { max-width: 1080px; margin: 0 auto; padding: 24px 0 48px; }
 
@@ -121,12 +121,13 @@
     color: var(--ink-700);
   }
   .hd-picker label { font: italic 500 14px/1.2 var(--font-display, 'Newsreader', serif); }
-  /* Bottom-of-page admin picker — sits below the calendar, not in the
-     header. Right-aligned, indented from the page edge, italic label. */
-  .hd-picker.hd-picker--bottom {
-    margin: 28px 0 4px;
-    padding: 12px 0;
-    border-top: 1px dashed var(--brass-300);
+  /* Top-of-page admin picker — sits above the calendar so swapping
+     to another person's calendar is the first thing an admin sees on
+     the My-calendar view. Right-aligned, italic label. */
+  .hd-picker.hd-picker--top {
+    margin: 4px 0 14px;
+    padding: 0 0 12px;
+    border-bottom: 1px dashed var(--brass-300);
     justify-content: flex-end;
   }
   /* Page-level updated-at footer — relocated from the header. Shows on
@@ -1026,7 +1027,7 @@
 
 <header class="qb-topbar">
   <a class="qb-brand" href="/wall.html" aria-label="TogetherBOOK — home">
-    <img class="qb-brand-logo" src="togetherbook-logo.png?v=1779276048" alt="TogetherBOOK">
+    <img class="qb-brand-logo" src="togetherbook-logo.png?v=1779280823" alt="TogetherBOOK">
   </a>
   <button class="qb-hamburger" aria-label="Toggle navigation menu" aria-expanded="false"
           onclick="document.body.classList.toggle('nav-open');this.setAttribute('aria-expanded',document.body.classList.contains('nav-open'))">
@@ -1089,18 +1090,19 @@
     </div>
 
     <div id="hdOwnView">
+      <!-- Admin-only "view another person's calendar" picker. Sits at
+           the top of the My-calendar view so it's obvious how an admin
+           switches whose calendar they're editing. Hidden on Team /
+           Mgmt / Activity views; hidden entirely for non-admins. -->
+      <div class="hd-picker hd-picker--top" id="hdPickerWrap" style="display:none;">
+        <label for="hdPerson">Calendar for</label>
+        <select id="hdPerson"></select>
+      </div>
       <div class="hd-cal-headers" aria-hidden="true">
         <div>Week of</div>
         <div>Sun</div><div>Mon</div><div>Tue</div><div>Wed</div><div>Thu</div><div>Fri</div><div>Sat</div>
       </div>
       <div class="hd-cal" id="hdCal" role="grid" aria-label="Holiday calendar grid"></div>
-      <!-- Admin-only "view another person's calendar" picker. Lives at the
-           bottom of the My-calendar view; hidden on Team + Activity views,
-           hidden entirely for non-admins. -->
-      <div class="hd-picker hd-picker--bottom" id="hdPickerWrap" style="display:none;">
-        <label for="hdPerson">Calendar for</label>
-        <select id="hdPerson"></select>
-      </div>
     </div>
     <div id="hdTeamView" style="display:none;">
       <!-- One matrix at any width — desktop and mobile share the same
@@ -3046,7 +3048,7 @@
     a.addEventListener('click', () => document.body.classList.remove('nav-open'))
   );
 </script>
-<script src="nav.js?v=1779276048" defer></script>
+<script src="nav.js?v=1779280823" defer></script>
 
 <script>
   // Embed-mode height reporter — the parent /directory/<slug> page listens
