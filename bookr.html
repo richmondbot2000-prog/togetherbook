@@ -496,13 +496,18 @@
     if (value && value !== "free") {
       const u = STATE.users[value];
       const fullName = (u && u.name) || value;
+      const bookerEmail = (u && u.email) || "";
       el.classList.add("is-booked");
       if (myUid && value === myUid) el.classList.add("is-mine");
-      const name = document.createElement("span");
+      // Name is a link to the booker's TogetherBook profile. Wrap in
+      // <a> so a tap on the name navigates; the surrounding cell still
+      // opens the booking popover via the delegated grid click handler
+      // (which skips when e.target.closest("a") matches).
+      const name = bookerEmail
+        ? document.createElement("a")
+        : document.createElement("span");
       name.className = "bk-cell-name";
-      // Full name, allowed to wrap onto 2-3 lines — matches the BookR
-      // app which shows e.g. "Natasha Wright" / "Sophie Polychronopulos"
-      // in full inside the cell rather than initialising the surname.
+      if (bookerEmail) name.href = "/user.html?email=" + encodeURIComponent(bookerEmail);
       name.textContent = fullName;
       el.appendChild(name);
       el.title = fullName + " · " + a.title;
@@ -809,6 +814,10 @@
     });
     // #bkChangeUser dropdown was removed — users only book as themselves now.
     document.querySelector("#bkGrid").addEventListener("click", (e) => {
+      // Names inside booked cells are real <a> links to the booker's
+      // TogetherBook profile. Let the browser handle that navigation
+      // instead of also opening the popover.
+      if (e.target.closest("a.bk-cell-name")) return;
       const cell = e.target.closest(".bk-cell");
       if (!cell || !cell.dataset.type) return;
       const kind = cell.dataset.kind;
