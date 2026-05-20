@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "updated_at": "2026-05-20T08:21:11.537Z",
+  "updated_at": "2026-05-20T08:21:15.441Z",
   "source": "build_people.py bootstrap from staff.json + annotations.json",
   "people": [
     {
@@ -5373,11 +5373,11 @@
       "start_date": "2024-02-05",
       "line_manager_id": null,
       "line_manager_email_raw": "",
-      "role": "",
+      "role": "Accounts",
       "directory_photo_uploaded_at": "2026-05-14T07:52:25+01:00",
       "notes": "",
       "created_at": "2026-05-17T11:13:52Z",
-      "updated_at": "2026-05-20T08:21:11.537Z",
+      "updated_at": "2026-05-20T08:21:15.441Z",
       "most_recent_payroll_id": 8,
       "on_payroll": true,
       "url_slug": "victor.igbaifua",
