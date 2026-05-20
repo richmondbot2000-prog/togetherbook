@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "updated_at": "2026-05-20T08:21:26.904Z",
+  "updated_at": "2026-05-20T08:22:04.988Z",
   "source": "build_people.py bootstrap from staff.json + annotations.json",
   "people": [
     {
@@ -1878,14 +1878,15 @@
       "directory_photo_uploaded_at": "",
       "notes": "",
       "created_at": "2026-05-17T11:13:52Z",
-      "updated_at": "2026-05-17T19:59:31Z",
+      "updated_at": "2026-05-20T08:22:04.988Z",
       "most_recent_payroll_id": 3,
       "on_payroll": true,
       "url_slug": "esther.uwadione",
       "date_of_birth": "2001-04-22",
       "bookr_uids": [
         "x4jGq9XgU4amvnTWchol6j5QBOa2"
-      ]
+      ],
+      "team": "Paralegal"
     },
     {
       "id": 73,
